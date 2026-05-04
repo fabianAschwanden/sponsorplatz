@@ -4,6 +4,7 @@ import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.model.Rolle;
 import ch.sponsorplatz.repository.AppUserRepository;
 import ch.sponsorplatz.repository.MitgliedschaftRepository;
+import ch.sponsorplatz.repository.OrganisationRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
@@ -22,11 +23,14 @@ public class AccessControl {
 
     private final MitgliedschaftRepository mitgliedschaftRepository;
     private final AppUserRepository appUserRepository;
+    private final OrganisationRepository organisationRepository;
 
     public AccessControl(MitgliedschaftRepository mitgliedschaftRepository,
-                         AppUserRepository appUserRepository) {
+                         AppUserRepository appUserRepository,
+                         OrganisationRepository organisationRepository) {
         this.mitgliedschaftRepository = mitgliedschaftRepository;
         this.appUserRepository = appUserRepository;
+        this.organisationRepository = organisationRepository;
     }
 
     /**
@@ -54,6 +58,25 @@ public class AccessControl {
         return findeUserId(auth)
                 .map(userId -> mitgliedschaftRepository.existsByUserIdAndOrgIdAndRolle(
                         userId, orgId, Rolle.ORG_OWNER))
+                .orElse(false);
+    }
+
+    /**
+     * Slug-Variante von {@link #kannOrgEditieren}. Für unbekannte Slugs → false
+     * (kein Throw — der Auth-Layer leakt keine Existenz-Information).
+     */
+    public boolean kannOrgEditierenNachSlug(String slug, Authentication auth) {
+        return organisationRepository.findBySlug(slug)
+                .map(org -> kannOrgEditieren(org.getId(), auth))
+                .orElse(false);
+    }
+
+    /**
+     * Slug-Variante von {@link #kannOrgVerwalten}.
+     */
+    public boolean kannOrgVerwaltenNachSlug(String slug, Authentication auth) {
+        return organisationRepository.findBySlug(slug)
+                .map(org -> kannOrgVerwalten(org.getId(), auth))
                 .orElse(false);
     }
 

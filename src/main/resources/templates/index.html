@@ -1,35 +1,61 @@
 <!DOCTYPE html>
-<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<html lang="de-CH"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sponsorplatz — Vereine finden Sponsoren</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body>
-    <header class="kopfzeile">
-        <div class="container">
-            <a class="logo" th:href="@{/}">Sponsorplatz</a>
-        </div>
-    </header>
+<body class="public-body">
 
-    <main class="hauptbereich hero">
-        <div class="container">
-            <p class="rubrik">Schweizer Sponsoring-Plattform</p>
-            <h1>Vereine finden Sponsoren.<br>Sponsoren finden Vereine.</h1>
-            <p class="endlich">Endlich.</p>
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <span class="dash-logo-mark">SP</span>
+            <span>Sponsorplatz</span>
+        </a>
+        <nav class="public-nav">
+            <a th:href="@{/marktplatz}">Marktplatz</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/login}">Anmelden</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn">Registrieren</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}" class="app-btn">Zum Dashboard</a>
+        </nav>
+    </div>
+</header>
 
-            <div class="hinweis-box">
-                <p><strong>Phase 0 — In Aufbau.</strong></p>
-                <p>Sponsorplatz ist die kollaborative Plattform für Schweizer Vereine und ihre Sponsoren. Aktuell entsteht das Fundament; die ersten Funktionen kommen in den nächsten Wochen online.</p>
-                <p>Du willst Pilot-Verein werden? <a href="mailto:hallo@sponsorplatz.ch">hallo@sponsorplatz.ch</a></p>
-            </div>
-        </div>
-    </main>
+<main class="public-main">
+    <section class="public-hero">
+        <p class="public-hero-rubrik">Schweizer Sponsoring-Plattform</p>
+        <h1>Vereine finden Sponsoren.<br>Sponsoren finden Vereine.</h1>
+        <p class="public-hero-endlich">Endlich.</p>
 
-    <footer class="fusszeile">
-        <div class="container">
-            <p>&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz · Schweiz</p>
+        <div class="public-hero-cta">
+            <a th:href="@{/marktplatz}" class="app-btn">Marktplatz entdecken</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn app-btn-secondary">Verein registrieren</a>
         </div>
-    </footer>
+    </section>
+
+    <section class="app-card" style="max-width: 720px; margin: 2rem auto;">
+        <p style="margin: 0 0 0.5rem;"><strong>Phase 0 — In Aufbau.</strong></p>
+        <p style="margin: 0 0 0.5rem;">Sponsorplatz ist die kollaborative Plattform für Schweizer Vereine und ihre Sponsoren. Aktuell entsteht das Fundament; die ersten Funktionen kommen in den nächsten Wochen online.</p>
+        <p style="margin: 0;">Du willst Pilot-Verein werden? <a href="mailto:hallo@sponsorplatz.ch" style="color: var(--dash-violet-dark); font-weight: 600;">hallo@sponsorplatz.ch</a></p>
+    </section>
+</main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz · Schweiz</p>
+        <nav>
+            <a th:href="@{/impressum}">Impressum</a>
+            <a th:href="@{/datenschutz}">Datenschutz</a>
+            <a th:href="@{/agb}">AGB</a>
+        </nav>
+    </div>
+</footer>
+
 </body>
 </html>

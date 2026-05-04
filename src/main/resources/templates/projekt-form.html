@@ -1,50 +1,65 @@
 <!DOCTYPE html>
-<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<html lang="de-CH"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Neues Projekt — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body>
-<header>
-    <nav>
-        <a th:href="@{/}">Sponsorplatz</a> &gt;
-        <a th:href="@{'/organisationen/' + ${org.slug} + '/projekte'}">Projekte</a> &gt;
-        <span>Neues Projekt</span>
-    </nav>
-</header>
-<main>
-    <h1>Neues Projekt erstellen</h1>
+<body class="app-body">
 
-    <form th:action="@{'/organisationen/' + ${org.slug} + '/projekte/speichern'}" method="post" th:object="${projektForm}">
-        <div>
-            <label for="name">Name *</label>
-            <input type="text" id="name" th:field="*{name}" required>
-            <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error"></span>
-        </div>
-        <div>
-            <label for="beschreibung">Beschreibung</label>
-            <textarea id="beschreibung" th:field="*{beschreibung}" rows="5"></textarea>
-        </div>
-        <div>
-            <label for="kategorie">Kategorie</label>
-            <input type="text" id="kategorie" th:field="*{kategorie}">
-        </div>
-        <div>
-            <label for="ort">Ort</label>
-            <input type="text" id="ort" th:field="*{ort}">
-        </div>
-        <div>
-            <label for="startDatum">Startdatum</label>
-            <input type="date" id="startDatum" th:field="*{startDatum}">
-        </div>
-        <div>
-            <label for="endDatum">Enddatum</label>
-            <input type="date" id="endDatum" th:field="*{endDatum}">
-        </div>
-        <button type="submit" class="btn">Projekt erstellen</button>
-    </form>
-</main>
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('organisationen', ${anzahlOffeneAnfragen})}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">
+                    <a th:href="@{/organisationen/{slug}/projekte(slug=${org.slug})}" style="color:inherit;">Projekte</a>
+                </p>
+                <h1>Neues Projekt</h1>
+            </div>
+        </header>
+
+        <section class="app-card">
+            <form th:action="@{/organisationen/{slug}/projekte/speichern(slug=${org.slug})}" method="post"
+                  th:object="${projektForm}" class="app-form">
+                <div class="app-form-group">
+                    <label for="name">Name *</label>
+                    <input type="text" id="name" th:field="*{name}" required>
+                    <p class="app-meldung fehler" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+                </div>
+                <div class="app-form-group">
+                    <label for="beschreibung">Beschreibung</label>
+                    <textarea id="beschreibung" th:field="*{beschreibung}" rows="5"></textarea>
+                </div>
+                <div class="app-form-group">
+                    <label for="kategorie">Kategorie</label>
+                    <input type="text" id="kategorie" th:field="*{kategorie}" placeholder="z. B. SPORT, KULTUR">
+                </div>
+                <div class="app-form-group">
+                    <label for="ort">Ort</label>
+                    <input type="text" id="ort" th:field="*{ort}" placeholder="z. B. Zürich">
+                </div>
+                <div class="app-form-group">
+                    <label for="startDatum">Startdatum</label>
+                    <input type="date" id="startDatum" th:field="*{startDatum}">
+                </div>
+                <div class="app-form-group">
+                    <label for="endDatum">Enddatum</label>
+                    <input type="date" id="endDatum" th:field="*{endDatum}">
+                </div>
+                <div class="app-form-actions">
+                    <button type="submit" class="app-btn">Projekt erstellen</button>
+                    <a th:href="@{/organisationen/{slug}/projekte(slug=${org.slug})}" class="app-btn app-btn-secondary">Abbrechen</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
 </body>
 </html>
-

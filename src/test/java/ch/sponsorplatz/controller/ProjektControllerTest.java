@@ -5,6 +5,7 @@ import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.model.OrgTyp;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.Sichtbarkeit;
+import ch.sponsorplatz.service.AccessControl;
 import ch.sponsorplatz.service.OrganisationService;
 import ch.sponsorplatz.service.ProjektService;
 import ch.sponsorplatz.service.SponsoringPaketService;
@@ -50,6 +51,9 @@ class ProjektControllerTest {
     @MockBean
     private SponsorplatzUserDetailsService userDetailsService;
 
+    @MockBean
+    private AccessControl accessControl;
+
     private Organisation testOrg() {
         Organisation org = new Organisation();
         org.setId(UUID.randomUUID());
@@ -74,6 +78,7 @@ class ProjektControllerTest {
     @WithMockUser
     void listeWirdAngezeigt() throws Exception {
         Organisation org = testOrg();
+        when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
         when(orgService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
         when(projektService.findeNachOrg(org.getId())).thenReturn(List.of());
 
@@ -88,6 +93,7 @@ class ProjektControllerTest {
     @WithMockUser
     void neuesFormularWirdAngezeigt() throws Exception {
         Organisation org = testOrg();
+        when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
         when(orgService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
 
         mockMvc.perform(get("/organisationen/fc-test/projekte/neu"))
@@ -102,6 +108,7 @@ class ProjektControllerTest {
     void speichernRedirected() throws Exception {
         Organisation org = testOrg();
         Projekt projekt = testProjekt(org);
+        when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
         when(orgService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
         when(projektService.erstelle(any(), eq("Sommerfest 2026"), any())).thenReturn(projekt);
 
@@ -119,6 +126,7 @@ class ProjektControllerTest {
     void detailZeigtProjektUndPakete() throws Exception {
         Organisation org = testOrg();
         Projekt projekt = testProjekt(org);
+        when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
         when(orgService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
         when(projektService.findeNachSlug("sommerfest-2026")).thenReturn(Optional.of(projekt));
         when(paketService.findeNachProjekt(projekt.getId())).thenReturn(List.of());
@@ -134,6 +142,7 @@ class ProjektControllerTest {
     @WithMockUser
     void speichernMitFehlerZeigtFormular() throws Exception {
         Organisation org = testOrg();
+        when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
         when(orgService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
 
         mockMvc.perform(post("/organisationen/fc-test/projekte/speichern")
@@ -141,6 +150,42 @@ class ProjektControllerTest {
                         .param("name", ""))
                 .andExpect(status().isOk())
                 .andExpect(view().name("projekt-form"));
+    }
+
+    /** PCTRL-06: POST .../speichern ohne Edit-Recht → 403. */
+    @Test
+    @WithMockUser
+    void speichernOhneEditRechtIst403() throws Exception {
+        when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(false);
+
+        mockMvc.perform(post("/organisationen/fc-test/projekte/speichern")
+                        .with(csrf())
+                        .param("name", "Sommerfest 2026"))
+                .andExpect(status().isForbidden());
+    }
+
+    /** PCTRL-07: POST .../{projektSlug}/veroeffentlichen ohne Edit-Recht → 403. */
+    @Test
+    @WithMockUser
+    void veroeffentlichenOhneEditRechtIst403() throws Exception {
+        when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(false);
+
+        mockMvc.perform(post("/organisationen/fc-test/projekte/sommerfest-2026/veroeffentlichen")
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    /** PCTRL-08: POST .../{projektSlug}/pakete/speichern ohne Edit-Recht → 403. */
+    @Test
+    @WithMockUser
+    void paketSpeichernOhneEditRechtIst403() throws Exception {
+        when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(false);
+
+        mockMvc.perform(post("/organisationen/fc-test/projekte/sommerfest-2026/pakete/speichern")
+                        .with(csrf())
+                        .param("name", "Gold")
+                        .param("preisChf", "1000"))
+                .andExpect(status().isForbidden());
     }
 }
 

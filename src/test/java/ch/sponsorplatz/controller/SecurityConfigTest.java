@@ -1,6 +1,7 @@
 package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.config.SecurityConfig;
+import ch.sponsorplatz.service.AccessControl;
 import ch.sponsorplatz.service.AppUserService;
 import ch.sponsorplatz.service.OrganisationService;
 import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
@@ -37,6 +38,9 @@ class SecurityConfigTest {
 
     @MockBean
     private OrganisationService organisationService;
+
+    @MockBean
+    private AccessControl accessControl;
 
     /** SEC-01: GET /login → 200. */
     @Test

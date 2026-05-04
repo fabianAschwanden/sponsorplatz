@@ -1,6 +1,7 @@
 package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.config.ModelAttributeNames;
+import ch.sponsorplatz.exception.NotFoundException;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.service.ProjektService;
 import org.springframework.stereotype.Controller;
@@ -49,7 +50,7 @@ public class MarktplatzController {
     @GetMapping("/{slug}")
     public String detail(@PathVariable String slug, Model model) {
         Projekt projekt = projektService.findeNachSlug(slug)
-                .orElseThrow(() -> new IllegalArgumentException("Projekt nicht gefunden: " + slug));
+                .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + slug));
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "marktplatz");
         model.addAttribute("projekt", projekt);
         return "marktplatz-detail";

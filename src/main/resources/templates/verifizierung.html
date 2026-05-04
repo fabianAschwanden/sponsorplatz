@@ -2,36 +2,48 @@
 <html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Mail-Verifizierung — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body>
-    <header class="kopfzeile">
-        <div class="container">
-            <a class="logo" th:href="@{/}">Sponsorplatz</a>
-        </div>
-    </header>
+<body class="public-body">
 
-    <main class="hauptbereich">
-        <div class="container">
-            <div th:if="${erfolg}">
-                <h1>✓ E-Mail bestätigt!</h1>
-                <p>Ihre E-Mail-Adresse wurde erfolgreich verifiziert. Sie können sich jetzt anmelden.</p>
-                <a th:href="@{/login}" class="btn btn-primaer">Zur Anmeldung</a>
-            </div>
-            <div th:unless="${erfolg}">
-                <h1>Verifizierung fehlgeschlagen</h1>
-                <p th:text="${fehlermeldung}">Fehler</p>
-                <a th:href="@{/login}" class="btn">Zur Anmeldung</a>
-            </div>
-        </div>
-    </main>
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <span class="dash-logo-mark">SP</span>
+            <span>Sponsorplatz</span>
+        </a>
+    </div>
+</header>
 
-    <footer class="fusszeile">
-        <div class="container">
-            <p>&copy; 2026 Sponsorplatz</p>
+<main class="public-main">
+    <section class="public-auth-card">
+        <div th:if="${erfolg}">
+            <h1 style="color: var(--dash-success);">✓ E-Mail bestätigt</h1>
+            <p class="app-muted" style="text-align:center;">Ihre E-Mail-Adresse wurde erfolgreich verifiziert.</p>
+            <p class="app-muted" style="text-align:center;">Sie können sich jetzt anmelden.</p>
+            <div class="app-form-actions" style="margin-top: 1.5rem;">
+                <a th:href="@{/login}" class="app-btn" style="width: 100%; justify-content: center;">Zur Anmeldung</a>
+            </div>
         </div>
-    </footer>
+        <div th:unless="${erfolg}">
+            <h1 style="color: var(--dash-coral);">Verifizierung fehlgeschlagen</h1>
+            <p class="app-meldung fehler" th:text="${fehlermeldung}">Fehler</p>
+            <div class="app-form-actions" style="margin-top: 1.5rem;">
+                <a th:href="@{/login}" class="app-btn app-btn-secondary" style="width: 100%; justify-content: center;">Zur Anmeldung</a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
+    </div>
+</footer>
+
 </body>
 </html>
-

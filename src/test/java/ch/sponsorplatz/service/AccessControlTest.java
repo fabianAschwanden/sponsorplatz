@@ -1,9 +1,12 @@
 package ch.sponsorplatz.service;
 
 import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.model.OrgTyp;
+import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.model.Rolle;
 import ch.sponsorplatz.repository.AppUserRepository;
 import ch.sponsorplatz.repository.MitgliedschaftRepository;
+import ch.sponsorplatz.repository.OrganisationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
@@ -23,16 +26,19 @@ class AccessControlTest {
 
     private MitgliedschaftRepository mitgliedschaftRepository;
     private AppUserRepository appUserRepository;
+    private OrganisationRepository organisationRepository;
     private AccessControl accessControl;
 
     private final UUID orgId = UUID.randomUUID();
     private final UUID userId = UUID.randomUUID();
+    private final String orgSlug = "fc-test";
 
     @BeforeEach
     void setUp() {
         mitgliedschaftRepository = mock(MitgliedschaftRepository.class);
         appUserRepository = mock(AppUserRepository.class);
-        accessControl = new AccessControl(mitgliedschaftRepository, appUserRepository);
+        organisationRepository = mock(OrganisationRepository.class);
+        accessControl = new AccessControl(mitgliedschaftRepository, appUserRepository, organisationRepository);
     }
 
     /** AC-01: nicht eingeloggt (null auth) → kannOrgEditieren false. */
@@ -95,6 +101,44 @@ class AccessControlTest {
         assertThat(accessControl.kannOrgEditieren(orgId, auth)).isFalse();
     }
 
+    /** AC-09: kannOrgEditierenNachSlug delegiert für bekannten Slug auf UUID-Variante. */
+    @Test
+    void editierenNachSlugDelegiertFuerBekanntenSlug() {
+        Authentication auth = authOhneRolle("editor@example.com");
+        mockOrgMitSlug(orgSlug, orgId);
+        mockUserMitMitgliedschaft(auth, Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR), true);
+
+        assertThat(accessControl.kannOrgEditierenNachSlug(orgSlug, auth)).isTrue();
+    }
+
+    /** AC-10: kannOrgEditierenNachSlug für unbekannten Slug → false (kein Throw). */
+    @Test
+    void editierenNachSlugFalseFuerUnbekanntenSlug() {
+        Authentication auth = authOhneRolle("user@example.com");
+        when(organisationRepository.findBySlug("gibts-nicht")).thenReturn(Optional.empty());
+
+        assertThat(accessControl.kannOrgEditierenNachSlug("gibts-nicht", auth)).isFalse();
+    }
+
+    /** AC-11: kannOrgVerwaltenNachSlug delegiert für bekannten Slug auf UUID-Variante. */
+    @Test
+    void verwaltenNachSlugDelegiertFuerBekanntenSlug() {
+        Authentication auth = authOhneRolle("owner@example.com");
+        mockOrgMitSlug(orgSlug, orgId);
+        mockUserMitRolle(auth, Rolle.ORG_OWNER, true);
+
+        assertThat(accessControl.kannOrgVerwaltenNachSlug(orgSlug, auth)).isTrue();
+    }
+
+    /** AC-12: kannOrgVerwaltenNachSlug für unbekannten Slug → false. */
+    @Test
+    void verwaltenNachSlugFalseFuerUnbekanntenSlug() {
+        Authentication auth = authOhneRolle("user@example.com");
+        when(organisationRepository.findBySlug("gibts-nicht")).thenReturn(Optional.empty());
+
+        assertThat(accessControl.kannOrgVerwaltenNachSlug("gibts-nicht", auth)).isFalse();
+    }
+
     // --- Hilfs-Methoden ---
 
     @SuppressWarnings("unchecked")
@@ -130,6 +174,15 @@ class AccessControlTest {
         when(appUserRepository.findByEmail(auth.getName())).thenReturn(Optional.of(user));
         when(mitgliedschaftRepository.existsByUserIdAndOrgIdAndRolle(eq(userId), eq(orgId), eq(rolle)))
                 .thenReturn(existiert);
+    }
+
+    private void mockOrgMitSlug(String slug, UUID id) {
+        Organisation org = new Organisation();
+        org.setId(id);
+        org.setSlug(slug);
+        org.setName("Test-Org");
+        org.setTyp(OrgTyp.VEREIN);
+        when(organisationRepository.findBySlug(slug)).thenReturn(Optional.of(org));
     }
 }
 

@@ -2,55 +2,66 @@
 <html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Login — Sponsorplatz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anmelden — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body>
-    <header class="kopfzeile">
-        <div class="container">
-            <a class="logo" th:href="@{/}">Sponsorplatz</a>
-            <nav class="navigation">
-                <a th:href="@{/}">Start</a>
-                <a th:href="@{/organisationen}">Organisationen</a>
-            </nav>
+<body class="public-body">
+
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <span class="dash-logo-mark">SP</span>
+            <span>Sponsorplatz</span>
+        </a>
+        <nav class="public-nav">
+            <a th:href="@{/marktplatz}">Marktplatz</a>
+            <a th:href="@{/registrieren}">Registrieren</a>
+        </nav>
+    </div>
+</header>
+
+<main class="public-main">
+    <section class="public-auth-card">
+        <h1>Anmelden</h1>
+
+        <div th:if="${param.error}" class="app-meldung fehler">
+            E-Mail oder Passwort ist falsch.
         </div>
-    </header>
-
-    <main class="hauptbereich">
-        <div class="container">
-            <h1>Anmelden</h1>
-
-            <div th:if="${param.error}" class="meldung fehler">
-                E-Mail oder Passwort ist falsch.
-            </div>
-            <div th:if="${param.logout}" class="meldung erfolg">
-                Sie wurden erfolgreich abgemeldet.
-            </div>
-            <div th:if="${param.registriert}" class="meldung erfolg">
-                Registrierung erfolgreich! Bitte melden Sie sich an.
-            </div>
-
-            <form th:action="@{/login}" method="post" class="formular">
-                <div class="formular-gruppe">
-                    <label for="username">E-Mail</label>
-                    <input type="email" id="username" name="username" required autofocus>
-                </div>
-                <div class="formular-gruppe">
-                    <label for="password">Passwort</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <button type="submit" class="btn btn-primaer">Anmelden</button>
-            </form>
-
-            <p>Noch kein Konto? <a th:href="@{/registrieren}">Jetzt registrieren</a></p>
+        <div th:if="${param.logout}" class="app-meldung erfolg">
+            Sie wurden erfolgreich abgemeldet.
         </div>
-    </main>
-
-    <footer class="fusszeile">
-        <div class="container">
-            <p>&copy; 2026 Sponsorplatz</p>
+        <div th:if="${param.registriert}" class="app-meldung info">
+            Registrierung erfolgreich! Bitte E-Mail bestätigen und dann anmelden.
         </div>
-    </footer>
+
+        <form th:action="@{/login}" method="post" class="app-form">
+            <div class="app-form-group">
+                <label for="username">E-Mail</label>
+                <input type="email" id="username" name="username" required autofocus>
+            </div>
+            <div class="app-form-group">
+                <label for="password">Passwort</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="app-form-actions">
+                <button type="submit" class="app-btn" style="width: 100%; justify-content: center;">Anmelden</button>
+            </div>
+        </form>
+
+        <p class="public-auth-foot">
+            Noch kein Konto? <a th:href="@{/registrieren}">Jetzt registrieren</a>
+        </p>
+    </section>
+</main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
+    </div>
+</footer>
+
 </body>
 </html>
-

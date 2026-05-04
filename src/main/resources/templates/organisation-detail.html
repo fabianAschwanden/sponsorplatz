@@ -1,75 +1,84 @@
 <!DOCTYPE html>
-<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<html lang="de-CH"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title th:text="${org.name} + ' — Sponsorplatz'">Organisation</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body>
-    <header class="kopfzeile">
-        <div class="container">
-            <a class="logo" th:href="@{/}">Sponsorplatz</a>
-            <nav class="navigation">
-                <a th:href="@{/}">Start</a>
-                <a th:href="@{/organisationen}" class="aktiv">Organisationen</a>
-            </nav>
-        </div>
-    </header>
+<body class="app-body">
 
-    <main class="hauptbereich">
-        <div class="container">
-            <p class="rubrik" th:text="${org.typ}">VEREIN</p>
-            <div class="seitenkopf">
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('organisationen', ${anzahlOffeneAnfragen})}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik" th:text="${org.typ}">VEREIN</p>
                 <h1 th:text="${org.name}">Name</h1>
-                <a th:href="@{/organisationen/{slug}/bearbeiten(slug=${org.slug})}" class="cta">Bearbeiten</a>
             </div>
+            <div style="display:flex; gap:0.5rem;">
+                <a th:href="@{/organisationen/{slug}/mitglieder(slug=${org.slug})}" class="app-btn-secondary app-btn">Mitglieder</a>
+                <a th:href="@{/organisationen/{slug}/projekte(slug=${org.slug})}" class="app-btn-secondary app-btn">Projekte</a>
+                <a th:href="@{/organisationen/{slug}/bearbeiten(slug=${org.slug})}" class="app-btn">Bearbeiten</a>
+            </div>
+        </header>
 
-            <div th:if="${erfolgsMeldung}" class="meldung erfolg" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
-            <dl class="datenliste">
+        <section class="app-card">
+            <dl class="app-datenliste">
                 <dt>Slug</dt>
                 <dd><code th:text="${org.slug}">slug</code></dd>
 
                 <dt>Status</dt>
                 <dd>
-                    <span class="status" th:classappend="${'status-' + #strings.toLowerCase(org.status)}"
+                    <span class="app-status" th:classappend="${'status-' + #strings.toLowerCase(org.status)}"
                           th:text="${org.status}">PENDING</span>
                 </dd>
 
-                <dt th:if="${org.rechtsform}">Rechtsform</dt>
-                <dd th:if="${org.rechtsform}" th:text="${org.rechtsform}"></dd>
+                <th:block th:if="${org.rechtsform}">
+                    <dt>Rechtsform</dt>
+                    <dd th:text="${org.rechtsform}"></dd>
+                </th:block>
 
-                <dt th:if="${org.branche}">Branche</dt>
-                <dd th:if="${org.branche}" th:text="${org.branche}"></dd>
+                <th:block th:if="${org.branche}">
+                    <dt>Branche</dt>
+                    <dd th:text="${org.branche}"></dd>
+                </th:block>
 
-                <dt th:if="${org.websiteUrl}">Website</dt>
-                <dd th:if="${org.websiteUrl}">
-                    <a th:href="${org.websiteUrl}" target="_blank" rel="noopener" th:text="${org.websiteUrl}"></a>
-                </dd>
+                <th:block th:if="${org.websiteUrl}">
+                    <dt>Website</dt>
+                    <dd>
+                        <a th:href="${org.websiteUrl}" target="_blank" rel="noopener" th:text="${org.websiteUrl}"></a>
+                    </dd>
+                </th:block>
 
-                <dt th:if="${org.beschreibung}">Beschreibung</dt>
-                <dd th:if="${org.beschreibung}" th:text="${org.beschreibung}"></dd>
+                <th:block th:if="${org.beschreibung}">
+                    <dt>Beschreibung</dt>
+                    <dd th:text="${org.beschreibung}"></dd>
+                </th:block>
 
                 <dt>Registriert am</dt>
                 <dd th:text="${#temporals.format(org.registriertAm, 'dd.MM.yyyy HH:mm')}">01.01.2026</dd>
 
-                <dt th:if="${org.verifiziertAm}">Verifiziert am</dt>
-                <dd th:if="${org.verifiziertAm}" th:text="${#temporals.format(org.verifiziertAm, 'dd.MM.yyyy')}"></dd>
+                <th:block th:if="${org.verifiziertAm}">
+                    <dt>Verifiziert am</dt>
+                    <dd th:text="${#temporals.format(org.verifiziertAm, 'dd.MM.yyyy')}"></dd>
+                </th:block>
             </dl>
+        </section>
 
-            <form class="loesch-form"
-                  th:action="@{/organisationen/{slug}/loeschen(slug=${org.slug})}"
-                  method="post"
-                  onsubmit="return confirm('Organisation wirklich löschen? Das kann nicht rückgängig gemacht werden.');">
-                <button type="submit" class="abbrechen loeschen">Organisation löschen</button>
-            </form>
-        </div>
+        <form th:action="@{/organisationen/{slug}/loeschen(slug=${org.slug})}"
+              method="post"
+              onsubmit="return confirm('Organisation wirklich löschen? Das kann nicht rückgängig gemacht werden.');">
+            <button type="submit" class="app-btn app-btn-danger">Organisation löschen</button>
+        </form>
     </main>
+</div>
 
-    <footer class="fusszeile">
-        <div class="container">
-            <p>&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
-        </div>
-    </footer>
 </body>
 </html>

@@ -1,69 +1,63 @@
 <!DOCTYPE html>
-<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<html lang="de-CH"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Organisationen — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body>
-    <header class="kopfzeile">
-        <div class="container">
-            <a class="logo" th:href="@{/}">Sponsorplatz</a>
-            <nav class="navigation">
-                <a th:href="@{/}">Start</a>
-                <a th:href="@{/organisationen}" th:classappend="${aktiveSeite == 'organisationen'} ? 'aktiv'">Organisationen</a>
-            </nav>
-        </div>
-    </header>
+<body class="app-body">
 
-    <main class="hauptbereich">
-        <div class="container">
-            <p class="rubrik">Organisationen</p>
-            <div class="seitenkopf">
-                <h1>Vereine, Unternehmen, Stiftungen</h1>
-                <a th:href="@{/organisationen/neu}" class="cta">+ Neue Organisation</a>
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('organisationen', ${anzahlOffeneAnfragen})}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">Übersicht</p>
+                <h1>Organisationen</h1>
             </div>
+            <a th:href="@{/organisationen/neu}" class="app-btn">+ Neue Organisation</a>
+        </header>
 
-            <div th:if="${erfolgsMeldung}" class="meldung erfolg" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
-            <div th:if="${#lists.isEmpty(organisationen)}" class="hinweis-box">
-                <p><strong>Noch keine Organisationen erfasst.</strong></p>
-                <p>Lege die erste an — Verein, Unternehmen oder Stiftung.</p>
-            </div>
-
-            <table th:if="${not #lists.isEmpty(organisationen)}" class="tabelle">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Typ</th>
-                        <th>Branche</th>
-                        <th>Status</th>
-                        <th>Registriert</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="org : ${organisationen}">
-                        <td>
-                            <a th:href="@{/organisationen/{slug}(slug=${org.slug})}" th:text="${org.name}">Name</a>
-                            <span class="muted" th:text="' · ' + ${org.slug}"></span>
-                        </td>
-                        <td><span class="chip" th:text="${org.typ}">VEREIN</span></td>
-                        <td th:text="${org.branche} ?: '—'">—</td>
-                        <td>
-                            <span class="status" th:classappend="${'status-' + #strings.toLowerCase(org.status)}"
-                                  th:text="${org.status}">PENDING</span>
-                        </td>
-                        <td th:text="${#temporals.format(org.registriertAm, 'dd.MM.yyyy')}">01.01.2026</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div th:if="${#lists.isEmpty(organisationen)}" class="app-empty">
+            <strong>Noch keine Organisationen erfasst.</strong>
+            Lege die erste an — Verein, Unternehmen oder Stiftung.
         </div>
+
+        <table th:if="${not #lists.isEmpty(organisationen)}" class="app-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Typ</th>
+                <th>Branche</th>
+                <th>Status</th>
+                <th>Registriert</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="org : ${organisationen}">
+                <td>
+                    <a th:href="@{/organisationen/{slug}(slug=${org.slug})}" th:text="${org.name}">Name</a>
+                    <div class="app-muted" th:text="${org.slug}">slug</div>
+                </td>
+                <td><span class="app-chip" th:text="${org.typ}">VEREIN</span></td>
+                <td th:text="${org.branche} ?: '—'">—</td>
+                <td>
+                    <span class="app-status" th:classappend="${'status-' + #strings.toLowerCase(org.status)}"
+                          th:text="${org.status}">PENDING</span>
+                </td>
+                <td th:text="${#temporals.format(org.registriertAm, 'dd.MM.yyyy')}">01.01.2026</td>
+            </tr>
+            </tbody>
+        </table>
     </main>
+</div>
 
-    <footer class="fusszeile">
-        <div class="container">
-            <p>&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz · Schweiz</p>
-        </div>
-    </footer>
 </body>
 </html>

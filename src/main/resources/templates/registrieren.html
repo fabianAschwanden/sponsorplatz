@@ -2,54 +2,66 @@
 <html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrieren — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body>
-    <header class="kopfzeile">
-        <div class="container">
-            <a class="logo" th:href="@{/}">Sponsorplatz</a>
-            <nav class="navigation">
-                <a th:href="@{/}">Start</a>
-                <a th:href="@{/organisationen}">Organisationen</a>
-            </nav>
-        </div>
-    </header>
+<body class="public-body">
 
-    <main class="hauptbereich">
-        <div class="container">
-            <h1>Registrieren</h1>
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <span class="dash-logo-mark">SP</span>
+            <span>Sponsorplatz</span>
+        </a>
+        <nav class="public-nav">
+            <a th:href="@{/marktplatz}">Marktplatz</a>
+            <a th:href="@{/login}">Anmelden</a>
+        </nav>
+    </div>
+</header>
 
-            <div th:if="${fehlermeldung}" class="meldung fehler" th:text="${fehlermeldung}"></div>
+<main class="public-main">
+    <section class="public-auth-card">
+        <h1>Konto erstellen</h1>
 
-            <form th:action="@{/registrieren}" th:object="${userForm}" method="post" class="formular">
-                <div class="formular-gruppe">
-                    <label for="email">E-Mail</label>
-                    <input type="email" id="email" th:field="*{email}" required>
-                    <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="fehler-text"></span>
-                </div>
-                <div class="formular-gruppe">
-                    <label for="anzeigename">Anzeigename</label>
-                    <input type="text" id="anzeigename" th:field="*{anzeigename}" required>
-                    <span th:if="${#fields.hasErrors('anzeigename')}" th:errors="*{anzeigename}" class="fehler-text"></span>
-                </div>
-                <div class="formular-gruppe">
-                    <label for="passwort">Passwort (mind. 8 Zeichen)</label>
-                    <input type="password" id="passwort" th:field="*{passwort}" required>
-                    <span th:if="${#fields.hasErrors('passwort')}" th:errors="*{passwort}" class="fehler-text"></span>
-                </div>
-                <button type="submit" class="btn btn-primaer">Registrieren</button>
-            </form>
+        <div th:if="${fehlermeldung}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
 
-            <p>Bereits ein Konto? <a th:href="@{/login}">Anmelden</a></p>
-        </div>
-    </main>
+        <form th:action="@{/registrieren}" th:object="${userForm}" method="post" class="app-form">
+            <div class="app-form-group">
+                <label for="email">E-Mail</label>
+                <input type="email" id="email" th:field="*{email}" required autofocus>
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+            </div>
+            <div class="app-form-group">
+                <label for="anzeigename">Anzeigename</label>
+                <input type="text" id="anzeigename" th:field="*{anzeigename}" required>
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('anzeigename')}" th:errors="*{anzeigename}"></p>
+            </div>
+            <div class="app-form-group">
+                <label for="passwort">Passwort</label>
+                <span class="hint">Mindestens 8 Zeichen</span>
+                <input type="password" id="passwort" th:field="*{passwort}" required>
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('passwort')}" th:errors="*{passwort}"></p>
+            </div>
+            <div class="app-form-actions">
+                <button type="submit" class="app-btn" style="width: 100%; justify-content: center;">Registrieren</button>
+            </div>
+        </form>
 
-    <footer class="fusszeile">
-        <div class="container">
-            <p>&copy; 2026 Sponsorplatz</p>
-        </div>
-    </footer>
+        <p class="public-auth-foot">
+            Bereits ein Konto? <a th:href="@{/login}">Anmelden</a>
+        </p>
+    </section>
+</main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
+    </div>
+</footer>
+
 </body>
 </html>
-

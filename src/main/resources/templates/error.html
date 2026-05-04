@@ -2,24 +2,40 @@
 <html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fehler — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body>
-    <header class="kopfzeile">
-        <div class="container">
-            <a class="logo" th:href="@{/}">Sponsorplatz</a>
-        </div>
-    </header>
+<body class="public-body">
 
-    <main class="hauptbereich">
-        <div class="container fehlerseite">
-            <p class="rubrik">Fehler</p>
-            <h1 th:text="${status} ?: 'Etwas ist schiefgelaufen'">Etwas ist schiefgelaufen</h1>
-            <p th:text="${error}"></p>
-            <p th:if="${message}" th:text="${message}"></p>
-            <a th:href="@{/}" class="cta">Zurück zur Startseite</a>
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <span class="dash-logo-mark">SP</span>
+            <span>Sponsorplatz</span>
+        </a>
+    </div>
+</header>
+
+<main class="public-main">
+    <section class="public-auth-card" style="max-width: 540px;">
+        <p class="public-hero-rubrik" style="text-align:center;">Fehler</p>
+        <h1 style="text-align:center;" th:text="${status} ?: 'Etwas ist schiefgelaufen'">Etwas ist schiefgelaufen</h1>
+        <p class="app-muted" style="text-align:center;" th:text="${error}"></p>
+        <p class="app-muted" style="text-align:center;" th:if="${message}" th:text="${message}"></p>
+        <div class="app-form-actions" style="margin-top: 1.5rem;">
+            <a th:href="@{/}" class="app-btn" style="width: 100%; justify-content: center;">Zur Startseite</a>
         </div>
-    </main>
+    </section>
+</main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
+    </div>
+</footer>
+
 </body>
 </html>

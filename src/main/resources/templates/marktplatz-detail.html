@@ -1,49 +1,80 @@
 <!DOCTYPE html>
-<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<html lang="de-CH"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${projekt.name + ' — Sponsorplatz'}">Projekt</title>
-    <meta name="description" th:content="${projekt.beschreibung != null ? #strings.abbreviate(projekt.beschreibung, 160) : projekt.name}">
+    <meta name="description"
+          th:content="${projekt.beschreibung != null ? #strings.abbreviate(projekt.beschreibung, 160) : projekt.name}">
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body>
-<header>
-    <nav>
-        <a th:href="@{/}">Sponsorplatz</a> &gt;
-        <a th:href="@{/marktplatz}">Marktplatz</a> &gt;
-        <span th:text="${projekt.name}">Projekt</span>
-    </nav>
-</header>
-<main>
-    <h1 th:text="${projekt.name}">Projektname</h1>
+<body class="public-body">
 
-    <dl>
-        <dt>Organisation</dt>
-        <dd th:text="${projekt.org.name}">Verein</dd>
-        <dt>Kategorie</dt>
-        <dd th:text="${projekt.kategorie ?: '-'}">-</dd>
-        <dt>Ort</dt>
-        <dd th:text="${projekt.ort ?: '-'}">-</dd>
-        <dt>Zeitraum</dt>
-        <dd>
-            <span th:if="${projekt.startDatum}" th:text="${#temporals.format(projekt.startDatum, 'dd.MM.yyyy')}"></span>
-            <span th:if="${projekt.startDatum != null and projekt.endDatum != null}"> — </span>
-            <span th:if="${projekt.endDatum}" th:text="${#temporals.format(projekt.endDatum, 'dd.MM.yyyy')}"></span>
-            <span th:if="${projekt.startDatum == null and projekt.endDatum == null}">-</span>
-        </dd>
-    </dl>
-
-    <div th:if="${projekt.beschreibung}">
-        <h2>Beschreibung</h2>
-        <p th:text="${projekt.beschreibung}">Beschreibung</p>
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <span class="dash-logo-mark">SP</span>
+            <span>Sponsorplatz</span>
+        </a>
+        <nav class="public-nav">
+            <a th:href="@{/marktplatz}" class="aktiv">Marktplatz</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/login}">Anmelden</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn">Registrieren</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}" class="app-btn">Dashboard</a>
+        </nav>
     </div>
+</header>
 
-    <section>
-        <h2>Kontakt</h2>
-        <p>Interessiert? Melden Sie sich bei <strong th:text="${projekt.org.name}">Verein</strong>.</p>
+<main class="public-main">
+    <header style="margin-bottom: 1.5rem;">
+        <p class="public-hero-rubrik" style="text-align:left;">
+            <a th:href="@{/marktplatz}" style="color: inherit; text-decoration: none;">← Marktplatz</a>
+        </p>
+        <h1 style="font-family:var(--dash-font-head); font-size:2.2rem; margin:0.5rem 0 0.5rem;" th:text="${projekt.name}">Projekt</h1>
+        <p class="app-muted" th:text="'Veranstalter: ' + ${projekt.org.name}">Verein</p>
+    </header>
+
+    <section class="app-card" style="max-width: 800px;">
+        <dl class="app-datenliste">
+            <dt>Organisation</dt>
+            <dd th:text="${projekt.org.name}">Verein</dd>
+
+            <dt>Kategorie</dt>
+            <dd th:text="${projekt.kategorie} ?: '—'">—</dd>
+
+            <dt>Ort</dt>
+            <dd th:text="${projekt.ort} ?: '—'">—</dd>
+
+            <dt>Zeitraum</dt>
+            <dd>
+                <span th:if="${projekt.startDatum}" th:text="${#temporals.format(projekt.startDatum, 'dd.MM.yyyy')}"></span>
+                <span th:if="${projekt.startDatum != null and projekt.endDatum != null}"> — </span>
+                <span th:if="${projekt.endDatum}" th:text="${#temporals.format(projekt.endDatum, 'dd.MM.yyyy')}"></span>
+                <span th:if="${projekt.startDatum == null and projekt.endDatum == null}">—</span>
+            </dd>
+        </dl>
+    </section>
+
+    <section class="app-card" style="max-width: 800px;" th:if="${projekt.beschreibung}">
+        <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 0.75rem;">Beschreibung</h2>
+        <p style="margin:0; line-height:1.6;" th:text="${projekt.beschreibung}">Beschreibung</p>
+    </section>
+
+    <section class="app-card" style="max-width: 800px; background: var(--dash-violet-light); border-color: var(--dash-violet);">
+        <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 0.5rem;">Interesse?</h2>
+        <p style="margin:0;">Melden Sie sich bei <strong th:text="${projekt.org.name}">Verein</strong>, um Sponsor zu werden.</p>
     </section>
 </main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
+    </div>
+</footer>
+
 </body>
 </html>
-
-

@@ -79,6 +79,38 @@
 | **AC-07** | `AccessControlTest` | PLATFORM_ADMIN → `kannOrgVerwalten` true (ohne Mitgliedschaft) |
 | **AC-08** | `AccessControlTest` | kein Mitglied dieser Org → `kannOrgEditieren` false (andere Org-Mitgliedschaft zählt nicht) |
 
+### Phase 0.2.2 — Exception-Handling (K2-Fix)
+
+`GlobalExceptionHandler` gibt gerenderte Error-Page (`error.html`) statt Plain-Text zurück. Korrektes HTTP-Statuscode-Mapping:
+
+| Exception | HTTP | Verwendung |
+|---|---|---|
+| `NotFoundException` | 404 | Slug nicht gefunden, Ressource existiert nicht |
+| `IllegalArgumentException` | 400 | Ungültige Eingabe (z. B. Slug-Konflikt) |
+| `IllegalStateException` | 409 | Inkonsistenter Zustand (z. B. Org löschen mit Mitgliedschaften) |
+| `AccessDeniedException` | 403 | Berechtigung fehlt |
+
+#### Exception-Handler (EXC)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **EXC-01** | `GlobalExceptionHandlerTest` | `NotFoundException` → 404 + View `error` mit `status=404` |
+| **EXC-02** | `GlobalExceptionHandlerTest` | `IllegalArgumentException` → 400 + View `error` |
+| **EXC-03** | `GlobalExceptionHandlerTest` | `IllegalStateException` → 409 + View `error` |
+| **EXC-04** | `GlobalExceptionHandlerTest` | `AccessDeniedException` → 403 + View `error` |
+| **EXC-05** | `GlobalExceptionHandlerTest` | Error-View enthält Model-Attribute `status`, `error`, `message` |
+| **ORG-16** | `OrganisationControllerTest` | GET `/organisationen/{slug}` mit unbekanntem Slug → 404 (nicht 400) |
+
+### Dashboard (DASH)
+
+UI-Skelett für angemeldete Benutzer unter `/dashboard`. Werte werden in folgenden Iterationen verkabelt — die Tests prüfen aktuell nur das Routing, Auth und das Vorhandensein der Model-Attribute.
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **DASH-01** | `DashboardControllerTest` | GET `/dashboard` anonym → Redirect zu `/login` |
+| **DASH-02** | `DashboardControllerTest` | GET `/dashboard` eingeloggt → 200 + View `dashboard` |
+| **DASH-03** | `DashboardControllerTest` | Model enthält `aktuellerMonat`, `aktuelleKw`, `anzahlOrganisationen`, `anzahlProjekte`, `anzahlAnfragen`, `anzahlOffeneAnfragen` |
+
 (Wird mit Phase 1 — Self-Registrierung, Spring Security Form-Login — weiter ergänzt.)
 
 ### Phase 1.1 (Security & Registrierung)
@@ -103,11 +135,43 @@
 | **REG-03** | `RegistrierungControllerTest` | POST `/registrieren` mit doppelter E-Mail → Fehler im Formular |
 | **REG-04** | `RegistrierungControllerTest` | POST `/registrieren` mit leerem Passwort → Validierungsfehler |
 
-#### AccessControl im Controller (ORG-12)
+### Phase 0.2.1 — Endpoint-Schutz via @PreAuthorize (K1-Fix)
+
+#### AccessControl Slug-Varianten (AC)
 
 | ID | Test-Klasse | Beschreibung |
 |---|---|---|
-| **ORG-12** | `OrganisationControllerTest` | GET `/organisationen/{slug}/bearbeiten` ohne ORG_EDITOR → 403 |
+| **AC-09** | `AccessControlTest` | `kannOrgEditierenNachSlug` delegiert: bekannter Slug → identisches Ergebnis wie `kannOrgEditieren(orgId)` |
+| **AC-10** | `AccessControlTest` | `kannOrgEditierenNachSlug` mit unbekanntem Slug → false (kein Throw) |
+| **AC-11** | `AccessControlTest` | `kannOrgVerwaltenNachSlug` delegiert analog für bekannten Slug |
+| **AC-12** | `AccessControlTest` | `kannOrgVerwaltenNachSlug` mit unbekanntem Slug → false |
+
+#### Organisation-Controller (ORG)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **ORG-12** | `OrganisationControllerTest` | GET `/organisationen/{slug}/bearbeiten` ohne Edit-Recht → 403 |
+| **ORG-13** | `OrganisationControllerTest` | GET `/organisationen/{slug}/bearbeiten` mit Edit-Recht → 200 |
+| **ORG-14** | `OrganisationControllerTest` | POST `/organisationen/{slug}/loeschen` ohne Verwalten-Recht → 403 |
+| **ORG-15** | `OrganisationControllerTest` | POST `/organisationen/{slug}/loeschen` mit Verwalten-Recht → 302 Redirect |
+
+#### Mitglieder-Controller (MGCTRL)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **MGCTRL-01** | `MitgliederControllerTest` | GET `/organisationen/{slug}/mitglieder` anonym → Redirect zu `/login` |
+| **MGCTRL-02** | `MitgliederControllerTest` | GET `/organisationen/{slug}/mitglieder` ohne Edit-Recht → 403 |
+| **MGCTRL-03** | `MitgliederControllerTest` | POST `.../hinzufuegen` ohne Verwalten-Recht → 403 |
+| **MGCTRL-04** | `MitgliederControllerTest` | POST `.../{id}/entfernen` ohne Verwalten-Recht → 403 |
+| **MGCTRL-05** | `MitgliederControllerTest` | POST `.../hinzufuegen` mit Verwalten-Recht → 302 Redirect |
+
+#### Projekt-Controller (PCTRL)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **PCTRL-06** | `ProjektControllerTest` | POST `/organisationen/{orgSlug}/projekte/speichern` ohne Edit-Recht → 403 |
+| **PCTRL-07** | `ProjektControllerTest` | POST `.../{projektSlug}/veroeffentlichen` ohne Edit-Recht → 403 |
+| **PCTRL-08** | `ProjektControllerTest` | POST `.../{projektSlug}/pakete/speichern` ohne Edit-Recht → 403 |
 
 ## CI
 

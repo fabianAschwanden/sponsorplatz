@@ -18,6 +18,14 @@
 - [x] Tests: ORG-01..10 (21 Tests, alle grün)
 - [x] Specs: DATENMODELL, TECHNISCHE_SPEZIFIKATION, TESTSTRATEGIE aktualisiert
 
+## Phase 0.3 — Dashboard-UI-Skelett ✓
+
+- [x] `DashboardController` unter `/dashboard` mit `@PreAuthorize("isAuthenticated()")`
+- [x] `dashboard.html` mit 3-Spalten-Layout (Sidebar / Main / Rail) — eigenes CSS
+- [x] Statische Platzhalter-Werte (Anzahl Orgs/Projekte/Anfragen, Events) — Service-Verkabelung folgt iterativ
+- [x] Tests: DASH-01..03 (Auth, Routing, Model-Attribute)
+- [ ] Service-Aufrufe verkabeln: `OrganisationService.countByMitgliedschaft`, `ProjektService.countByOrgsMitMitgliedschaft`, `naechsteEvents` (Backlog)
+
 ## Phase 0.2 — AppUser + Mitgliedschaft + AccessControl ✓
 
 - [x] Spec-Update DATENMODELL + TESTSTRATEGIE (AU/MG/AC-Test-IDs)

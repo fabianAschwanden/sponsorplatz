@@ -1,47 +1,61 @@
 <!DOCTYPE html>
-<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<html lang="de-CH"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title th:text="${org.name + ' — Projekte — Sponsorplatz'}">Projekte</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body>
-<header>
-    <nav>
-        <a th:href="@{/}">Sponsorplatz</a> &gt;
-        <a th:href="@{/organisationen}">Organisationen</a> &gt;
-        <a th:href="@{'/organisationen/' + ${org.slug}}" th:text="${org.name}">Org</a> &gt;
-        <span>Projekte</span>
-    </nav>
-</header>
-<main>
-    <h1 th:text="'Projekte von ' + ${org.name}">Projekte</h1>
+<body class="app-body">
 
-    <div th:if="${erfolgsMeldung}" class="alert success" th:text="${erfolgsMeldung}"></div>
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('organisationen', ${anzahlOffeneAnfragen})}"></aside>
 
-    <a th:href="@{'/organisationen/' + ${org.slug} + '/projekte/neu'}" class="btn">+ Neues Projekt</a>
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">
+                    <a th:href="@{/organisationen}" style="color:inherit;">Organisationen</a>
+                    /
+                    <a th:href="@{/organisationen/{slug}(slug=${org.slug})}" style="color:inherit;" th:text="${org.name}">Org</a>
+                </p>
+                <h1>Projekte</h1>
+            </div>
+            <a th:href="@{/organisationen/{slug}/projekte/neu(slug=${org.slug})}" class="app-btn">+ Neues Projekt</a>
+        </header>
 
-    <table th:if="${!projekte.isEmpty()}">
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Sichtbarkeit</th>
-            <th>Kategorie</th>
-            <th>Ort</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="p : ${projekte}">
-            <td><a th:href="@{'/organisationen/' + ${org.slug} + '/projekte/' + ${p.slug}}" th:text="${p.name}">Projekt</a></td>
-            <td th:text="${p.sichtbarkeit}">ENTWURF</td>
-            <td th:text="${p.kategorie}">-</td>
-            <td th:text="${p.ort}">-</td>
-        </tr>
-        </tbody>
-    </table>
+        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
-    <p th:if="${projekte.isEmpty()}">Noch keine Projekte vorhanden.</p>
-</main>
+        <table th:if="${!projekte.isEmpty()}" class="app-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Sichtbarkeit</th>
+                <th>Kategorie</th>
+                <th>Ort</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="p : ${projekte}">
+                <td>
+                    <a th:href="@{/organisationen/{orgSlug}/projekte/{projektSlug}(orgSlug=${org.slug}, projektSlug=${p.slug})}" th:text="${p.name}">Projekt</a>
+                </td>
+                <td><span class="app-chip" th:text="${p.sichtbarkeit}">ENTWURF</span></td>
+                <td th:text="${p.kategorie} ?: '—'">—</td>
+                <td th:text="${p.ort} ?: '—'">—</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div th:if="${projekte.isEmpty()}" class="app-empty">
+            <strong>Noch keine Projekte.</strong>
+            Lege das erste Sponsoring-Projekt für diese Organisation an.
+        </div>
+    </main>
+</div>
+
 </body>
 </html>
-

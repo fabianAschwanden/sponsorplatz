@@ -3,13 +3,17 @@ package ch.sponsorplatz.controller;
 import ch.sponsorplatz.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.ProjektFormDto;
 import ch.sponsorplatz.dto.SponsoringPaketFormDto;
+import ch.sponsorplatz.exception.NotFoundException;
 import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.SponsoringPaket;
+import ch.sponsorplatz.service.AccessControl;
 import ch.sponsorplatz.service.OrganisationService;
 import ch.sponsorplatz.service.ProjektService;
 import ch.sponsorplatz.service.SponsoringPaketService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -29,17 +33,21 @@ public class ProjektController {
     private final ProjektService projektService;
     private final SponsoringPaketService paketService;
     private final OrganisationService orgService;
+    private final AccessControl accessControl;
 
     public ProjektController(ProjektService projektService,
                              SponsoringPaketService paketService,
-                             OrganisationService orgService) {
+                             OrganisationService orgService,
+                             AccessControl accessControl) {
         this.projektService = projektService;
         this.paketService = paketService;
         this.orgService = orgService;
+        this.accessControl = accessControl;
     }
 
     @GetMapping
-    public String liste(@PathVariable String orgSlug, Model model) {
+    public String liste(@PathVariable String orgSlug, Authentication auth, Model model) {
+        pruefeEditRecht(orgSlug, auth);
         Organisation org = ladeOrg(orgSlug);
         List<Projekt> projekte = projektService.findeNachOrg(org.getId());
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
@@ -49,7 +57,8 @@ public class ProjektController {
     }
 
     @GetMapping("/neu")
-    public String neuesFormular(@PathVariable String orgSlug, Model model) {
+    public String neuesFormular(@PathVariable String orgSlug, Authentication auth, Model model) {
+        pruefeEditRecht(orgSlug, auth);
         Organisation org = ladeOrg(orgSlug);
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
         model.addAttribute("org", org);
@@ -61,8 +70,10 @@ public class ProjektController {
     public String speichere(@PathVariable String orgSlug,
                             @Valid @ModelAttribute("projektForm") ProjektFormDto dto,
                             BindingResult br,
+                            Authentication auth,
                             Model model,
                             RedirectAttributes redirect) {
+        pruefeEditRecht(orgSlug, auth);
         Organisation org = ladeOrg(orgSlug);
         if (br.hasErrors()) {
             model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
@@ -82,10 +93,12 @@ public class ProjektController {
     @GetMapping("/{projektSlug}")
     public String detail(@PathVariable String orgSlug,
                          @PathVariable String projektSlug,
+                         Authentication auth,
                          Model model) {
+        pruefeEditRecht(orgSlug, auth);
         Organisation org = ladeOrg(orgSlug);
         Projekt projekt = projektService.findeNachSlug(projektSlug)
-                .orElseThrow(() -> new IllegalArgumentException("Projekt nicht gefunden: " + projektSlug));
+                .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + projektSlug));
         List<SponsoringPaket> pakete = paketService.findeNachProjekt(projekt.getId());
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
         model.addAttribute("org", org);
@@ -98,9 +111,11 @@ public class ProjektController {
     @PostMapping("/{projektSlug}/veroeffentlichen")
     public String veroeffentliche(@PathVariable String orgSlug,
                                   @PathVariable String projektSlug,
+                                  Authentication auth,
                                   RedirectAttributes redirect) {
+        pruefeEditRecht(orgSlug, auth);
         Projekt projekt = projektService.findeNachSlug(projektSlug)
-                .orElseThrow(() -> new IllegalArgumentException("Projekt nicht gefunden: " + projektSlug));
+                .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + projektSlug));
         projektService.veroeffentliche(projekt.getId());
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                 "Projekt \"" + projekt.getName() + "\" veröffentlicht.");
@@ -112,10 +127,12 @@ public class ProjektController {
                                  @PathVariable String projektSlug,
                                  @Valid @ModelAttribute("paketForm") SponsoringPaketFormDto dto,
                                  BindingResult br,
+                                 Authentication auth,
                                  Model model,
                                  RedirectAttributes redirect) {
+        pruefeEditRecht(orgSlug, auth);
         Projekt projekt = projektService.findeNachSlug(projektSlug)
-                .orElseThrow(() -> new IllegalArgumentException("Projekt nicht gefunden: " + projektSlug));
+                .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + projektSlug));
         if (br.hasErrors()) {
             Organisation org = ladeOrg(orgSlug);
             List<SponsoringPaket> pakete = paketService.findeNachProjekt(projekt.getId());
@@ -131,9 +148,14 @@ public class ProjektController {
         return "redirect:/organisationen/" + orgSlug + "/projekte/" + projektSlug;
     }
 
+    private void pruefeEditRecht(String orgSlug, Authentication auth) {
+        if (!accessControl.kannOrgEditierenNachSlug(orgSlug, auth)) {
+            throw new AccessDeniedException("Keine Edit-Berechtigung für Org: " + orgSlug);
+        }
+    }
+
     private Organisation ladeOrg(String slug) {
         return orgService.findeNachSlug(slug)
-                .orElseThrow(() -> new IllegalArgumentException("Organisation nicht gefunden: " + slug));
+                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
     }
 }
-

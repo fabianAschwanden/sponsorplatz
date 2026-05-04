@@ -1,48 +1,74 @@
 <!DOCTYPE html>
-<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<html lang="de-CH"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marktplatz — Sponsorplatz</title>
     <meta name="description" content="Sponsoring-Projekte von Schweizer Vereinen entdecken.">
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body>
-<header>
-    <nav>
-        <a th:href="@{/}">Sponsorplatz</a> &gt;
-        <span>Marktplatz</span>
-    </nav>
-</header>
-<main>
-    <h1>Sponsoring-Marktplatz</h1>
-    <p>Entdecken Sie aktuelle Sponsoring-Möglichkeiten von Schweizer Vereinen und Organisationen.</p>
+<body class="public-body">
 
-    <!-- Filter -->
-    <form th:action="@{/marktplatz}" method="get" class="filter-form">
-        <div>
-            <label for="kategorie">Kategorie</label>
-            <input type="text" id="kategorie" name="kategorie" th:value="${filterKategorie}" placeholder="z.B. Sport, Kultur">
-        </div>
-        <div>
-            <label for="ort">Ort</label>
-            <input type="text" id="ort" name="ort" th:value="${filterOrt}" placeholder="z.B. Zürich">
-        </div>
-        <button type="submit" class="btn">Filtern</button>
-        <a th:href="@{/marktplatz}" class="btn-link">Zurücksetzen</a>
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <span class="dash-logo-mark">SP</span>
+            <span>Sponsorplatz</span>
+        </a>
+        <nav class="public-nav">
+            <a th:href="@{/marktplatz}" class="aktiv">Marktplatz</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/login}">Anmelden</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn">Registrieren</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}" class="app-btn">Dashboard</a>
+        </nav>
+    </div>
+</header>
+
+<main class="public-main">
+    <header style="margin-bottom: 1.5rem;">
+        <p class="public-hero-rubrik" style="text-align:left;">Sponsoring-Marktplatz</p>
+        <h1 style="font-family:var(--dash-font-head); font-size:2rem; margin:0.25rem 0 0.5rem;">Aktuelle Projekte entdecken</h1>
+        <p class="app-muted">Schweizer Vereine suchen Sponsoren für ihre Projekte — von Sport bis Kultur.</p>
+    </header>
+
+    <form th:action="@{/marktplatz}" method="get" class="public-filter">
+        <input type="text" name="kategorie" th:value="${filterKategorie}" placeholder="Kategorie (z. B. SPORT)">
+        <input type="text" name="ort" th:value="${filterOrt}" placeholder="Ort (z. B. Zürich)">
+        <button type="submit" class="app-btn">Filtern</button>
+        <a th:href="@{/marktplatz}" class="app-btn app-btn-secondary">Zurücksetzen</a>
     </form>
 
-    <!-- Ergebnisse -->
-    <section th:if="${!projekte.isEmpty()}" class="projekt-grid">
-        <article th:each="p : ${projekte}" class="projekt-card">
-            <h2><a th:href="@{'/marktplatz/' + ${p.slug}}" th:text="${p.name}">Projekt</a></h2>
-            <p th:if="${p.kategorie}" th:text="'Kategorie: ' + ${p.kategorie}"></p>
-            <p th:if="${p.ort}" th:text="'Ort: ' + ${p.ort}"></p>
-            <p th:if="${p.beschreibung}" th:text="${#strings.abbreviate(p.beschreibung, 150)}"></p>
-        </article>
+    <section th:if="${!projekte.isEmpty()}" class="public-grid">
+        <a th:each="p : ${projekte}"
+           th:href="@{/marktplatz/{slug}(slug=${p.slug})}"
+           class="public-card">
+            <span class="public-card-name" th:text="${p.name}">Projekt</span>
+            <span class="public-card-meta">
+                <span th:if="${p.kategorie}" th:text="${p.kategorie}">Kategorie</span>
+                <span th:if="${p.kategorie != null and p.ort != null}"> · </span>
+                <span th:if="${p.ort}" th:text="${p.ort}">Ort</span>
+            </span>
+            <p style="color: var(--dash-text); font-size: 0.9rem; line-height: 1.5; margin: 0.25rem 0 0;"
+               th:if="${p.beschreibung}"
+               th:text="${#strings.abbreviate(p.beschreibung, 140)}">Beschreibung</p>
+        </a>
     </section>
 
-    <p th:if="${projekte.isEmpty()}">Aktuell keine veröffentlichten Projekte vorhanden.</p>
+    <div th:if="${projekte.isEmpty()}" class="app-empty">
+        <strong>Keine Projekte gefunden.</strong>
+        Aktuell sind keine veröffentlichten Projekte verfügbar — schau bald wieder vorbei.
+    </div>
 </main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
+    </div>
+</footer>
+
 </body>
 </html>
-

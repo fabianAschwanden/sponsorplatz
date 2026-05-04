@@ -2,11 +2,15 @@ package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.OrganisationFormDto;
+import ch.sponsorplatz.exception.NotFoundException;
 import ch.sponsorplatz.model.OrgStatus;
 import ch.sponsorplatz.model.OrgTyp;
 import ch.sponsorplatz.model.Organisation;
+import ch.sponsorplatz.service.AccessControl;
 import ch.sponsorplatz.service.OrganisationService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -22,9 +26,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class OrganisationController {
 
     private final OrganisationService service;
+    private final AccessControl accessControl;
 
-    public OrganisationController(OrganisationService service) {
+    public OrganisationController(OrganisationService service, AccessControl accessControl) {
         this.service = service;
+        this.accessControl = accessControl;
     }
 
     @GetMapping
@@ -68,7 +74,7 @@ public class OrganisationController {
     @GetMapping("/{slug}")
     public String detail(@PathVariable String slug, Model model) {
         Organisation org = service.findeNachSlug(slug)
-            .orElseThrow(() -> new IllegalArgumentException("Organisation nicht gefunden: " + slug));
+            .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("org", org);
         model.addAttribute("statusOk", org.getStatus() == OrgStatus.ACTIVE || org.getStatus() == OrgStatus.VERIFIED);
@@ -76,9 +82,12 @@ public class OrganisationController {
     }
 
     @GetMapping("/{slug}/bearbeiten")
-    public String bearbeitenFormular(@PathVariable String slug, Model model) {
+    public String bearbeitenFormular(@PathVariable String slug, Authentication auth, Model model) {
+        if (!accessControl.kannOrgEditierenNachSlug(slug, auth)) {
+            throw new AccessDeniedException("Keine Edit-Berechtigung für Org: " + slug);
+        }
         Organisation org = service.findeNachSlug(slug)
-            .orElseThrow(() -> new IllegalArgumentException("Organisation nicht gefunden: " + slug));
+            .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("orgForm", inFormDto(org));
         model.addAttribute("typen", OrgTyp.values());
@@ -86,9 +95,12 @@ public class OrganisationController {
     }
 
     @PostMapping("/{slug}/loeschen")
-    public String loesche(@PathVariable String slug, RedirectAttributes redirect) {
+    public String loesche(@PathVariable String slug, Authentication auth, RedirectAttributes redirect) {
+        if (!accessControl.kannOrgVerwaltenNachSlug(slug, auth)) {
+            throw new AccessDeniedException("Keine Verwalten-Berechtigung für Org: " + slug);
+        }
         Organisation org = service.findeNachSlug(slug)
-            .orElseThrow(() -> new IllegalArgumentException("Organisation nicht gefunden: " + slug));
+            .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
         service.loesche(org.getId());
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
             "Organisation \"" + org.getName() + "\" gelöscht.");

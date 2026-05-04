@@ -1,85 +1,84 @@
 <!DOCTYPE html>
-<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<html lang="de-CH"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title th:text="${orgForm.id} != null ? 'Organisation bearbeiten' : 'Neue Organisation'">Organisation</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body>
-    <header class="kopfzeile">
-        <div class="container">
-            <a class="logo" th:href="@{/}">Sponsorplatz</a>
-            <nav class="navigation">
-                <a th:href="@{/}">Start</a>
-                <a th:href="@{/organisationen}" class="aktiv">Organisationen</a>
-            </nav>
-        </div>
-    </header>
+<body class="app-body">
 
-    <main class="hauptbereich">
-        <div class="container schmal">
-            <p class="rubrik">Organisation</p>
-            <h1 th:text="${orgForm.id} != null ? 'Organisation bearbeiten' : 'Neue Organisation'">Neue Organisation</h1>
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('organisationen', ${anzahlOffeneAnfragen})}"></aside>
 
-            <div th:if="${fehlermeldung}" class="meldung fehler" th:text="${fehlermeldung}"></div>
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">Organisation</p>
+                <h1 th:text="${orgForm.id} != null ? 'Organisation bearbeiten' : 'Neue Organisation'">Neue Organisation</h1>
+            </div>
+        </header>
 
-            <form th:action="@{/organisationen/speichern}" method="post" th:object="${orgForm}" novalidate>
+        <div th:if="${fehlermeldung}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
+
+        <section class="app-card">
+            <form th:action="@{/organisationen/speichern}" method="post" th:object="${orgForm}" class="app-form" novalidate>
                 <input type="hidden" th:field="*{id}">
 
-                <div class="feldgruppe">
-                    <label for="typ">Typ <span class="pflicht">*</span></label>
+                <div class="app-form-group">
+                    <label for="typ">Typ *</label>
                     <select id="typ" th:field="*{typ}">
                         <option value="">— wählen —</option>
                         <option th:each="t : ${typen}" th:value="${t}" th:text="${t}"></option>
                     </select>
-                    <p class="feldfehler" th:if="${#fields.hasErrors('typ')}" th:errors="*{typ}"></p>
+                    <p class="app-meldung fehler" th:if="${#fields.hasErrors('typ')}" th:errors="*{typ}"></p>
                 </div>
 
-                <div class="feldgruppe">
-                    <label for="name">Name <span class="pflicht">*</span></label>
+                <div class="app-form-group">
+                    <label for="name">Name *</label>
                     <input id="name" type="text" th:field="*{name}" required>
-                    <p class="feldfehler" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+                    <p class="app-meldung fehler" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
                 </div>
 
-                <div class="feldgruppe">
-                    <label for="slug">Slug (optional, wird sonst generiert)</label>
+                <div class="app-form-group">
+                    <label for="slug">Slug</label>
+                    <span class="hint">Optional — wird sonst aus dem Namen generiert</span>
                     <input id="slug" type="text" th:field="*{slug}" placeholder="z. B. fc-beispiel">
-                    <p class="feldfehler" th:if="${#fields.hasErrors('slug')}" th:errors="*{slug}"></p>
+                    <p class="app-meldung fehler" th:if="${#fields.hasErrors('slug')}" th:errors="*{slug}"></p>
                 </div>
 
-                <div class="feldgruppe">
+                <div class="app-form-group">
                     <label for="rechtsform">Rechtsform</label>
                     <input id="rechtsform" type="text" th:field="*{rechtsform}" placeholder="z. B. Verein, AG, GmbH">
                 </div>
 
-                <div class="feldgruppe">
+                <div class="app-form-group">
                     <label for="branche">Branche</label>
                     <input id="branche" type="text" th:field="*{branche}" placeholder="z. B. SPORT, KULTUR">
                 </div>
 
-                <div class="feldgruppe">
+                <div class="app-form-group">
                     <label for="beschreibung">Beschreibung</label>
                     <textarea id="beschreibung" th:field="*{beschreibung}" rows="4"></textarea>
                 </div>
 
-                <div class="feldgruppe">
+                <div class="app-form-group">
                     <label for="websiteUrl">Website</label>
                     <input id="websiteUrl" type="url" th:field="*{websiteUrl}" placeholder="https://...">
-                    <p class="feldfehler" th:if="${#fields.hasErrors('websiteUrl')}" th:errors="*{websiteUrl}"></p>
+                    <p class="app-meldung fehler" th:if="${#fields.hasErrors('websiteUrl')}" th:errors="*{websiteUrl}"></p>
                 </div>
 
-                <div class="aktionen">
-                    <button type="submit" class="cta">Speichern</button>
-                    <a th:href="@{/organisationen}" class="abbrechen">Abbrechen</a>
+                <div class="app-form-actions">
+                    <button type="submit" class="app-btn">Speichern</button>
+                    <a th:href="@{/organisationen}" class="app-btn app-btn-secondary">Abbrechen</a>
                 </div>
             </form>
-        </div>
+        </section>
     </main>
+</div>
 
-    <footer class="fusszeile">
-        <div class="container">
-            <p>&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
-        </div>
-    </footer>
 </body>
 </html>
