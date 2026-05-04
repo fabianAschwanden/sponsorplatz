@@ -20,6 +20,7 @@ public interface MitgliedschaftRepository extends JpaRepository<Mitgliedschaft, 
 
     List<Mitgliedschaft> findByOrgId(UUID orgId);
 
+    List<Mitgliedschaft> findByUserId(UUID userId);
+
     boolean existsByOrgId(UUID orgId);
 }
-

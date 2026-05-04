@@ -42,8 +42,8 @@
             </thead>
             <tbody>
             <tr th:each="m : ${mitglieder}">
-                <td th:text="${m.user.anzeigename}">Max Muster</td>
-                <td th:text="${m.user.email}">max@example.com</td>
+                <td th:text="${m.userAnzeigename}">Max Muster</td>
+                <td th:text="${m.userEmail}">max@example.com</td>
                 <td><span class="app-chip" th:text="${m.rolle}">ORG_EDITOR</span></td>
                 <td th:text="${#temporals.format(m.beigetretenAm, 'dd.MM.yyyy')}">01.01.2026</td>
                 <td>

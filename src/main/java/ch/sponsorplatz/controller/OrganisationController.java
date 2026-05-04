@@ -2,6 +2,7 @@ package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.OrganisationFormDto;
+import ch.sponsorplatz.dto.OrganisationView;
 import ch.sponsorplatz.exception.NotFoundException;
 import ch.sponsorplatz.model.OrgStatus;
 import ch.sponsorplatz.model.OrgTyp;
@@ -36,7 +37,7 @@ public class OrganisationController {
     @GetMapping
     public String liste(Model model) {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
-        model.addAttribute("organisationen", service.alle());
+        model.addAttribute("organisationen", OrganisationView.von(service.alle()));
         return "organisationen";
     }
 
@@ -104,7 +105,7 @@ public class OrganisationController {
         Organisation org = service.findeNachSlug(slug)
             .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
-        model.addAttribute("org", org);
+        model.addAttribute("org", OrganisationView.von(org));
         model.addAttribute("statusOk", org.getStatus() == OrgStatus.ACTIVE || org.getStatus() == OrgStatus.VERIFIED);
         return "organisation-detail";
     }
@@ -130,9 +131,10 @@ public class OrganisationController {
         }
         Organisation org = service.findeNachSlug(slug)
             .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
+        String name = org.getName();
         service.loesche(org.getId());
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-            "Organisation \"" + org.getName() + "\" gelöscht.");
+            "Organisation \"" + name + "\" gelöscht.");
         return "redirect:/organisationen";
     }
 

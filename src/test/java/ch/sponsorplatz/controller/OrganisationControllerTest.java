@@ -110,7 +110,7 @@ class OrganisationControllerTest {
         mockMvc.perform(get("/organisationen/fc-test"))
             .andExpect(status().isOk())
             .andExpect(view().name("organisation-detail"))
-            .andExpect(model().attribute("org", org));
+            .andExpect(model().attributeExists("org"));
     }
 
     /** ORG-16: GET /organisationen/{slug} mit unbekanntem Slug → 404 (nicht 400). */

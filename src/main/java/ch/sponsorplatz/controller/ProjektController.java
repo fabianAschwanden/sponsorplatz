@@ -1,8 +1,11 @@
 package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.config.ModelAttributeNames;
+import ch.sponsorplatz.dto.OrganisationView;
 import ch.sponsorplatz.dto.ProjektFormDto;
+import ch.sponsorplatz.dto.ProjektView;
 import ch.sponsorplatz.dto.SponsoringPaketFormDto;
+import ch.sponsorplatz.dto.SponsoringPaketView;
 import ch.sponsorplatz.exception.NotFoundException;
 import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.model.Projekt;
@@ -51,8 +54,8 @@ public class ProjektController {
         Organisation org = ladeOrg(orgSlug);
         List<Projekt> projekte = projektService.findeNachOrg(org.getId());
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
-        model.addAttribute("org", org);
-        model.addAttribute("projekte", projekte);
+        model.addAttribute("org", OrganisationView.von(org));
+        model.addAttribute("projekte", projekte.stream().map(ProjektView::von).toList());
         return "projekt-liste";
     }
 
@@ -61,7 +64,7 @@ public class ProjektController {
         pruefeEditRecht(orgSlug, auth);
         Organisation org = ladeOrg(orgSlug);
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
-        model.addAttribute("org", org);
+        model.addAttribute("org", OrganisationView.von(org));
         model.addAttribute("projektForm", new ProjektFormDto());
         return "projekt-form";
     }
@@ -77,7 +80,7 @@ public class ProjektController {
         Organisation org = ladeOrg(orgSlug);
         if (br.hasErrors()) {
             model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
-            model.addAttribute("org", org);
+            model.addAttribute("org", OrganisationView.von(org));
             return "projekt-form";
         }
         Projekt projekt = projektService.erstelle(org, dto.getName(), dto.getBeschreibung());
@@ -101,9 +104,9 @@ public class ProjektController {
                 .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + projektSlug));
         List<SponsoringPaket> pakete = paketService.findeNachProjekt(projekt.getId());
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
-        model.addAttribute("org", org);
-        model.addAttribute("projekt", projekt);
-        model.addAttribute("pakete", pakete);
+        model.addAttribute("org", OrganisationView.von(org));
+        model.addAttribute("projekt", ProjektView.von(projekt));
+        model.addAttribute("pakete", pakete.stream().map(SponsoringPaketView::von).toList());
         model.addAttribute("paketForm", new SponsoringPaketFormDto());
         return "projekt-detail";
     }
@@ -137,9 +140,9 @@ public class ProjektController {
             Organisation org = ladeOrg(orgSlug);
             List<SponsoringPaket> pakete = paketService.findeNachProjekt(projekt.getId());
             model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
-            model.addAttribute("org", org);
-            model.addAttribute("projekt", projekt);
-            model.addAttribute("pakete", pakete);
+            model.addAttribute("org", OrganisationView.von(org));
+            model.addAttribute("projekt", ProjektView.von(projekt));
+            model.addAttribute("pakete", pakete.stream().map(SponsoringPaketView::von).toList());
             return "projekt-detail";
         }
         paketService.erstelle(projekt, dto.getName(), dto.getBeschreibung(), dto.getPreisChf());

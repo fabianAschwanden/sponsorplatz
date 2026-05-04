@@ -79,6 +79,18 @@
 | **AC-07** | `AccessControlTest` | PLATFORM_ADMIN → `kannOrgVerwalten` true (ohne Mitgliedschaft) |
 | **AC-08** | `AccessControlTest` | kein Mitglied dieser Org → `kannOrgEditieren` false (andere Org-Mitgliedschaft zählt nicht) |
 
+### Phase 0.2.4 — View-DTOs (H1-Fix)
+
+JPA-Entities verlassen den Service-Layer nicht mehr — Controller mappen vor `model.addAttribute` zu Read-only-View-DTOs (Java records). Vermeidet LazyInitializationException-Risiko und entkoppelt Persistenz von Präsentation.
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **VIEW-01** | `OrganisationViewTest` | `OrganisationView.von(entity)` mappt alle relevanten Felder |
+| **VIEW-02** | `OrganisationViewTest` | `OrganisationView.von(List<Entity>)` mappt Liste |
+| **VIEW-03** | `ProjektViewTest` | `ProjektView.von(entity)` mappt inkl. `OrganisationKurzView` für `org` |
+| **VIEW-04** | `MitgliedViewTest` | `MitgliedView.von(mitgliedschaft)` flacht `user.anzeigename`/`user.email` ein |
+| **VIEW-05** | `SponsoringPaketViewTest` | `SponsoringPaketView.von(entity)` mappt korrekt |
+
 ### Phase 0.2.3 — Mass-Assignment-Defense (K3-Fix)
 
 `OrganisationFormDto` hatte ein `id`-Feld, was Mass-Assignment ermöglichte: Ein POST mit hidden-id konnte beliebige fremde Datensätze überschreiben. **Fix:** `id` aus dem DTO entfernt; Routes gesplittet — `POST /organisationen` (Create) und `POST /organisationen/{slug}` (Update). Update-Route ist durch `kannOrgEditierenNachSlug` geschützt.

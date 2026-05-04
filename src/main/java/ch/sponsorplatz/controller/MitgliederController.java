@@ -1,6 +1,8 @@
 package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.config.ModelAttributeNames;
+import ch.sponsorplatz.dto.MitgliedView;
+import ch.sponsorplatz.dto.OrganisationView;
 import ch.sponsorplatz.exception.NotFoundException;
 import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.model.Mitgliedschaft;
@@ -52,8 +54,8 @@ public class MitgliederController {
         Organisation org = findeOrgOderWirf(slug);
         List<Mitgliedschaft> mitglieder = mitgliedschaftService.findeNachOrg(org.getId());
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
-        model.addAttribute("org", org);
-        model.addAttribute("mitglieder", mitglieder);
+        model.addAttribute("org", OrganisationView.von(org));
+        model.addAttribute("mitglieder", MitgliedView.von(mitglieder));
         return "mitglieder";
     }
 

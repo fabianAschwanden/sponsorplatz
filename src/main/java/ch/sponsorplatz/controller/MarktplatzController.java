@@ -1,6 +1,7 @@
 package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.config.ModelAttributeNames;
+import ch.sponsorplatz.dto.ProjektView;
 import ch.sponsorplatz.exception.NotFoundException;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.service.ProjektService;
@@ -41,7 +42,7 @@ public class MarktplatzController {
         }
 
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "marktplatz");
-        model.addAttribute("projekte", projekte);
+        model.addAttribute("projekte", projekte.stream().map(ProjektView::von).toList());
         model.addAttribute("filterKategorie", kategorie);
         model.addAttribute("filterOrt", ort);
         return "marktplatz";
@@ -52,7 +53,7 @@ public class MarktplatzController {
         Projekt projekt = projektService.findeNachSlug(slug)
                 .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + slug));
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "marktplatz");
-        model.addAttribute("projekt", projekt);
+        model.addAttribute("projekt", ProjektView.von(projekt));
         return "marktplatz-detail";
     }
 }
