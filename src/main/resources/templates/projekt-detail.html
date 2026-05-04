@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${projekt.name + ' — Sponsorplatz'}">Projekt-Detail</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<header>
+    <nav>
+        <a th:href="@{/}">Sponsorplatz</a> &gt;
+        <a th:href="@{'/organisationen/' + ${org.slug} + '/projekte'}">Projekte</a> &gt;
+        <span th:text="${projekt.name}">Projekt</span>
+    </nav>
+</header>
+<main>
+    <h1 th:text="${projekt.name}">Projektname</h1>
+
+    <div th:if="${erfolgsMeldung}" class="alert success" th:text="${erfolgsMeldung}"></div>
+
+    <dl>
+        <dt>Sichtbarkeit</dt>
+        <dd th:text="${projekt.sichtbarkeit}">ENTWURF</dd>
+        <dt>Kategorie</dt>
+        <dd th:text="${projekt.kategorie ?: '-'}">-</dd>
+        <dt>Ort</dt>
+        <dd th:text="${projekt.ort ?: '-'}">-</dd>
+        <dt>Startdatum</dt>
+        <dd th:text="${projekt.startDatum != null ? #temporals.format(projekt.startDatum, 'dd.MM.yyyy') : '-'}">-</dd>
+        <dt>Enddatum</dt>
+        <dd th:text="${projekt.endDatum != null ? #temporals.format(projekt.endDatum, 'dd.MM.yyyy') : '-'}">-</dd>
+    </dl>
+
+    <div th:if="${projekt.beschreibung}">
+        <h2>Beschreibung</h2>
+        <p th:text="${projekt.beschreibung}">Beschreibung</p>
+    </div>
+
+    <!-- Veröffentlichen -->
+    <form th:if="${projekt.sichtbarkeit.name() == 'ENTWURF'}"
+          th:action="@{'/organisationen/' + ${org.slug} + '/projekte/' + ${projekt.slug} + '/veroeffentlichen'}"
+          method="post" style="margin-top:1em;">
+        <button type="submit" class="btn">Veröffentlichen</button>
+    </form>
+
+    <!-- Sponsoring-Pakete -->
+    <section>
+        <h2>Sponsoring-Pakete</h2>
+
+        <table th:if="${!pakete.isEmpty()}">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Preis (CHF)</th>
+                <th>Aktiv</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="p : ${pakete}">
+                <td th:text="${p.name}">Gold</td>
+                <td th:text="${p.preisChf != null ? p.preisChf : '-'}">5000</td>
+                <td th:text="${p.aktiv ? 'Ja' : 'Nein'}">Ja</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <p th:if="${pakete.isEmpty()}">Noch keine Pakete definiert.</p>
+
+        <h3>Neues Paket hinzufügen</h3>
+        <form th:action="@{'/organisationen/' + ${org.slug} + '/projekte/' + ${projekt.slug} + '/pakete/speichern'}"
+              method="post" th:object="${paketForm}">
+            <div>
+                <label for="paketName">Name *</label>
+                <input type="text" id="paketName" th:field="*{name}" required>
+                <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error"></span>
+            </div>
+            <div>
+                <label for="paketBeschreibung">Beschreibung</label>
+                <textarea id="paketBeschreibung" th:field="*{beschreibung}" rows="3"></textarea>
+            </div>
+            <div>
+                <label for="paketPreis">Preis (CHF)</label>
+                <input type="number" id="paketPreis" th:field="*{preisChf}" step="0.01" min="0">
+            </div>
+            <button type="submit" class="btn">Paket hinzufügen</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>
+

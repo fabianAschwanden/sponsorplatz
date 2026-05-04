@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Neues Projekt — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<header>
+    <nav>
+        <a th:href="@{/}">Sponsorplatz</a> &gt;
+        <a th:href="@{'/organisationen/' + ${org.slug} + '/projekte'}">Projekte</a> &gt;
+        <span>Neues Projekt</span>
+    </nav>
+</header>
+<main>
+    <h1>Neues Projekt erstellen</h1>
+
+    <form th:action="@{'/organisationen/' + ${org.slug} + '/projekte/speichern'}" method="post" th:object="${projektForm}">
+        <div>
+            <label for="name">Name *</label>
+            <input type="text" id="name" th:field="*{name}" required>
+            <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error"></span>
+        </div>
+        <div>
+            <label for="beschreibung">Beschreibung</label>
+            <textarea id="beschreibung" th:field="*{beschreibung}" rows="5"></textarea>
+        </div>
+        <div>
+            <label for="kategorie">Kategorie</label>
+            <input type="text" id="kategorie" th:field="*{kategorie}">
+        </div>
+        <div>
+            <label for="ort">Ort</label>
+            <input type="text" id="ort" th:field="*{ort}">
+        </div>
+        <div>
+            <label for="startDatum">Startdatum</label>
+            <input type="date" id="startDatum" th:field="*{startDatum}">
+        </div>
+        <div>
+            <label for="endDatum">Enddatum</label>
+            <input type="date" id="endDatum" th:field="*{endDatum}">
+        </div>
+        <button type="submit" class="btn">Projekt erstellen</button>
+    </form>
+</main>
+</body>
+</html>
+

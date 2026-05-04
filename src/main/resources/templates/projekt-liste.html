@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${org.name + ' — Projekte — Sponsorplatz'}">Projekte</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<header>
+    <nav>
+        <a th:href="@{/}">Sponsorplatz</a> &gt;
+        <a th:href="@{/organisationen}">Organisationen</a> &gt;
+        <a th:href="@{'/organisationen/' + ${org.slug}}" th:text="${org.name}">Org</a> &gt;
+        <span>Projekte</span>
+    </nav>
+</header>
+<main>
+    <h1 th:text="'Projekte von ' + ${org.name}">Projekte</h1>
+
+    <div th:if="${erfolgsMeldung}" class="alert success" th:text="${erfolgsMeldung}"></div>
+
+    <a th:href="@{'/organisationen/' + ${org.slug} + '/projekte/neu'}" class="btn">+ Neues Projekt</a>
+
+    <table th:if="${!projekte.isEmpty()}">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Sichtbarkeit</th>
+            <th>Kategorie</th>
+            <th>Ort</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${projekte}">
+            <td><a th:href="@{'/organisationen/' + ${org.slug} + '/projekte/' + ${p.slug}}" th:text="${p.name}">Projekt</a></td>
+            <td th:text="${p.sichtbarkeit}">ENTWURF</td>
+            <td th:text="${p.kategorie}">-</td>
+            <td th:text="${p.ort}">-</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p th:if="${projekte.isEmpty()}">Noch keine Projekte vorhanden.</p>
+</main>
+</body>
+</html>
+
