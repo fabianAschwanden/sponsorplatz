@@ -79,6 +79,18 @@
 | **AC-07** | `AccessControlTest` | PLATFORM_ADMIN → `kannOrgVerwalten` true (ohne Mitgliedschaft) |
 | **AC-08** | `AccessControlTest` | kein Mitglied dieser Org → `kannOrgEditieren` false (andere Org-Mitgliedschaft zählt nicht) |
 
+### Phase 0.2.3 — Mass-Assignment-Defense (K3-Fix)
+
+`OrganisationFormDto` hatte ein `id`-Feld, was Mass-Assignment ermöglichte: Ein POST mit hidden-id konnte beliebige fremde Datensätze überschreiben. **Fix:** `id` aus dem DTO entfernt; Routes gesplittet — `POST /organisationen` (Create) und `POST /organisationen/{slug}` (Update). Update-Route ist durch `kannOrgEditierenNachSlug` geschützt.
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **ORG-17** | `OrganisationControllerTest` | POST `/organisationen` (Create) → 302 Redirect auf Detail-Seite |
+| **ORG-18** | `OrganisationControllerTest` | POST `/organisationen/{slug}` (Update) mit Edit-Recht → 302 |
+| **ORG-19** | `OrganisationControllerTest` | POST `/organisationen/{slug}` ohne Edit-Recht → 403 |
+| **ORG-20** | `OrganisationServiceTest` | `aktualisiere(slug, dto)` lädt via Slug, ignoriert evtl. id im DTO |
+| **ORG-21** | `OrganisationServiceTest` | `aktualisiere` mit unbekanntem Slug → NotFoundException (404) |
+
 ### Phase 0.2.2 — Exception-Handling (K2-Fix)
 
 `GlobalExceptionHandler` gibt gerenderte Error-Page (`error.html`) statt Plain-Text zurück. Korrektes HTTP-Statuscode-Mapping:

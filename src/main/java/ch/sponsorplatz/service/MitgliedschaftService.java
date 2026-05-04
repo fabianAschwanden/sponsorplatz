@@ -1,5 +1,6 @@
 package ch.sponsorplatz.service;
 
+import ch.sponsorplatz.exception.NotFoundException;
 import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.model.Mitgliedschaft;
 import ch.sponsorplatz.model.Organisation;
@@ -40,9 +41,9 @@ public class MitgliedschaftService {
      */
     public Mitgliedschaft fuegeHinzu(UUID orgId, UUID userId, Rolle rolle, UUID eingeladenVonId) {
         Organisation org = organisationRepository.findById(orgId)
-                .orElseThrow(() -> new IllegalArgumentException("Organisation nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden"));
         AppUser user = appUserRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Benutzer nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException("Benutzer nicht gefunden"));
 
         if (mitgliedschaftRepository.existsByUserIdAndOrgId(userId, orgId)) {
             throw new IllegalStateException("Benutzer ist bereits Mitglied dieser Organisation");

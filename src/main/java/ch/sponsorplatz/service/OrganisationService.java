@@ -56,7 +56,7 @@ public class OrganisationService {
     public Organisation speichere(OrganisationFormDto dto) {
         Organisation org = (dto.getId() != null)
             ? repository.findById(dto.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Organisation nicht gefunden: " + dto.getId()))
+                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + dto.getId()))
             : new Organisation();
 
         String gewuenschterSlug = (dto.getSlug() == null || dto.getSlug().isBlank())
@@ -80,7 +80,7 @@ public class OrganisationService {
 
     public void loesche(UUID id) {
         if (!repository.existsById(id)) {
-            throw new IllegalArgumentException("Organisation nicht gefunden: " + id);
+            throw new NotFoundException("Organisation nicht gefunden: " + id);
         }
         if (mitgliedschaftRepository.existsByOrgId(id)) {
             throw new IllegalStateException(

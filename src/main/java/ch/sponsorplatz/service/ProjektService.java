@@ -1,5 +1,6 @@
 package ch.sponsorplatz.service;
 
+import ch.sponsorplatz.exception.NotFoundException;
 import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.Sichtbarkeit;
@@ -60,7 +61,7 @@ public class ProjektService {
 
     public Projekt veroeffentliche(UUID projektId) {
         Projekt projekt = repository.findById(projektId)
-                .orElseThrow(() -> new IllegalArgumentException("Projekt nicht gefunden: " + projektId));
+                .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + projektId));
 
         if (projekt.getSichtbarkeit() == Sichtbarkeit.OEFFENTLICH) {
             throw new IllegalStateException("Projekt ist bereits öffentlich");
@@ -73,7 +74,7 @@ public class ProjektService {
 
     public void archiviere(UUID projektId) {
         Projekt projekt = repository.findById(projektId)
-                .orElseThrow(() -> new IllegalArgumentException("Projekt nicht gefunden: " + projektId));
+                .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + projektId));
         projekt.setSichtbarkeit(Sichtbarkeit.ARCHIVIERT);
         repository.save(projekt);
     }

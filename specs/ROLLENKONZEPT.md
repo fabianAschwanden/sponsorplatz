@@ -78,8 +78,8 @@ Alle mutierenden Endpunkte rufen am Anfang der Controller-Methode `accessControl
 | GET | `/organisationen` | public | Liste lesbar |
 | GET | `/organisationen/{slug}` | public | Profil lesbar |
 | GET | `/organisationen/neu` | `isAuthenticated()` | nur eingeloggt anlegen |
-| POST | `/organisationen/speichern` (Create) | `isAuthenticated()` | Anlegender wird automatisch ORG_OWNER |
-| POST | `/organisationen/speichern` (Update via `dto.id`) | `kannOrgEditierenNachId(#dto.id)` | Edit-Recht (siehe K3 — wird in eigener Iteration gesplittet) |
+| POST | `/organisationen` (Create) | `isAuthenticated()` | Anlegender wird automatisch ORG_OWNER |
+| POST | `/organisationen/{slug}` (Update) | `kannOrgEditierenNachSlug(#slug)` | Edit-Recht; Slug aus URL, kein `id` im Body (K3-Fix) |
 | GET | `/organisationen/{slug}/bearbeiten` | `kannOrgEditierenNachSlug(#slug)` | Edit-Form sichtbar nur für Editor+ |
 | POST | `/organisationen/{slug}/loeschen` | `kannOrgVerwaltenNachSlug(#slug)` | nur Owner / Admin |
 | GET | `/organisationen/{slug}/mitglieder` | `kannOrgEditierenNachSlug(#slug)` | Mitgliederliste = sensibel |

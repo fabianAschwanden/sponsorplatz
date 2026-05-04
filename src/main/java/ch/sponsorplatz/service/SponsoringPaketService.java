@@ -1,5 +1,6 @@
 package ch.sponsorplatz.service;
 
+import ch.sponsorplatz.exception.NotFoundException;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.SponsoringPaket;
 import ch.sponsorplatz.repository.SponsoringPaketRepository;
@@ -46,7 +47,7 @@ public class SponsoringPaketService {
 
     public SponsoringPaket deaktiviere(UUID paketId) {
         SponsoringPaket paket = repository.findById(paketId)
-                .orElseThrow(() -> new IllegalArgumentException("Paket nicht gefunden: " + paketId));
+                .orElseThrow(() -> new NotFoundException("Paket nicht gefunden: " + paketId));
         paket.setAktiv(false);
         return repository.save(paket);
     }

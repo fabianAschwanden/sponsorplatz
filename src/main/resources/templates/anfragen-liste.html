@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${org.name + ' — Anfragen — Sponsorplatz'}">Anfragen</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body class="dash-layout">
+<div th:replace="~{fragments/sidebar :: app-sidebar('anfragen', null)}"></div>
+<main class="dash-main">
+    <h1>Eingehende Anfragen</h1>
+
+    <div th:if="${erfolgsMeldung}" class="alert success" th:text="${erfolgsMeldung}"></div>
+
+    <div th:if="${anfragen.isEmpty()}" class="empty-state">
+        <p>Noch keine Anfragen erhalten.</p>
+    </div>
+
+    <div th:each="a : ${anfragen}" class="card anfrage-card">
+        <div class="anfrage-header">
+            <strong th:text="${a.kontaktName ?: 'Unbekannt'}">Name</strong>
+            <span class="badge" th:classappend="'badge-' + ${a.status.name().toLowerCase()}"
+                  th:text="${a.status}">NEU</span>
+        </div>
+        <p class="anfrage-meta">
+            Paket: <span th:text="${a.paket.name}">Gold</span> ·
+            <span th:if="${a.kontaktEmail}" th:text="${a.kontaktEmail}">email</span>
+        </p>
+        <p th:text="${a.nachricht}">Nachricht</p>
+
+        <div th:if="${a.antwort}" class="anfrage-antwort">
+            <strong>Antwort:</strong> <span th:text="${a.antwort}">Antwort</span>
+        </div>
+
+        <div th:if="${a.status.name() == 'NEU'}" class="anfrage-actions">
+            <form th:action="@{'/organisationen/' + ${org.slug} + '/anfragen/' + ${a.id} + '/annehmen'}" method="post" style="display:inline">
+                <input type="text" name="antwort" placeholder="Antwort (optional)">
+                <button type="submit" class="btn btn-success">Annehmen</button>
+            </form>
+            <form th:action="@{'/organisationen/' + ${org.slug} + '/anfragen/' + ${a.id} + '/ablehnen'}" method="post" style="display:inline">
+                <input type="text" name="antwort" placeholder="Begründung (optional)">
+                <button type="submit" class="btn btn-danger">Ablehnen</button>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>
+
