@@ -106,6 +106,16 @@
 - [ ] Verein-Inbox + Threaded Messages (Backlog)
 - [ ] E-Mail-Notifications bei neuer Anfrage (Backlog)
 
+## Phase 5 — Watchlist ✓
+
+- [x] Migration `V7__watchlist.sql` (UNIQUE user_id+projekt_id, FK CASCADE)
+- [x] `WatchlistEintrag`-Entity
+- [x] `WatchlistRepository` (findeNachUser, existsByUserIdAndProjektId, delete)
+- [x] `WatchlistService` (hinzufuegen, entferne, findeNachUser, istGemerkt)
+- [x] `WatchlistController` (`/watchlist`, `/watchlist/hinzufuegen/{slug}`, `/watchlist/entfernen/{slug}`)
+- [x] Template: watchlist.html (Dashboard-Sidebar, Karten mit Entfernen-Aktion)
+- [x] Tests: WL-01..05, WLCTRL-01..03 (118 Tests gesamt)
+
 ## Phase 5+ — Wachstum (nächste Iteration)
 
 - Watchlist
