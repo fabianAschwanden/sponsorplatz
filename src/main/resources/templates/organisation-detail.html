@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${org.name} + ' — Sponsorplatz'">Organisation</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <header class="kopfzeile">
+        <div class="container">
+            <a class="logo" th:href="@{/}">Sponsorplatz</a>
+            <nav class="navigation">
+                <a th:href="@{/}">Start</a>
+                <a th:href="@{/organisationen}" class="aktiv">Organisationen</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="hauptbereich">
+        <div class="container">
+            <p class="rubrik" th:text="${org.typ}">VEREIN</p>
+            <div class="seitenkopf">
+                <h1 th:text="${org.name}">Name</h1>
+                <a th:href="@{/organisationen/{slug}/bearbeiten(slug=${org.slug})}" class="cta">Bearbeiten</a>
+            </div>
+
+            <div th:if="${erfolgsMeldung}" class="meldung erfolg" th:text="${erfolgsMeldung}"></div>
+
+            <dl class="datenliste">
+                <dt>Slug</dt>
+                <dd><code th:text="${org.slug}">slug</code></dd>
+
+                <dt>Status</dt>
+                <dd>
+                    <span class="status" th:classappend="${'status-' + #strings.toLowerCase(org.status)}"
+                          th:text="${org.status}">PENDING</span>
+                </dd>
+
+                <dt th:if="${org.rechtsform}">Rechtsform</dt>
+                <dd th:if="${org.rechtsform}" th:text="${org.rechtsform}"></dd>
+
+                <dt th:if="${org.branche}">Branche</dt>
+                <dd th:if="${org.branche}" th:text="${org.branche}"></dd>
+
+                <dt th:if="${org.websiteUrl}">Website</dt>
+                <dd th:if="${org.websiteUrl}">
+                    <a th:href="${org.websiteUrl}" target="_blank" rel="noopener" th:text="${org.websiteUrl}"></a>
+                </dd>
+
+                <dt th:if="${org.beschreibung}">Beschreibung</dt>
+                <dd th:if="${org.beschreibung}" th:text="${org.beschreibung}"></dd>
+
+                <dt>Registriert am</dt>
+                <dd th:text="${#temporals.format(org.registriertAm, 'dd.MM.yyyy HH:mm')}">01.01.2026</dd>
+
+                <dt th:if="${org.verifiziertAm}">Verifiziert am</dt>
+                <dd th:if="${org.verifiziertAm}" th:text="${#temporals.format(org.verifiziertAm, 'dd.MM.yyyy')}"></dd>
+            </dl>
+
+            <form class="loesch-form"
+                  th:action="@{/organisationen/{slug}/loeschen(slug=${org.slug})}"
+                  method="post"
+                  onsubmit="return confirm('Organisation wirklich löschen? Das kann nicht rückgängig gemacht werden.');">
+                <button type="submit" class="abbrechen loeschen">Organisation löschen</button>
+            </form>
+        </div>
+    </main>
+
+    <footer class="fusszeile">
+        <div class="container">
+            <p>&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
+        </div>
+    </footer>
+</body>
+</html>

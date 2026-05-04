@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <header class="kopfzeile">
+        <div class="container">
+            <a class="logo" th:href="@{/}">Sponsorplatz</a>
+            <nav class="navigation">
+                <a th:href="@{/}">Start</a>
+                <a th:href="@{/organisationen}">Organisationen</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="hauptbereich">
+        <div class="container">
+            <h1>Anmelden</h1>
+
+            <div th:if="${param.error}" class="meldung fehler">
+                E-Mail oder Passwort ist falsch.
+            </div>
+            <div th:if="${param.logout}" class="meldung erfolg">
+                Sie wurden erfolgreich abgemeldet.
+            </div>
+            <div th:if="${param.registriert}" class="meldung erfolg">
+                Registrierung erfolgreich! Bitte melden Sie sich an.
+            </div>
+
+            <form th:action="@{/login}" method="post" class="formular">
+                <div class="formular-gruppe">
+                    <label for="username">E-Mail</label>
+                    <input type="email" id="username" name="username" required autofocus>
+                </div>
+                <div class="formular-gruppe">
+                    <label for="password">Passwort</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primaer">Anmelden</button>
+            </form>
+
+            <p>Noch kein Konto? <a th:href="@{/registrieren}">Jetzt registrieren</a></p>
+        </div>
+    </main>
+
+    <footer class="fusszeile">
+        <div class="container">
+            <p>&copy; 2026 Sponsorplatz</p>
+        </div>
+    </footer>
+</body>
+</html>
+

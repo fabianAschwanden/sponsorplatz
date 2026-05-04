@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${orgForm.id} != null ? 'Organisation bearbeiten' : 'Neue Organisation'">Organisation</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <header class="kopfzeile">
+        <div class="container">
+            <a class="logo" th:href="@{/}">Sponsorplatz</a>
+            <nav class="navigation">
+                <a th:href="@{/}">Start</a>
+                <a th:href="@{/organisationen}" class="aktiv">Organisationen</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="hauptbereich">
+        <div class="container schmal">
+            <p class="rubrik">Organisation</p>
+            <h1 th:text="${orgForm.id} != null ? 'Organisation bearbeiten' : 'Neue Organisation'">Neue Organisation</h1>
+
+            <div th:if="${fehlermeldung}" class="meldung fehler" th:text="${fehlermeldung}"></div>
+
+            <form th:action="@{/organisationen/speichern}" method="post" th:object="${orgForm}" novalidate>
+                <input type="hidden" th:field="*{id}">
+
+                <div class="feldgruppe">
+                    <label for="typ">Typ <span class="pflicht">*</span></label>
+                    <select id="typ" th:field="*{typ}">
+                        <option value="">— wählen —</option>
+                        <option th:each="t : ${typen}" th:value="${t}" th:text="${t}"></option>
+                    </select>
+                    <p class="feldfehler" th:if="${#fields.hasErrors('typ')}" th:errors="*{typ}"></p>
+                </div>
+
+                <div class="feldgruppe">
+                    <label for="name">Name <span class="pflicht">*</span></label>
+                    <input id="name" type="text" th:field="*{name}" required>
+                    <p class="feldfehler" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+                </div>
+
+                <div class="feldgruppe">
+                    <label for="slug">Slug (optional, wird sonst generiert)</label>
+                    <input id="slug" type="text" th:field="*{slug}" placeholder="z. B. fc-beispiel">
+                    <p class="feldfehler" th:if="${#fields.hasErrors('slug')}" th:errors="*{slug}"></p>
+                </div>
+
+                <div class="feldgruppe">
+                    <label for="rechtsform">Rechtsform</label>
+                    <input id="rechtsform" type="text" th:field="*{rechtsform}" placeholder="z. B. Verein, AG, GmbH">
+                </div>
+
+                <div class="feldgruppe">
+                    <label for="branche">Branche</label>
+                    <input id="branche" type="text" th:field="*{branche}" placeholder="z. B. SPORT, KULTUR">
+                </div>
+
+                <div class="feldgruppe">
+                    <label for="beschreibung">Beschreibung</label>
+                    <textarea id="beschreibung" th:field="*{beschreibung}" rows="4"></textarea>
+                </div>
+
+                <div class="feldgruppe">
+                    <label for="websiteUrl">Website</label>
+                    <input id="websiteUrl" type="url" th:field="*{websiteUrl}" placeholder="https://...">
+                    <p class="feldfehler" th:if="${#fields.hasErrors('websiteUrl')}" th:errors="*{websiteUrl}"></p>
+                </div>
+
+                <div class="aktionen">
+                    <button type="submit" class="cta">Speichern</button>
+                    <a th:href="@{/organisationen}" class="abbrechen">Abbrechen</a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer class="fusszeile">
+        <div class="container">
+            <p>&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
+        </div>
+    </footer>
+</body>
+</html>

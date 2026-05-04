@@ -27,8 +27,27 @@ public class SecurityConfig {
     @Profile("dev")
     public SecurityFilterChain devFilterChain(HttpSecurity http) throws Exception {
         http
-            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico").permitAll()
+                .requestMatchers("/login", "/registrieren", "/verifizieren").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/h2-console/**").permitAll()
+                .requestMatchers("/organisationen").permitAll()
+                .requestMatchers("/organisationen/{slug}").permitAll()
+                .anyRequest().authenticated()
+            )
+            .formLogin(form -> form
+                .loginPage("/login")
+                .defaultSuccessUrl("/", true)
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutSuccessUrl("/")
+                .permitAll()
+            )
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/h2-console/**")
+            )
             .headers(h -> h.frameOptions(f -> f.disable()));
         return http.build();
     }
@@ -38,12 +57,16 @@ public class SecurityConfig {
     public SecurityFilterChain prodFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/aktuator/**", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
-                .requestMatchers("/login", "/registrieren/**").permitAll()
+                .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico").permitAll()
+                .requestMatchers("/login", "/registrieren", "/verifizieren").permitAll()
+                .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                .requestMatchers("/organisationen").permitAll()
+                .requestMatchers("/organisationen/{slug}").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
+                .defaultSuccessUrl("/", true)
                 .permitAll()
             )
             .logout(Customizer.withDefaults());

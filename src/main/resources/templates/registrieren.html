@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrieren — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <header class="kopfzeile">
+        <div class="container">
+            <a class="logo" th:href="@{/}">Sponsorplatz</a>
+            <nav class="navigation">
+                <a th:href="@{/}">Start</a>
+                <a th:href="@{/organisationen}">Organisationen</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="hauptbereich">
+        <div class="container">
+            <h1>Registrieren</h1>
+
+            <div th:if="${fehlermeldung}" class="meldung fehler" th:text="${fehlermeldung}"></div>
+
+            <form th:action="@{/registrieren}" th:object="${userForm}" method="post" class="formular">
+                <div class="formular-gruppe">
+                    <label for="email">E-Mail</label>
+                    <input type="email" id="email" th:field="*{email}" required>
+                    <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="fehler-text"></span>
+                </div>
+                <div class="formular-gruppe">
+                    <label for="anzeigename">Anzeigename</label>
+                    <input type="text" id="anzeigename" th:field="*{anzeigename}" required>
+                    <span th:if="${#fields.hasErrors('anzeigename')}" th:errors="*{anzeigename}" class="fehler-text"></span>
+                </div>
+                <div class="formular-gruppe">
+                    <label for="passwort">Passwort (mind. 8 Zeichen)</label>
+                    <input type="password" id="passwort" th:field="*{passwort}" required>
+                    <span th:if="${#fields.hasErrors('passwort')}" th:errors="*{passwort}" class="fehler-text"></span>
+                </div>
+                <button type="submit" class="btn btn-primaer">Registrieren</button>
+            </form>
+
+            <p>Bereits ein Konto? <a th:href="@{/login}">Anmelden</a></p>
+        </div>
+    </main>
+
+    <footer class="fusszeile">
+        <div class="container">
+            <p>&copy; 2026 Sponsorplatz</p>
+        </div>
+    </footer>
+</body>
+</html>
+

@@ -1,85 +1,155 @@
 # Datenmodell
 
-## Phase 0 — Baseline
+## Aktueller Stand
 
-Aktuell: **leere Schema-Baseline** (V1__init.sql), nur Marker-Tabelle.
+| Migration | Inhalt | Phase |
+|---|---|---|
+| V1 | Schema-Baseline (Marker-Tabelle) | 0 |
+| V2 | `organisation` | 0.1 ✓ |
+| V3 | `app_user` + `mitgliedschaft` | 0.2 ✓ |
+| V4 | `email_verifizierung` (Felder auf app_user) | 1.2 ✓ |
+| V5 | `projekt` + `sponsoring_paket` | **2 (aktuell)** |
 
-Echte Tabellen kommen ab V2 schrittweise.
+## V2 — Organisation
 
-## Geplante Entitäten
+Eine `Organisation` ist die Wurzel-Entität für Vereine und Sponsor-Unternehmen. Im **kollaborativen Modell** (siehe `ROLLENKONZEPT.md`) ist sie der Edit-Marker für Daten — keine strikte Mandantentrennung.
 
-### Phase 0.1 — Organisation & Mitgliedschaft
+### Tabelle `organisation`
 
-```mermaid
-erDiagram
-    ORGANISATION ||--o{ MITGLIEDSCHAFT : "Rollen"
-    APP_USER     ||--o{ MITGLIEDSCHAFT : "ist Mitglied in"
-```
+| Feld | Typ | NULL? | Beschreibung |
+|---|---|:---:|---|
+| `id` | UUID | – | PK |
+| `typ` | VARCHAR(20) | – | ENUM (`VEREIN`, `UNTERNEHMEN`, `STIFTUNG`, `ANDERE`) |
+| `name` | VARCHAR(255) | – | Anzeigename |
+| `slug` | VARCHAR(120) | – | URL-freundlich, UNIQUE |
+| `rechtsform` | VARCHAR(50) | ✓ | z.B. „Verein", „AG", „GmbH", „e.V." |
+| `branche` | VARCHAR(50) | ✓ | `SPORT`, `KULTUR`, `SOZIALES`, `BILDUNG`, `UMWELT`, `WIRTSCHAFT`, `ANDERE` |
+| `beschreibung` | TEXT | ✓ | öffentliche Beschreibung |
+| `website_url` | VARCHAR(500) | ✓ | |
+| `status` | VARCHAR(20) | – | ENUM (`PENDING`, `VERIFIED`, `ACTIVE`, `SUSPENDED`); Default `PENDING` |
+| `verifiziert_am` | TIMESTAMPTZ | ✓ | wenn Plattform-Admin verifiziert hat |
+| `zefix_uid` | VARCHAR(20) | ✓ | UID nach Auto-Verifizierung (Phase 1.6) |
+| `registriert_am` | TIMESTAMP | – | Default `now()` |
+| `created_at` | TIMESTAMP | – | Default `now()` |
+| `updated_at` | TIMESTAMP | – | Default `now()` |
 
-**`organisation`**
+### Constraints
 
-| Feld | Typ |
-|---|---|
-| id | UUID PK |
-| typ | ENUM (VEREIN, UNTERNEHMEN, STIFTUNG, ANDERE) |
-| name | VARCHAR(255) |
-| slug | VARCHAR(120) UNIQUE |
-| rechtsform | VARCHAR(50) |
-| branche | VARCHAR(50) |
-| beschreibung | TEXT |
-| website_url | VARCHAR(500) |
-| status | ENUM (PENDING, VERIFIED, ACTIVE, SUSPENDED) |
-| zefix_uid | VARCHAR(20) |
-| created_at, updated_at | TIMESTAMPTZ |
+- `slug` UNIQUE
+- `name` ≥ 2 Zeichen (Service-Validierung; nicht DB-Constraint, weil flexibel)
+- `slug` matched Regex `[a-z0-9-]+` (Service-Validierung)
 
-**`app_user`**
+### Indizes
 
-| Feld | Typ |
-|---|---|
-| id | UUID PK |
-| email | CITEXT UNIQUE |
-| password_hash | VARCHAR(255) |
-| vollname | VARCHAR(255) |
-| email_verifiziert_am | TIMESTAMPTZ |
-| ist_aktiv | BOOLEAN |
-| created_at | TIMESTAMPTZ |
+- `slug` UNIQUE-Index (automatisch)
+- `status` Index für Plattform-Admin-Verifizierungs-Queue
+- `typ` Index für Filter
 
-**`mitgliedschaft`**
+### Slug-Generator
 
-| Feld | Typ |
-|---|---|
-| id | UUID PK |
-| user_id | UUID FK → app_user |
-| organisation_id | UUID FK → organisation |
-| rolle | ENUM (ORG_OWNER, ORG_EDITOR, ORG_VIEWER) |
-| eingeladen_von | UUID NULL |
-| created_at | TIMESTAMPTZ |
+`SlugGenerator.fromName(name)` erzeugt URL-tauglichen Slug:
+- Umlaute: `ä → ae`, `ö → oe`, `ü → ue`, `ß → ss`
+- alles in Kleinbuchstaben
+- Leerzeichen → `-`
+- alle nicht-`[a-z0-9-]` werden entfernt
+- Mehrfach-`-` zu einem reduziert
+- führende/abschließende `-` entfernt
+- Beispiele:
+  - `"FC Beispiel Zürich"` → `"fc-beispiel-zuerich"`
+  - `"Verein für Sport & Kultur"` → `"verein-fuer-sport-kultur"`
 
-UNIQUE `(user_id, organisation_id, rolle)`.
+### Service-Verantwortung
 
-### Phase 0.2 — CRM
+`OrganisationService` bietet:
+- `alle()` → `List<Organisation>` sortiert nach `name`
+- `findeNachId(UUID id)` → `Optional<Organisation>`
+- `findeNachSlug(String slug)` → `Optional<Organisation>`
+- `speichere(OrganisationFormDto dto)` → erzeugt oder aktualisiert; Slug aus Name generiert wenn leer; wirft `IllegalArgumentException` bei Slug-Konflikt
+- `loesche(UUID id)` → wirft `IllegalStateException` falls Org nicht gelöscht werden darf (Phase 0.2: wenn Mitgliedschaften vorhanden)
 
-`sponsor`, `kontaktperson`, `sponsor_beteiligung`, `projekt`, `saison` — basierend auf bewährtem Modell aus der `sponsoren-app`, hier als Plattform mit `besitzer_organisation_id` als Edit-Marker.
+### Spätere Phasen
 
-### Phase 2 — Sponsoring-Pakete
+- **V4** (Phase 2): `projekt`, `sponsoring_paket`, `sponsor_beteiligung`
+- **V5** (Phase 1): zefix_uid wird durch Auto-Verifizierung gefüllt
 
-`sponsoring_paket` mit `projekt_id`, `name`, `stufe`, `preis_chf`, `leistungen_json`, `stueckzahl_total`, `stueckzahl_vergeben`.
+---
 
-### Phase 4 — Anfragen & Kommunikation
+## V3 — AppUser & Mitgliedschaft
 
-`sponsoring_anfrage`, `nachricht`.
+### Tabelle `app_user`
+
+Plattform-Benutzer-Konto. Passwort wird nie im Klartext gespeichert (BCrypt).
+
+| Feld | Typ | NULL? | Beschreibung |
+|---|---|:---:|---|
+| `id` | UUID | – | PK |
+| `email` | VARCHAR(255) | – | Login-Identifier; UNIQUE |
+| `passwort_hash` | VARCHAR(255) | – | BCrypt-Hash; niemals Klartext |
+| `anzeigename` | VARCHAR(100) | – | Öffentlicher Name |
+| `platform_rolle` | VARCHAR(30) | ✓ | `PLATFORM_ADMIN`, `PLATFORM_MODERATOR`, `PLATFORM_SUPPORT`; NULL = normaler Nutzer |
+| `aktiv` | BOOLEAN | – | Default `true`; `false` = gesperrt |
+| `registriert_am` | TIMESTAMP | – | Default `now()` |
+| `created_at` | TIMESTAMP | – | Default `now()` |
+| `updated_at` | TIMESTAMP | – | Default `now()` |
+
+#### Constraints
+
+- `email` UNIQUE
+- `email` gültige E-Mail-Adresse (Service-Validierung)
+- `anzeigename` ≥ 2 Zeichen (Service-Validierung)
+
+#### Indizes
+
+- `email` UNIQUE-Index (automatisch)
+- `platform_rolle` Index für Admin-Queries
+
+---
+
+### Tabelle `mitgliedschaft`
+
+Verknüpft einen `app_user` mit einer `organisation` und weist ihm eine Rolle zu. Pro User–Org-Paar ist genau ein Eintrag erlaubt.
+
+| Feld | Typ | NULL? | Beschreibung |
+|---|---|:---:|---|
+| `id` | UUID | – | PK |
+| `user_id` | UUID | – | FK → `app_user(id)` ON DELETE CASCADE |
+| `org_id` | UUID | – | FK → `organisation(id)` ON DELETE CASCADE |
+| `rolle` | VARCHAR(20) | – | ENUM (`ORG_OWNER`, `ORG_EDITOR`, `ORG_VIEWER`) |
+| `eingeladen_von` | UUID | ✓ | FK → `app_user(id)` ON DELETE SET NULL |
+| `beigetreten_am` | TIMESTAMP | – | Default `now()` |
+
+#### Constraints
+
+- `UNIQUE (user_id, org_id)` — ein User kann pro Org nur eine Rolle haben
+- CHECK: `rolle IN ('ORG_OWNER','ORG_EDITOR','ORG_VIEWER')`
+
+#### Indizes
+
+- `(user_id, org_id)` UNIQUE-Index (automatisch)
+- `org_id` Index für Mitglieder-Listen-Queries
+
+---
+
+### Service-Verantwortung
+
+**`AppUserService`** bietet:
+- `registriere(AppUserFormDto dto)` → legt User an, hasht Passwort; wirft `IllegalArgumentException` bei doppelter E-Mail
+- `findeNachEmail(String email)` → `Optional<AppUser>`
+- `findeNachId(UUID id)` → `Optional<AppUser>`
+
+**`MitgliedschaftService`** bietet:
+- `fuegeHinzu(UUID orgId, UUID userId, Rolle rolle, UUID eingeladenVonId)` → wirft `IllegalStateException` falls Kombination org/user bereits existiert
+- `entferne(UUID mitgliedschaftId, Authentication auth)` → nur ORG_OWNER oder PLATFORM_ADMIN
+- `findeNachOrg(UUID orgId)` → `List<Mitgliedschaft>`
+
+**`AccessControl`-Bean** (siehe `ROLLENKONZEPT.md`):
+- `kannOrgEditieren(UUID orgId, Authentication auth)` → true für ORG_EDITOR, ORG_OWNER, PLATFORM_ADMIN
+- `kannOrgVerwalten(UUID orgId, Authentication auth)` → true für ORG_OWNER, PLATFORM_ADMIN
 
 ## Migrations-Strategie
 
-Versionierte Flyway-Migrationen unter `src/main/resources/db/migration/V*.sql`:
-
-- V1 — Baseline (leer)
-- V2 — Organisation + Mitgliedschaft (Phase 0.1)
-- V3 — App User + Verifizierungs-Tokens (Phase 1.1)
-- V4 — Sponsor + Projekt + Beteiligung (Phase 0.2)
-- ... (siehe ROADMAP.md)
-
-Jede Migration:
-1. Hinzufügen, niemals destruktiv ändern
-2. Bei Spalten-Umbenennung: neue Spalte + Backfill + alte droppen in nächster Version
-3. Vor Deployment auf prod immer im Staging gegen Prod-Schnappschuss testen
+- Versionierte Flyway-Migrationen unter `src/main/resources/db/migration/V*.sql`
+- Jede Migration **additiv**, niemals destruktiv ändern
+- Bei Spalten-Umbenennung: neue Spalte + Backfill + alte droppen in nächster Version
+- Vor Deployment auf prod: gegen Prod-Schnappschuss im Staging testen
+- `ddl-auto=validate` in beiden Profilen — Hibernate prüft, dass das Schema zur Annotation passt

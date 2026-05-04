@@ -79,6 +79,8 @@
     "**/node_modules": true
   },
 
+  "git.ignoredRepositories": ["/Users/fabian/git"],
+
   "terminal.integrated.scrollback": 10000,
 
   "todo-tree.general.tags": ["TODO", "FIXME", "HACK", "BUG", "REVIEW"],

@@ -170,6 +170,236 @@ body {
     text-decoration: none;
 }
 
+/* Seitenkopf mit Aktion rechts */
+.seitenkopf {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.seitenkopf h1 {
+    font-family: var(--schrift-headline);
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.seitenkopf .cta {
+    background: var(--farbe-akzent);
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* Tabellen */
+.tabelle {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid var(--farbe-rand);
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.tabelle th, .tabelle td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--farbe-rand);
+}
+
+.tabelle th {
+    background: var(--farbe-cream);
+    font-weight: 700;
+    color: var(--farbe-text-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tabelle tr:last-child td {
+    border-bottom: none;
+}
+
+.tabelle a {
+    color: var(--farbe-primaer);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.tabelle a:hover {
+    text-decoration: underline;
+}
+
+.muted {
+    color: var(--farbe-text-muted);
+    font-size: 0.85rem;
+}
+
+/* Status-Pillen */
+.chip, .status {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.chip {
+    background: var(--farbe-rand);
+    color: var(--farbe-text);
+}
+
+.status-pending   { background: #FCE7C9; color: #7A4F0F; }
+.status-verified  { background: #C9E5D7; color: #1F5C3F; }
+.status-active    { background: #C8DEFB; color: #1B3F77; }
+.status-suspended { background: #F8D5D5; color: #7B2222; }
+
+/* Daten-Liste auf Detail-Seite */
+.datenliste {
+    background: #fff;
+    border: 1px solid var(--farbe-rand);
+    border-radius: 0.25rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.datenliste dt {
+    color: var(--farbe-text-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 1rem;
+}
+
+.datenliste dt:first-child {
+    margin-top: 0;
+}
+
+.datenliste dd {
+    margin: 0.25rem 0 0;
+    color: var(--farbe-text);
+}
+
+.datenliste code {
+    background: var(--farbe-cream);
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.2rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9rem;
+}
+
+/* Formular */
+.schmal {
+    max-width: 40rem;
+}
+
+.feldgruppe {
+    margin-bottom: 1.25rem;
+}
+
+.feldgruppe label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    color: var(--farbe-text);
+}
+
+.pflicht {
+    color: var(--farbe-akzent);
+}
+
+.feldgruppe input,
+.feldgruppe select,
+.feldgruppe textarea {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--farbe-rand);
+    border-radius: 0.25rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    background: #fff;
+}
+
+.feldgruppe input:focus,
+.feldgruppe select:focus,
+.feldgruppe textarea:focus {
+    outline: 2px solid var(--farbe-akzent);
+    outline-offset: -1px;
+    border-color: var(--farbe-akzent);
+}
+
+.feldfehler {
+    color: var(--farbe-akzent-dunkel);
+    font-size: 0.85rem;
+    margin: 0.3rem 0 0;
+}
+
+.aktionen {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+
+.aktionen .cta,
+.aktionen button.cta {
+    background: var(--farbe-primaer);
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.aktionen .cta:hover {
+    background: var(--farbe-primaer-dunkel);
+}
+
+.abbrechen {
+    color: var(--farbe-text-muted);
+    text-decoration: none;
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.abbrechen.loeschen {
+    color: #7B2222;
+}
+
+.loesch-form {
+    margin-top: 2rem;
+}
+
+/* Meldungen */
+.meldung {
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.meldung.erfolg {
+    background: #C9E5D7;
+    color: #1F5C3F;
+    border: 1px solid #95D2B5;
+}
+
+.meldung.fehler {
+    background: #F8D5D5;
+    color: #7B2222;
+    border: 1px solid #E89A9A;
+}
+
 /* Fußzeile */
 .fusszeile {
     background: var(--farbe-primaer-dunkel);

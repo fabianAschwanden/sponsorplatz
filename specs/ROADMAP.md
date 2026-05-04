@@ -10,24 +10,55 @@
 - Docker + CI/CD bereit
 - Spec-Dokumente im Repo
 
-## Phase 0.1 — Organisation & Mitgliedschaft (2 Wochen)
+## Phase 0.1 — Organisation-Entity ✓
 
-- [ ] V2: `organisation`-Tabelle, ENUM-Typen
-- [ ] `Organisation`-Entity + Repository + Service
-- [ ] V3: `app_user`-Tabelle (BCrypt)
-- [ ] V4: `mitgliedschaft`-Tabelle
-- [ ] `AccessControl`-Bean
-- [ ] Tests: ORG-01..03, MG-01..02, AC-01..05
+- [x] V2: `organisation`-Tabelle, ENUM-Typen
+- [x] `Organisation`-Entity + Repository + Service + SlugGenerator
+- [x] CRUD-Controller + 3 Templates (Liste, Formular, Detail)
+- [x] Tests: ORG-01..10 (21 Tests, alle grün)
+- [x] Specs: DATENMODELL, TECHNISCHE_SPEZIFIKATION, TESTSTRATEGIE aktualisiert
 
-## Phase 1 — Self-Reg & Verifizierung (2 Wochen)
+## Phase 0.2 — AppUser + Mitgliedschaft + AccessControl ✓
 
-- [ ] Vereins-Self-Registrierung
-- [ ] E-Mail-Verifikation mit Token
-- [ ] Plattform-Admin-Verifizierungs-Queue
-- [ ] Auto-Verifizierung via Zefix
-- [ ] Mitglieder-Einladungs-Flow
+- [x] Spec-Update DATENMODELL + TESTSTRATEGIE (AU/MG/AC-Test-IDs)
+- [x] Tests schreiben: AU-01..05, MG-01..04, AC-01..08
+- [x] Migration `V3__app_user_und_mitgliedschaft.sql` (`app_user` + `mitgliedschaft`)
+- [x] Entity `AppUser`, Enum `PlatformRolle`
+- [x] Entity `Mitgliedschaft`, Enum `Rolle` (ORG_OWNER/ORG_EDITOR/ORG_VIEWER)
+- [x] `AppUserRepository`, `MitgliedschaftRepository`
+- [x] `AppUserService` (registriere, findeNachEmail, findeNachId)
+- [x] `MitgliedschaftService` (fuegeHinzu, entferne, findeNachOrg)
+- [x] `AccessControl`-Bean (kannOrgEditieren, kannOrgVerwalten)
+- [x] Mitglieder-Verwaltungs-UI unter `/organisationen/{slug}/mitglieder`
+- [x] `loesche` in OrganisationService wirft bei vorhandenen Mitgliedschaften (ORG-11)
+- [x] Tests grün (42 Tests gesamt)
 
-## Phase 2 — Pakete, Sichtbarkeit & Medien (3 Wochen)
+## Phase 1 — Self-Reg & Verifizierung ✓
+
+### Phase 1.1 — Spring Security + Form-Login ✓
+
+- [x] `SecurityConfig` mit Form-Login, CSRF, permitAll für Public-Routen
+- [x] `SponsorplatzUserDetailsService` lädt AppUser aus DB
+- [x] Login-Seite (`/login`) + Registrierungs-Seite (`/registrieren`)
+- [x] `RegistrierungController` + `LoginController`
+- [x] Tests: SEC-01..06, REG-01..04 (10 Tests)
+
+### Phase 1.2 — E-Mail-Verifizierung ✓
+
+- [x] Migration `V4__email_verifizierung.sql` (3 Felder auf app_user)
+- [x] `VerifikationsService` (Token generieren, validieren, ablaufen)
+- [x] E-Mail senden via Spring Mail (MailHog in dev)
+- [x] Verifikations-Endpunkt `/verifizieren?token=...`
+- [x] Login nur mit verifizierter E-Mail (`isEnabled()`)
+- [x] Tests: EV-01..04
+
+### Phase 1.3 — Plattform-Admin & Zefix (Backlog)
+
+- [ ] Admin-Verifizierungs-Queue (`/admin/verifizierungen`)
+- [ ] Auto-Verifizierung via Zefix-API (stub in dev)
+- [ ] Mitglieder-Einladungs-Flow (E-Mail mit Einladungs-Link)
+
+## Phase 2 — Pakete, Sichtbarkeit & Medien (aktuelle Iteration)
 
 - [ ] `Projekt` mit `sichtbarkeit`, `slug`
 - [ ] `SponsoringPaket`-Entity

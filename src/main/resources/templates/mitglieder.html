@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Mitglieder — ' + ${org.name} + ' — Sponsorplatz'">Mitglieder</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <header class="kopfzeile">
+        <div class="container">
+            <a class="logo" th:href="@{/}">Sponsorplatz</a>
+            <nav class="navigation">
+                <a th:href="@{/}">Start</a>
+                <a th:href="@{/organisationen}" class="aktiv">Organisationen</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="hauptbereich">
+        <div class="container">
+
+            <nav class="breadcrumb">
+                <a th:href="@{/organisationen}">Organisationen</a> &rsaquo;
+                <a th:href="@{/organisationen/{slug}(slug=${org.slug})}" th:text="${org.name}">Org</a> &rsaquo;
+                <span>Mitglieder</span>
+            </nav>
+
+            <h1>Mitglieder von <span th:text="${org.name}">Organisation</span></h1>
+
+            <div th:if="${erfolgsMeldung}" class="meldung erfolg" th:text="${erfolgsMeldung}"></div>
+            <div th:if="${fehlerMeldung}" class="meldung fehler" th:text="${fehlerMeldung}"></div>
+
+            <table class="tabelle" th:if="${!mitglieder.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>E-Mail</th>
+                        <th>Rolle</th>
+                        <th>Beigetreten</th>
+                        <th>Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="m : ${mitglieder}">
+                        <td th:text="${m.user.anzeigename}">Max Muster</td>
+                        <td th:text="${m.user.email}">max@example.com</td>
+                        <td th:text="${m.rolle}">ORG_EDITOR</td>
+                        <td th:text="${#temporals.format(m.beigetretenAm, 'dd.MM.yyyy')}">01.01.2026</td>
+                        <td>
+                            <form th:action="@{/organisationen/{slug}/mitglieder/{id}/entfernen(slug=${org.slug}, id=${m.id})}"
+                                  method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-klein btn-gefahr"
+                                        onclick="return confirm('Mitglied wirklich entfernen?')">Entfernen</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p th:if="${mitglieder.isEmpty()}" class="hinweis">Noch keine Mitglieder vorhanden.</p>
+
+            <h2>Mitglied hinzufügen</h2>
+            <form th:action="@{/organisationen/{slug}/mitglieder/hinzufuegen(slug=${org.slug})}" method="post" class="formular">
+                <div class="formular-gruppe">
+                    <label for="email">E-Mail des Benutzers</label>
+                    <input type="email" id="email" name="email" required placeholder="benutzer@example.com">
+                </div>
+                <div class="formular-gruppe">
+                    <label for="rolle">Rolle</label>
+                    <select id="rolle" name="rolle" required>
+                        <option value="ORG_VIEWER">Betrachter (ORG_VIEWER)</option>
+                        <option value="ORG_EDITOR">Bearbeiter (ORG_EDITOR)</option>
+                        <option value="ORG_OWNER">Eigentümer (ORG_OWNER)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primaer">Hinzufügen</button>
+            </form>
+
+            <a th:href="@{/organisationen/{slug}(slug=${org.slug})}" class="btn">&larr; Zurück zur Organisation</a>
+
+        </div>
+    </main>
+
+    <footer class="fusszeile">
+        <div class="container">
+            <p>&copy; 2026 Sponsorplatz</p>
+        </div>
+    </footer>
+</body>
+</html>
+
