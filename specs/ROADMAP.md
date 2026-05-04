@@ -92,16 +92,21 @@
 - [ ] SEO: Sitemap, Schema.org, Open Graph (Backlog)
 - [ ] Public-Vereinsprofile (Backlog)
 
-## Phase 4 — Anfragen & Konversation (nächste Iteration)
+## Phase 4 — Anfragen & Konversation ✓
 
-- [ ] `SponsoringAnfrage`-Entity + Status-Workflow
-- [ ] Sponsor-Org-Self-Reg
-- [ ] Anfrage-Form auf Paket-Seite
-- [ ] Verein-Inbox + Threaded Messages
-- [ ] E-Mail-Notifications
-- [ ] Bei Annahme: SponsorBeteiligung erzeugen
+- [x] Migration `V6__sponsoring_anfrage.sql` (Status-CHECK, FK auf Paket + Orgs)
+- [x] `SponsoringAnfrage`-Entity + Enum `AnfrageStatus` (NEU/IN_PRUEFUNG/ANGENOMMEN/ABGELEHNT/ZURUECKGEZOGEN)
+- [x] `SponsoringAnfrageRepository` (eingehende, ausgehende, Zählung nach Status)
+- [x] `SponsoringAnfrageService` (erstelle, annehme, lehneAb, findeEingehende/Ausgehende)
+- [x] `AnfragenController` (`/organisationen/{slug}/anfragen` — Liste, Annehmen, Ablehnen)
+- [x] `AnfrageFormDto` (Validierung: Nachricht 10-2000 Zeichen, E-Mail)
+- [x] Template: anfragen-liste.html (Dashboard-Sidebar, Karten mit Aktionen)
+- [x] Tests: ANF-01..05, ANFCTRL-01..04 (107 Tests gesamt)
+- [ ] Sponsor-Org-Self-Reg (Backlog)
+- [ ] Verein-Inbox + Threaded Messages (Backlog)
+- [ ] E-Mail-Notifications bei neuer Anfrage (Backlog)
 
-## Phase 5+ — Wachstum
+## Phase 5+ — Wachstum (nächste Iteration)
 
 - Watchlist
 - Matching-Empfehlungen
