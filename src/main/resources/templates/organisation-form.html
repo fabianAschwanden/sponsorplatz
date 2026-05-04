@@ -4,7 +4,7 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${orgForm.id} != null ? 'Organisation bearbeiten' : 'Neue Organisation'">Organisation</title>
+    <title th:text="${bearbeitenSlug != null} ? 'Organisation bearbeiten' : 'Neue Organisation'">Organisation</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -18,15 +18,15 @@
         <header class="app-page-head">
             <div>
                 <p class="app-page-rubrik">Organisation</p>
-                <h1 th:text="${orgForm.id} != null ? 'Organisation bearbeiten' : 'Neue Organisation'">Neue Organisation</h1>
+                <h1 th:text="${bearbeitenSlug != null} ? 'Organisation bearbeiten' : 'Neue Organisation'">Neue Organisation</h1>
             </div>
         </header>
 
         <div th:if="${fehlermeldung}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
 
         <section class="app-card">
-            <form th:action="@{/organisationen/speichern}" method="post" th:object="${orgForm}" class="app-form" novalidate>
-                <input type="hidden" th:field="*{id}">
+            <form th:action="${bearbeitenSlug != null} ? @{/organisationen/{slug}(slug=${bearbeitenSlug})} : @{/organisationen}"
+                  method="post" th:object="${orgForm}" class="app-form" novalidate>
 
                 <div class="app-form-group">
                     <label for="typ">Typ *</label>

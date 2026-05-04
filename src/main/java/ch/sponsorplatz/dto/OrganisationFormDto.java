@@ -5,14 +5,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import java.util.UUID;
-
 /**
  * Form-DTO für Anlage / Bearbeitung einer Organisation.
+ *
+ * Bewusst KEIN id-Feld — Update-Pfad identifiziert die Org via Slug aus URL,
+ * niemals via Body-Parameter (Mass-Assignment-Defense, K3).
  */
 public class OrganisationFormDto {
-
-    private UUID id;
 
     @NotNull(message = "Typ ist Pflicht")
     private OrgTyp typ;
@@ -34,14 +33,6 @@ public class OrganisationFormDto {
 
     @Size(max = 500)
     private String websiteUrl;
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
 
     public OrgTyp getTyp() {
         return typ;

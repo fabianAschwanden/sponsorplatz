@@ -57,19 +57,48 @@ class OrganisationControllerTest {
             .andExpect(model().attributeExists("organisationen"));
     }
 
-    /** ORG-09: POST /organisationen/speichern → Redirect. */
+    /** ORG-17: POST /organisationen (Create) → Redirect auf Detail. */
     @Test
     @WithMockUser
-    void speichernRedirected() throws Exception {
+    void erstellenRedirected() throws Exception {
         Organisation gespeichert = testOrg();
-        when(service.speichere(any())).thenReturn(gespeichert);
+        when(service.erstelle(any())).thenReturn(gespeichert);
 
-        mockMvc.perform(post("/organisationen/speichern")
+        mockMvc.perform(post("/organisationen")
                 .param("typ", "VEREIN")
                 .param("name", "Test-Verein")
                 .with(csrf()))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrlPattern("/organisationen/*"));
+    }
+
+    /** ORG-18: POST /organisationen/{slug} (Update) mit Edit-Recht → Redirect. */
+    @Test
+    @WithMockUser
+    void aktualisierenMitRechtRedirected() throws Exception {
+        when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
+        Organisation gespeichert = testOrg();
+        when(service.aktualisiere(eq("fc-test"), any())).thenReturn(gespeichert);
+
+        mockMvc.perform(post("/organisationen/fc-test")
+                .param("typ", "VEREIN")
+                .param("name", "Test-Verein-Neu")
+                .with(csrf()))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrlPattern("/organisationen/*"));
+    }
+
+    /** ORG-19: POST /organisationen/{slug} ohne Edit-Recht → 403. */
+    @Test
+    @WithMockUser
+    void aktualisierenOhneRechtIst403() throws Exception {
+        when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(false);
+
+        mockMvc.perform(post("/organisationen/fc-test")
+                .param("typ", "VEREIN")
+                .param("name", "Hijack")
+                .with(csrf()))
+            .andExpect(status().isForbidden());
     }
 
     /** ORG-10: GET /organisationen/{slug} → 200 + Detail. */
@@ -105,8 +134,8 @@ class OrganisationControllerTest {
 
     @Test
     @WithMockUser
-    void speichernMitFehlerZeigtFormularErneut() throws Exception {
-        mockMvc.perform(post("/organisationen/speichern")
+    void erstellenMitFehlerZeigtFormularErneut() throws Exception {
+        mockMvc.perform(post("/organisationen")
                 .param("name", "")
                 .with(csrf()))
             .andExpect(status().isOk())

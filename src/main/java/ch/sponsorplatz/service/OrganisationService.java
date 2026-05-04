@@ -53,12 +53,33 @@ public class OrganisationService {
         return repository.findBySlug(slug);
     }
 
-    public Organisation speichere(OrganisationFormDto dto) {
-        Organisation org = (dto.getId() != null)
-            ? repository.findById(dto.getId())
-                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + dto.getId()))
-            : new Organisation();
+    /**
+     * Legt eine neue Organisation an. Slug wird aus dem Namen generiert,
+     * falls keiner mitgegeben wurde.
+     *
+     * @throws IllegalArgumentException bei Slug-Konflikt
+     */
+    public Organisation erstelle(OrganisationFormDto dto) {
+        Organisation org = new Organisation();
+        wendeFormDatenAn(org, dto);
+        return repository.save(org);
+    }
 
+    /**
+     * Aktualisiert eine bestehende Organisation. Identifiziert via Slug aus URL —
+     * niemals via Body-Parameter (Mass-Assignment-Defense, K3).
+     *
+     * @throws NotFoundException        wenn Slug nicht existiert
+     * @throws IllegalArgumentException bei Slug-Konflikt mit anderer Org
+     */
+    public Organisation aktualisiere(String slug, OrganisationFormDto dto) {
+        Organisation org = repository.findBySlug(slug)
+            .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
+        wendeFormDatenAn(org, dto);
+        return repository.save(org);
+    }
+
+    private void wendeFormDatenAn(Organisation org, OrganisationFormDto dto) {
         String gewuenschterSlug = (dto.getSlug() == null || dto.getSlug().isBlank())
             ? slugGenerator.fromName(dto.getName())
             : slugGenerator.fromName(dto.getSlug());
@@ -74,8 +95,6 @@ public class OrganisationService {
         org.setBranche(leereAlsNull(dto.getBranche()));
         org.setBeschreibung(leereAlsNull(dto.getBeschreibung()));
         org.setWebsiteUrl(leereAlsNull(dto.getWebsiteUrl()));
-
-        return repository.save(org);
     }
 
     public void loesche(UUID id) {

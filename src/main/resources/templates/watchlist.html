@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Watchlist — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body class="dash-layout">
+<div th:replace="~{fragments/sidebar :: app-sidebar('watchlist', null)}"></div>
+<main class="dash-main">
+    <h1>Meine Watchlist</h1>
+
+    <div th:if="${erfolgsMeldung}" class="alert success" th:text="${erfolgsMeldung}"></div>
+
+    <div th:if="${eintraege.isEmpty()}" class="empty-state">
+        <p>Noch keine Projekte gemerkt.</p>
+        <a th:href="@{/marktplatz}" class="btn">Marktplatz durchstöbern</a>
+    </div>
+
+    <div th:each="e : ${eintraege}" class="card">
+        <h3><a th:href="@{'/marktplatz/' + ${e.projekt.slug}}" th:text="${e.projekt.name}">Projekt</a></h3>
+        <p th:if="${e.projekt.kategorie}" th:text="'Kategorie: ' + ${e.projekt.kategorie}"></p>
+        <p th:if="${e.projekt.ort}" th:text="'Ort: ' + ${e.projekt.ort}"></p>
+        <form th:action="@{'/watchlist/entfernen/' + ${e.projekt.slug}}" method="post" style="margin-top:0.5em">
+            <button type="submit" class="btn btn-danger btn-sm">Entfernen</button>
+        </form>
+    </div>
+</main>
+</body>
+</html>
+

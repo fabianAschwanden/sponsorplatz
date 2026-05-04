@@ -48,27 +48,55 @@ public class OrganisationController {
         return "organisation-form";
     }
 
-    @PostMapping("/speichern")
-    public String speichere(@Valid @ModelAttribute("orgForm") OrganisationFormDto dto,
-                            BindingResult br,
-                            Model model,
-                            RedirectAttributes redirect) {
+    /** Create — POST /organisationen (kein id im Body). */
+    @PostMapping
+    public String erstelle(@Valid @ModelAttribute("orgForm") OrganisationFormDto dto,
+                           BindingResult br,
+                           Model model,
+                           RedirectAttributes redirect) {
         if (br.hasErrors()) {
-            model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
-            model.addAttribute("typen", OrgTyp.values());
-            return "organisation-form";
+            return zeigeFormular(model);
         }
         try {
-            Organisation gespeichert = service.speichere(dto);
+            Organisation neu = service.erstelle(dto);
             redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                "Organisation \"" + gespeichert.getName() + "\" gespeichert.");
-            return "redirect:/organisationen/" + gespeichert.getSlug();
+                "Organisation \"" + neu.getName() + "\" erstellt.");
+            return "redirect:/organisationen/" + neu.getSlug();
         } catch (IllegalArgumentException ex) {
-            model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
-            model.addAttribute("typen", OrgTyp.values());
             model.addAttribute(ModelAttributeNames.FEHLERMELDUNG, ex.getMessage());
-            return "organisation-form";
+            return zeigeFormular(model);
         }
+    }
+
+    /** Update — POST /organisationen/{slug}, Slug aus URL. AccessControl-Check vorab. */
+    @PostMapping("/{slug}")
+    public String aktualisiere(@PathVariable String slug,
+                               @Valid @ModelAttribute("orgForm") OrganisationFormDto dto,
+                               BindingResult br,
+                               Authentication auth,
+                               Model model,
+                               RedirectAttributes redirect) {
+        if (!accessControl.kannOrgEditierenNachSlug(slug, auth)) {
+            throw new AccessDeniedException("Keine Edit-Berechtigung für Org: " + slug);
+        }
+        if (br.hasErrors()) {
+            return zeigeFormular(model);
+        }
+        try {
+            Organisation aktualisiert = service.aktualisiere(slug, dto);
+            redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
+                "Organisation \"" + aktualisiert.getName() + "\" aktualisiert.");
+            return "redirect:/organisationen/" + aktualisiert.getSlug();
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute(ModelAttributeNames.FEHLERMELDUNG, ex.getMessage());
+            return zeigeFormular(model);
+        }
+    }
+
+    private String zeigeFormular(Model model) {
+        model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
+        model.addAttribute("typen", OrgTyp.values());
+        return "organisation-form";
     }
 
     @GetMapping("/{slug}")
@@ -91,6 +119,7 @@ public class OrganisationController {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("orgForm", inFormDto(org));
         model.addAttribute("typen", OrgTyp.values());
+        model.addAttribute("bearbeitenSlug", slug);
         return "organisation-form";
     }
 
@@ -109,7 +138,6 @@ public class OrganisationController {
 
     private OrganisationFormDto inFormDto(Organisation org) {
         OrganisationFormDto dto = new OrganisationFormDto();
-        dto.setId(org.getId());
         dto.setTyp(org.getTyp());
         dto.setName(org.getName());
         dto.setSlug(org.getSlug());

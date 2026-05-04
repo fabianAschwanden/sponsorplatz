@@ -31,24 +31,24 @@ class OrganisationServiceTest {
         service = new OrganisationService(repository, new SlugGenerator(), mitgliedschaftRepository);
     }
 
-    /** ORG-05: Speichern mit Auto-Slug aus dem Namen. */
+    /** ORG-05: Erstellen mit Auto-Slug aus dem Namen. */
     @Test
-    void speichernMitAutoSlug() {
+    void erstelleMitAutoSlug() {
         when(repository.findBySlug("fc-beispiel-zuerich")).thenReturn(Optional.empty());
         when(repository.save(any(Organisation.class))).thenAnswer(inv -> inv.getArgument(0));
 
         OrganisationFormDto dto = neuesDto("FC Beispiel Zürich", null);
 
-        Organisation gespeichert = service.speichere(dto);
+        Organisation gespeichert = service.erstelle(dto);
 
         assertThat(gespeichert.getSlug()).isEqualTo("fc-beispiel-zuerich");
         assertThat(gespeichert.getName()).isEqualTo("FC Beispiel Zürich");
         assertThat(gespeichert.getTyp()).isEqualTo(OrgTyp.VEREIN);
     }
 
-    /** ORG-06: Speichern wirft bei Slug-Konflikt. */
+    /** ORG-06: Erstellen wirft bei Slug-Konflikt. */
     @Test
-    void speichernWirftBeiSlugKonflikt() {
+    void erstelleWirftBeiSlugKonflikt() {
         Organisation andere = new Organisation();
         andere.setId(UUID.randomUUID());
         andere.setSlug("doppelt");
@@ -56,25 +56,25 @@ class OrganisationServiceTest {
 
         OrganisationFormDto dto = neuesDto("Doppelt", "doppelt");
 
-        assertThatThrownBy(() -> service.speichere(dto))
+        assertThatThrownBy(() -> service.erstelle(dto))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("bereits vergeben");
     }
 
-    /** ORG-07: Validierung — Name zu kurz / leer wird über DTO-Bean-Validation gefangen,
-     *  aber wenn doch bis zum Service durchkommt, muss SlugGenerator scheitern. */
+    /** ORG-07: Validierung — Name leer wird vom SlugGenerator gefangen. */
     @Test
-    void leererNameSchlaegtFehl() {
+    void erstelleMitLeeremNameSchlaegtFehl() {
         OrganisationFormDto dto = new OrganisationFormDto();
         dto.setTyp(OrgTyp.VEREIN);
         dto.setName("");
 
-        assertThatThrownBy(() -> service.speichere(dto))
+        assertThatThrownBy(() -> service.erstelle(dto))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
+    /** ORG-20: aktualisiere lädt via Slug aus der URL — kein id-Pfad mehr. */
     @Test
-    void aktualisierungBestehenderOrganisation() {
+    void aktualisiereLaedtViaSlug() {
         UUID id = UUID.randomUUID();
         Organisation bestehende = new Organisation();
         bestehende.setId(id);
@@ -82,20 +82,30 @@ class OrganisationServiceTest {
         bestehende.setName("Alter Name");
         bestehende.setTyp(OrgTyp.VEREIN);
 
-        when(repository.findById(id)).thenReturn(Optional.of(bestehende));
         when(repository.findBySlug("alt-slug")).thenReturn(Optional.of(bestehende));
         when(repository.save(any(Organisation.class))).thenAnswer(inv -> inv.getArgument(0));
 
         OrganisationFormDto dto = neuesDto("Neuer Name", "alt-slug");
-        dto.setId(id);
-        Organisation aktualisiert = service.speichere(dto);
+        Organisation aktualisiert = service.aktualisiere("alt-slug", dto);
 
+        assertThat(aktualisiert.getId()).isEqualTo(id);
         assertThat(aktualisiert.getName()).isEqualTo("Neuer Name");
         assertThat(aktualisiert.getSlug()).isEqualTo("alt-slug");
     }
 
+    /** ORG-21: aktualisiere mit unbekanntem Slug → NotFoundException. */
     @Test
-    void leereStringsWerdenNull() {
+    void aktualisiereWirftBeiUnbekanntemSlug() {
+        when(repository.findBySlug("gibts-nicht")).thenReturn(Optional.empty());
+
+        OrganisationFormDto dto = neuesDto("Egal", null);
+
+        assertThatThrownBy(() -> service.aktualisiere("gibts-nicht", dto))
+            .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void erstelleLeereStringsWerdenNull() {
         when(repository.findBySlug(any())).thenReturn(Optional.empty());
         when(repository.save(any(Organisation.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -104,7 +114,7 @@ class OrganisationServiceTest {
         dto.setBranche("");
         dto.setBeschreibung("  echte Beschreibung  ");
 
-        Organisation gespeichert = service.speichere(dto);
+        Organisation gespeichert = service.erstelle(dto);
 
         assertThat(gespeichert.getRechtsform()).isNull();
         assertThat(gespeichert.getBranche()).isNull();
