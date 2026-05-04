@@ -1,0 +1,58 @@
+package ch.sponsorplatz.controller;
+
+import ch.sponsorplatz.config.ModelAttributeNames;
+import ch.sponsorplatz.model.Projekt;
+import ch.sponsorplatz.service.ProjektService;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+
+@Controller
+@RequestMapping("/marktplatz")
+public class MarktplatzController {
+
+    private final ProjektService projektService;
+
+    public MarktplatzController(ProjektService projektService) {
+        this.projektService = projektService;
+    }
+
+    @GetMapping
+    public String liste(@RequestParam(required = false) String kategorie,
+                        @RequestParam(required = false) String ort,
+                        Model model) {
+        List<Projekt> projekte = projektService.findeOeffentliche();
+
+        if (kategorie != null && !kategorie.isBlank()) {
+            projekte = projekte.stream()
+                    .filter(p -> kategorie.equalsIgnoreCase(p.getKategorie()))
+                    .toList();
+        }
+        if (ort != null && !ort.isBlank()) {
+            projekte = projekte.stream()
+                    .filter(p -> ort.equalsIgnoreCase(p.getOrt()))
+                    .toList();
+        }
+
+        model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "marktplatz");
+        model.addAttribute("projekte", projekte);
+        model.addAttribute("filterKategorie", kategorie);
+        model.addAttribute("filterOrt", ort);
+        return "marktplatz";
+    }
+
+    @GetMapping("/{slug}")
+    public String detail(@PathVariable String slug, Model model) {
+        Projekt projekt = projektService.findeNachSlug(slug)
+                .orElseThrow(() -> new IllegalArgumentException("Projekt nicht gefunden: " + slug));
+        model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "marktplatz");
+        model.addAttribute("projekt", projekt);
+        return "marktplatz-detail";
+    }
+}
+

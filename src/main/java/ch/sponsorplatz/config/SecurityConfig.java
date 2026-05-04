@@ -34,6 +34,7 @@ public class SecurityConfig {
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/organisationen").permitAll()
                 .requestMatchers("/organisationen/{slug}").permitAll()
+                .requestMatchers("/marktplatz/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -62,6 +63,7 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers("/organisationen").permitAll()
                 .requestMatchers("/organisationen/{slug}").permitAll()
+                .requestMatchers("/marktplatz/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

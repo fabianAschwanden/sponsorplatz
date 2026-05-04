@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${projekt.name + ' — Sponsorplatz'}">Projekt</title>
+    <meta name="description" th:content="${projekt.beschreibung != null ? #strings.abbreviate(projekt.beschreibung, 160) : projekt.name}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<header>
+    <nav>
+        <a th:href="@{/}">Sponsorplatz</a> &gt;
+        <a th:href="@{/marktplatz}">Marktplatz</a> &gt;
+        <span th:text="${projekt.name}">Projekt</span>
+    </nav>
+</header>
+<main>
+    <h1 th:text="${projekt.name}">Projektname</h1>
+
+    <dl>
+        <dt>Organisation</dt>
+        <dd th:text="${projekt.org.name}">Verein</dd>
+        <dt>Kategorie</dt>
+        <dd th:text="${projekt.kategorie ?: '-'}">-</dd>
+        <dt>Ort</dt>
+        <dd th:text="${projekt.ort ?: '-'}">-</dd>
+        <dt>Zeitraum</dt>
+        <dd>
+            <span th:if="${projekt.startDatum}" th:text="${#temporals.format(projekt.startDatum, 'dd.MM.yyyy')}"></span>
+            <span th:if="${projekt.startDatum != null and projekt.endDatum != null}"> — </span>
+            <span th:if="${projekt.endDatum}" th:text="${#temporals.format(projekt.endDatum, 'dd.MM.yyyy')}"></span>
+            <span th:if="${projekt.startDatum == null and projekt.endDatum == null}">-</span>
+        </dd>
+    </dl>
+
+    <div th:if="${projekt.beschreibung}">
+        <h2>Beschreibung</h2>
+        <p th:text="${projekt.beschreibung}">Beschreibung</p>
+    </div>
+
+    <section>
+        <h2>Kontakt</h2>
+        <p>Interessiert? Melden Sie sich bei <strong th:text="${projekt.org.name}">Verein</strong>.</p>
+    </section>
+</main>
+</body>
+</html>
+
+
