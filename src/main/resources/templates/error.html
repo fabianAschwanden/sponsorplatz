@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Fehler — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <header class="kopfzeile">
+        <div class="container">
+            <a class="logo" th:href="@{/}">Sponsorplatz</a>
+        </div>
+    </header>
+
+    <main class="hauptbereich">
+        <div class="container fehlerseite">
+            <p class="rubrik">Fehler</p>
+            <h1 th:text="${status} ?: 'Etwas ist schiefgelaufen'">Etwas ist schiefgelaufen</h1>
+            <p th:text="${error}"></p>
+            <p th:if="${message}" th:text="${message}"></p>
+            <a th:href="@{/}" class="cta">Zurück zur Startseite</a>
+        </div>
+    </main>
+</body>
+</html>

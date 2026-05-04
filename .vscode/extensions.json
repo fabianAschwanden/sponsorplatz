@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "vscjava.vscode-java-pack",
+    "vmware.vscode-boot-dev-pack",
+    "redhat.vscode-xml",
+    "redhat.vscode-yaml",
+    "ms-azuretools.vscode-docker",
+    "editorconfig.editorconfig",
+    "eamodio.gitlens",
+    "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-german",
+    "gruntfuggly.todo-tree",
+    "github.vscode-github-actions"
+  ]
+}

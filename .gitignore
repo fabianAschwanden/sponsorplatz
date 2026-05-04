@@ -1,0 +1,56 @@
+# Maven
+target/
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+
+# IDEs — IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Eclipse / Spring-Tool-Suite
+.project
+.classpath
+.settings/
+.factorypath
+.metadata
+bin/
+
+# VS Code — team-shared configs werden committet (extensions, settings, launch, tasks),
+# nur lokale/personal Files ignorieren:
+.vscode/*.local.json
+.vscode/launch.local.json
+.vscode/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Lokale Datenbank
+data/
+*.mv.db
+*.h2.db
+*.lock.db
+*.trace.db
+
+# Maven Wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# Spring Boot devtools
+.spring-boot-devtools.properties
+
+# Lokale ENV
+.env
+.env.local
+
+# Coverage
+coverage/
+.nyc_output/

@@ -1,0 +1,202 @@
+/* =============================================================================
+   Sponsorplatz — Brand-Stylesheet (Phase 0)
+   Farben:  Teal #1E3A5F · Korall #E07A5F · Cream #F4F1ED
+   ============================================================================= */
+
+:root {
+    --farbe-primaer: #1E3A5F;
+    --farbe-primaer-dunkel: #12253D;
+    --farbe-akzent: #E07A5F;
+    --farbe-akzent-dunkel: #B85C44;
+    --farbe-cream: #F4F1ED;
+    --farbe-text: #1A202C;
+    --farbe-text-muted: #64748B;
+    --farbe-rand: #E2DAD0;
+    --farbe-success: #2C7A7B;
+    --schrift-headline: 'Cambria', 'Georgia', serif;
+    --schrift-body: 'Inter', 'Calibri', system-ui, -apple-system, sans-serif;
+    --container-breite: 64rem;
+    --abstand: 1rem;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    font-family: var(--schrift-body);
+    color: var(--farbe-text);
+    background: var(--farbe-cream);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    max-width: var(--container-breite);
+    margin: 0 auto;
+    padding: 0 var(--abstand);
+}
+
+/* Kopfzeile */
+.kopfzeile {
+    background: var(--farbe-primaer);
+    color: #fff;
+    padding: 1rem 0;
+    border-bottom: 4px solid var(--farbe-akzent);
+}
+
+.kopfzeile .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.kopfzeile .logo {
+    font-family: var(--schrift-headline);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+}
+
+.navigation {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.navigation a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.95rem;
+    opacity: 0.85;
+    transition: opacity 0.2s;
+}
+
+.navigation a:hover, .navigation a.aktiv {
+    opacity: 1;
+}
+
+.navigation a.cta {
+    background: var(--farbe-akzent);
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    opacity: 1;
+    font-weight: 600;
+}
+
+.navigation a.cta:hover {
+    background: var(--farbe-akzent-dunkel);
+}
+
+/* Hauptbereich */
+.hauptbereich {
+    flex: 1;
+    padding: 4rem 0;
+}
+
+.hero .rubrik {
+    color: var(--farbe-akzent);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.hero h1 {
+    font-family: var(--schrift-headline);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    color: var(--farbe-text);
+}
+
+.hero .endlich {
+    font-family: var(--schrift-headline);
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-style: italic;
+    color: var(--farbe-akzent);
+    margin-bottom: 2.5rem;
+}
+
+.hinweis-box {
+    background: #fff;
+    border: 1px solid var(--farbe-rand);
+    border-left: 4px solid var(--farbe-akzent);
+    padding: 1.5rem;
+    border-radius: 0.25rem;
+    max-width: 40rem;
+}
+
+.hinweis-box p {
+    margin-bottom: 0.75rem;
+}
+
+.hinweis-box p:last-child {
+    margin-bottom: 0;
+}
+
+.hinweis-box a {
+    color: var(--farbe-primaer);
+    font-weight: 600;
+}
+
+/* Fehlerseite */
+.fehlerseite h1 {
+    font-family: var(--schrift-headline);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.fehlerseite .cta {
+    display: inline-block;
+    margin-top: 2rem;
+    background: var(--farbe-primaer);
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.25rem;
+    text-decoration: none;
+}
+
+/* Fußzeile */
+.fusszeile {
+    background: var(--farbe-primaer-dunkel);
+    color: #ECE2D0;
+    padding: 1.5rem 0;
+    font-size: 0.9rem;
+}
+
+.fusszeile .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.fusszeile nav {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.fusszeile a {
+    color: #ECE2D0;
+    text-decoration: none;
+    opacity: 0.7;
+}
+
+.fusszeile a:hover {
+    opacity: 1;
+}

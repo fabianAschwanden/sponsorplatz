@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Sponsorplatz (dev)",
+      "request": "launch",
+      "mainClass": "ch.sponsorplatz.PlatformApplication",
+      "projectName": "sponsorplatz",
+      "vmArgs": "-Dspring.profiles.active=dev -Xmx512m"
+    },
+    {
+      "type": "java",
+      "name": "Sponsorplatz (prod-lokal)",
+      "request": "launch",
+      "mainClass": "ch.sponsorplatz.PlatformApplication",
+      "projectName": "sponsorplatz",
+      "vmArgs": "-Dspring.profiles.active=prod -Xmx512m",
+      "env": {
+        "DB_URL": "jdbc:postgresql://localhost:5432/sponsorplatz",
+        "DB_USER": "sponsor",
+        "DB_PASSWORD": "sponsor_dev",
+        "SMTP_HOST": "localhost",
+        "SMTP_PORT": "1025"
+      }
+    },
+    {
+      "type": "java",
+      "name": "Aktueller Test",
+      "request": "launch",
+      "mainClass": "${file}",
+      "projectName": "sponsorplatz",
+      "vmArgs": "-Dspring.profiles.active=dev"
+    }
+  ]
+}

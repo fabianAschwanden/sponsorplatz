@@ -1,0 +1,10 @@
+target/
+.git/
+.idea/
+.vscode/
+*.iml
+data/
+node_modules/
+.DS_Store
+*.log
+.mvn/wrapper/maven-wrapper.jar

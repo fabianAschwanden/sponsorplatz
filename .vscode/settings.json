@@ -1,0 +1,92 @@
+{
+  "// Datei-Allgemeines": "",
+  "files.encoding": "utf8",
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "files.exclude": {
+    "**/.DS_Store": true,
+    "**/target": true,
+    "**/.factorypath": true,
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true
+  },
+  "files.watcherExclude": {
+    "**/target/**": true,
+    "**/data/**": true,
+    "**/.git/**": true
+  },
+
+  "editor.formatOnSave": true,
+  "editor.rulers": [120],
+  "editor.renderWhitespace": "boundary",
+  "editor.bracketPairColorization.enabled": true,
+
+  "[java]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.defaultFormatter": "redhat.java"
+  },
+  "[xml]": {
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "redhat.vscode-xml"
+  },
+  "[html]": { "editor.tabSize": 2 },
+  "[css]":  { "editor.tabSize": 4 },
+  "[json]": { "editor.tabSize": 2 },
+  "[yaml]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[markdown]": {
+    "editor.trimAutoWhitespace": false,
+    "files.trimTrailingWhitespace": false
+  },
+
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.import.maven.enabled": true,
+  "java.maven.downloadSources": true,
+  "java.format.settings.profile": "GoogleStyle",
+  "java.saveActions.organizeImports": true,
+  "java.completion.importOrder": ["java", "javax", "jakarta", "org", "com", "ch.sponsorplatz"],
+  "java.test.config": {
+    "vmArgs": ["-Dspring.profiles.active=dev"]
+  },
+
+  "spring-boot.ls.problem.application-properties.unknown-property": "WARNING",
+  "spring.initializr.defaultLanguage": "Java",
+  "spring.initializr.defaultGroupId": "ch.sponsorplatz",
+  "spring.initializr.defaultArtifactId": "sponsorplatz",
+  "spring.initializr.defaultJavaVersion": "21",
+
+  "cSpell.language": "en,de,de-CH",
+  "cSpell.words": [
+    "Sponsorplatz", "Verein", "Vereine", "Sponsor", "Sponsoren",
+    "Sponsoring", "Beteiligung", "Mitgliedschaft", "Saison", "Saisons",
+    "Marktplatz", "Vereinwerk", "Zefix", "Nominatim", "Aschwanden",
+    "thymeleaf", "actuator", "flyway", "mapstruct", "lombok",
+    "testcontainers", "logback", "logstash", "jacoco",
+    "BCrypt", "OIDC", "DSGVO", "DSG", "CHF", "OCI"
+  ],
+  "cSpell.ignorePaths": ["target/**", ".git/**", "data/**"],
+
+  "search.exclude": {
+    "**/target": true,
+    "**/data": true,
+    "**/.git": true,
+    "**/node_modules": true
+  },
+
+  "terminal.integrated.scrollback": 10000,
+
+  "todo-tree.general.tags": ["TODO", "FIXME", "HACK", "BUG", "REVIEW"],
+
+  "xml.format.enabled": true,
+  "xml.validation.enabled": true,
+
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml"
+  }
+}

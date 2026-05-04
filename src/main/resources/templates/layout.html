@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de-CH"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${seitentitel} ?: 'Sponsorplatz'">Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body>
+    <header class="kopfzeile">
+        <div class="container">
+            <a class="logo" th:href="@{/}">Sponsorplatz</a>
+            <nav class="navigation">
+                <a th:href="@{/}" th:classappend="${aktiveSeite == 'home'} ? 'aktiv'">Start</a>
+                <a th:href="@{/marktplatz}" th:classappend="${aktiveSeite == 'marktplatz'} ? 'aktiv'">Marktplatz</a>
+                <a th:href="@{/login}" class="cta">Anmelden</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="hauptbereich">
+        <div th:replace="~{::haupt-inhalt}">
+            Default-Inhalt — wird durch Seiten überschrieben
+        </div>
+    </main>
+
+    <footer class="fusszeile">
+        <div class="container">
+            <p>&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz · Schweiz</p>
+            <nav>
+                <a th:href="@{/impressum}">Impressum</a>
+                <a th:href="@{/datenschutz}">Datenschutz</a>
+                <a th:href="@{/agb}">AGB</a>
+            </nav>
+        </div>
+    </footer>
+</body>
+</html>

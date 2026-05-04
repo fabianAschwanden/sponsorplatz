@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Sponsorplatz — Vereine finden Sponsoren</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <header class="kopfzeile">
+        <div class="container">
+            <a class="logo" th:href="@{/}">Sponsorplatz</a>
+        </div>
+    </header>
+
+    <main class="hauptbereich hero">
+        <div class="container">
+            <p class="rubrik">Schweizer Sponsoring-Plattform</p>
+            <h1>Vereine finden Sponsoren.<br>Sponsoren finden Vereine.</h1>
+            <p class="endlich">Endlich.</p>
+
+            <div class="hinweis-box">
+                <p><strong>Phase 0 — In Aufbau.</strong></p>
+                <p>Sponsorplatz ist die kollaborative Plattform für Schweizer Vereine und ihre Sponsoren. Aktuell entsteht das Fundament; die ersten Funktionen kommen in den nächsten Wochen online.</p>
+                <p>Du willst Pilot-Verein werden? <a href="mailto:hallo@sponsorplatz.ch">hallo@sponsorplatz.ch</a></p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="fusszeile">
+        <div class="container">
+            <p>&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz · Schweiz</p>
+        </div>
+    </footer>
+</body>
+</html>
