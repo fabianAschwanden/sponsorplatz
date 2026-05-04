@@ -58,23 +58,33 @@
 - [ ] Auto-Verifizierung via Zefix-API (stub in dev)
 - [ ] Mitglieder-Einladungs-Flow (E-Mail mit Einladungs-Link)
 
-## Phase 2 — Pakete, Sichtbarkeit & Medien (aktuelle Iteration)
+## Phase 2 — Pakete, Sichtbarkeit & Medien ✓
 
-- [ ] `Projekt` mit `sichtbarkeit`, `slug`
-- [ ] `SponsoringPaket`-Entity
-- [ ] `MedienAsset` mit Storage-Abstraktion
-- [ ] Cover/Galerie/Pitch-Deck im Wizard
-- [ ] Veröffentlichungs-Flow
+- [x] Migration `V5__projekt_und_sponsoring_paket.sql`
+- [x] `Projekt`-Entity mit `sichtbarkeit`, `slug`, Kategorie, Ort, Datum
+- [x] `SponsoringPaket`-Entity (Name, Beschreibung, Preis CHF, Sortierung, aktiv)
+- [x] `ProjektRepository`, `SponsoringPaketRepository`
+- [x] `ProjektService` (erstelle, veroeffentliche, archiviere, findeOeffentliche)
+- [x] `SponsoringPaketService` (erstelle, deaktiviere, findeNachProjekt)
+- [x] `ProjektController` (CRUD + Veröffentlichung + Paket-Anlage)
+- [x] DTOs: `ProjektFormDto`, `SponsoringPaketFormDto`
+- [x] Templates: projekt-liste, projekt-form, projekt-detail
+- [x] Tests: PRJ-01..04, SP-01..04, PCTRL-01..05 (69 Tests gesamt)
+- [ ] `MedienAsset` mit Storage-Abstraktion (Backlog)
+- [ ] Cover/Galerie/Pitch-Deck im Wizard (Backlog)
 
-## Phase 3 — Marktplatz Public (3-4 Wochen)
+## Phase 3 — Marktplatz Public ✓
 
-- [ ] Public-Routes `/marktplatz/**`
-- [ ] Filter (Branche, Region, Datum, Budget)
-- [ ] Volltextsuche mit Postgres `tsvector`
-- [ ] SEO: Sitemap, Schema.org, Open Graph
-- [ ] Public-Vereinsprofile
+- [x] `MarktplatzController` mit `/marktplatz` (Liste) und `/marktplatz/{slug}` (Detail)
+- [x] Filter nach Kategorie und Ort
+- [x] SecurityConfig: `/marktplatz/**` als permitAll
+- [x] Templates: marktplatz.html, marktplatz-detail.html
+- [x] Tests: MKT-01..05 (74 Tests gesamt)
+- [ ] Volltextsuche mit Postgres `tsvector` (Backlog)
+- [ ] SEO: Sitemap, Schema.org, Open Graph (Backlog)
+- [ ] Public-Vereinsprofile (Backlog)
 
-## Phase 4 — Anfragen & Konversation (3 Wochen)
+## Phase 4 — Anfragen & Konversation (nächste Iteration)
 
 - [ ] `SponsoringAnfrage`-Entity + Status-Workflow
 - [ ] Sponsor-Org-Self-Reg
