@@ -81,9 +81,54 @@ Diese Regeln gelten für jede Code-Änderung:
 - **Guard Clauses** statt tiefes `else`-Nesting
 - **Keine Magic Strings:** Model-Attribute-Keys in `ModelAttributeNames`
 - **Konstanten** als `private static final`
-- **Services werfen** spezifische Exceptions (`IllegalArgumentException`, `IllegalStateException`)
-- **Controller fangen keine** Business-Fehler — `GlobalExceptionHandler` übernimmt
-- **Entities verlassen Service-Layer nicht** — Controller arbeiten mit DTOs
+- **Services werfen** spezifische Exceptions:
+  - `NotFoundException` (404) — Slug/ID nicht gefunden
+  - `IllegalArgumentException` (400) — ungültige Eingabe (Slug-Konflikt, leerer Name)
+  - `IllegalStateException` (409) — inkonsistenter Zustand (z.B. Org löschen mit Mitgliedschaften)
+  - `AccessDeniedException` (403) — fehlende Berechtigung
+- **Controller fangen keine** Business-Fehler — `GlobalExceptionHandler` übernimmt das Mapping auf HTTP-Statuscodes und rendert `error.html`
+
+### View-DTO-Pflicht (Entities verlassen Service-Layer NICHT)
+
+> **Verbindlich für jede neue oder geänderte Controller-Methode, die ein Template rendert.**
+> Verstoß = Code Review-Block. Bei Verletzung: zuerst View-DTO nachziehen, dann Feature mergen.
+
+**Regel:** Im Controller darf `model.addAttribute(...)` ausschliesslich Java-Records aus `ch.sponsorplatz.dto.*View` (oder `*FormDto` für Schreibe-Forms) bekommen. **Keine** JPA-Entity, **keine** `List<Entity>`, **keine** `Optional<Entity>`.
+
+**Schnell-Check in Code-Review:**
+```bash
+# Diese grep-Zeile darf NIE Treffer liefern (außer in /dto/ und Tests):
+grep -rn 'model.addAttribute.*\(service\.\|repository\.\|.get\)' src/main/java/ch/sponsorplatz/controller/
+```
+
+**Bestehende Views** (alle in `ch.sponsorplatz.dto`):
+
+| View | Wofür |
+|---|---|
+| `OrganisationView` | Org-Detail/Liste (volle Felder) |
+| `ProjektView` (mit nested `OrganisationKurzView`) | Projekt-Detail/Liste, inkl. Marktplatz |
+| `MitgliedView` | Mitgliederliste — flacht `user.anzeigename`/`user.email` ein, **kein passwortHash** |
+| `SponsoringPaketView` | Pakete einer Org/Projekt |
+| `AnfrageView` | Sponsoring-Anfragen — `paketName` flach |
+| `WatchlistEintragView` (mit nested `ProjektView`) | Watchlist |
+
+**Neuer Controller? Pattern:**
+```java
+// FALSCH — Entity ins Model:
+model.addAttribute("anfragen", anfrageService.findeEingehende(orgId));
+
+// RICHTIG — View vor model.addAttribute:
+List<SponsoringAnfrage> anfragen = anfrageService.findeEingehende(orgId);
+model.addAttribute("anfragen", AnfrageView.von(anfragen));
+```
+
+**Neue Entity → neuer View:**
+1. Java-`record` in `src/main/java/ch/sponsorplatz/dto/<Entity>View.java`
+2. Statische `von(entity)` und `von(List<entity>)`-Methoden
+3. **Mapping-Test** `<Entity>ViewTest` mit Test-ID `VIEW-NN` in `specs/TESTSTRATEGIE.md`
+4. Niemals Felder ins View packen, die nicht auf einer Detail-/Liste-Seite gerendert werden (Defense in depth — z. B. nie `passwortHash`, `verifikationsToken`)
+
+**Templates** sprechen ausschliesslich View-Properties an, niemals JPA-Relationen wie `${m.user.email}`. Bei nested Daten: View flachet ein (`${m.userEmail}`) oder hält nested-Record (`${e.projekt.name}`).
 
 ### Test-Konventionen
 
@@ -91,6 +136,7 @@ Diese Regeln gelten für jede Code-Änderung:
 - Test-IDs nach Schema `<Bereich>-<Nummer>` in `specs/TESTSTRATEGIE.md` pflegen
 - Jede Spec-Anforderung referenziert ihre Test-ID
 - AssertJ statt Hamcrest, Mockito für Mocks
+- **Jeder neue View-DTO** braucht einen `<Name>ViewTest` mit `VIEW-NN`-Test-ID
 
 ### Migrationen
 
@@ -106,8 +152,9 @@ src/main/java/ch/sponsorplatz/
 ├── PlatformApplication.java
 ├── config/        # Security, ModelAttributeNames
 ├── controller/    # + GlobalExceptionHandler
-├── dto/           # Form-DTOs mit Bean-Validation
-├── model/         # JPA-Entities + Enums
+├── dto/           # Form-DTOs (Schreibe) + View-DTOs (Lese, records)
+├── exception/     # NotFoundException etc.
+├── model/         # JPA-Entities + Enums (NIE direkt ins Model!)
 ├── repository/    # Spring Data JPA
 ├── service/       # Business-Logik, @Transactional
 └── startup/       # CommandLineRunner

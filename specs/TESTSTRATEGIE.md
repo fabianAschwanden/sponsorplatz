@@ -90,6 +90,8 @@ JPA-Entities verlassen den Service-Layer nicht mehr — Controller mappen vor `m
 | **VIEW-03** | `ProjektViewTest` | `ProjektView.von(entity)` mappt inkl. `OrganisationKurzView` für `org` |
 | **VIEW-04** | `MitgliedViewTest` | `MitgliedView.von(mitgliedschaft)` flacht `user.anzeigename`/`user.email` ein |
 | **VIEW-05** | `SponsoringPaketViewTest` | `SponsoringPaketView.von(entity)` mappt korrekt |
+| **VIEW-06** | `AnfrageViewTest` | `AnfrageView.von(anfrage)` flacht `paket.name` zu `paketName` ein |
+| **VIEW-07** | `WatchlistEintragViewTest` | `WatchlistEintragView.von(entity)` mappt mit nested `ProjektView` |
 
 ### Phase 0.2.3 — Mass-Assignment-Defense (K3-Fix)
 

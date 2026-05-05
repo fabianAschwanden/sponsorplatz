@@ -24,7 +24,7 @@
                   th:text="${a.status}">NEU</span>
         </div>
         <p class="anfrage-meta">
-            Paket: <span th:text="${a.paket.name}">Gold</span> ·
+            Paket: <span th:text="${a.paketName}">Gold</span> ·
             <span th:if="${a.kontaktEmail}" th:text="${a.kontaktEmail}">email</span>
         </p>
         <p th:text="${a.nachricht}">Nachricht</p>

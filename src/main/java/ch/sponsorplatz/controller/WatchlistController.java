@@ -1,6 +1,7 @@
 package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.config.ModelAttributeNames;
+import ch.sponsorplatz.dto.WatchlistEintragView;
 import ch.sponsorplatz.exception.NotFoundException;
 import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.model.Projekt;
@@ -40,7 +41,7 @@ public class WatchlistController {
         AppUser user = ladeUser(auth);
         List<WatchlistEintrag> eintraege = watchlistService.findeNachUser(user.getId());
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "watchlist");
-        model.addAttribute("eintraege", eintraege);
+        model.addAttribute("eintraege", WatchlistEintragView.von(eintraege));
         return "watchlist";
     }
 

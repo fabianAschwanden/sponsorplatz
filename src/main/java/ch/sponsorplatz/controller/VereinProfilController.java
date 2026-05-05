@@ -2,6 +2,7 @@ package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.OrganisationView;
+import ch.sponsorplatz.dto.ProjektView;
 import ch.sponsorplatz.exception.NotFoundException;
 import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.model.Projekt;
@@ -42,7 +43,7 @@ public class VereinProfilController {
 
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "vereine");
         model.addAttribute("org", OrganisationView.von(org));
-        model.addAttribute("projekte", oeffentlicheProjekte);
+        model.addAttribute("projekte", oeffentlicheProjekte.stream().map(ProjektView::von).toList());
         return "verein-profil";
     }
 }

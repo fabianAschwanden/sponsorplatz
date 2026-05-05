@@ -1,5 +1,13 @@
 # Technische Spezifikation
 
+## Architektur-Prinzipien (verbindlich)
+
+- **Layering**: `Controller → Service → Repository`. Controller halten keine Business-Logik; Services sind `@Transactional`.
+- **DTO-Pflicht am Web-Layer**: Templates erhalten ausschliesslich Records aus `ch.sponsorplatz.dto.*View` oder `*FormDto` — niemals JPA-Entities (verhindert LazyInitializationException + Persistenz/Präsentations-Kopplung). Konvention + Beispiele: siehe [`CLAUDE.md`](../CLAUDE.md#view-dto-pflicht-entities-verlassen-service-layer-nicht).
+- **Exception-Mapping zentral** in `GlobalExceptionHandler` → gerendertes `error.html` mit korrektem HTTP-Status (`NotFoundException`→404, `IllegalArgumentException`→400, `IllegalStateException`→409, `AccessDeniedException`→403).
+- **Mass-Assignment-Defense**: Update-Pfade identifizieren Ressourcen über URL-Path-Variable, niemals über Body-`id` (siehe Org-Update-Pattern: `POST /organisationen/{slug}` mit AccessControl-Check, `OrganisationFormDto` ohne `id`-Feld).
+- **AccessControl** ist die einzige Stelle für Org-Rollen-Checks. Controller rufen `accessControl.kannOrg…NachSlug(slug, auth)` programmatisch auf, werfen `AccessDeniedException` bei `false`.
+
 ## Stack
 
 | Schicht | Technologie | Version |
