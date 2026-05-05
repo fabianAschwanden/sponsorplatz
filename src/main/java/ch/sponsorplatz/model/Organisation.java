@@ -43,8 +43,9 @@ public class Organisation {
     @Column(name = "rechtsform", length = 50)
     private String rechtsform;
 
-    @Column(name = "branche", length = 50)
-    private String branche;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "branche", nullable = false, length = 50)
+    private Branche branche;
 
     @Column(name = "beschreibung", columnDefinition = "TEXT")
     private String beschreibung;
@@ -131,11 +132,11 @@ public class Organisation {
         this.rechtsform = rechtsform;
     }
 
-    public String getBranche() {
+    public Branche getBranche() {
         return branche;
     }
 
-    public void setBranche(String branche) {
+    public void setBranche(Branche branche) {
         this.branche = branche;
     }
 

@@ -1,5 +1,6 @@
 package ch.sponsorplatz.dto;
 
+import ch.sponsorplatz.model.Branche;
 import ch.sponsorplatz.model.OrgStatus;
 import ch.sponsorplatz.model.OrgTyp;
 import ch.sponsorplatz.model.Organisation;
@@ -27,7 +28,7 @@ class OrganisationViewTest {
         org.setTyp(OrgTyp.VEREIN);
         org.setStatus(OrgStatus.VERIFIED);
         org.setRechtsform("Verein");
-        org.setBranche("SPORT");
+        org.setBranche(Branche.SPORT);
         org.setBeschreibung("Beschreibung");
         org.setWebsiteUrl("https://fc-test.ch");
         org.setRegistriertAm(registriert);
@@ -41,7 +42,7 @@ class OrganisationViewTest {
         assertThat(view.typ()).isEqualTo(OrgTyp.VEREIN);
         assertThat(view.status()).isEqualTo(OrgStatus.VERIFIED);
         assertThat(view.rechtsform()).isEqualTo("Verein");
-        assertThat(view.branche()).isEqualTo("SPORT");
+        assertThat(view.branche()).isEqualTo(Branche.SPORT);
         assertThat(view.beschreibung()).isEqualTo("Beschreibung");
         assertThat(view.websiteUrl()).isEqualTo("https://fc-test.ch");
         assertThat(view.registriertAm()).isEqualTo(registriert);

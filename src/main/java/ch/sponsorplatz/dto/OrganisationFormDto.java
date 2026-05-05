@@ -1,5 +1,6 @@
 package ch.sponsorplatz.dto;
 
+import ch.sponsorplatz.model.Branche;
 import ch.sponsorplatz.model.OrgTyp;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,8 +27,8 @@ public class OrganisationFormDto {
     @Size(max = 50)
     private String rechtsform;
 
-    @Size(max = 50)
-    private String branche;
+    @NotNull(message = "Branche ist Pflicht — Sponsorplatz ist auf Sport und Gesundheit fokussiert")
+    private Branche branche;
 
     private String beschreibung;
 
@@ -66,11 +67,11 @@ public class OrganisationFormDto {
         this.rechtsform = rechtsform;
     }
 
-    public String getBranche() {
+    public Branche getBranche() {
         return branche;
     }
 
-    public void setBranche(String branche) {
+    public void setBranche(Branche branche) {
         this.branche = branche;
     }
 

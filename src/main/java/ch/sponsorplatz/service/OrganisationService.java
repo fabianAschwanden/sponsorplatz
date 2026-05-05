@@ -90,11 +90,16 @@ public class OrganisationService {
             throw new IllegalArgumentException("Slug bereits vergeben: " + gewuenschterSlug);
         }
 
+        if (dto.getBranche() == null) {
+            throw new IllegalArgumentException(
+                "Branche ist Pflicht — Sponsorplatz nimmt nur Vereine aus dem Sport- und Gesundheitsbereich auf.");
+        }
+
         org.setTyp(dto.getTyp());
         org.setName(dto.getName().trim());
         org.setSlug(gewuenschterSlug);
         org.setRechtsform(leereAlsNull(dto.getRechtsform()));
-        org.setBranche(leereAlsNull(dto.getBranche()));
+        org.setBranche(dto.getBranche());
         org.setBeschreibung(leereAlsNull(dto.getBeschreibung()));
         org.setWebsiteUrl(leereAlsNull(dto.getWebsiteUrl()));
     }

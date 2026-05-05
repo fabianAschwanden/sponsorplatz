@@ -8,7 +8,14 @@
 | V2 | `organisation` | 0.1 ✓ |
 | V3 | `app_user` + `mitgliedschaft` | 0.2 ✓ |
 | V4 | `email_verifizierung` (Felder auf app_user) | 1.2 ✓ |
-| V5 | `projekt` + `sponsoring_paket` | **2 (aktuell)** |
+| V5 | `projekt` + `sponsoring_paket` | 2 ✓ |
+| V6 | `sponsoring_anfrage` | 2 ✓ |
+| V7 | `watchlist` | 2 ✓ |
+| V8 | `einladung` | 1.2 ✓ |
+| V9 | `einladung_idempotenz` | 1.2 ✓ |
+| V10 | `volltextsuche_indizes` | 2 ✓ |
+| V11 | `medien_asset` | 2 ✓ |
+| V12 | `branche` Health-Fokus (NOT NULL + CHECK) | **3 (aktuell)** |
 
 ## V2 — Organisation
 
@@ -23,7 +30,7 @@ Eine `Organisation` ist die Wurzel-Entität für Vereine und Sponsor-Unternehmen
 | `name` | VARCHAR(255) | – | Anzeigename |
 | `slug` | VARCHAR(120) | – | URL-freundlich, UNIQUE |
 | `rechtsform` | VARCHAR(50) | ✓ | z.B. „Verein", „AG", „GmbH", „e.V." |
-| `branche` | VARCHAR(50) | ✓ | `SPORT`, `KULTUR`, `SOZIALES`, `BILDUNG`, `UMWELT`, `WIRTSCHAFT`, `ANDERE` |
+| `branche` | VARCHAR(50) | – | **Health-Fokus, NOT NULL ab V12, CHECK-Constraint:** `SPORT`, `BEWEGUNG`, `REHA`, `BEHINDERTENSPORT`, `SENIORENSPORT`, `PRAEVENTION`, `MENTAL_HEALTH`, `ERNAEHRUNG`, `WELLNESS`, `SELBSTHILFE`, `PATIENTENORGANISATION` |
 | `beschreibung` | TEXT | ✓ | öffentliche Beschreibung |
 | `website_url` | VARCHAR(500) | ✓ | |
 | `status` | VARCHAR(20) | – | ENUM (`PENDING`, `VERIFIED`, `ACTIVE`, `SUSPENDED`); Default `PENDING` |
@@ -44,6 +51,7 @@ Eine `Organisation` ist die Wurzel-Entität für Vereine und Sponsor-Unternehmen
 - `slug` UNIQUE-Index (automatisch)
 - `status` Index für Plattform-Admin-Verifizierungs-Queue
 - `typ` Index für Filter
+- `branche` Index für Marktplatz-Filter nach Health-Branche (V12)
 
 ### Slug-Generator
 

@@ -4,6 +4,7 @@ import ch.sponsorplatz.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.OrganisationFormDto;
 import ch.sponsorplatz.dto.OrganisationView;
 import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.model.Branche;
 import ch.sponsorplatz.model.OrgStatus;
 import ch.sponsorplatz.model.OrgTyp;
 import ch.sponsorplatz.model.Organisation;
@@ -46,6 +47,7 @@ public class OrganisationController {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("orgForm", new OrganisationFormDto());
         model.addAttribute("typen", OrgTyp.values());
+        model.addAttribute("branchen", Branche.values());
         return "organisation-form";
     }
 
@@ -97,6 +99,7 @@ public class OrganisationController {
     private String zeigeFormular(Model model) {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("typen", OrgTyp.values());
+        model.addAttribute("branchen", Branche.values());
         return "organisation-form";
     }
 
@@ -120,6 +123,7 @@ public class OrganisationController {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("orgForm", inFormDto(org));
         model.addAttribute("typen", OrgTyp.values());
+        model.addAttribute("branchen", Branche.values());
         model.addAttribute("bearbeitenSlug", slug);
         return "organisation-form";
     }

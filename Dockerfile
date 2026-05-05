@@ -24,6 +24,11 @@ WORKDIR /app
 
 COPY --from=build /workspace/target/sponsorplatz.jar app.jar
 
+# Upload-Verzeichnis für MedienAssets (LokalerStorageService default ./uploads)
+# muss vor USER sponsor angelegt werden, sonst verweigert das non-root-User-Image
+# das Erstellen unter WORKDIR /app
+RUN mkdir -p /app/uploads && chown -R sponsor:sponsor /app
+
 # Healthcheck nutzt /actuator/health
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1

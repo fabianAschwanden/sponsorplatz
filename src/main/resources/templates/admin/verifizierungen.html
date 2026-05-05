@@ -59,7 +59,12 @@
 
                 <th:block th:if="${org.branche}">
                     <dt>Branche</dt>
-                    <dd th:text="${org.branche}"></dd>
+                    <dd>
+                        <span class="app-chip app-chip-health" th:text="${org.branche.anzeige}">Sport</span>
+                        <span class="app-muted" style="display:block; margin-top:0.25rem; font-size:0.85rem;">
+                            ⚖️ Health-Fokus prüfen — passt der Verein zur Sport- und Gesundheits-Positionierung?
+                        </span>
+                    </dd>
                 </th:block>
 
                 <th:block th:if="${org.websiteUrl}">

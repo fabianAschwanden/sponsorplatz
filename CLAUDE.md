@@ -7,7 +7,10 @@
 
 ## Projekt: Sponsorplatz
 
-**Vision:** Schweizer Sponsoring-Plattform — *Wo Vereine und Marken zueinander finden.*
+**Vision:** Schweizer Sponsoring-Plattform für **Sport und Gesundheit** — *Wo Vereine und Marken zueinander finden.*
+**Nische (strikt):** Wir nehmen ausschliesslich Vereine auf, deren Mission im Sport- oder Gesundheitsbereich liegt.
+Themen-Umfang ist **breit:** Sport, Bewegung, Reha, Behindertensport, Seniorensport, Prävention, Mental Health,
+Ernährung, Wellness, Selbsthilfe, Patientenorganisationen — siehe `Branche`-Enum.
 **Modell:** Kollaborative Plattform — mehrere Vereine teilen eine offene Datenbasis, Edit-Rechte über `Mitgliedschaft`.
 **Sprache:** Deutsch (Code, Logs, Specs). Default-Locale `de_CH`. CHF, Datum `dd.MM.yyyy`.
 **Lizenz:** MIT.

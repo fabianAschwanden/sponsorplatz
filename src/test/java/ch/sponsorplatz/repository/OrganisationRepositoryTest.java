@@ -1,5 +1,6 @@
 package ch.sponsorplatz.repository;
 
+import ch.sponsorplatz.model.Branche;
 import ch.sponsorplatz.model.OrgStatus;
 import ch.sponsorplatz.model.OrgTyp;
 import ch.sponsorplatz.model.Organisation;
@@ -76,6 +77,7 @@ class OrganisationRepositoryTest {
         org.setName(name);
         org.setSlug(slug);
         org.setTyp(typ);
+        org.setBranche(Branche.SPORT);
         return org;
     }
 }

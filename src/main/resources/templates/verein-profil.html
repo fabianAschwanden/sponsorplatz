@@ -28,7 +28,7 @@
         <dt>Typ</dt>
         <dd th:text="${org.typ()}">VEREIN</dd>
         <dt>Branche</dt>
-        <dd th:text="${org.branche() ?: '-'}">-</dd>
+        <dd th:text="${org.branche() != null ? org.branche().anzeige : '-'}">-</dd>
         <dt>Rechtsform</dt>
         <dd th:text="${org.rechtsform() ?: '-'}">-</dd>
         <dt th:if="${org.websiteUrl()}">Website</dt>

@@ -1,6 +1,7 @@
 package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.config.SecurityConfig;
+import ch.sponsorplatz.model.Branche;
 import ch.sponsorplatz.model.OrgStatus;
 import ch.sponsorplatz.model.OrgTyp;
 import ch.sponsorplatz.model.Organisation;
@@ -67,6 +68,7 @@ class OrganisationControllerTest {
         mockMvc.perform(post("/organisationen")
                 .param("typ", "VEREIN")
                 .param("name", "Test-Verein")
+                .param("branche", "SPORT")
                 .with(csrf()))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrlPattern("/organisationen/*"));
@@ -83,6 +85,7 @@ class OrganisationControllerTest {
         mockMvc.perform(post("/organisationen/fc-test")
                 .param("typ", "VEREIN")
                 .param("name", "Test-Verein-Neu")
+                .param("branche", "SPORT")
                 .with(csrf()))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrlPattern("/organisationen/*"));
@@ -192,6 +195,7 @@ class OrganisationControllerTest {
         org.setName("Test-Verein");
         org.setSlug("fc-test");
         org.setTyp(OrgTyp.VEREIN);
+        org.setBranche(Branche.SPORT);
         org.setStatus(OrgStatus.PENDING);
         org.setRegistriertAm(Instant.now());
         return org;

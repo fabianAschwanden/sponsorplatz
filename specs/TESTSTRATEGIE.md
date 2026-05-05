@@ -105,6 +105,18 @@ JPA-Entities verlassen den Service-Layer nicht mehr — Controller mappen vor `m
 | **ORG-20** | `OrganisationServiceTest` | `aktualisiere(slug, dto)` lädt via Slug, ignoriert evtl. id im DTO |
 | **ORG-21** | `OrganisationServiceTest` | `aktualisiere` mit unbekanntem Slug → NotFoundException (404) |
 
+### Phase 3 — Health-Fokus (Branche-Enum)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **ORG-22** | `OrganisationServiceTest` | `erstelle` ohne Branche → IllegalArgumentException (Health-Fokus, Pflichtfeld) |
+| **ORG-23** | `OrganisationServiceTest` | `erstelle` akzeptiert alle elf Health-Branchen (`Branche.values()`) |
+
+> **Hintergrund:** Mit Konzept v3.1 (Schärfung 05.05.2026) ist Sponsorplatz strikt auf
+> Sport und Gesundheit positioniert. Die `Branche` ist Pflichtfeld und auf elf Werte
+> beschränkt — abgesichert durch Java-Enum (Compile-Time), DTO-`@NotNull` (Runtime-Form),
+> Service-Validierung (Runtime-Service) und DB-CHECK-Constraint (V12, Persistence).
+
 ### Phase 0.2.2 — Exception-Handling (K2-Fix)
 
 `GlobalExceptionHandler` gibt gerenderte Error-Page (`error.html`) statt Plain-Text zurück. Korrektes HTTP-Statuscode-Mapping:

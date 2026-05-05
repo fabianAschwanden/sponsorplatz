@@ -1,14 +1,18 @@
 # Sponsoring-Plattform — Konzept v3 (Kollaborative Plattform)
 
-**Version:** 3.0 — **AKTUELL**
-**Datum:** 30.04.2026
+**Version:** 3.1 — **AKTUELL** (Health-Fokus)
+**Datum:** 30.04.2026 / Schärfung 05.05.2026
 **Autor:** Fabian Aschwanden
-**Codebasis:** `~/Documents/SCA - Sponsoring/Sponsoring-new/sponsoren-app`
-**Modell:** Mehrere Vereine, gemeinsame Datenbasis, keine strikte Mandantentrennung
+**Codebasis:** `~/git/sponsorplatz`
+**Modell:** Mehrere **Sport- und Health-Vereine**, gemeinsame Datenbasis, keine strikte Mandantentrennung
 
-> **Schlüssel-Entscheidung:** Diese Plattform ist **kein Multi-Tenant-SaaS**. Mehrere Vereine arbeiten gemeinsam in einer geteilten Datenbasis. Es gibt **keine Datentrennung zwischen Vereinen** — alle Vereinsmitglieder sehen alle Vereins-, Projekt- und Sponsoren-Daten. Beschränkt werden nur **Edit-Rechte** (ein Vereinsmitglied kann nur seine eigenen Vereins-Daten ändern).
+> **Schlüssel-Entscheidung 1 (v3.0):** Diese Plattform ist **kein Multi-Tenant-SaaS**. Mehrere Vereine arbeiten gemeinsam in einer geteilten Datenbasis. Es gibt **keine Datentrennung zwischen Vereinen** — alle Vereinsmitglieder sehen alle Vereins-, Projekt- und Sponsoren-Daten. Beschränkt werden nur **Edit-Rechte** (ein Vereinsmitglied kann nur seine eigenen Vereins-Daten ändern).
 >
 > Das ist ein **Community-Modell**, näher an Wikipedia/GitHub-public-orgs als an Salesforce.
+>
+> **Schlüssel-Entscheidung 2 (v3.1, 05.05.2026):** Sponsorplatz ist **strikt auf Sport und Gesundheit** positioniert. Andere Vereinstypen werden bei der Verifizierung abgelehnt. Innerhalb des Health-Fokus ist der Themen-Umfang **breit** (`Branche`-Enum mit elf Werten):
+>
+> Sport, Bewegung, Reha, Behindertensport, Seniorensport, Prävention, Mental Health, Ernährung, Wellness, Selbsthilfe, Patientenorganisation.
 
 ---
 

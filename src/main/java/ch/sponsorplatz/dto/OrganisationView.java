@@ -1,5 +1,6 @@
 package ch.sponsorplatz.dto;
 
+import ch.sponsorplatz.model.Branche;
 import ch.sponsorplatz.model.OrgStatus;
 import ch.sponsorplatz.model.OrgTyp;
 import ch.sponsorplatz.model.Organisation;
@@ -18,7 +19,7 @@ public record OrganisationView(
         OrgTyp typ,
         OrgStatus status,
         String rechtsform,
-        String branche,
+        Branche branche,
         String beschreibung,
         String websiteUrl,
         Instant registriertAm,

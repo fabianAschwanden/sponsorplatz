@@ -56,8 +56,13 @@
                 </div>
 
                 <div class="app-form-group">
-                    <label for="branche">Branche</label>
-                    <input id="branche" type="text" th:field="*{branche}" placeholder="z. B. SPORT, KULTUR">
+                    <label for="branche">Branche *</label>
+                    <span class="hint">Sponsorplatz nimmt nur Vereine aus dem Sport- und Gesundheitsbereich auf.</span>
+                    <select id="branche" th:field="*{branche}">
+                        <option value="">— wählen —</option>
+                        <option th:each="b : ${branchen}" th:value="${b}" th:text="${b.anzeige}"></option>
+                    </select>
+                    <p class="app-meldung fehler" th:if="${#fields.hasErrors('branche')}" th:errors="*{branche}"></p>
                 </div>
 
                 <div class="app-form-group">

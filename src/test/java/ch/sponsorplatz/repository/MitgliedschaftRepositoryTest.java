@@ -1,6 +1,7 @@
 package ch.sponsorplatz.repository;
 
 import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.model.Branche;
 import ch.sponsorplatz.model.Mitgliedschaft;
 import ch.sponsorplatz.model.OrgTyp;
 import ch.sponsorplatz.model.Organisation;
@@ -79,6 +80,7 @@ class MitgliedschaftRepositoryTest {
         org.setName(name);
         org.setSlug(slug);
         org.setTyp(OrgTyp.VEREIN);
+        org.setBranche(Branche.SPORT);
         return organisationRepository.saveAndFlush(org);
     }
 

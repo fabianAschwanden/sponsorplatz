@@ -1307,6 +1307,59 @@ body.public-body {
     letter-spacing: 0.2px;
 }
 
+/* Hero-Claim — kurze Erklärung zwischen Headline und CTAs */
+.public-hero-claim {
+    max-width: 620px;
+    margin: 0.5rem auto 1.5rem;
+    color: var(--dash-text-muted);
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+/* Health-Fokus-Tags unter den Sub-Claims */
+.public-hero-fokus {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px dashed var(--dash-border);
+}
+
+.public-hero-fokus-label {
+    font-family: var(--dash-font-head);
+    font-size: 0.85rem;
+    color: var(--dash-text-muted);
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    margin-right: 0.25rem;
+}
+
+.public-hero-fokus-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.7rem;
+    background: var(--dash-coral-soft, rgba(224, 122, 95, 0.12));
+    color: var(--dash-coral-dark, #b35a44);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+/* Health-Chip im Admin-Verifizierungsworkflow */
+.app-chip-health {
+    background: var(--dash-coral-soft, rgba(224, 122, 95, 0.15));
+    color: var(--dash-coral-dark, #b35a44);
+    border: 1px solid var(--dash-coral, #E07A5F);
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
 /* Auth-Card (Login/Registrieren) */
 .public-auth-card {
     max-width: 440px;

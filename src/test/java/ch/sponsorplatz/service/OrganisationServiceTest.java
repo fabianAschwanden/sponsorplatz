@@ -2,6 +2,7 @@ package ch.sponsorplatz.service;
 
 import ch.sponsorplatz.dto.OrganisationFormDto;
 import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.model.Branche;
 import ch.sponsorplatz.model.OrgStatus;
 import ch.sponsorplatz.model.OrgTyp;
 import ch.sponsorplatz.model.Organisation;
@@ -113,14 +114,42 @@ class OrganisationServiceTest {
 
         OrganisationFormDto dto = neuesDto("Test-Org", null);
         dto.setRechtsform("   ");
-        dto.setBranche("");
         dto.setBeschreibung("  echte Beschreibung  ");
 
         Organisation gespeichert = service.erstelle(dto);
 
         assertThat(gespeichert.getRechtsform()).isNull();
-        assertThat(gespeichert.getBranche()).isNull();
+        assertThat(gespeichert.getBranche()).isEqualTo(Branche.SPORT);
         assertThat(gespeichert.getBeschreibung()).isEqualTo("echte Beschreibung");
+    }
+
+    /** ORG-22: Branche ist Pflicht — null wirft IllegalArgumentException (Health-Fokus). */
+    @Test
+    void erstelleOhneBrancheSchlaegtFehl() {
+        when(repository.findBySlug(any())).thenReturn(Optional.empty());
+
+        OrganisationFormDto dto = neuesDto("Ohne Branche", null);
+        dto.setBranche(null);
+
+        assertThatThrownBy(() -> service.erstelle(dto))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Branche");
+    }
+
+    /** ORG-23: Health-Branchen werden akzeptiert — alle Enum-Werte. */
+    @Test
+    void erstelleAkzeptiertAlleHealthBranchen() {
+        when(repository.findBySlug(any())).thenReturn(Optional.empty());
+        when(repository.save(any(Organisation.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        for (Branche branche : Branche.values()) {
+            OrganisationFormDto dto = neuesDto("Test " + branche.name(), branche.name().toLowerCase());
+            dto.setBranche(branche);
+
+            Organisation gespeichert = service.erstelle(dto);
+
+            assertThat(gespeichert.getBranche()).isEqualTo(branche);
+        }
     }
 
     /** ORG-11: loesche wirft IllegalStateException wenn Mitgliedschaften vorhanden. */
@@ -209,6 +238,7 @@ class OrganisationServiceTest {
         dto.setTyp(OrgTyp.VEREIN);
         dto.setName(name);
         dto.setSlug(slug);
+        dto.setBranche(Branche.SPORT);
         return dto;
     }
 }

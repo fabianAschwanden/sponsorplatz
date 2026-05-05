@@ -1,8 +1,11 @@
 # Sponsorplatz
 
 > **Wo Vereine und Marken zueinander finden.**
+> *Sponsoring für Sport und Gesundheit · Schweiz*
 
-Schweizer Sponsoring-Plattform für Vereine und Sponsoren — kollaborativ, branchenoffen, DSG-konform.
+Schweizer Sponsoring-Plattform mit striktem Health-Fokus — kollaborativ, kuratiert, DSG-konform.
+Sport, Bewegung, Reha, Behindertensport, Seniorensport, Prävention, Mental Health, Ernährung,
+Wellness, Selbsthilfe, Patientenorganisationen.
 
 [![CI](https://github.com/fabianaschwanden/sponsorplatz/actions/workflows/ci.yml/badge.svg)](https://github.com/fabianaschwanden/sponsorplatz/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -11,8 +14,14 @@ Schweizer Sponsoring-Plattform für Vereine und Sponsoren — kollaborativ, bran
 
 ## Was ist Sponsorplatz?
 
-Sponsorplatz ist eine offene, schweizerische Plattform, auf der **Vereine** ihre Projekte und Events präsentieren — und **Unternehmen** als Sponsoren passende Engagements finden. Die Plattform vereint:
+Sponsorplatz ist die kuratierte Schweizer Sponsoring-Plattform für **Sport- und Health-Vereine**
+und für **Marken mit Health-Affinität** (Krankenkassen, Apotheken, Lebensmittel, Fitness, Stiftungen).
+Vereine ohne klaren Sport- oder Gesundheitsbezug werden bei der Verifizierung abgelehnt — diese
+Schärfe ist unser Vertrauens-Versprechen an die Sponsoren-Seite.
 
+Die Plattform vereint:
+
+- **Kuratierter Health-Marktplatz** — strikt auf Sport und Gesundheit fokussiert (elf Branchen)
 - **Kollaboratives CRM** für Sponsoren-Daten (geteilte Stammdaten, Edit-Rechte pro Verein)
 - **Marktplatz** mit öffentlichen Projekt-Profilen, Sponsoring-Paketen und Anfrage-Workflow
 - **Werkzeuge** für Vereine: Excel-Im/Export, Word-Serienbrief, Datenbereinigung gegen Zefix

@@ -44,6 +44,9 @@ services:
       SMTP_PORT: 1025
     ports:
       - "8080:8080"
+    volumes:
+      - sponsorplatz_uploads:/app/uploads
 
 volumes:
   postgres_data:
+  sponsorplatz_uploads:

@@ -47,7 +47,7 @@
                     <div class="app-muted" th:text="${org.slug}">slug</div>
                 </td>
                 <td><span class="app-chip" th:text="${org.typ}">VEREIN</span></td>
-                <td th:text="${org.branche} ?: '—'">—</td>
+                <td th:text="${org.branche != null ? org.branche.anzeige : '—'}">—</td>
                 <td>
                     <span class="app-status" th:classappend="${'status-' + #strings.toLowerCase(org.status)}"
                           th:text="${org.status}">PENDING</span>
