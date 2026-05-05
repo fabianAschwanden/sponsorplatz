@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${org.name() + ' — Sponsorplatz'}">Vereinsprofil</title>
+    <meta name="description" th:content="${org.beschreibung() != null ? #strings.abbreviate(org.beschreibung(), 160) : org.name()}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<header>
+    <nav>
+        <a th:href="@{/}">Sponsorplatz</a> &gt;
+        <a th:href="@{/marktplatz}">Marktplatz</a> &gt;
+        <span th:text="${org.name()}">Verein</span>
+    </nav>
+</header>
+<main>
+    <h1 th:text="${org.name()}">Vereinsname</h1>
+
+    <dl>
+        <dt>Typ</dt>
+        <dd th:text="${org.typ()}">VEREIN</dd>
+        <dt>Branche</dt>
+        <dd th:text="${org.branche() ?: '-'}">-</dd>
+        <dt>Rechtsform</dt>
+        <dd th:text="${org.rechtsform() ?: '-'}">-</dd>
+        <dt th:if="${org.websiteUrl()}">Website</dt>
+        <dd th:if="${org.websiteUrl()}"><a th:href="${org.websiteUrl()}" th:text="${org.websiteUrl()}" target="_blank">URL</a></dd>
+    </dl>
+
+    <div th:if="${org.beschreibung()}">
+        <h2>Über uns</h2>
+        <p th:text="${org.beschreibung()}">Beschreibung</p>
+    </div>
+
+    <section th:if="${!projekte.isEmpty()}">
+        <h2>Aktuelle Projekte</h2>
+        <div th:each="p : ${projekte}" class="card">
+            <h3><a th:href="@{'/marktplatz/' + ${p.slug}}" th:text="${p.name}">Projekt</a></h3>
+            <p th:if="${p.kategorie}" th:text="'Kategorie: ' + ${p.kategorie}"></p>
+            <p th:if="${p.ort}" th:text="'Ort: ' + ${p.ort}"></p>
+        </div>
+    </section>
+
+    <p th:if="${projekte.isEmpty()}">Dieser Verein hat aktuell keine veröffentlichten Projekte.</p>
+</main>
+</body>
+</html>
+

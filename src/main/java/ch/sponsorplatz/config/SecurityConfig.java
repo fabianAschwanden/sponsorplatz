@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .requestMatchers("/organisationen").permitAll()
                 .requestMatchers("/organisationen/{slug}").permitAll()
                 .requestMatchers("/marktplatz/**").permitAll()
+                .requestMatchers("/vereine/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -66,6 +67,7 @@ public class SecurityConfig {
                 .requestMatchers("/organisationen").permitAll()
                 .requestMatchers("/organisationen/{slug}").permitAll()
                 .requestMatchers("/marktplatz/**").permitAll()
+                .requestMatchers("/vereine/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
