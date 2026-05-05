@@ -1,0 +1,46 @@
+# Caddy als TLS-Termination + Reverse-Proxy auf die App.
+# Let's-Encrypt-Auto, kostenlos, ohne config-Aufwand.
+#
+# Variablen via ENV / docker-compose:
+#   {$DOMAIN}        — z.B. sponsorplatz.example.ch
+#   {$ACME_EMAIL}    — Kontakt-Mail für Let's Encrypt
+#
+# Caddy lauscht auf 80 + 443; redirected HTTP → HTTPS.
+# Forwarded-Headers werden weitergereicht; die App liest sie via
+# server.forward-headers-strategy=framework (cloud-free profile).
+
+{
+    email {$ACME_EMAIL}
+    # Persistente Daten für Let's-Encrypt-Account + Cert-Caching
+    storage file_system {
+        root /data
+    }
+}
+
+{$DOMAIN} {
+    encode zstd gzip
+
+    # Sicherheit: HSTS + Standard-Header
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # CSP minimal — Inline-Styles sind aktuell im Template; Tightening später
+        # Permissions-Policy: alles aus, was wir nicht brauchen
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    }
+
+    # /actuator/health darf öffentlich sein (für Healthcheck im Compose).
+    # Andere /actuator/* sind in der App via Spring Security gedrosselt
+    # (cloud-free: nur health/info exposed).
+
+    # Statische Ressourcen aggressiv cachen (Spring liefert Hash-URLs nicht
+    # automatisch — also kürzere TTL setzen, bis Hash-URL eingerichtet)
+    @static path *.css *.js *.svg *.png *.jpg *.jpeg *.webp *.ico *.woff2
+    header @static Cache-Control "public, max-age=3600"
+
+    reverse_proxy app:8080 {
+        # Caddy reicht bereits X-Forwarded-Proto/-For weiter
+        flush_interval -1
+    }
+}

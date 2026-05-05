@@ -1,0 +1,118 @@
+name: CD Staging (Free Tier)
+
+# Deploy auf die OCI Always-Free-VM (infra/staging-free).
+# Triggered nach jedem grünen CI-Run auf main.
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Diagnose-Job: läuft immer und logt explizit, warum der Deploy skipped wurde.
+  preflight:
+    name: Preflight (vars/secrets check)
+    runs-on: ubuntu-latest
+    outputs:
+      can-deploy: ${{ steps.check.outputs.can-deploy }}
+    steps:
+      - id: check
+        run: |
+          missing=()
+          [ -z "${{ vars.STAGING_FREE_VM_IP }}" ] && missing+=("vars.STAGING_FREE_VM_IP")
+          [ -z "${{ vars.OCIR_NAMESPACE }}" ]     && missing+=("vars.OCIR_NAMESPACE")
+          [ -z "${{ vars.OCIR_USERNAME }}" ]      && missing+=("vars.OCIR_USERNAME")
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::warning::CD skipped — fehlende Repo-Variablen: ${missing[*]}. Setup siehe infra/staging-free/README.md"
+            echo "can-deploy=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "can-deploy=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    name: Build → Trivy → Push → SSH-Deploy
+    needs: preflight
+    if: ${{ (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success') && needs.preflight.outputs.can-deploy == 'true' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: staging-free
+      url: https://${{ vars.STAGING_FREE_DOMAIN || vars.STAGING_FREE_VM_IP }}
+    env:
+      IMAGE_BASE: zrh.ocir.io/${{ vars.OCIR_NAMESPACE }}/sponsorplatz
+      IMAGE_TAG:  ${{ github.event.workflow_run.head_sha || github.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (linux/amd64 für Free-Tier-VM)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: |
+            ${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG }}
+            ${{ env.IMAGE_BASE }}:staging-latest
+
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG }}
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          ignore-unfixed: true
+
+      - name: Log in to OCIR
+        run: |
+          echo "${{ secrets.OCIR_AUTH_TOKEN }}" | \
+            docker login zrh.ocir.io \
+              --username "${{ vars.OCIR_NAMESPACE }}/${{ vars.OCIR_USERNAME }}" \
+              --password-stdin
+
+      - name: Push image
+        run: |
+          docker push ${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG }}
+          docker push ${{ env.IMAGE_BASE }}:staging-latest
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.STAGING_FREE_SSH_PRIVATE_KEY }}
+
+      - name: Add VM to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ vars.STAGING_FREE_VM_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy on VM (cleanup + pull + restart)
+        run: |
+          # Pre-Pull-Cleanup: alte ungenutzte Images älter als 24h löschen.
+          # Free-Tier-VM hat nur 30 GB Boot-Volume.
+          ssh opc@${{ vars.STAGING_FREE_VM_IP }} \
+            "sudo docker system prune -af --filter 'until=24h' 2>&1 | tail -3 && \
+             cd /opt/sponsorplatz && sudo docker compose pull app && sudo docker compose up -d app"
+
+      - name: Smoke test
+        run: |
+          HEALTH_URL="${{ vars.STAGING_FREE_DOMAIN && format('https://{0}', vars.STAGING_FREE_DOMAIN) || format('http://{0}', vars.STAGING_FREE_VM_IP) }}/actuator/health"
+          for i in $(seq 1 30); do
+            if curl -fsS -o /dev/null "$HEALTH_URL"; then
+              echo "Health OK after $i polls"; exit 0
+            fi
+            echo "Poll $i — not ready yet"
+            sleep 10
+          done
+          echo "Health check failed at $HEALTH_URL"
+          exit 1

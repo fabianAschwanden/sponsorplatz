@@ -1,0 +1,88 @@
+# =============================================================================
+# Sponsorplatz — Staging-Free-Stack (OCI Always-Free-VM)
+# =============================================================================
+# Wird auf der VM nach /opt/sponsorplatz/docker-compose.yml gelegt
+# (von cloud-init oder via SCP). App-Image kommt aus OCIR.
+#
+# Erwartete ENV-Vars auf der VM:
+#   DB_PASSWORD               — Postgres-Pw (rotation: terraform output)
+#   SMTP_HOST/PORT/USER/PASSWORD  — externer Mail-Relay
+#   BASIS_URL                 — z.B. https://sponsorplatz.example.ch
+#   ACME_EMAIL                — Kontakt für Let's Encrypt
+#   DOMAIN                    — Public Hostname für Caddy
+#   IMAGE_TAG                 — von CD gesetzt (sonst :staging-latest)
+#   SPONSORPLATZ_ADMIN_EMAIL/PASSWORD  — initialer Admin (ProdAdminSeedRunner)
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: sponsorplatz-db
+    restart: unless-stopped
+    mem_limit: 384m
+    environment:
+      POSTGRES_DB: sponsorplatz
+      POSTGRES_USER: sponsorplatz
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - /var/lib/sponsorplatz/db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sponsorplatz -d sponsorplatz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: ${IMAGE_URL:-zrh.ocir.io/REPLACE_NS/sponsorplatz:staging-latest}
+    container_name: sponsorplatz-app
+    restart: unless-stopped
+    mem_limit: 768m
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: cloud-free
+      DB_URL: jdbc:postgresql://db:5432/sponsorplatz
+      DB_USER: sponsorplatz
+      DB_PASSWORD: ${DB_PASSWORD}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_AUTH: "true"
+      SMTP_STARTTLS: "true"
+      BASIS_URL: ${BASIS_URL}
+      SPONSORPLATZ_ADMIN_EMAIL: ${SPONSORPLATZ_ADMIN_EMAIL:-}
+      SPONSORPLATZ_ADMIN_PASSWORD: ${SPONSORPLATZ_ADMIN_PASSWORD:-}
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=70 -Xss512k"
+    volumes:
+      - /var/lib/sponsorplatz/uploads:/app/uploads
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: sponsorplatz-caddy
+    restart: unless-stopped
+    mem_limit: 96m
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - /opt/sponsorplatz/Caddyfile:/etc/caddy/Caddyfile:ro
+      - /var/lib/sponsorplatz/caddy-data:/data
+      - /var/lib/sponsorplatz/caddy-config:/config
+
+# Hinweis: Volumes liegen direkt auf dem VM-Host (`/var/lib/sponsorplatz/...`)
+# damit sie ein `docker compose down` überleben und Backups einfach via
+# `tar cf` möglich sind.
