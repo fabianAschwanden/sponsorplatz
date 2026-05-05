@@ -280,6 +280,32 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **PCTRL-07** | `ProjektControllerTest` | POST `.../{projektSlug}/veroeffentlichen` ohne Edit-Recht → 403 |
 | **PCTRL-08** | `ProjektControllerTest` | POST `.../{projektSlug}/pakete/speichern` ohne Edit-Recht → 403 |
 
+### Inbox / Nachrichten (MSG)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **MSG-01** | `NachrichtServiceTest` | `sendeNachricht` erstellt Nachricht zu angenommener Anfrage |
+| **MSG-02** | `NachrichtServiceTest` | `sendeNachricht` wirft IllegalStateException wenn Anfrage nicht ANGENOMMEN |
+| **MSG-03** | `NachrichtServiceTest` | `sendeNachricht` wirft AccessDeniedException wenn User nicht zu beteiligter Org gehört |
+| **MSG-04** | `NachrichtServiceTest` | `findeNachAnfrage` gibt Nachrichten chronologisch sortiert zurück |
+| **MSG-05** | `NachrichtControllerTest` | GET `.../nachrichten` mit Edit-Recht → 200 + Thread-Ansicht |
+| **MSG-06** | `NachrichtControllerTest` | GET `.../nachrichten` ohne Recht → 403 |
+| **MSG-07** | `NachrichtControllerTest` | POST `.../nachrichten` mit gültigem Text → 302 Redirect |
+| **MSG-08** | `NachrichtControllerTest` | POST `.../nachrichten` mit leerem Text → Validierungsfehler |
+| **MSG-09** | `NachrichtViewTest` | View-Mapping korrekt (kein passwortHash, flacht Absender-Name ein) |
+
+### Sponsor-Registrierung (SR)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **SR-01** | `SponsorRegistrierungServiceTest` | `registriereSponsor` erstellt AppUser, Organisation (UNTERNEHMEN/PENDING), Mitgliedschaft (ORG_OWNER) |
+| **SR-02** | `SponsorRegistrierungServiceTest` | Doppelte E-Mail → IllegalArgumentException (delegiert an AppUserService) |
+| **SR-03** | `SponsorRegistrierungServiceTest` | Slug-Konflikt bei Firmenname → IllegalArgumentException |
+| **SR-04** | `SponsorRegistrierungControllerTest` | GET `/sponsor/registrieren` → 200 + sponsor-registrieren Template |
+| **SR-05** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` valid → 302 Redirect `/login?registriert` |
+| **SR-06** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` mit Validierungsfehler → bleibt auf Formular |
+| **SR-07** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` doppelte E-Mail → Fehlermeldung auf Formular |
+
 ## CI
 
 - Bei jedem Push und PR auf `main`: `mvn -B clean verify` + Docker-Build-Smoke

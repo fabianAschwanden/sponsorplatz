@@ -90,7 +90,7 @@
 - [x] `MedienController` (GET `/medien/{id}` public, POST Upload für Projekt/Org, POST Löschen mit AccessControl)
 - [x] `MedienAssetView`-DTO, Migration `V11__medien_asset.sql`
 - [x] Tests: MA-01..08 (197 Tests gesamt)
-- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in Marktplatz-Karten, `ProjektView` mit `coverUrl`
+f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in Marktplatz-Karten, `ProjektView` mit `coverUrl`
 
 ## Phase 3 — Marktplatz Public ✓
 
@@ -117,8 +117,10 @@
 - [x] Tests: ANF-01..05, ANFCTRL-01..04 (107 Tests gesamt)
 - [x] E-Mail-Notifications: `BenachrichtigungsService` verdrahtet in `SponsoringAnfrageService` (erstelle → neue Anfrage, annehme/lehneAb → Antwort)
 - [x] Tests: ANF-06..07, BEN-01..03
-- [ ] Sponsor-Org-Self-Reg (Backlog)
-- [ ] Verein-Inbox + Threaded Messages (Backlog)
+- [x] Sponsor-Org-Self-Reg: `SponsorRegistrierungController` unter `/sponsor/registrieren`, kombinierter Flow (User + UNTERNEHMEN-Org + ORG_OWNER-Mitgliedschaft)
+- [x] Verein-Inbox: `Nachricht`-Entity, `NachrichtService`, `NachrichtController` unter `/organisationen/{slug}/anfragen/{id}/nachrichten`
+    - Migration V13, Thread-Ansicht, nur bei ANGENOMMEN-Anfragen, AccessControl, `NachrichtView`-DTO
+    - Tests: MSG-01..09 (217 Tests gesamt)
 
 ## Phase 5 — Watchlist ✓
 
@@ -132,11 +134,17 @@
 
 ## Phase 5+ — Wachstum (nächste Iteration)
 
-- Matching-Empfehlungen
-- Mehrsprachigkeit FR/IT
-- Vertrags-Generator
-- Zahlungs-Integration
-- Volltextsuche mit Postgres `tsvector`
+- [x] Matching-Empfehlungen: `MatchingService` findet Projekte nach Branchen-Match, Dashboard zeigt max. 6 Empfehlungen
+- [x] Prod-Admin-Seed: `ProdAdminSeedRunner` erstellt Admin aus ENV-Variablen (`SPONSORPLATZ_ADMIN_EMAIL/PASSWORD`)
+- [x] Audit-Log: `AuditLog`-Entity, `AuditService` (async), Admin-UI unter `/admin/audit`, Verdrahtung in Admin-Aktionen
+    - Migration V14, AuditAktion-Konstanten, chronologische Log-Ansicht (letzte 100)
+- [x] Backup-Funktion: `BackupService` (H2 SCRIPT TO / pg_dump), Cron-Job täglich 02:00, Admin-UI unter `/admin/backups`
+    - Manueller Backup-Button, Cleanup nach 30 Tagen, Cloud-fähig via Erweiterung
+    - Tests: AUDIT-01..03, BACKUP-01..03 (230 Tests gesamt)
+- [ ] Mehrsprachigkeit FR/IT
+- [ ] Vertrags-Generator
+- [ ] Zahlungs-Integration
+- [ ] Volltextsuche mit Postgres `tsvector`
 
 ## Phase 6 — Einstellungen & Production-Readiness ✓
 

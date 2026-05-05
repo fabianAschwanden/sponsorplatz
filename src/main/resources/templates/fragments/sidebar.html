@@ -54,6 +54,19 @@
                   th:if="${badgeAnfragen != null and badgeAnfragen > 0}"
                   th:text="${badgeAnfragen}">3</span>
         </a>
+
+        <!-- Admin-Bereich (nur für PLATFORM_ADMIN) -->
+        <div sec:authorize="hasRole('PLATFORM_ADMIN')" style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1);">
+            <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; opacity:0.5; padding:0 0.75rem;">Admin</span>
+            <a th:href="@{/admin}" class="dash-nav-item"
+               th:classappend="${aktiv == 'admin'} ? 'aktiv'">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
+                    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15 1.65 1.65 0 003 14.08V14a2 2 0 014 0v.09"/>
+                </svg>
+                Admin
+            </a>
+        </div>
     </nav>
 
     <footer class="dash-userbox" sec:authorize="isAuthenticated()">

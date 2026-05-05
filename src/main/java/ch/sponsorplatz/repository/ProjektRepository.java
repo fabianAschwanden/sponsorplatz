@@ -1,5 +1,6 @@
 package ch.sponsorplatz.repository;
 
+import ch.sponsorplatz.model.Branche;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.Sichtbarkeit;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -41,5 +42,19 @@ public interface ProjektRepository extends JpaRepository<Projekt, UUID> {
             """)
     List<Projekt> sucheOeffentliche(@Param("suchbegriff") String suchbegriff,
                                      @Param("sichtbarkeit") Sichtbarkeit sichtbarkeit);
-}
 
+    /**
+     * Matching-Query: Findet öffentliche Projekte, deren Org eine der gegebenen Branchen hat,
+     * aber nicht zu den eigenen Orgs gehört. Limitiert auf die neuesten Einträge.
+     */
+    @Query("""
+            SELECT p FROM Projekt p
+            WHERE p.sichtbarkeit = :sichtbarkeit
+            AND p.org.branche IN :branchen
+            AND p.org.id NOT IN :eigeneOrgIds
+            ORDER BY p.veroeffentlichtAm DESC
+            """)
+    List<Projekt> findePassende(@Param("branchen") Collection<Branche> branchen,
+                                @Param("eigeneOrgIds") Collection<UUID> eigeneOrgIds,
+                                @Param("sichtbarkeit") Sichtbarkeit sichtbarkeit);
+}

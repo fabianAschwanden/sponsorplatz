@@ -32,6 +32,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
                 .requestMatchers("/login", "/registrieren", "/verifizieren").permitAll()
+                .requestMatchers("/sponsor/**").permitAll()
                 .requestMatchers("/einladung/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
@@ -65,6 +66,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
                 .requestMatchers("/login", "/registrieren", "/verifizieren").permitAll()
+                .requestMatchers("/sponsor/**").permitAll()
                 .requestMatchers("/einladung/**").permitAll()
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers("/organisationen").permitAll()

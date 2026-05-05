@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin — Benutzer — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('admin', null)}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">Plattform-Admin</p>
+                <h1>Benutzer-Verwaltung</h1>
+            </div>
+        </header>
+
+        <!-- Admin-Navigation -->
+        <nav style="display:flex; gap:0.75rem; margin-bottom:2rem; flex-wrap:wrap;">
+            <a th:href="@{/admin}" class="app-btn app-btn-ghost">Übersicht</a>
+            <a th:href="@{/admin/benutzer}" class="app-btn">Benutzer</a>
+            <a th:href="@{/admin/organisationen}" class="app-btn app-btn-ghost">Organisationen</a>
+            <a th:href="@{/admin/verifizierungen}" class="app-btn app-btn-ghost">Verifizierungen</a>
+        </nav>
+
+        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+
+        <p class="app-muted" th:text="${#lists.size(benutzer) + ' Benutzer registriert'}"></p>
+
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Anzeigename</th>
+                    <th>E-Mail</th>
+                    <th>Status</th>
+                    <th>Rolle</th>
+                    <th>Registriert</th>
+                    <th>Aktionen</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u : ${benutzer}">
+                    <td th:text="${u.anzeigename}">Name</td>
+                    <td th:text="${u.email}">email@test.ch</td>
+                    <td>
+                        <span th:if="${u.aktiv}" class="app-chip" style="background:#dcfce7;color:#166534;">Aktiv</span>
+                        <span th:unless="${u.aktiv}" class="app-chip" style="background:#fecaca;color:#991b1b;">Gesperrt</span>
+                        <span th:unless="${u.emailVerifiziert}" class="app-chip" style="background:#fef3c7;color:#92400e;">Unverifiziert</span>
+                    </td>
+                    <td>
+                        <form th:action="@{/admin/benutzer/{id}/rolle(id=${u.id})}" method="post"
+                              style="display:inline; margin:0;">
+                            <select name="rolle" onchange="this.form.submit()" style="font-size:0.85rem; padding:0.2rem;">
+                                <option value="" th:selected="${u.platformRolle == null}">— Keine —</option>
+                                <option th:each="r : ${rollen}" th:value="${r}" th:text="${r}"
+                                        th:selected="${u.platformRolle == r}">ROLLE</option>
+                            </select>
+                        </form>
+                    </td>
+                    <td th:text="${u.registriertAm != null ? #temporals.format(u.registriertAm, 'dd.MM.yyyy') : '—'}">01.01.2026</td>
+                    <td>
+                        <form th:if="${u.aktiv}" th:action="@{/admin/benutzer/{id}/sperren(id=${u.id})}"
+                              method="post" style="display:inline; margin:0;">
+                            <button type="submit" class="app-btn app-btn-danger app-btn-sm"
+                                    onclick="return confirm('Benutzer wirklich sperren?')">Sperren</button>
+                        </form>
+                        <form th:unless="${u.aktiv}" th:action="@{/admin/benutzer/{id}/entsperren(id=${u.id})}"
+                              method="post" style="display:inline; margin:0;">
+                            <button type="submit" class="app-btn app-btn-sm">Entsperren</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<style>
+    .admin-table-wrapper { overflow-x: auto; }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .admin-table th, .admin-table td { padding: 0.75rem 0.5rem; text-align: left; border-bottom: 1px solid var(--dash-border, #e5e7eb); }
+    .admin-table th { font-weight: 600; color: var(--dash-muted, #6b7280); font-size: 0.8rem; text-transform: uppercase; letter-spacing:0.02em; }
+    .admin-table tr:hover td { background: var(--dash-surface-hover, #f9fafb); }
+    .app-btn-sm { font-size: 0.8rem; padding: 0.3rem 0.6rem; }
+</style>
+
+</body>
+</html>
+

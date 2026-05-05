@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${org.name + ' — Konversation — Sponsorplatz'}">Nachrichten</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body class="dash-layout">
+<div th:replace="~{fragments/sidebar :: app-sidebar('anfragen', null)}"></div>
+<main class="dash-main">
+    <nav class="breadcrumb">
+        <a th:href="@{'/organisationen/' + ${org.slug} + '/anfragen'}">← Anfragen</a>
+    </nav>
+
+    <h1>Konversation</h1>
+    <p class="meta">
+        Paket: <strong th:text="${anfrage.paketName}">Gold</strong> ·
+        Kontakt: <span th:text="${anfrage.kontaktName ?: 'Unbekannt'}">Name</span>
+    </p>
+
+    <div th:if="${erfolgsMeldung}" class="alert success" th:text="${erfolgsMeldung}"></div>
+    <div th:if="${fehlermeldung}" class="alert error" th:text="${fehlermeldung}"></div>
+
+    <!-- Initiale Anfrage-Nachricht -->
+    <div class="nachricht-thread">
+        <div class="nachricht-bubble nachricht-eingehend">
+            <div class="nachricht-meta">
+                <strong th:text="${anfrage.kontaktName ?: 'Anfragender'}">Name</strong>
+                <time th:text="${#temporals.format(anfrage.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2026 12:00</time>
+            </div>
+            <p th:text="${anfrage.nachricht}">Erste Nachricht</p>
+        </div>
+
+        <!-- Thread-Nachrichten -->
+        <div th:each="n : ${nachrichten}" class="nachricht-bubble"
+             th:classappend="${n.absenderId.toString() == T(org.springframework.security.core.context.SecurityContextHolder).context.authentication.name} ? 'nachricht-eigene' : 'nachricht-eingehend'">
+            <div class="nachricht-meta">
+                <strong th:text="${n.absenderName}">Name</strong>
+                <time th:text="${#temporals.format(n.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2026 12:00</time>
+            </div>
+            <p th:text="${n.text}">Nachricht</p>
+        </div>
+    </div>
+
+    <!-- Antwort-Formular (nur bei ANGENOMMEN) -->
+    <div th:if="${anfrage.status.name() == 'ANGENOMMEN'}" class="nachricht-form-wrapper">
+        <form th:action="@{'/organisationen/' + ${org.slug} + '/anfragen/' + ${anfrage.id} + '/nachrichten'}"
+              method="post" class="app-form nachricht-form">
+            <div class="app-form-group">
+                <label for="text">Neue Nachricht</label>
+                <textarea id="text" name="text" rows="3" required
+                          placeholder="Ihre Nachricht schreiben..."></textarea>
+            </div>
+            <div class="app-form-actions">
+                <button type="submit" class="app-btn">Senden</button>
+            </div>
+        </form>
+    </div>
+
+    <div th:if="${anfrage.status.name() != 'ANGENOMMEN'}" class="empty-state">
+        <p>Nachrichten können nur zu angenommenen Anfragen verfasst werden.</p>
+    </div>
+</main>
+</body>
+</html>
+

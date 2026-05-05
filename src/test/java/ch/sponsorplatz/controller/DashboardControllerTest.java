@@ -2,7 +2,9 @@ package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.config.SecurityConfig;
 import ch.sponsorplatz.dto.DashboardDaten;
+import ch.sponsorplatz.service.AppUserService;
 import ch.sponsorplatz.service.DashboardService;
+import ch.sponsorplatz.service.MatchingService;
 import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,9 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,6 +41,12 @@ class DashboardControllerTest {
     @MockBean
     private DashboardService dashboardService;
 
+    @MockBean
+    private MatchingService matchingService;
+
+    @MockBean
+    private AppUserService appUserService;
+
     /** DASH-01: GET /dashboard anonym → Redirect zu /login. */
     @Test
     void dashboardAnonymRedirectZuLogin() throws Exception {
@@ -49,6 +60,7 @@ class DashboardControllerTest {
     @WithMockUser
     void dashboardEingeloggtIst200() throws Exception {
         when(dashboardService.ladeDashboardDaten(anyString())).thenReturn(DashboardDaten.leer());
+        when(appUserService.findeNachEmail(anyString())).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/dashboard"))
             .andExpect(status().isOk())
@@ -61,6 +73,7 @@ class DashboardControllerTest {
     void dashboardModelEnthaeltAttribute() throws Exception {
         when(dashboardService.ladeDashboardDaten(anyString()))
             .thenReturn(DashboardDaten.von(3, 5, 12, 4));
+        when(appUserService.findeNachEmail(anyString())).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/dashboard"))
             .andExpect(model().attributeExists(
@@ -70,7 +83,8 @@ class DashboardControllerTest {
                 "anzahlOrganisationen",
                 "anzahlProjekte",
                 "anzahlAnfragen",
-                "anzahlOffeneAnfragen"))
+                "anzahlOffeneAnfragen",
+                "empfehlungen"))
             .andExpect(model().attribute("anzahlOrganisationen", 3L))
             .andExpect(model().attribute("anzahlProjekte", 5L))
             .andExpect(model().attribute("anzahlAnfragen", 12L))
@@ -83,6 +97,7 @@ class DashboardControllerTest {
     void dashboardRuftServiceMitEmailAuf() throws Exception {
         when(dashboardService.ladeDashboardDaten("test@example.ch"))
             .thenReturn(DashboardDaten.leer());
+        when(appUserService.findeNachEmail(anyString())).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/dashboard"))
             .andExpect(status().isOk());

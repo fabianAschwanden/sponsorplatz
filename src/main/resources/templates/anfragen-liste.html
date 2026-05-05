@@ -33,6 +33,11 @@
             <strong>Antwort:</strong> <span th:text="${a.antwort}">Antwort</span>
         </div>
 
+        <div th:if="${a.status.name() == 'ANGENOMMEN'}" class="anfrage-actions">
+            <a th:href="@{'/organisationen/' + ${org.slug} + '/anfragen/' + ${a.id} + '/nachrichten'}"
+               class="btn btn-primary">Konversation öffnen</a>
+        </div>
+
         <div th:if="${a.status.name() == 'NEU'}" class="anfrage-actions">
             <form th:action="@{'/organisationen/' + ${org.slug} + '/anfragen/' + ${a.id} + '/annehmen'}" method="post" style="display:inline">
                 <input type="text" name="antwort" placeholder="Antwort (optional)">

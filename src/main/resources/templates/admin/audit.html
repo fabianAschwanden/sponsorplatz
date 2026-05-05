@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin — Audit-Log — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('admin', null)}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">Plattform-Admin</p>
+                <h1>Audit-Log</h1>
+            </div>
+        </header>
+
+        <nav style="display:flex; gap:0.75rem; margin-bottom:2rem; flex-wrap:wrap;">
+            <a th:href="@{/admin}" class="app-btn app-btn-ghost">Übersicht</a>
+            <a th:href="@{/admin/benutzer}" class="app-btn app-btn-ghost">Benutzer</a>
+            <a th:href="@{/admin/organisationen}" class="app-btn app-btn-ghost">Organisationen</a>
+            <a th:href="@{/admin/audit}" class="app-btn">Audit-Log</a>
+            <a th:href="@{/admin/backups}" class="app-btn app-btn-ghost">Backups</a>
+        </nav>
+
+        <p class="app-muted" th:text="${#lists.size(auditLogs) + ' Einträge (letzte 100)'}"></p>
+
+        <div th:if="${#lists.isEmpty(auditLogs)}" class="app-empty">
+            <strong>Noch keine Audit-Einträge.</strong>
+            Aktionen werden automatisch protokolliert.
+        </div>
+
+        <div th:unless="${#lists.isEmpty(auditLogs)}" class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Zeitpunkt</th>
+                    <th>Aktion</th>
+                    <th>Bereich</th>
+                    <th>Benutzer</th>
+                    <th>Ziel</th>
+                    <th>Details</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="a : ${auditLogs}">
+                    <td th:text="${a.zeitpunkt != null ? #temporals.format(a.zeitpunkt, 'dd.MM.yyyy HH:mm:ss') : '—'}">01.01.2026</td>
+                    <td><span class="app-chip" th:classappend="${'audit-' + #strings.toLowerCase(a.aktion)}" th:text="${a.aktion}">ERSTELLT</span></td>
+                    <td th:text="${a.bereich}">ORG</td>
+                    <td th:text="${a.benutzerEmail ?: '—'}">user@test.ch</td>
+                    <td>
+                        <code th:if="${a.zielId}" th:text="${#strings.substring(a.zielId.toString(), 0, 8) + '...'}">abc123</code>
+                        <span th:if="${a.zielTyp}" class="app-muted" th:text="' (' + ${a.zielTyp} + ')'"></span>
+                    </td>
+                    <td class="app-muted" th:text="${a.details != null ? (#strings.length(a.details) > 60 ? #strings.substring(a.details, 0, 60) + '...' : a.details) : ''}">Details</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<style>
+    .admin-table-wrapper { overflow-x: auto; }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .admin-table th, .admin-table td { padding: 0.6rem 0.4rem; text-align: left; border-bottom: 1px solid var(--dash-border, #e5e7eb); }
+    .admin-table th { font-weight: 600; color: var(--dash-muted, #6b7280); font-size: 0.75rem; text-transform: uppercase; }
+    .admin-table tr:hover td { background: var(--dash-surface-hover, #f9fafb); }
+    .audit-erstellt { background: #dcfce7; color: #166534; }
+    .audit-geloescht, .audit-suspendiert, .audit-gesperrt { background: #fecaca; color: #991b1b; }
+    .audit-verifiziert, .audit-entsperrt { background: #d1fae5; color: #065f46; }
+    .audit-registriert { background: #dbeafe; color: #1e40af; }
+    .audit-backup_erstellt { background: #e0e7ff; color: #3730a3; }
+</style>
+
+</body>
+</html>
+

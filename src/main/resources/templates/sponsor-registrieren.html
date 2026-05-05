@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Als Sponsor registrieren — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="public-body">
+
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
+            <span>Sponsorplatz</span>
+        </a>
+        <nav class="public-nav">
+            <a th:href="@{/marktplatz}">Marktplatz</a>
+            <a th:href="@{/login}">Anmelden</a>
+        </nav>
+    </div>
+</header>
+
+<main class="public-main">
+    <section class="public-auth-card" style="max-width: 540px;">
+        <h1>Als Sponsor registrieren</h1>
+        <p class="hint" style="margin-bottom: 1.5rem;">
+            Erstellen Sie Ihr Firmenkonto und entdecken Sie Sponsoring-Möglichkeiten im Sport- und Gesundheitsbereich.
+        </p>
+
+        <div th:if="${fehlermeldung}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
+
+        <form th:action="@{/sponsor/registrieren}" th:object="${sponsorForm}" method="post" class="app-form">
+
+            <h2 style="font-size: 1rem; margin: 1rem 0 0.5rem;">Kontaktperson</h2>
+
+            <div class="app-form-group">
+                <label for="email">E-Mail</label>
+                <input type="email" id="email" th:field="*{email}" required autofocus>
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+            </div>
+            <div class="app-form-group">
+                <label for="anzeigename">Anzeigename</label>
+                <input type="text" id="anzeigename" th:field="*{anzeigename}" required>
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('anzeigename')}" th:errors="*{anzeigename}"></p>
+            </div>
+            <div class="app-form-group">
+                <label for="passwort">Passwort</label>
+                <span class="hint">Mindestens 8 Zeichen</span>
+                <input type="password" id="passwort" th:field="*{passwort}" required>
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('passwort')}" th:errors="*{passwort}"></p>
+            </div>
+
+            <h2 style="font-size: 1rem; margin: 1.5rem 0 0.5rem;">Firma</h2>
+
+            <div class="app-form-group">
+                <label for="firmenname">Firmenname</label>
+                <input type="text" id="firmenname" th:field="*{firmenname}" required>
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('firmenname')}" th:errors="*{firmenname}"></p>
+            </div>
+            <div class="app-form-group">
+                <label for="branche">Engagement-Bereich</label>
+                <span class="hint">In welchem Bereich möchten Sie sponsern?</span>
+                <select id="branche" th:field="*{branche}" required>
+                    <option value="">— Bitte wählen —</option>
+                    <option th:each="b : ${branchen}" th:value="${b}" th:text="${b.anzeige}"></option>
+                </select>
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('branche')}" th:errors="*{branche}"></p>
+            </div>
+            <div class="app-form-group">
+                <label for="rechtsform">Rechtsform</label>
+                <span class="hint">z.B. AG, GmbH, Einzelfirma (optional)</span>
+                <input type="text" id="rechtsform" th:field="*{rechtsform}">
+            </div>
+            <div class="app-form-group">
+                <label for="websiteUrl">Website</label>
+                <input type="url" id="websiteUrl" th:field="*{websiteUrl}" placeholder="https://...">
+            </div>
+            <div class="app-form-group">
+                <label for="beschreibung">Kurzbeschreibung</label>
+                <span class="hint">Was macht Ihr Unternehmen? (optional)</span>
+                <textarea id="beschreibung" th:field="*{beschreibung}" rows="3"></textarea>
+            </div>
+
+            <div class="app-form-actions">
+                <button type="submit" class="app-btn" style="width: 100%; justify-content: center;">
+                    Sponsor-Konto erstellen
+                </button>
+            </div>
+        </form>
+
+        <p class="public-auth-foot">
+            Bereits ein Konto? <a th:href="@{/login}">Anmelden</a><br>
+            <a th:href="@{/registrieren}">Als Verein registrieren</a>
+        </p>
+    </section>
+</main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
+    </div>
+</footer>
+
+</body>
+</html>
+

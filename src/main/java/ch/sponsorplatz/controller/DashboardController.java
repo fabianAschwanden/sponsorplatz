@@ -2,28 +2,36 @@ package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.DashboardDaten;
+import ch.sponsorplatz.dto.ProjektView;
+import ch.sponsorplatz.model.Projekt;
+import ch.sponsorplatz.service.AppUserService;
 import ch.sponsorplatz.service.DashboardService;
+import ch.sponsorplatz.service.MatchingService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.List;
+
 /**
  * Dashboard für angemeldete Benutzer — zeigt persönliche Übersicht
  * basierend auf den Mitgliedschaften des Users.
- *
- * <p>Controller bleibt bewusst dünn: alle View-Strings (Monat/KW) und Zähler
- * kommen aus {@link DashboardDaten} — der Service kümmert sich um beides
- * (M5-Fix: keine View-Logik mehr im Controller).</p>
  */
 @Controller
 public class DashboardController {
 
     private final DashboardService dashboardService;
+    private final MatchingService matchingService;
+    private final AppUserService appUserService;
 
-    public DashboardController(DashboardService dashboardService) {
+    public DashboardController(DashboardService dashboardService,
+                               MatchingService matchingService,
+                               AppUserService appUserService) {
         this.dashboardService = dashboardService;
+        this.matchingService = matchingService;
+        this.appUserService = appUserService;
     }
 
     @GetMapping("/dashboard")
@@ -38,6 +46,15 @@ public class DashboardController {
         model.addAttribute("anzahlProjekte", daten.anzahlProjekte());
         model.addAttribute("anzahlAnfragen", daten.anzahlAnfragen());
         model.addAttribute("anzahlOffeneAnfragen", daten.anzahlOffeneAnfragen());
+
+        // Matching-Empfehlungen
+        List<ProjektView> empfehlungen = appUserService.findeNachEmail(auth.getName())
+                .map(user -> matchingService.findeEmpfehlungen(user.getId()))
+                .orElse(List.of())
+                .stream()
+                .map(ProjektView::von)
+                .toList();
+        model.addAttribute("empfehlungen", empfehlungen);
 
         return "dashboard";
     }
