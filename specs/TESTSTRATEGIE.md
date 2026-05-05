@@ -129,15 +129,84 @@ JPA-Entities verlassen den Service-Layer nicht mehr — Controller mappen vor `m
 
 ### Dashboard (DASH)
 
-UI-Skelett für angemeldete Benutzer unter `/dashboard`. Werte werden in folgenden Iterationen verkabelt — die Tests prüfen aktuell nur das Routing, Auth und das Vorhandensein der Model-Attribute.
+UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `DashboardService` verkabelt — Controller enthält keine Repo-Zugriffe oder Entity-Referenzen.
 
 | ID | Test-Klasse | Beschreibung |
 |---|---|---|
 | **DASH-01** | `DashboardControllerTest` | GET `/dashboard` anonym → Redirect zu `/login` |
 | **DASH-02** | `DashboardControllerTest` | GET `/dashboard` eingeloggt → 200 + View `dashboard` |
 | **DASH-03** | `DashboardControllerTest` | Model enthält `aktuellerMonat`, `aktuelleKw`, `anzahlOrganisationen`, `anzahlProjekte`, `anzahlAnfragen`, `anzahlOffeneAnfragen` |
+| **DASH-04** | `DashboardControllerTest` | Model-Werte kommen aus `DashboardService.ladeDashboardDaten(email)` |
+| **DASH-05** | `DashboardServiceTest` | `ladeDashboardDaten` für User ohne Mitgliedschaften → alle Zähler 0 |
+| **DASH-06** | `DashboardServiceTest` | `ladeDashboardDaten` zählt Orgs korrekt (= Anzahl Mitgliedschaften) |
+| **DASH-07** | `DashboardServiceTest` | `ladeDashboardDaten` zählt nur öffentliche Projekte der eigenen Orgs |
+| **DASH-08** | `DashboardServiceTest` | `ladeDashboardDaten` zählt eingehende Anfragen und offene Anfragen separat |
+| **DASH-09** | `DashboardServiceTest` | `ladeDashboardDaten` für unbekannte E-Mail → alle Zähler 0 |
+| **DASH-10** | `DashboardServiceTest` | `ladeDashboardDaten` ruft die Aggregat-Methoden **genau einmal** auf (H3-Fix: keine N+1-Loops mehr) |
 
-(Wird mit Phase 1 — Self-Registrierung, Spring Security Form-Login — weiter ergänzt.)
+### H3-Fix: Repository-Aggregat-Methoden für Dashboard
+
+`DashboardService` ruft jetzt für N Mitglied-Orgs **3 statt 3·N Queries** auf. Verwendete Repository-Methoden:
+
+- `MitgliedschaftRepository.findOrgIdsByUserId(userId)` — direkte Projection auf `org_id` (kein Org-Lazy-Load)
+- `ProjektRepository.countByOrgIdInAndSichtbarkeit(orgIds, OEFFENTLICH)`
+- `SponsoringAnfrageRepository.countByEmpfaengerOrgIdIn(orgIds)`
+- `SponsoringAnfrageRepository.countByEmpfaengerOrgIdInAndStatus(orgIds, NEU)`
+
+### Phase 1.3 (Admin-Verifizierung, Zefix, Einladungen)
+
+#### Admin-Verifizierung (ADM)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **ADM-01** | `AdminVerifizierungControllerTest` | GET `/admin/verifizierungen` ohne PLATFORM_ADMIN → 403 |
+| **ADM-02** | `AdminVerifizierungControllerTest` | GET `/admin/verifizierungen` als PLATFORM_ADMIN → 200 + Liste der PENDING-Orgs |
+| **ADM-03** | `AdminVerifizierungControllerTest` | POST `/admin/verifizierungen/{id}/verifizieren` → Status VERIFIED, `verifiziert_am` gesetzt |
+| **ADM-04** | `AdminVerifizierungControllerTest` | POST `/admin/verifizierungen/{id}/ablehnen` → Status SUSPENDED |
+| **ADM-05** | `OrganisationServiceTest` | `verifiziere(id)` setzt Status + verifziertAm |
+| **ADM-06** | `OrganisationServiceTest` | `verifiziere(id)` bei nicht-PENDING → IllegalStateException |
+| **ADM-07** | `OrganisationServiceTest` | `suspendiere(id)` setzt Status SUSPENDED |
+| **ADM-08** | `OrganisationServiceTest` | `findePending()` gibt nur PENDING-Orgs zurück |
+
+#### Zefix-Stub (ZFX)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **ZFX-01** | `ZefixServiceTest` | Stub-Implementierung gibt immer `Optional.empty()` zurück |
+| **ZFX-02** | `OrganisationServiceTest` | `erstelleMitZefixPruefung` ruft Zefix auf; bei Treffer wird UID gesetzt + Status VERIFIED |
+
+#### Einladungen (EINL)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **EINL-01** | `EinladungsServiceTest` | `erstelleEinladung` generiert Token + sendet Mail |
+| **EINL-02** | `EinladungsServiceTest` | `nimmAn(token)` erstellt Mitgliedschaft + löscht Einladung |
+| **EINL-03** | `EinladungsServiceTest` | `nimmAn` mit abgelaufenem Token → IllegalStateException |
+| **EINL-04** | `EinladungsServiceTest` | `nimmAn` mit unbekanntem Token → IllegalArgumentException |
+| **EINL-05** | `EinladungsControllerTest` | POST `/einladung/annehmen` mit gültigem Token → Erfolgsseite, ruft `nimmAn` |
+| **EINL-06** | `EinladungsControllerTest` | POST `/einladung/annehmen` mit ungültigem Token → 400 (error.html) |
+| **EINL-07** | `EinladungsControllerTest` | **GET** `/einladung/annehmen?token=...` zeigt Vorschau-Page, ruft `nimmAn` **NICHT** auf (Outlook-/Slack-Crawler-Schutz) |
+| **EINL-08** | `EinladungsControllerTest` | GET mit ungültigem Token → 400 (error.html) — keine State-Änderung |
+| **EINL-09** | `EinladungsServiceTest` | `ladeVorschau(token)` validiert Token (Existenz + Ablauf) — wirft analog zu `nimmAn`, aber **mutiert nichts** |
+| **EINL-10** | `EinladungsServiceTest` | `erstelleEinladung` mit ungültigem E-Mail-Format → `IllegalArgumentException` (H2-Fix: garbage wie „nicht-email" oder „a@b" wird abgelehnt) |
+| **EINL-11** | `EinladungsServiceTest` | `erstelleEinladung` publishes `EinladungErstelltEvent` mit Token + Empfängerdaten (H4-Fix: kein direkter Mail-Aufruf mehr) |
+| **EINL-12** | `EinladungsMailListenerTest` | `@TransactionalEventListener(AFTER_COMMIT)`-Listener sendet Mail beim Event; Mail-Failure führt nicht zur Service-Exception (DB-State bleibt konsistent) |
+| **EINL-13** | `EinladungsServiceTest` | `erstelleEinladung` mit existierender, **abgelaufener** Einladung für dieselbe E-Mail → löscht die alte + legt neue an (M2-Fix: Re-Einladung erlaubt) |
+| **EINL-14** | `EinladungsCleanupJobTest` | Scheduled-Cleanup ruft `deleteByGueltigBisBefore(now())` auf — entfernt abgelaufene Einladungen aus der DB |
+| **TG-01** | `TokenGeneratorTest` | `generiere()` erzeugt 64-stelligen Hex-String (32 Bytes random) |
+| **TG-02** | `TokenGeneratorTest` | Zwei Aufrufe liefern unterschiedliche Tokens (Eindeutigkeit) |
+| **EINL-15** | `EinladungsServiceTest` | `nimmAn` ist idempotent — zweiter Aufruf desselben Tokens → kein doppelter `fuegeHinzu` (M4-Fix via `angenommen_am`-Marker statt `delete`) |
+| **EINL-16** | `EinladungsControllerTest` | POST `/einladung/annehmen` bei „nicht registriert"-Fehler → Redirect zu `/registrieren?email=…` (M3-Fix: bessere UX statt 409) |
+| **DASH-11** | `DashboardServiceTest` | `ladeDashboardDaten` setzt `aktuellerMonat` und `aktuelleKw` direkt im DTO (M5-Fix: View-Logik nicht im Controller) |
+
+### M1-Fix: Token-Generierung extrahiert
+
+`TokenGenerator` (Util) wird von `VerifikationsService` und `EinladungsService` gemeinsam genutzt — keine Code-Duplikation mehr.
+
+### M2-Fix: Cleanup für abgelaufene Einladungen
+
+- **On-demand**: `EinladungsService.erstelleEinladung` löscht eine vorhandene abgelaufene Einladung bevor sie eine neue anlegt — UX-Fix für "Re-Einladung blockiert".
+- **Background**: `EinladungsCleanupJob` läuft täglich (`@Scheduled`), entfernt alle Einladungen mit `gueltig_bis < now()` — DB-Hygiene.
 
 ### Phase 1.1 (Security & Registrierung)
 

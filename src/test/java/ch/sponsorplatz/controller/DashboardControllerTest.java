@@ -1,6 +1,8 @@
 package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.config.SecurityConfig;
+import ch.sponsorplatz.dto.DashboardDaten;
+import ch.sponsorplatz.service.DashboardService;
 import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,9 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
@@ -28,6 +33,9 @@ class DashboardControllerTest {
     @MockBean
     private SponsorplatzUserDetailsService userDetailsService;
 
+    @MockBean
+    private DashboardService dashboardService;
+
     /** DASH-01: GET /dashboard anonym → Redirect zu /login. */
     @Test
     void dashboardAnonymRedirectZuLogin() throws Exception {
@@ -40,15 +48,20 @@ class DashboardControllerTest {
     @Test
     @WithMockUser
     void dashboardEingeloggtIst200() throws Exception {
+        when(dashboardService.ladeDashboardDaten(anyString())).thenReturn(DashboardDaten.leer());
+
         mockMvc.perform(get("/dashboard"))
             .andExpect(status().isOk())
             .andExpect(view().name("dashboard"));
     }
 
-    /** DASH-03: Model enthält die Platzhalter-Attribute. */
+    /** DASH-03: Model enthält die Dashboard-Attribute. */
     @Test
     @WithMockUser
     void dashboardModelEnthaeltAttribute() throws Exception {
+        when(dashboardService.ladeDashboardDaten(anyString()))
+            .thenReturn(DashboardDaten.von(3, 5, 12, 4));
+
         mockMvc.perform(get("/dashboard"))
             .andExpect(model().attributeExists(
                 "aktiveSeite",
@@ -57,6 +70,23 @@ class DashboardControllerTest {
                 "anzahlOrganisationen",
                 "anzahlProjekte",
                 "anzahlAnfragen",
-                "anzahlOffeneAnfragen"));
+                "anzahlOffeneAnfragen"))
+            .andExpect(model().attribute("anzahlOrganisationen", 3L))
+            .andExpect(model().attribute("anzahlProjekte", 5L))
+            .andExpect(model().attribute("anzahlAnfragen", 12L))
+            .andExpect(model().attribute("anzahlOffeneAnfragen", 4L));
+    }
+
+    /** DASH-04: Werte kommen aus DashboardService.ladeDashboardDaten(email). */
+    @Test
+    @WithMockUser(username = "test@example.ch")
+    void dashboardRuftServiceMitEmailAuf() throws Exception {
+        when(dashboardService.ladeDashboardDaten("test@example.ch"))
+            .thenReturn(DashboardDaten.leer());
+
+        mockMvc.perform(get("/dashboard"))
+            .andExpect(status().isOk());
+
+        verify(dashboardService).ladeDashboardDaten("test@example.ch");
     }
 }

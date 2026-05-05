@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de-CH"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin — Verifizierungen — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('admin', null)}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">Plattform-Admin</p>
+                <h1>Verifizierungs-Queue</h1>
+            </div>
+        </header>
+
+        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+
+        <div th:if="${#lists.isEmpty(pendingOrgs)}" class="app-empty">
+            <strong>Keine ausstehenden Verifizierungen.</strong>
+            Alle eingegangenen Organisationen sind bearbeitet.
+        </div>
+
+        <section th:each="org : ${pendingOrgs}" class="app-card" style="margin-bottom: 1rem;">
+            <header style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; gap:1rem; flex-wrap:wrap;">
+                <div>
+                    <h2 style="font-family:var(--dash-font-head); font-size:1.25rem; margin:0 0 0.4rem;" th:text="${org.name}">Org-Name</h2>
+                    <span class="app-chip" th:text="${org.typ}">VEREIN</span>
+                    <span class="app-muted" th:if="${org.rechtsform}" th:text="' · ' + ${org.rechtsform}"></span>
+                </div>
+                <div style="display:flex; gap:0.5rem;">
+                    <form th:action="@{/admin/verifizierungen/{id}/verifizieren(id=${org.id})}" method="post" style="margin:0;">
+                        <button type="submit" class="app-btn">✓ Verifizieren</button>
+                    </form>
+                    <form th:action="@{/admin/verifizierungen/{id}/ablehnen(id=${org.id})}" method="post" style="margin:0;"
+                          onsubmit="return confirm('Diese Organisation wirklich ablehnen?');">
+                        <button type="submit" class="app-btn app-btn-danger">Ablehnen</button>
+                    </form>
+                </div>
+            </header>
+
+            <dl class="app-datenliste">
+                <dt>Slug</dt>
+                <dd><code th:text="${org.slug}">slug</code></dd>
+
+                <dt>Status</dt>
+                <dd>
+                    <span class="app-status" th:classappend="${'status-' + #strings.toLowerCase(org.status)}"
+                          th:text="${org.status}">PENDING</span>
+                </dd>
+
+                <th:block th:if="${org.branche}">
+                    <dt>Branche</dt>
+                    <dd th:text="${org.branche}"></dd>
+                </th:block>
+
+                <th:block th:if="${org.websiteUrl}">
+                    <dt>Website</dt>
+                    <dd>
+                        <a th:href="${org.websiteUrl}" target="_blank" rel="noopener" th:text="${org.websiteUrl}"></a>
+                    </dd>
+                </th:block>
+
+                <th:block th:if="${org.beschreibung}">
+                    <dt>Beschreibung</dt>
+                    <dd th:text="${org.beschreibung}"></dd>
+                </th:block>
+
+                <dt>Registriert</dt>
+                <dd th:text="${#temporals.format(org.registriertAm, 'dd.MM.yyyy HH:mm')}">01.01.2026</dd>
+            </dl>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>

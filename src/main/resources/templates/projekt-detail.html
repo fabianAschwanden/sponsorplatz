@@ -57,6 +57,37 @@
 
         <section class="app-card">
             <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0;">Bilder</h2>
+            </header>
+
+            <div th:if="${medien != null and !medien.isEmpty()}" style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
+                <div th:each="m : ${medien}" style="position:relative;">
+                    <img th:src="@{/medien/{id}(id=${m.id()})}" alt="Bild" style="width:120px; height:80px; object-fit:cover; border-radius:8px;">
+                    <form th:action="@{/medien/{id}/loeschen(id=${m.id()})}" method="post" style="position:absolute; top:2px; right:2px;">
+                        <input type="hidden" name="redirect"
+                               th:value="@{/organisationen/{orgSlug}/projekte/{projektSlug}(orgSlug=${org.slug()}, projektSlug=${projekt.slug})}">
+                        <button type="submit" class="app-btn app-btn-danger" style="padding:2px 6px; font-size:0.7rem;">×</button>
+                    </form>
+                </div>
+            </div>
+            <p th:if="${medien == null or medien.isEmpty()}" class="app-muted">Noch keine Bilder hochgeladen.</p>
+
+            <form th:action="@{/organisationen/{orgSlug}/projekte/{projektSlug}/medien(orgSlug=${org.slug()}, projektSlug=${projekt.slug})}"
+                  method="post" enctype="multipart/form-data" class="app-form" style="margin-top:1rem;">
+                <div class="app-form-group">
+                    <label for="datei">Bild hochladen (JPEG, PNG, WebP, max 5 MB)</label>
+                    <input type="file" id="datei" name="datei" accept="image/jpeg,image/png,image/webp" required>
+                </div>
+                <select name="assetTyp" class="app-input" style="width:auto; margin-bottom:0.5rem;">
+                    <option value="COVER">Cover-Bild</option>
+                    <option value="GALERIE">Galerie</option>
+                </select>
+                <button type="submit" class="app-btn">Hochladen</button>
+            </form>
+        </section>
+
+        <section class="app-card">
+            <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                 <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0;">Sponsoring-Pakete</h2>
             </header>
 

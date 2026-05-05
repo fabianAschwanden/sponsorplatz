@@ -1,0 +1,10 @@
+<svg viewBox="0 0 360 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sponsorplatz">
+  <title>Sponsorplatz</title>
+  <g transform="translate(14, 8)">
+    <path d="M 28 4 C 17 4 8 13 8 24 C 8 35 28 56 28 56 C 28 56 48 35 48 24 C 48 13 39 4 28 4 Z" fill="#1E3A5F"/>
+    <circle cx="22" cy="20" r="4" fill="#F4F1ED"/>
+    <circle cx="34" cy="20" r="4" fill="#E07A5F"/>
+    <line x1="22" y1="20" x2="34" y2="20" stroke="#F4F1ED" stroke-width="1.6"/>
+  </g>
+  <text x="84" y="50" font-family="Cambria, Georgia, serif" font-size="32" font-weight="700" fill="#1A202C">Sponsorplatz</text>
+</svg>

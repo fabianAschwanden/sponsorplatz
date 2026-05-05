@@ -7,7 +7,7 @@
 
 ## Projekt: Sponsorplatz
 
-**Vision:** Schweizer Sponsoring-Plattform — Vereine finden Sponsoren, Sponsoren finden Vereine.
+**Vision:** Schweizer Sponsoring-Plattform — *Wo Vereine und Marken zueinander finden.*
 **Modell:** Kollaborative Plattform — mehrere Vereine teilen eine offene Datenbasis, Edit-Rechte über `Mitgliedschaft`.
 **Sprache:** Deutsch (Code, Logs, Specs). Default-Locale `de_CH`. CHF, Datum `dd.MM.yyyy`.
 **Lizenz:** MIT.

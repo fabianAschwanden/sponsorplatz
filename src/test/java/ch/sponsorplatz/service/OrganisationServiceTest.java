@@ -2,6 +2,7 @@ package ch.sponsorplatz.service;
 
 import ch.sponsorplatz.dto.OrganisationFormDto;
 import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.model.OrgStatus;
 import ch.sponsorplatz.model.OrgTyp;
 import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.repository.MitgliedschaftRepository;
@@ -9,6 +10,7 @@ import ch.sponsorplatz.repository.OrganisationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -141,6 +143,65 @@ class OrganisationServiceTest {
         when(mitgliedschaftRepository.existsByOrgId(orgId)).thenReturn(false);
 
         service.loesche(orgId); // kein Fehler
+    }
+
+    /** ADM-05: verifiziere setzt Status VERIFIED + verifziertAm. */
+    @Test
+    void verifiziereSetzStatusUndZeitstempel() {
+        UUID id = UUID.randomUUID();
+        Organisation org = new Organisation();
+        org.setId(id);
+        org.setStatus(OrgStatus.PENDING);
+        when(repository.findById(id)).thenReturn(Optional.of(org));
+        when(repository.save(any(Organisation.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Organisation verifiziert = service.verifiziere(id);
+
+        assertThat(verifiziert.getStatus()).isEqualTo(OrgStatus.VERIFIED);
+        assertThat(verifiziert.getVerifiziertAm()).isNotNull();
+    }
+
+    /** ADM-06: verifiziere bei nicht-PENDING → IllegalStateException. */
+    @Test
+    void verifiziereWirftBeiNichtPending() {
+        UUID id = UUID.randomUUID();
+        Organisation org = new Organisation();
+        org.setId(id);
+        org.setStatus(OrgStatus.VERIFIED);
+        when(repository.findById(id)).thenReturn(Optional.of(org));
+
+        assertThatThrownBy(() -> service.verifiziere(id))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("PENDING");
+    }
+
+    /** ADM-07: suspendiere setzt Status SUSPENDED. */
+    @Test
+    void suspendiereSetzStatusSuspended() {
+        UUID id = UUID.randomUUID();
+        Organisation org = new Organisation();
+        org.setId(id);
+        org.setStatus(OrgStatus.ACTIVE);
+        when(repository.findById(id)).thenReturn(Optional.of(org));
+        when(repository.save(any(Organisation.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Organisation suspendiert = service.suspendiere(id);
+
+        assertThat(suspendiert.getStatus()).isEqualTo(OrgStatus.SUSPENDED);
+    }
+
+    /** ADM-08: findePending gibt nur PENDING-Orgs zurück. */
+    @Test
+    void findePendingGibtNurPendingZurueck() {
+        Organisation pending = new Organisation();
+        pending.setStatus(OrgStatus.PENDING);
+        when(repository.findByStatusOrderByCreatedAtAsc(OrgStatus.PENDING))
+                .thenReturn(List.of(pending));
+
+        List<Organisation> ergebnis = service.findePending();
+
+        assertThat(ergebnis).hasSize(1);
+        assertThat(ergebnis.get(0).getStatus()).isEqualTo(OrgStatus.PENDING);
     }
 
     private OrganisationFormDto neuesDto(String name, String slug) {

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="UTF-8">
+<title>Sponsorplatz — Logo-Konzepte</title>
+<style>
+  :root { --bg:#F4F1ED; --card:#FFFFFF; --border:#E2DAD0; --text:#1A202C; --muted:#64748B; --teal:#1E3A5F; --coral:#E07A5F; }
+  * { box-sizing:border-box; }
+  body { font-family:'Inter','Calibri',system-ui,sans-serif; background:var(--bg); color:var(--text); margin:0; padding:2.5rem 1.5rem; line-height:1.55; }
+  .wrap { max-width:1080px; margin:0 auto; }
+  h1 { font-family:'Cambria',Georgia,serif; font-size:2rem; margin:0 0 0.25rem; }
+  .lead { color:var(--muted); margin:0 0 2.5rem; }
+  .konzept { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.5rem 1.75rem; margin-bottom:1.5rem; }
+  .konzept h2 { font-family:'Cambria',Georgia,serif; font-size:1.25rem; margin:0 0 0.25rem; }
+  .konzept .tagline { color:var(--muted); font-size:0.95rem; margin:0 0 1.5rem; }
+  .row { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; align-items:center; }
+  @media (max-width:780px) { .row { grid-template-columns:repeat(2,1fr); } }
+  .slot { display:flex; flex-direction:column; align-items:center; padding:1rem; border:1px dashed var(--border); border-radius:10px; }
+  .slot-dark { background:#0F172A; border-color:#1F2937; }
+  .slot small { display:block; color:var(--muted); margin-top:0.6rem; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; }
+  .slot-dark small { color:#94A3B8; }
+  .ico-16 img { width:16px; height:16px; }
+  .ico-32 img { width:32px; height:32px; }
+  .ico-64 img { width:64px; height:64px; }
+  .word img { height:32px; width:auto; }
+  hr { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+  .empfehlung { background:#F8F4ED; border-left:4px solid var(--coral); padding:1rem 1.25rem; border-radius:8px; margin-top:1rem; font-size:0.95rem; }
+  code { background:rgba(0,0,0,0.06); padding:0.1rem 0.4rem; border-radius:4px; font-size:0.85em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Sponsorplatz — Logo-Konzepte</h1>
+  <p class="lead"><em>„Wo Vereine und Marken zueinander finden."</em> — Vier Vorschläge, jeweils als Icon (Favicon, Avatar) und als Wordmark (Header, Footer, E-Mail-Signatur).</p>
+
+  <section class="konzept">
+    <h2>1. Zwei Ringe</h2>
+    <p class="tagline">Zwei sich überlappende Ringe — Vereine und Marken berühren sich, wo es zählt. Klassisch, zeitlos, in jeder Größe lesbar.</p>
+    <div class="row">
+      <div class="slot ico-16"><img src="../src/main/resources/static/images/logo/icon-ringe.svg" alt="Favicon"><small>16 px</small></div>
+      <div class="slot ico-32"><img src="../src/main/resources/static/images/logo/icon-ringe.svg" alt="32 px"><small>32 px</small></div>
+      <div class="slot ico-64"><img src="../src/main/resources/static/images/logo/icon-ringe.svg" alt="64 px"><small>64 px</small></div>
+      <div class="slot slot-dark ico-64"><img src="../src/main/resources/static/images/logo/icon-ringe.svg" alt="64 px dunkel"><small>auf dunkel</small></div>
+    </div>
+    <div class="row" style="margin-top:1rem;">
+      <div class="slot word" style="grid-column:1/3;"><img src="../src/main/resources/static/images/logo/wordmark-ringe.svg" alt="Wordmark"><small>Wordmark hell</small></div>
+      <div class="slot slot-dark word" style="grid-column:3/5;"><img src="../src/main/resources/static/images/logo/wordmark-ringe.svg" alt="Wordmark dunkel"><small>Wordmark dunkel</small></div>
+    </div>
+  </section>
+
+  <section class="konzept">
+    <h2>2. Treffpunkt</h2>
+    <p class="tagline">Zwei Spitzen, die direkt aufeinander zugehen. Aktiv, dynamisch — sehr direkter Bezug zu „zueinander finden".</p>
+    <div class="row">
+      <div class="slot ico-16"><img src="../src/main/resources/static/images/logo/icon-treffpunkt.svg" alt="Favicon"><small>16 px</small></div>
+      <div class="slot ico-32"><img src="../src/main/resources/static/images/logo/icon-treffpunkt.svg" alt="32 px"><small>32 px</small></div>
+      <div class="slot ico-64"><img src="../src/main/resources/static/images/logo/icon-treffpunkt.svg" alt="64 px"><small>64 px</small></div>
+      <div class="slot slot-dark ico-64"><img src="../src/main/resources/static/images/logo/icon-treffpunkt.svg" alt="64 px dunkel"><small>auf dunkel</small></div>
+    </div>
+    <div class="row" style="margin-top:1rem;">
+      <div class="slot word" style="grid-column:1/3;"><img src="../src/main/resources/static/images/logo/wordmark-treffpunkt.svg" alt="Wordmark"><small>Wordmark hell</small></div>
+      <div class="slot slot-dark word" style="grid-column:3/5;"><img src="../src/main/resources/static/images/logo/wordmark-treffpunkt.svg" alt="Wordmark dunkel"><small>Wordmark dunkel</small></div>
+    </div>
+  </section>
+
+  <section class="konzept">
+    <h2>3. Platz-Pin</h2>
+    <p class="tagline">Map-Pin als visueller Anker für „Platz", innen die zwei Akteure, die sich auf diesem Platz treffen. Schweizerisch geerdet, lokal lesbar.</p>
+    <div class="row">
+      <div class="slot ico-16"><img src="../src/main/resources/static/images/logo/icon-pin.svg" alt="Favicon"><small>16 px</small></div>
+      <div class="slot ico-32"><img src="../src/main/resources/static/images/logo/icon-pin.svg" alt="32 px"><small>32 px</small></div>
+      <div class="slot ico-64"><img src="../src/main/resources/static/images/logo/icon-pin.svg" alt="64 px"><small>64 px</small></div>
+      <div class="slot slot-dark ico-64"><img src="../src/main/resources/static/images/logo/icon-pin.svg" alt="64 px dunkel"><small>auf dunkel</small></div>
+    </div>
+    <div class="row" style="margin-top:1rem;">
+      <div class="slot word" style="grid-column:1/3;"><img src="../src/main/resources/static/images/logo/wordmark-pin.svg" alt="Wordmark"><small>Wordmark hell</small></div>
+      <div class="slot slot-dark word" style="grid-column:3/5;"><img src="../src/main/resources/static/images/logo/wordmark-pin.svg" alt="Wordmark dunkel"><small>Wordmark dunkel</small></div>
+    </div>
+  </section>
+
+  <section class="konzept">
+    <h2>4. SP-Stamp</h2>
+    <p class="tagline">Letterform-Mark in einem teal-gerundeten Quadrat mit Korall-Akzent. Klar, modern — funktioniert auch ohne Wortmarke als App-Icon.</p>
+    <div class="row">
+      <div class="slot ico-16"><img src="../src/main/resources/static/images/logo/icon-stamp.svg" alt="Favicon"><small>16 px</small></div>
+      <div class="slot ico-32"><img src="../src/main/resources/static/images/logo/icon-stamp.svg" alt="32 px"><small>32 px</small></div>
+      <div class="slot ico-64"><img src="../src/main/resources/static/images/logo/icon-stamp.svg" alt="64 px"><small>64 px</small></div>
+      <div class="slot slot-dark ico-64"><img src="../src/main/resources/static/images/logo/icon-stamp.svg" alt="64 px dunkel"><small>auf dunkel</small></div>
+    </div>
+    <div class="row" style="margin-top:1rem;">
+      <div class="slot word" style="grid-column:1/3;"><img src="../src/main/resources/static/images/logo/wordmark-stamp.svg" alt="Wordmark"><small>Wordmark hell</small></div>
+      <div class="slot slot-dark word" style="grid-column:3/5;"><img src="../src/main/resources/static/images/logo/wordmark-stamp.svg" alt="Wordmark dunkel"><small>Wordmark dunkel</small></div>
+    </div>
+  </section>
+
+  <hr>
+
+  <section>
+    <h2 style="font-family:'Cambria',Georgia,serif; font-size:1.4rem;">Mein Take</h2>
+    <p>Wenn ich entscheiden müsste: <strong>Konzept 1 — Zwei Ringe</strong>. Die zwei sich überlappenden Kreise sind <em>genau</em> die visuelle Übersetzung des Slogans („zueinander finden"), funktionieren bei 16 px noch lesbar als Favicon, sind brandfarbig korrekt (Teal Vereine, Korall Marken), und die Form ist zeitlos — sie wird in fünf Jahren nicht „aus der Mode" sein.</p>
+    <p><strong>Konzept 4 — SP-Stamp</strong> als starker zweiter Platz. Wirkt sofort wie eine Marke, hat den höchsten Wiedererkennungswert in der App-Icon-Anwendung (iOS Home-Screen, Browser-Tab) und kombiniert sich gut mit dem Ringe-Mark als sekundäres Symbol auf Marketing-Material.</p>
+    <p><strong>Konzept 3 — Platz-Pin</strong> ist charmant und hat den stärksten Bezug zum Wort „Platz", aber bei 16 px verschwinden die zwei Punkte innen — dann sieht man nur einen generischen Map-Pin, der austauschbar ist (Google Maps, Foursquare-Klone).</p>
+    <p><strong>Konzept 2 — Treffpunkt</strong> ist sehr direkt im Aussagegehalt, kann aber bei oberflächlichem Hinsehen wie ein Quote-Symbol oder ein Equal-Sign-Variante wirken — die Lesbarkeit braucht etwas länger als bei den anderen.</p>
+
+    <div class="empfehlung">
+      <strong>Empfehlung:</strong> <code>Konzept 1 — Zwei Ringe</code> als primäres Logo, optional <code>SP-Stamp</code> als App-Icon-Variante (iOS, Android-Launcher). Wenn du Konzept 1 nimmst, ersetzen wir <code>static/images/favicon.svg</code> durch <code>icon-ringe.svg</code>, der Header der Public-Seiten zeigt das Wordmark, das Dashboard-Sidebar-Logo das Icon — alles bereits vorbereitet.
+    </div>
+  </section>
+</div>
+</body>
+</html>

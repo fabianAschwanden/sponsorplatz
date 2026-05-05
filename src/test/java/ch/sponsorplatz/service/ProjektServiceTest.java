@@ -7,13 +7,16 @@ import ch.sponsorplatz.repository.ProjektRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class ProjektServiceTest {
@@ -76,6 +79,32 @@ class ProjektServiceTest {
 
         assertThatThrownBy(() -> service.veroeffentliche(projekt.getId()))
                 .isInstanceOf(IllegalStateException.class);
+    }
+
+    /** VTS-01: suche mit Begriff delegiert an Repository. */
+    @Test
+    void sucheDelegiertAnRepository() {
+        Projekt p = new Projekt();
+        p.setName("Sommerfest");
+        when(repository.sucheOeffentliche("Sommer", Sichtbarkeit.OEFFENTLICH))
+                .thenReturn(List.of(p));
+
+        List<Projekt> ergebnis = service.suche("Sommer");
+
+        assertThat(ergebnis).hasSize(1);
+        verify(repository).sucheOeffentliche("Sommer", Sichtbarkeit.OEFFENTLICH);
+    }
+
+    /** VTS-02: suche mit leerem Begriff gibt alle öffentlichen zurück. */
+    @Test
+    void sucheLeerGibtAlleZurueck() {
+        when(repository.findBySichtbarkeitOrderByVeroeffentlichtAmDesc(Sichtbarkeit.OEFFENTLICH))
+                .thenReturn(List.of());
+
+        List<Projekt> ergebnis = service.suche("");
+
+        assertThat(ergebnis).isEmpty();
+        verify(repository).findBySichtbarkeitOrderByVeroeffentlichtAmDesc(Sichtbarkeit.OEFFENTLICH);
     }
 }
 

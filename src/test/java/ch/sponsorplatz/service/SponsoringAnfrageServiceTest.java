@@ -14,18 +14,22 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class SponsoringAnfrageServiceTest {
 
     private SponsoringAnfrageRepository repository;
+    private BenachrichtigungsService benachrichtigungsService;
     private SponsoringAnfrageService service;
 
     @BeforeEach
     void setUp() {
         repository = mock(SponsoringAnfrageRepository.class);
-        service = new SponsoringAnfrageService(repository);
+        benachrichtigungsService = mock(BenachrichtigungsService.class);
+        service = new SponsoringAnfrageService(repository, benachrichtigungsService);
     }
 
     /** ANF-01: Anfrage erstellen setzt Status NEU. */
@@ -100,6 +104,38 @@ class SponsoringAnfrageServiceTest {
 
         assertThatThrownBy(() -> service.annehme(anfrage.getId(), "Nochmal"))
                 .isInstanceOf(IllegalStateException.class);
+    }
+
+    /** ANF-06: Erstellen ruft BenachrichtigungsService auf. */
+    @Test
+    void erstelleRuftBenachrichtigungAuf() {
+        SponsoringPaket paket = new SponsoringPaket();
+        paket.setId(UUID.randomUUID());
+        Organisation anfragender = new Organisation();
+        anfragender.setId(UUID.randomUUID());
+        Organisation empfaenger = new Organisation();
+        empfaenger.setId(UUID.randomUUID());
+
+        when(repository.save(any(SponsoringAnfrage.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        service.erstelle(paket, anfragender, empfaenger, "Test-Nachricht", "Max", "max@test.ch");
+
+        verify(benachrichtigungsService).benachrichtigeUeberNeueAnfrage(any(SponsoringAnfrage.class), any());
+    }
+
+    /** ANF-07: Annehmen ruft Antwort-Benachrichtigung auf. */
+    @Test
+    void annehmenRuftAntwortBenachrichtigungAuf() {
+        SponsoringAnfrage anfrage = new SponsoringAnfrage();
+        anfrage.setId(UUID.randomUUID());
+        anfrage.setStatus(AnfrageStatus.NEU);
+        anfrage.setKontaktEmail("sponsor@test.ch");
+        when(repository.findById(anfrage.getId())).thenReturn(Optional.of(anfrage));
+        when(repository.save(any(SponsoringAnfrage.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        service.annehme(anfrage.getId(), "Gerne!");
+
+        verify(benachrichtigungsService).benachrichtigeUeberAntwort(any(SponsoringAnfrage.class), any());
     }
 }
 

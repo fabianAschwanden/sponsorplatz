@@ -63,4 +63,28 @@ public class AppUserService {
     public Optional<AppUser> findeNachId(UUID id) {
         return repository.findById(id);
     }
+
+    /**
+     * Ändert das Passwort eines Benutzers.
+     *
+     * @throws IllegalArgumentException wenn altes Passwort falsch oder neues leer
+     */
+    public void aenderePasswort(UUID userId, String altesPasswort, String neuesPasswort) {
+        if (neuesPasswort == null || neuesPasswort.isBlank()) {
+            throw new IllegalArgumentException("Neues Passwort darf nicht leer sein");
+        }
+        if (neuesPasswort.length() < 8) {
+            throw new IllegalArgumentException("Neues Passwort muss mindestens 8 Zeichen haben");
+        }
+
+        AppUser user = repository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Benutzer nicht gefunden"));
+
+        if (!passwordEncoder.matches(altesPasswort, user.getPasswortHash())) {
+            throw new IllegalArgumentException("Aktuelles Passwort ist falsch");
+        }
+
+        user.setPasswortHash(passwordEncoder.encode(neuesPasswort));
+        repository.save(user);
+    }
 }

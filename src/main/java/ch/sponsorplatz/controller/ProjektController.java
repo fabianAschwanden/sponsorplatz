@@ -1,16 +1,20 @@
 package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.config.ModelAttributeNames;
+import ch.sponsorplatz.dto.MedienAssetView;
 import ch.sponsorplatz.dto.OrganisationView;
 import ch.sponsorplatz.dto.ProjektFormDto;
 import ch.sponsorplatz.dto.ProjektView;
 import ch.sponsorplatz.dto.SponsoringPaketFormDto;
 import ch.sponsorplatz.dto.SponsoringPaketView;
 import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.model.EntityTyp;
+import ch.sponsorplatz.model.MedienAsset;
 import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.SponsoringPaket;
 import ch.sponsorplatz.service.AccessControl;
+import ch.sponsorplatz.service.MedienAssetService;
 import ch.sponsorplatz.service.OrganisationService;
 import ch.sponsorplatz.service.ProjektService;
 import ch.sponsorplatz.service.SponsoringPaketService;
@@ -37,15 +41,18 @@ public class ProjektController {
     private final SponsoringPaketService paketService;
     private final OrganisationService orgService;
     private final AccessControl accessControl;
+    private final MedienAssetService medienAssetService;
 
     public ProjektController(ProjektService projektService,
                              SponsoringPaketService paketService,
                              OrganisationService orgService,
-                             AccessControl accessControl) {
+                             AccessControl accessControl,
+                             MedienAssetService medienAssetService) {
         this.projektService = projektService;
         this.paketService = paketService;
         this.orgService = orgService;
         this.accessControl = accessControl;
+        this.medienAssetService = medienAssetService;
     }
 
     @GetMapping
@@ -103,10 +110,12 @@ public class ProjektController {
         Projekt projekt = projektService.findeNachSlug(projektSlug)
                 .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + projektSlug));
         List<SponsoringPaket> pakete = paketService.findeNachProjekt(projekt.getId());
+        List<MedienAsset> medien = medienAssetService.findeNachEntity(EntityTyp.PROJEKT, projekt.getId());
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
         model.addAttribute("org", OrganisationView.von(org));
         model.addAttribute("projekt", ProjektView.von(projekt));
         model.addAttribute("pakete", pakete.stream().map(SponsoringPaketView::von).toList());
+        model.addAttribute("medien", MedienAssetView.von(medien));
         model.addAttribute("paketForm", new SponsoringPaketFormDto());
         return "projekt-detail";
     }

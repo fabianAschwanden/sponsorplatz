@@ -1,6 +1,7 @@
 package ch.sponsorplatz.startup;
 
 import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.model.PlatformRolle;
 import ch.sponsorplatz.repository.AppUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,8 +41,9 @@ public class DevSeedRunner implements CommandLineRunner {
         user.setPasswortHash(encoder.encode(DEV_PASSWORT));
         user.setAktiv(true);
         user.setEmailVerifiziert(true);
+        user.setPlatformRolle(PlatformRolle.PLATFORM_ADMIN);
         userRepository.save(user);
 
-        log.warn("DEV-Seed: Test-User angelegt -> Login: {} / {}", DEV_EMAIL, DEV_PASSWORT);
+        log.warn("DEV-Seed: Test-User mit PLATFORM_ADMIN angelegt -> Login: {} / {}", DEV_EMAIL, DEV_PASSWORT);
     }
 }

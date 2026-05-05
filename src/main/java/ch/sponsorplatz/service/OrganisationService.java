@@ -2,12 +2,14 @@ package ch.sponsorplatz.service;
 
 import ch.sponsorplatz.dto.OrganisationFormDto;
 import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.model.OrgStatus;
 import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.repository.MitgliedschaftRepository;
 import ch.sponsorplatz.repository.OrganisationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -117,5 +119,45 @@ public class OrganisationService {
 
     private String leereAlsNull(String s) {
         return (s == null || s.isBlank()) ? null : s.trim();
+    }
+
+    // --- Admin-Verifizierung ---
+
+    /**
+     * Gibt alle Organisationen mit Status PENDING zurück (älteste zuerst).
+     */
+    @Transactional(readOnly = true)
+    public List<Organisation> findePending() {
+        return repository.findByStatusOrderByCreatedAtAsc(OrgStatus.PENDING);
+    }
+
+    /**
+     * Verifiziert eine Organisation (Admin-Aktion).
+     *
+     * @throws NotFoundException wenn ID nicht existiert
+     * @throws IllegalStateException wenn Status nicht PENDING
+     */
+    public Organisation verifiziere(UUID id) {
+        Organisation org = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + id));
+        if (org.getStatus() != OrgStatus.PENDING) {
+            throw new IllegalStateException(
+                    "Nur PENDING-Organisationen können verifiziert werden (aktuell: " + org.getStatus() + ")");
+        }
+        org.setStatus(OrgStatus.VERIFIED);
+        org.setVerifiziertAm(Instant.now());
+        return repository.save(org);
+    }
+
+    /**
+     * Suspendiert eine Organisation (Admin-Aktion).
+     *
+     * @throws NotFoundException wenn ID nicht existiert
+     */
+    public Organisation suspendiere(UUID id) {
+        Organisation org = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + id));
+        org.setStatus(OrgStatus.SUSPENDED);
+        return repository.save(org);
     }
 }

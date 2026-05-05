@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -75,6 +76,43 @@ class AppUserServiceTest {
         dto.setAnzeigename(anzeigename);
         dto.setPasswort(passwort);
         return dto;
+    }
+
+    /** PW-01: Passwort ändern mit korrektem altem Passwort funktioniert. */
+    @Test
+    void aenderePasswortErfolgreich() {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        AppUser user = new AppUser();
+        user.setId(UUID.randomUUID());
+        user.setPasswortHash(encoder.encode("altesPasswort"));
+        when(repository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(repository.save(any(AppUser.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        service.aenderePasswort(user.getId(), "altesPasswort", "neuesPasswort123");
+
+        assertThat(encoder.matches("neuesPasswort123", user.getPasswortHash())).isTrue();
+    }
+
+    /** PW-02: Passwort ändern mit falschem altem Passwort → wirft. */
+    @Test
+    void aenderePasswortMitFalschemAltemWirft() {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        AppUser user = new AppUser();
+        user.setId(UUID.randomUUID());
+        user.setPasswortHash(encoder.encode("richtig"));
+        when(repository.findById(user.getId())).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> service.aenderePasswort(user.getId(), "falsch", "neuesPasswort"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("falsch");
+    }
+
+    /** PW-03: Passwort ändern mit zu kurzem neuem Passwort → wirft. */
+    @Test
+    void aenderePasswortZuKurzWirft() {
+        assertThatThrownBy(() -> service.aenderePasswort(UUID.randomUUID(), "alt", "kurz"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("8 Zeichen");
     }
 }
 

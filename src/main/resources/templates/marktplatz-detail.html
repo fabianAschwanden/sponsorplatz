@@ -8,6 +8,13 @@
     <title th:text="${projekt.name + ' — Sponsorplatz'}">Projekt</title>
     <meta name="description"
           th:content="${projekt.beschreibung != null ? #strings.abbreviate(projekt.beschreibung, 160) : projekt.name}">
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" th:content="${projekt.name + ' — Sponsorplatz'}">
+    <meta property="og:description"
+          th:content="${projekt.beschreibung != null ? #strings.abbreviate(projekt.beschreibung, 200) : 'Sponsoring-Projekt auf Sponsorplatz'}">
+    <meta property="og:site_name" content="Sponsorplatz">
+    <meta property="og:locale" content="de_CH">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -17,7 +24,7 @@
 <header class="public-topbar">
     <div class="public-topbar-inner">
         <a class="public-logo" th:href="@{/}">
-            <span class="dash-logo-mark">SP</span>
+            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
             <span>Sponsorplatz</span>
         </a>
         <nav class="public-nav">

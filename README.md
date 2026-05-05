@@ -1,6 +1,6 @@
 # Sponsorplatz
 
-> **Vereine finden Sponsoren. Sponsoren finden Vereine. *Endlich.***
+> **Wo Vereine und Marken zueinander finden.**
 
 Schweizer Sponsoring-Plattform für Vereine und Sponsoren — kollaborativ, branchenoffen, DSG-konform.
 

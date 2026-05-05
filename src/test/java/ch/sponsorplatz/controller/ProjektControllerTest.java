@@ -6,6 +6,7 @@ import ch.sponsorplatz.model.OrgTyp;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.Sichtbarkeit;
 import ch.sponsorplatz.service.AccessControl;
+import ch.sponsorplatz.service.MedienAssetService;
 import ch.sponsorplatz.service.OrganisationService;
 import ch.sponsorplatz.service.ProjektService;
 import ch.sponsorplatz.service.SponsoringPaketService;
@@ -53,6 +54,9 @@ class ProjektControllerTest {
 
     @MockBean
     private AccessControl accessControl;
+
+    @MockBean
+    private MedienAssetService medienAssetService;
 
     private Organisation testOrg() {
         Organisation org = new Organisation();

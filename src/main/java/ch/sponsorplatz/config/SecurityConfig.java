@@ -30,13 +30,15 @@ public class SecurityConfig {
     public SecurityFilterChain devFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico").permitAll()
+                .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
                 .requestMatchers("/login", "/registrieren", "/verifizieren").permitAll()
+                .requestMatchers("/einladung/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/organisationen").permitAll()
                 .requestMatchers("/organisationen/{slug}").permitAll()
                 .requestMatchers("/marktplatz/**").permitAll()
+                .requestMatchers("/medien/**").permitAll()
                 .requestMatchers("/vereine/**").permitAll()
                 .anyRequest().authenticated()
             )
@@ -61,12 +63,14 @@ public class SecurityConfig {
     public SecurityFilterChain prodFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico").permitAll()
+                .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
                 .requestMatchers("/login", "/registrieren", "/verifizieren").permitAll()
+                .requestMatchers("/einladung/**").permitAll()
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers("/organisationen").permitAll()
                 .requestMatchers("/organisationen/{slug}").permitAll()
                 .requestMatchers("/marktplatz/**").permitAll()
+                .requestMatchers("/medien/**").permitAll()
                 .requestMatchers("/vereine/**").permitAll()
                 .anyRequest().authenticated()
             )

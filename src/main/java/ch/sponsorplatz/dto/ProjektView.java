@@ -21,10 +21,15 @@ public record ProjektView(
         LocalDate endDatum,
         String beschreibung,
         Instant veroeffentlichtAm,
-        OrganisationKurzView org
+        OrganisationKurzView org,
+        String coverUrl
 ) {
 
     public static ProjektView von(Projekt projekt) {
+        return von(projekt, null);
+    }
+
+    public static ProjektView von(Projekt projekt, String coverUrl) {
         return new ProjektView(
                 projekt.getId(),
                 projekt.getName(),
@@ -36,7 +41,8 @@ public record ProjektView(
                 projekt.getEndDatum(),
                 projekt.getBeschreibung(),
                 projekt.getVeroeffentlichtAm(),
-                OrganisationKurzView.von(projekt.getOrg())
+                OrganisationKurzView.von(projekt.getOrg()),
+                coverUrl
         );
     }
 

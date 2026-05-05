@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sponsorplatz — Vereine finden Sponsoren</title>
+    <title>Sponsorplatz — Wo Vereine und Marken zueinander finden</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -15,7 +15,7 @@
 <header class="public-topbar">
     <div class="public-topbar-inner">
         <a class="public-logo" th:href="@{/}">
-            <span class="dash-logo-mark">SP</span>
+            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
             <span>Sponsorplatz</span>
         </a>
         <nav class="public-nav">
@@ -30,12 +30,22 @@
 <main class="public-main">
     <section class="public-hero">
         <p class="public-hero-rubrik">Schweizer Sponsoring-Plattform</p>
-        <h1>Vereine finden Sponsoren.<br>Sponsoren finden Vereine.</h1>
-        <p class="public-hero-endlich">Endlich.</p>
+        <h1>Wo Vereine und Marken<br>zueinander finden.</h1>
 
         <div class="public-hero-cta">
             <a th:href="@{/marktplatz}" class="app-btn">Marktplatz entdecken</a>
             <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn app-btn-secondary">Verein registrieren</a>
+        </div>
+
+        <div class="public-hero-subclaims">
+            <div class="public-hero-subclaim">
+                <strong>Für Vereine.</strong>
+                Pflege deine Sponsoren-Daten. Veröffentliche Projekte. Werd' gefunden.
+            </div>
+            <div class="public-hero-subclaim">
+                <strong>Für Firmen.</strong>
+                Finde Vereine, die zu deiner Marke passen. Lokal. Messbar. Ehrlich.
+            </div>
         </div>
     </section>
 

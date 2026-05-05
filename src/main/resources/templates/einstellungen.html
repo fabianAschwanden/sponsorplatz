@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de-CH"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Einstellungen</title>
+</head>
+<body>
+<main layout:fragment="inhalt">
+    <div class="container">
+        <h1>Einstellungen</h1>
+
+        <div th:if="${erfolgsMeldung}" class="meldung erfolg" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${fehlermeldung}" class="meldung fehler" th:text="${fehlermeldung}"></div>
+
+        <section class="karte">
+            <h2>Passwort ändern</h2>
+            <form th:action="@{/einstellungen/passwort}" method="post">
+                <div class="formular-gruppe">
+                    <label for="altesPasswort">Aktuelles Passwort</label>
+                    <input type="password" id="altesPasswort" name="altesPasswort" required>
+                </div>
+                <div class="formular-gruppe">
+                    <label for="neuesPasswort">Neues Passwort (mind. 8 Zeichen)</label>
+                    <input type="password" id="neuesPasswort" name="neuesPasswort" required minlength="8">
+                </div>
+                <button type="submit" class="btn">Passwort ändern</button>
+            </form>
+        </section>
+
+        <section class="karte">
+            <h2>Datenexport (DSG)</h2>
+            <p>Laden Sie alle über Sie gespeicherten Daten als JSON herunter.</p>
+            <a th:href="@{/einstellungen/datenexport}" class="btn">Daten exportieren</a>
+        </section>
+    </div>
+</main>
+</body>
+</html>
+

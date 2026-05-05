@@ -16,7 +16,7 @@
 <header class="public-topbar">
     <div class="public-topbar-inner">
         <a class="public-logo" th:href="@{/}">
-            <span class="dash-logo-mark">SP</span>
+            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
             <span>Sponsorplatz</span>
         </a>
         <nav class="public-nav">
@@ -36,9 +36,10 @@
     </header>
 
     <form th:action="@{/marktplatz}" method="get" class="public-filter">
-        <input type="text" name="kategorie" th:value="${filterKategorie}" placeholder="Kategorie (z. B. SPORT)">
-        <input type="text" name="ort" th:value="${filterOrt}" placeholder="Ort (z. B. Zürich)">
-        <button type="submit" class="app-btn">Filtern</button>
+        <input type="text" name="q" th:value="${suchbegriff}" placeholder="Suche (z. B. Fussball, Zürich, Kultur…)" style="flex:2;">
+        <input type="text" name="kategorie" th:value="${filterKategorie}" placeholder="Kategorie">
+        <input type="text" name="ort" th:value="${filterOrt}" placeholder="Ort">
+        <button type="submit" class="app-btn">Suchen</button>
         <a th:href="@{/marktplatz}" class="app-btn app-btn-secondary">Zurücksetzen</a>
     </form>
 
@@ -46,6 +47,8 @@
         <a th:each="p : ${projekte}"
            th:href="@{/marktplatz/{slug}(slug=${p.slug})}"
            class="public-card">
+            <img th:if="${p.coverUrl}" th:src="${p.coverUrl}" alt=""
+                 style="width:100%; height:140px; object-fit:cover; border-radius:8px 8px 0 0; margin-bottom:0.5rem;">
             <span class="public-card-name" th:text="${p.name}">Projekt</span>
             <span class="public-card-meta">
                 <span th:if="${p.kategorie}" th:text="${p.kategorie}">Kategorie</span>

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -38,6 +39,30 @@ public class ProjektService {
     @Transactional(readOnly = true)
     public List<Projekt> findeOeffentliche() {
         return repository.findBySichtbarkeitOrderByVeroeffentlichtAmDesc(Sichtbarkeit.OEFFENTLICH);
+    }
+
+    /**
+     * Durchsucht öffentliche Projekte nach einem Suchbegriff.
+     * Sucht in: Name, Beschreibung, Kategorie, Ort, Org-Name.
+     */
+    @Transactional(readOnly = true)
+    public List<Projekt> suche(String suchbegriff) {
+        if (suchbegriff == null || suchbegriff.isBlank()) {
+            return findeOeffentliche();
+        }
+        return repository.sucheOeffentliche(suchbegriff.trim(), Sichtbarkeit.OEFFENTLICH);
+    }
+
+    /**
+     * Aggregat: zählt veröffentlichte Projekte mehrerer Orgs in einer Query.
+     * Leere Collection → 0, kein Repo-Aufruf.
+     */
+    @Transactional(readOnly = true)
+    public long zaehleOeffentlicheNachOrgIds(Collection<UUID> orgIds) {
+        if (orgIds == null || orgIds.isEmpty()) {
+            return 0L;
+        }
+        return repository.countByOrgIdInAndSichtbarkeit(orgIds, Sichtbarkeit.OEFFENTLICH);
     }
 
     public Projekt erstelle(Organisation org, String name, String beschreibung) {

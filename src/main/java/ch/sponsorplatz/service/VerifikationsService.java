@@ -10,10 +10,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.HexFormat;
 
 /**
  * Service für E-Mail-Verifizierung nach Registrierung.
@@ -22,9 +20,7 @@ import java.util.HexFormat;
 @Transactional
 public class VerifikationsService {
 
-    private static final int TOKEN_LAENGE_BYTES = 32; // 64 hex chars
     private static final long TOKEN_GUELTIG_STUNDEN = 24;
-    private static final SecureRandom RANDOM = new SecureRandom();
 
     private final AppUserRepository repository;
     private final JavaMailSender mailSender;
@@ -42,7 +38,7 @@ public class VerifikationsService {
      * Generiert einen Verifikations-Token, setzt ihn auf dem User und sendet die Mail.
      */
     public void sendeVerifikationsMail(AppUser user) {
-        String token = generiereToken();
+        String token = TokenGenerator.generiere();
         user.setVerifikationsToken(token);
         user.setTokenGueltigBis(Instant.now().plus(TOKEN_GUELTIG_STUNDEN, ChronoUnit.HOURS));
         repository.save(user);
@@ -69,12 +65,6 @@ public class VerifikationsService {
         user.setVerifikationsToken(null);
         user.setTokenGueltigBis(null);
         repository.save(user);
-    }
-
-    private String generiereToken() {
-        byte[] bytes = new byte[TOKEN_LAENGE_BYTES];
-        RANDOM.nextBytes(bytes);
-        return HexFormat.of().formatHex(bytes);
     }
 
     private void sendeMail(String empfaenger, String name, String link) {

@@ -109,6 +109,16 @@ body.dashboard-body {
     letter-spacing: 0.5px;
 }
 
+/* SVG-Logo-Icon (Zwei Ringe) — ersetzt seit Mai 2026 die SP-Buchstaben-Marke.
+   Light-Variante (icon-ringe.svg) auf hellem Header, Dark-Variante (icon-ringe-on-dark.svg)
+   in der dunklen Sidebar. Beide haben identische 64x64-viewBox, derselbe CSS-Block reicht. */
+.dash-logo-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: block;
+}
+
 .dash-back {
     display: inline-flex;
     align-items: center;
@@ -1262,6 +1272,39 @@ body.public-body {
     gap: 0.75rem;
     flex-wrap: wrap;
     justify-content: center;
+}
+
+/* Sub-Claims unter dem Hero — zwei Spalten für Vereine/Firmen */
+.public-hero-subclaims {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    max-width: 720px;
+    margin: 3rem auto 0;
+    text-align: left;
+}
+
+@media (max-width: 720px) {
+    .public-hero-subclaims { grid-template-columns: 1fr; }
+}
+
+.public-hero-subclaim {
+    background: var(--dash-card);
+    border: 1px solid var(--dash-border);
+    border-left: 3px solid var(--dash-coral);
+    border-radius: var(--dash-radius);
+    padding: 1rem 1.25rem;
+    color: var(--dash-text);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.public-hero-subclaim strong {
+    display: block;
+    color: var(--dash-text);
+    font-family: var(--dash-font-head);
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.2px;
 }
 
 /* Auth-Card (Login/Registrieren) */

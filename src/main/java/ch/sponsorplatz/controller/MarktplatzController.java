@@ -3,7 +3,9 @@ package ch.sponsorplatz.controller;
 import ch.sponsorplatz.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.ProjektView;
 import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.model.EntityTyp;
 import ch.sponsorplatz.model.Projekt;
+import ch.sponsorplatz.service.MedienAssetService;
 import ch.sponsorplatz.service.ProjektService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,16 +21,25 @@ import java.util.List;
 public class MarktplatzController {
 
     private final ProjektService projektService;
+    private final MedienAssetService medienAssetService;
 
-    public MarktplatzController(ProjektService projektService) {
+    public MarktplatzController(ProjektService projektService, MedienAssetService medienAssetService) {
         this.projektService = projektService;
+        this.medienAssetService = medienAssetService;
     }
 
     @GetMapping
     public String liste(@RequestParam(required = false) String kategorie,
                         @RequestParam(required = false) String ort,
+                        @RequestParam(required = false) String q,
                         Model model) {
-        List<Projekt> projekte = projektService.findeOeffentliche();
+        List<Projekt> projekte;
+
+        if (q != null && !q.isBlank()) {
+            projekte = projektService.suche(q);
+        } else {
+            projekte = projektService.findeOeffentliche();
+        }
 
         if (kategorie != null && !kategorie.isBlank()) {
             projekte = projekte.stream()
@@ -42,9 +53,17 @@ public class MarktplatzController {
         }
 
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "marktplatz");
-        model.addAttribute("projekte", projekte.stream().map(ProjektView::von).toList());
+        model.addAttribute("projekte", projekte.stream()
+                .map(p -> {
+                    String coverUrl = medienAssetService.findeCover(EntityTyp.PROJEKT, p.getId())
+                            .map(a -> "/medien/" + a.getId())
+                            .orElse(null);
+                    return ProjektView.von(p, coverUrl);
+                })
+                .toList());
         model.addAttribute("filterKategorie", kategorie);
         model.addAttribute("filterOrt", ort);
+        model.addAttribute("suchbegriff", q);
         return "marktplatz";
     }
 

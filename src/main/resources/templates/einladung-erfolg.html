@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einladung angenommen — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="public-body">
+
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
+            <span>Sponsorplatz</span>
+        </a>
+    </div>
+</header>
+
+<main class="public-main">
+    <section class="public-auth-card">
+        <h1 style="color: var(--dash-success);">✓ Einladung angenommen</h1>
+        <p class="app-muted" style="text-align:center;"
+           th:text="${erfolgsMeldung} ?: 'Sie sind jetzt Mitglied der Organisation.'">
+            Sie sind jetzt Mitglied.
+        </p>
+        <div class="app-form-actions" style="margin-top: 1.5rem;">
+            <a th:href="@{/dashboard}" class="app-btn" style="width: 100%; justify-content: center;">Zum Dashboard</a>
+        </div>
+    </section>
+</main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
+    </div>
+</footer>
+
+</body>
+</html>

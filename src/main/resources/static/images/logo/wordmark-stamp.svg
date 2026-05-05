@@ -1,0 +1,9 @@
+<svg viewBox="0 0 360 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sponsorplatz">
+  <title>Sponsorplatz</title>
+  <g transform="translate(8, 12)">
+    <rect width="56" height="56" rx="11" fill="#1E3A5F"/>
+    <text x="28" y="39" text-anchor="middle" font-family="Cambria, Georgia, serif" font-size="25" font-weight="700" fill="#F4F1ED">SP</text>
+    <circle cx="44" cy="12" r="3.5" fill="#E07A5F"/>
+  </g>
+  <text x="84" y="50" font-family="Cambria, Georgia, serif" font-size="32" font-weight="700" fill="#1A202C">Sponsorplatz</text>
+</svg>

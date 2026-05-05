@@ -3,8 +3,11 @@ package ch.sponsorplatz.repository;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.Sichtbarkeit;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,5 +22,24 @@ public interface ProjektRepository extends JpaRepository<Projekt, UUID> {
     List<Projekt> findBySichtbarkeitOrderByVeroeffentlichtAmDesc(Sichtbarkeit sichtbarkeit);
 
     boolean existsBySlug(String slug);
+
+    long countByOrgIdInAndSichtbarkeit(Collection<UUID> orgIds, Sichtbarkeit sichtbarkeit);
+
+    /**
+     * Volltextsuche: durchsucht Name, Beschreibung, Kategorie, Ort und Org-Name.
+     * Case-insensitive LIKE-Suche, funktioniert auf H2 und PostgreSQL.
+     */
+    @Query("""
+            SELECT p FROM Projekt p
+            WHERE p.sichtbarkeit = :sichtbarkeit
+            AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :suchbegriff, '%'))
+                 OR LOWER(p.beschreibung) LIKE LOWER(CONCAT('%', :suchbegriff, '%'))
+                 OR LOWER(p.kategorie) LIKE LOWER(CONCAT('%', :suchbegriff, '%'))
+                 OR LOWER(p.ort) LIKE LOWER(CONCAT('%', :suchbegriff, '%'))
+                 OR LOWER(p.org.name) LIKE LOWER(CONCAT('%', :suchbegriff, '%')))
+            ORDER BY p.veroeffentlichtAm DESC
+            """)
+    List<Projekt> sucheOeffentliche(@Param("suchbegriff") String suchbegriff,
+                                     @Param("sichtbarkeit") Sichtbarkeit sichtbarkeit);
 }
 

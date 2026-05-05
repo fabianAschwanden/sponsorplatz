@@ -1,8 +1,17 @@
 # Sponsorplatz — Produkt-Übersicht
 
+## Slogan
+
+> **Wo Vereine und Marken zueinander finden.**
+
 ## Vision
 
-Eine Schweizer Plattform, auf der Vereine ihre Sponsoring-Daten gemeinsam pflegen — und Unternehmen Projekte direkt finden und unterstützen können.
+Eine Schweizer Plattform, auf der Vereine ihre Sponsoring-Daten gemeinsam pflegen — und Unternehmen als Marken Projekte direkt finden und unterstützen können.
+
+## Sub-Claims
+
+- **Für Vereine.** Pflege deine Sponsoren-Daten. Veröffentliche Projekte. Werd' gefunden.
+- **Für Firmen.** Finde Vereine, die zu deiner Marke passen. Lokal. Messbar. Ehrlich.
 
 ## Zielgruppen
 

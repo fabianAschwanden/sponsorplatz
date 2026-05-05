@@ -3,6 +3,7 @@ package ch.sponsorplatz.controller;
 import ch.sponsorplatz.config.SecurityConfig;
 import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.repository.AppUserRepository;
+import ch.sponsorplatz.service.AppUserService;
 import ch.sponsorplatz.service.DatenExportService;
 import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
@@ -18,8 +19,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = EinstellungenController.class)
@@ -35,6 +39,9 @@ class EinstellungenControllerTest {
 
     @MockBean
     private AppUserRepository appUserRepository;
+
+    @MockBean
+    private AppUserService appUserService;
 
     @MockBean
     private SponsorplatzUserDetailsService userDetailsService;
@@ -63,6 +70,26 @@ class EinstellungenControllerTest {
     void datenExportOhneLoginRedirected() throws Exception {
         mockMvc.perform(get("/einstellungen/datenexport"))
                 .andExpect(status().is3xxRedirection());
+    }
+
+    /** EINST-03: POST /einstellungen/passwort → Redirect mit Erfolgsmeldung. */
+    @Test
+    @WithMockUser(username = "max@example.com")
+    void passwortAendernErfolgreich() throws Exception {
+        AppUser user = new AppUser();
+        user.setId(UUID.randomUUID());
+        user.setEmail("max@example.com");
+        when(appUserRepository.findByEmail("max@example.com")).thenReturn(Optional.of(user));
+
+        mockMvc.perform(post("/einstellungen/passwort")
+                        .param("altesPasswort", "alt123456")
+                        .param("neuesPasswort", "neu123456")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/einstellungen"))
+                .andExpect(flash().attributeExists("erfolgsMeldung"));
+
+        verify(appUserService).aenderePasswort(user.getId(), "alt123456", "neu123456");
     }
 }
 

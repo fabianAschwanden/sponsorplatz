@@ -5,6 +5,7 @@ import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.model.OrgTyp;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.Sichtbarkeit;
+import ch.sponsorplatz.service.MedienAssetService;
 import ch.sponsorplatz.service.ProjektService;
 import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,9 @@ class MarktplatzControllerTest {
 
     @MockBean
     private ProjektService projektService;
+
+    @MockBean
+    private MedienAssetService medienAssetService;
 
     @MockBean
     private SponsorplatzUserDetailsService userDetailsService;
@@ -117,6 +121,28 @@ class MarktplatzControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("marktplatz-detail"))
                 .andExpect(model().attributeExists("projekt"));
+    }
+
+    /** MKT-06: Volltextsuche mit Parameter q delegiert an ProjektService.suche(). */
+    @Test
+    void volltextSucheMitParameterQ() throws Exception {
+        Projekt p = testProjekt();
+        when(projektService.suche("Sommer")).thenReturn(List.of(p));
+
+        mockMvc.perform(get("/marktplatz").param("q", "Sommer"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("projekte", "suchbegriff"))
+                .andExpect(model().attribute("suchbegriff", "Sommer"));
+    }
+
+    /** MKT-07: Leerer Suchbegriff zeigt alle öffentlichen Projekte. */
+    @Test
+    void leereSucheZeigtAlle() throws Exception {
+        when(projektService.findeOeffentliche()).thenReturn(List.of());
+
+        mockMvc.perform(get("/marktplatz").param("q", ""))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("projekte"));
     }
 }
 

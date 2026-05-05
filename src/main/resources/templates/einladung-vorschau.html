@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einladung — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="public-body">
+
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
+            <span>Sponsorplatz</span>
+        </a>
+    </div>
+</header>
+
+<main class="public-main">
+    <section class="public-auth-card">
+        <h1>Einladung erhalten</h1>
+
+        <p style="text-align:center; margin-bottom: 1.5rem;">
+            <strong th:text="${vorschau.eingeladenVonName()}">Eingeladen von</strong>
+            hat dich eingeladen, Mitglied von
+            <strong th:text="${vorschau.orgName()}">Organisation</strong>
+            zu werden.
+        </p>
+
+        <div class="app-card" style="background: var(--dash-violet-light); border-color: var(--dash-violet); margin-bottom: 1.5rem;">
+            <dl class="app-datenliste" style="grid-template-columns: 110px 1fr; gap: 0.4rem 1rem;">
+                <dt>Organisation</dt>
+                <dd th:text="${vorschau.orgName()}">FC Beispiel</dd>
+
+                <dt>Rolle</dt>
+                <dd><span class="app-chip" th:text="${vorschau.rolle()}">ORG_EDITOR</span></dd>
+
+                <dt>E-Mail</dt>
+                <dd th:text="${vorschau.email()}">user@example.ch</dd>
+
+                <dt>Gültig bis</dt>
+                <dd th:text="${#temporals.format(vorschau.gueltigBis(), 'dd.MM.yyyy HH:mm')}">01.01.2026</dd>
+            </dl>
+        </div>
+
+        <p class="app-muted" style="text-align:center; font-size: 0.85rem; margin-bottom: 1rem;">
+            Mit dem Klick auf <strong>„Einladung annehmen"</strong> wirst du zum Mitglied dieser Organisation.
+            Voraussetzung: Du bist mit der oben angezeigten E-Mail bereits registriert.
+        </p>
+
+        <form th:action="@{/einladung/annehmen}" method="post">
+            <input type="hidden" name="token" th:value="${vorschau.token()}">
+            <div class="app-form-actions" style="flex-direction: column; gap: 0.5rem;">
+                <button type="submit" class="app-btn" style="width: 100%; justify-content: center;">
+                    Einladung annehmen
+                </button>
+                <a th:href="@{/}" class="app-btn app-btn-secondary" style="width: 100%; justify-content: center;">
+                    Abbrechen
+                </a>
+            </div>
+        </form>
+    </section>
+</main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
+    </div>
+</footer>
+
+</body>
+</html>

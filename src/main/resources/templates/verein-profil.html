@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <title th:text="${org.name() + ' — Sponsorplatz'}">Vereinsprofil</title>
     <meta name="description" th:content="${org.beschreibung() != null ? #strings.abbreviate(org.beschreibung(), 160) : org.name()}">
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" th:content="${org.name() + ' — Sponsorplatz'}">
+    <meta property="og:description"
+          th:content="${org.beschreibung() != null ? #strings.abbreviate(org.beschreibung(), 200) : org.name() + ' auf Sponsorplatz'}">
+    <meta property="og:site_name" content="Sponsorplatz">
+    <meta property="og:locale" content="de_CH">
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
