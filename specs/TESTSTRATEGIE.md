@@ -313,6 +313,16 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **INFO-01** | `InfoControllerTest` | GET `/impressum` → 200 + impressum-Template, public erreichbar |
 | **INFO-02** | `InfoControllerTest` | GET `/datenschutz` → 200 + datenschutz-Template, public erreichbar |
 
+### Phase Operational — Rate-Limiting (RATE)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **RATE-01** | `RateLimitFilterTest` | Filter ignoriert nicht-konfigurierte Pfade (z.B. GET /marktplatz) |
+| **RATE-02** | `RateLimitFilterTest` | POST `/registrieren` — erste N Requests gehen durch |
+| **RATE-03** | `RateLimitFilterTest` | (N+1)-ter POST in 1 min vom selben IP → HTTP 429 + Retry-After |
+| **RATE-04** | `RateLimitFilterTest` | Zwei verschiedene IPs haben getrennte Buckets |
+| **RATE-05** | `RateLimitFilterTest` | Filter respektiert `X-Forwarded-For` (Caddy-Reverse-Proxy) |
+
 ### Phase Operational — Mail-Service zentral (MAIL)
 
 | ID | Test-Klasse | Beschreibung |
