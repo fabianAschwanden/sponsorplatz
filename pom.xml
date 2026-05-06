@@ -26,6 +26,16 @@
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <testcontainers.version>1.20.4</testcontainers.version>
         <oci-sdk.version>3.86.0</oci-sdk.version>
+
+        <!-- Security-Patches über Spring-Boot-3.5.3-BOM (siehe Trivy-Findings):
+             tomcat 10.1.42 → 10.1.53 (CVE-2026-29145 Auth-Bypass, CVE-2025-48989 H2-DoS)
+             spring-framework 6.2.8 → 6.2.11 (CVE-2025-41249 Annotation-Lookup)
+             spring-security 6.5.x → 6.5.9 (CVE-2026-22732 Policy-Bypass, CVE-2025-41248)
+             thymeleaf 3.1.3 → 3.1.4 (CVE-2026-40477 SSTI) -->
+        <tomcat.version>10.1.53</tomcat.version>
+        <spring-framework.version>6.2.11</spring-framework.version>
+        <spring-security.version>6.5.9</spring-security.version>
+        <thymeleaf.version>3.1.4.RELEASE</thymeleaf.version>
     </properties>
 
     <dependencies>
