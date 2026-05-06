@@ -33,7 +33,7 @@ class EinladungsMailListenerTest {
 
     @BeforeEach
     void setUp() {
-        listener = new EinladungsMailListener(mailSender, "http://localhost:8090");
+        listener = new EinladungsMailListener(mailSender, "http://localhost:8090", "noreply@test.local");
     }
 
     /** EINL-12a: Listener sendet Mail beim Event. */

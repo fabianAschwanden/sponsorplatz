@@ -28,11 +28,14 @@ public class EinladungsMailListener {
 
     private final JavaMailSender mailSender;
     private final String basisUrl;
+    private final String absender;
 
     public EinladungsMailListener(JavaMailSender mailSender,
-                                  @Value("${sponsorplatz.basis-url:http://localhost:8080}") String basisUrl) {
+                                  @Value("${sponsorplatz.basis-url:http://localhost:8080}") String basisUrl,
+                                  @Value("${sponsorplatz.mail.absender:noreply@sponsorplatz.ch}") String absender) {
         this.mailSender = mailSender;
         this.basisUrl = basisUrl;
+        this.absender = absender;
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -61,7 +64,7 @@ public class EinladungsMailListener {
                 "<p>Der Link ist 7 Tage gültig.</p>",
                 true
         );
-        helper.setFrom("noreply@sponsorplatz.ch");
+        helper.setFrom(absender);
         mailSender.send(message);
     }
 }

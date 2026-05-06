@@ -95,6 +95,12 @@ variable "smtp_password" {
   default   = ""
 }
 
+variable "mail_absender" {
+  type        = string
+  description = "From-Adresse für ausgehende Mails. Muss bei Brevo/Mailgun verifiziert sein."
+  default     = "noreply@sponsorplatz.ch"
+}
+
 variable "basis_url" {
   type        = string
   description = "Externe Basis-URL für Mail-Links (Token-Bestätigung). Leer = wird auf https://<domain> gesetzt"

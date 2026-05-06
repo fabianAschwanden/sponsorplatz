@@ -25,10 +25,12 @@ admin_email    = "admin@example.ch"
 admin_password = "PUT_STRONG_ADMIN_PW_HERE"
 
 # SMTP (leer = Versand deaktiviert; alle Verifikations-/Einladungs-Mails fallen aus)
+# Brevo (300/Tag gratis): smtp-relay.brevo.com:587, siehe infra/staging-free/SMTP_SETUP.md
 smtp_host     = ""
 smtp_port     = 587
 smtp_user     = ""
 smtp_password = ""
+mail_absender = "noreply@sponsorplatz.ch"   # MUSS beim Provider verifiziert sein
 
 # Object-Storage-Provider (oci = Cloud Buckets, lokal = VM-Volume)
 storage_provider = "oci"

@@ -26,7 +26,7 @@ class VerifikationsServiceTest {
     void setUp() {
         repository = mock(AppUserRepository.class);
         mailSender = mock(JavaMailSender.class);
-        service = new VerifikationsService(repository, mailSender, "http://localhost:8080");
+        service = new VerifikationsService(repository, mailSender, "http://localhost:8080", "noreply@test.local");
     }
 
     /** EV-01: sendeVerifikationsMail setzt Token + Ablaufdatum auf User. */

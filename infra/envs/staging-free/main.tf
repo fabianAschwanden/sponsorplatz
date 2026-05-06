@@ -181,6 +181,7 @@ locals {
     smtp_port     = var.smtp_port
     smtp_user     = var.smtp_user
     smtp_password = var.smtp_password
+    mail_absender = var.mail_absender
 
     storage_provider = var.storage_provider
     bucket_uploads   = module.storage.bucket_names["uploads"]

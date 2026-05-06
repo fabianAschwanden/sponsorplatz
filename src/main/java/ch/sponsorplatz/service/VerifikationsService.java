@@ -25,13 +25,16 @@ public class VerifikationsService {
     private final AppUserRepository repository;
     private final JavaMailSender mailSender;
     private final String basisUrl;
+    private final String absender;
 
     public VerifikationsService(AppUserRepository repository,
                                 JavaMailSender mailSender,
-                                @Value("${sponsorplatz.basis-url:http://localhost:8080}") String basisUrl) {
+                                @Value("${sponsorplatz.basis-url:http://localhost:8080}") String basisUrl,
+                                @Value("${sponsorplatz.mail.absender:noreply@sponsorplatz.ch}") String absender) {
         this.repository = repository;
         this.mailSender = mailSender;
         this.basisUrl = basisUrl;
+        this.absender = absender;
     }
 
     /**
@@ -81,7 +84,7 @@ public class VerifikationsService {
                     "<p>Falls Sie sich nicht registriert haben, ignorieren Sie diese Mail.</p>",
                     true
             );
-            helper.setFrom("noreply@sponsorplatz.ch");
+            helper.setFrom(absender);
             mailSender.send(message);
         } catch (MessagingException e) {
             throw new RuntimeException("Verifikations-Mail konnte nicht gesendet werden", e);
