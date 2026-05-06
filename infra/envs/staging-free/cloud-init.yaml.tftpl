@@ -1,0 +1,168 @@
+#cloud-config
+# Cloud-Init für die Always-Free-VM (Sponsorplatz):
+# 1. Docker installieren
+# 2. firewalld → 80/443 öffnen
+# 3. /opt/sponsorplatz/{Caddyfile, docker-compose.yml} schreiben
+# 4. systemd-Service einrichten der den Compose-Stack startet
+# 5. OCIR-Login + initial pull + start
+
+# kein package_update — spart Minuten auf E2.1.Micro
+package_update: false
+package_upgrade: false
+
+write_files:
+  # ── docker-compose.yml ────────────────────────────────────────────────────
+  # Enthält Klartext-PWs als ENV — Mode 0640, root:opc (opc darf für SSH-
+  # Inspection ohne sudo lesen, andere User keinen Zugriff).
+  - path: /opt/sponsorplatz/docker-compose.yml
+    permissions: '0640'
+    owner: 'root:opc'
+    content: |
+      services:
+        db:
+          image: postgres:17-alpine
+          container_name: sponsorplatz-db
+          restart: unless-stopped
+          mem_limit: 384m
+          environment:
+            POSTGRES_DB: sponsorplatz
+            POSTGRES_USER: sponsorplatz
+            POSTGRES_PASSWORD: ${db_password}
+          volumes:
+            - /var/lib/sponsorplatz/db-data:/var/lib/postgresql/data
+          healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U sponsorplatz -d sponsorplatz"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+        app:
+          image: ${image_url}
+          container_name: sponsorplatz-app
+          restart: unless-stopped
+          mem_limit: 768m
+          depends_on:
+            db:
+              condition: service_healthy
+          environment:
+            SPRING_PROFILES_ACTIVE: cloud-free
+            DB_URL: jdbc:postgresql://db:5432/sponsorplatz
+            DB_USER: sponsorplatz
+            DB_PASSWORD: ${db_password}
+            SMTP_HOST: ${smtp_host}
+            SMTP_PORT: "${smtp_port}"
+            SMTP_USER: ${smtp_user}
+            SMTP_PASSWORD: ${smtp_password}
+            SMTP_AUTH: "true"
+            SMTP_STARTTLS: "true"
+            BASIS_URL: ${basis_url}
+            SPONSORPLATZ_ADMIN_EMAIL: ${admin_email}
+            SPONSORPLATZ_ADMIN_PASSWORD: ${admin_password}
+            STORAGE_PROVIDER: ${storage_provider}
+            OCI_AUTH_MODE: instance
+            OCI_REGION: ${region}
+            OCI_NAMESPACE: ${object_storage_ns}
+            OCI_BUCKET_UPLOADS: ${bucket_uploads}
+            OCI_BUCKET_BACKUPS: ${bucket_backups}
+            JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=70 -Xss512k"
+          volumes:
+            - /var/lib/sponsorplatz/uploads:/app/uploads
+          expose:
+            - "8080"
+          healthcheck:
+            test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+            interval: 30s
+            timeout: 5s
+            retries: 5
+            start_period: 90s
+
+        caddy:
+          image: caddy:2-alpine
+          container_name: sponsorplatz-caddy
+          restart: unless-stopped
+          mem_limit: 96m
+          depends_on:
+            - app
+          ports:
+            - "80:80"
+            - "443:443"
+          volumes:
+            - /opt/sponsorplatz/Caddyfile:/etc/caddy/Caddyfile:ro
+            - /var/lib/sponsorplatz/caddy-data:/data
+            - /var/lib/sponsorplatz/caddy-config:/config
+
+  # ── Caddyfile ─────────────────────────────────────────────────────────────
+  # Primärer Hostname + nip.io-Fallback (funktioniert auch ohne A-Record).
+  - path: /opt/sponsorplatz/Caddyfile
+    permissions: '0644'
+    content: |
+      {
+          email ${acme_email}
+      }
+      ${domain} {
+          encode gzip
+          header {
+              Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+              X-Content-Type-Options "nosniff"
+              X-Frame-Options "DENY"
+              Referrer-Policy "strict-origin-when-cross-origin"
+          }
+          reverse_proxy app:8080 {
+              header_up X-Forwarded-Proto https
+          }
+      }
+
+  # ── systemd-Service ──────────────────────────────────────────────────────
+  - path: /etc/systemd/system/sponsorplatz.service
+    permissions: '0644'
+    content: |
+      [Unit]
+      Description=Sponsorplatz (docker compose)
+      Requires=docker.service
+      After=docker.service network-online.target
+      Wants=network-online.target
+
+      [Service]
+      Type=oneshot
+      RemainAfterExit=true
+      WorkingDirectory=/opt/sponsorplatz
+      ExecStartPre=/usr/bin/docker compose pull
+      ExecStart=/usr/bin/docker compose up -d --remove-orphans
+      ExecStop=/usr/bin/docker compose down
+
+      [Install]
+      WantedBy=multi-user.target
+
+  # ── Convenience-Aliases ──────────────────────────────────────────────────
+  - path: /etc/profile.d/sponsorplatz.sh
+    permissions: '0644'
+    content: |
+      alias logs='cd /opt/sponsorplatz && docker compose logs -f'
+      alias restart-app='cd /opt/sponsorplatz && docker compose restart app'
+      alias pull-app='cd /opt/sponsorplatz && docker compose pull app && docker compose up -d app'
+
+runcmd:
+  # Docker Engine
+  - dnf -y install dnf-plugins-core
+  - dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  - dnf -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  - systemctl enable --now docker
+
+  # Firewall: 22 ist Default offen, 80 + 443 freischalten
+  - systemctl enable --now firewalld
+  - firewall-cmd --permanent --add-port=80/tcp
+  - firewall-cmd --permanent --add-port=443/tcp
+  - firewall-cmd --reload
+
+  # Persistenz-Verzeichnisse
+  - mkdir -p /var/lib/sponsorplatz/db-data /var/lib/sponsorplatz/uploads /var/lib/sponsorplatz/caddy-data /var/lib/sponsorplatz/caddy-config
+  - chown -R 70:70 /var/lib/sponsorplatz/db-data         # postgres-User in alpine
+  - chown -R 1001:1001 /var/lib/sponsorplatz/uploads     # sponsor-User im App-Container
+
+  # OCIR-Login (Username-Format: <namespace>/<user>)
+  - mkdir -p /root/.docker
+  - echo '${ocir_auth_token}' | docker login ${ocir_registry} -u '${object_storage_ns}/${ocir_username}' --password-stdin
+
+  # Stack starten
+  - systemctl daemon-reload
+  - systemctl enable --now sponsorplatz.service

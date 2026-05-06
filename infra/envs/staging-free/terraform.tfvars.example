@@ -1,0 +1,34 @@
+tenancy_ocid             = "ocid1.tenancy.oc1..xxxxx"
+compartment_ocid         = "ocid1.compartment.oc1..xxxxx"   # sponsorplatz-staging
+region                   = "eu-zurich-1"
+object_storage_namespace = "xxxxxxxx"                       # `oci os ns get`
+availability_domain      = "fXdz:EU-ZURICH-1-AD-1"          # `oci iam availability-domain list`
+
+# Public-Key des SSH-Keypairs für Pipeline-Deploy + manueller Zugriff
+ssh_public_key = "ssh-ed25519 AAAA... fabian@laptop"
+
+# Public Hostname — Let's-Encrypt-Cert via Caddy
+domain     = "sponsorplatz.example.ch"
+acme_email = "admin@example.ch"
+
+# basis_url leer lassen → wird auf https://${domain} gesetzt
+basis_url = ""
+
+# OCIR-Pull (gleicher Token wie GitHub-Secret OCIR_AUTH_TOKEN)
+image_url       = "zrh.ocir.io/<NS>/sponsorplatz:staging-latest"
+ocir_username   = "default/github_actions_deploy@example.ch"
+ocir_auth_token = "PUT_OCIR_TOKEN_HERE"
+
+# DB + Initial-Admin (NIE in committed tfvars halten — siehe .gitignore)
+db_password    = "PUT_STRONG_DB_PW_HERE"
+admin_email    = "admin@example.ch"
+admin_password = "PUT_STRONG_ADMIN_PW_HERE"
+
+# SMTP (leer = Versand deaktiviert; alle Verifikations-/Einladungs-Mails fallen aus)
+smtp_host     = ""
+smtp_port     = 587
+smtp_user     = ""
+smtp_password = ""
+
+# Object-Storage-Provider (oci = Cloud Buckets, lokal = VM-Volume)
+storage_provider = "oci"

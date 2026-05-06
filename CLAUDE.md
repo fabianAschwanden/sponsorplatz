@@ -215,6 +215,9 @@ rm -rf data/
 | Marketing-Strategie | [`docs/marketing.md`](docs/marketing.md) |
 | Naming-Begründung | [`docs/naming.md`](docs/naming.md) |
 | Pitch-Präsentation | [`docs/Pitch_Sponsorplatz.pptx`](docs/Pitch_Sponsorplatz.pptx) |
+| Infrastruktur (Übersicht) | [`infra/README.md`](infra/README.md) |
+| Terraform staging-free | [`infra/envs/staging-free/README.md`](infra/envs/staging-free/README.md) |
+| Manuelles VM-Setup | [`infra/staging-free/README.md`](infra/staging-free/README.md) |
 
 ---
 

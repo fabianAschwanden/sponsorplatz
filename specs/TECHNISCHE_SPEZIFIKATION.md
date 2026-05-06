@@ -48,6 +48,19 @@
 - Forwarded-Headers für Caddy-Reverse-Proxy
 - `STORAGE_PROVIDER=oci` aktiviert OCI Object Storage (siehe Storage-Abschnitt)
 
+## Infrastruktur
+
+Vollständige IaC-Doku: [`infra/README.md`](../infra/README.md). Zwei Pfade zur VM:
+
+| Pfad | Wann | Doku |
+|---|---|---|
+| Manuell | Erst-Setup, Debugging | [`infra/staging-free/README.md`](../infra/staging-free/README.md) — VM mit der Hand bootstrappen |
+| Terraform | Reproduzierbar, mehrere Envs | [`infra/envs/staging-free/README.md`](../infra/envs/staging-free/README.md) — VCN + VM + Buckets + IAM via Terraform |
+
+Beim Terraform-Pfad bootstrappt `cloud-init.yaml.tftpl` Docker, schreibt `docker-compose.yml` + `Caddyfile` ins `/opt/sponsorplatz/`-Verzeichnis und startet den Stack via systemd. Spätere App-Updates kommen über die CD-Pipeline (`docker compose pull && up -d`), nicht über Terraform.
+
+Auth zwischen App-VM und Object-Storage läuft über **Instance Principal** — die VM ist Mitglied der Dynamic Group `sponsorplatz-vm-staging-free`, die per IAM-Policy Zugriff auf die Buckets hat. Keine API-Keys auf der VM.
+
 ## Storage
 
 `StorageService` ist die einzige Schnittstelle für Datei-Uploads. Provider-Auswahl per Property:

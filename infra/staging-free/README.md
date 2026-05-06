@@ -1,4 +1,6 @@
-# Sponsorplatz — Staging-Free Deployment
+# Sponsorplatz — Staging-Free Deployment (manuell)
+
+> **Reproduzierbares Setup via Terraform:** [`infra/envs/staging-free/`](../envs/staging-free/) ist die langfristige Quelle der Wahrheit. Diese manuelle Anleitung bleibt für Erst-Setup, Debugging und Tests in fremden Tenancies.
 
 Deployment auf eine **OCI Always-Free-VM** (E2.1.Micro, 1 GB RAM) mit Docker-Compose + Caddy + Postgres.
 
