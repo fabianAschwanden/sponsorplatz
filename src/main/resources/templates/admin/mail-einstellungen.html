@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin — Mail-Einstellungen — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('admin', null)}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">Plattform-Admin</p>
+                <h1>Mail-Einstellungen</h1>
+            </div>
+        </header>
+
+        <nav style="display:flex; gap:0.75rem; margin-bottom:2rem; flex-wrap:wrap;">
+            <a th:href="@{/admin}" class="app-btn app-btn-ghost">Übersicht</a>
+            <a th:href="@{/admin/benutzer}" class="app-btn app-btn-ghost">Benutzer</a>
+            <a th:href="@{/admin/organisationen}" class="app-btn app-btn-ghost">Organisationen</a>
+            <a th:href="@{/admin/audit}" class="app-btn app-btn-ghost">Audit-Log</a>
+            <a th:href="@{/admin/backups}" class="app-btn app-btn-ghost">Backups</a>
+            <a th:href="@{/admin/mail-einstellungen}" class="app-btn">Mail</a>
+        </nav>
+
+        <div th:if="${erfolgsMeldung}" class="app-card" style="border-left: 4px solid #16a34a;"
+             th:text="${erfolgsMeldung}"></div>
+        <div th:if="${fehlerMeldung}" class="app-card" style="border-left: 4px solid #dc2626;"
+             th:text="${fehlerMeldung}"></div>
+
+        <!-- ── Live-Mode-Banner ─────────────────────────────────────── -->
+        <div class="app-card" th:classappend="${einstellungen.liveModus} ? '' : ''"
+             th:style="${einstellungen.liveModus} ? 'border-left: 4px solid #dc2626;' : 'border-left: 4px solid #f59e0b;'">
+            <strong th:if="${einstellungen.liveModus}">Live-Modus AKTIV</strong>
+            <strong th:unless="${einstellungen.liveModus}">Live-Modus AUS (Test/Skip)</strong>
+            <p style="margin: 0.5rem 0 0;" th:if="${einstellungen.liveModus}">
+                Mails gehen an die echten Empfänger. Setze <code>MAIL_LIVE=false</code>
+                im Container-ENV, um auf Test/Skip zu wechseln (Container-Restart nötig).
+            </p>
+            <p style="margin: 0.5rem 0 0;" th:unless="${einstellungen.liveModus}">
+                Alle Mails werden an den Test-Empfänger umgeleitet (mit
+                <code>[TEST → original]</code>-Subject) oder, wenn keiner gesetzt,
+                übersprungen. Setze <code>MAIL_LIVE=true</code> im Container-ENV
+                für echten Versand.
+            </p>
+        </div>
+
+        <!-- ── Effektive Settings ────────────────────────────────────── -->
+        <section class="app-card">
+            <h2>Aktuelle Konfiguration</h2>
+            <dl class="app-dl">
+                <dt>SMTP konfiguriert</dt>
+                <dd>
+                    <span th:if="${einstellungen.konfiguriert}" style="color: #16a34a;">Ja</span>
+                    <span th:unless="${einstellungen.konfiguriert}" style="color: #dc2626;">
+                        Nein — kein SMTP-Host gesetzt, Versand deaktiviert
+                    </span>
+                </dd>
+                <dt>Effektiver Host</dt>
+                <dd th:text="${einstellungen.effektiverHost ?: '—'}">—</dd>
+                <dt>Effektiver Absender</dt>
+                <dd th:text="${einstellungen.effektiverAbsender ?: '—'}">—</dd>
+                <dt>Test-Empfänger</dt>
+                <dd>
+                    <span th:if="${einstellungen.effektiverTestEmpfaenger}"
+                          th:text="${einstellungen.effektiverTestEmpfaenger}"></span>
+                    <em th:unless="${einstellungen.effektiverTestEmpfaenger}" class="app-muted">
+                        nicht gesetzt — Mails werden im AUS-Modus übersprungen
+                    </em>
+                </dd>
+            </dl>
+
+            <form th:action="@{/admin/mail-einstellungen/test}" method="post" style="margin-top:1rem;">
+                <button type="submit" class="app-btn"
+                        th:disabled="${!einstellungen.konfiguriert or einstellungen.effektiverTestEmpfaenger == null or einstellungen.effektiverTestEmpfaenger.isEmpty()}">
+                    Test-Mail an Test-Empfänger senden
+                </button>
+                <span class="app-muted" style="margin-left:0.5rem; font-size:0.875rem;">
+                    Geht direkt — auch im AUS-Modus, ohne Routing-Prefix.
+                </span>
+            </form>
+        </section>
+
+        <!-- ── Edit-Form ─────────────────────────────────────────────── -->
+        <section class="app-card">
+            <h2>SMTP-Einstellungen bearbeiten</h2>
+            <p class="app-muted">
+                Werte überschreiben Container-ENV. Leere Felder fallen auf ENV-Defaults zurück.
+                Provider-Setup-Anleitung: <a href="https://www.brevo.com/" target="_blank" rel="noopener">Brevo</a>
+                (300 Mails/Tag gratis).
+            </p>
+
+            <form th:action="@{/admin/mail-einstellungen/speichern}" th:object="${form}" method="post">
+                <div class="app-form-grid">
+                    <label>
+                        SMTP-Host
+                        <input type="text" th:field="*{smtpHost}" placeholder="smtp-relay.brevo.com">
+                    </label>
+                    <label>
+                        SMTP-Port
+                        <input type="number" th:field="*{smtpPort}" placeholder="587" min="1" max="65535">
+                    </label>
+                    <label>
+                        SMTP-User
+                        <input type="text" th:field="*{smtpUser}" placeholder="login@brevo">
+                    </label>
+                    <label>
+                        SMTP-Password
+                        <input type="password" th:field="*{smtpPassword}"
+                               th:placeholder="${einstellungen.smtpPasswordGesetzt} ? '••••••• (gesetzt — leer lassen für unverändert)' : 'leer = nicht gesetzt'">
+                    </label>
+                    <label>
+                        Absender-Adresse (From)
+                        <input type="email" th:field="*{mailAbsender}" placeholder="noreply@deine-domain.ch">
+                        <small class="app-muted">Muss beim SMTP-Provider verifiziert sein.</small>
+                    </label>
+                    <label>
+                        Test-Empfänger
+                        <input type="email" th:field="*{mailTestEmpfaenger}" placeholder="fabian.aschwanden@gmail.com">
+                        <small class="app-muted">
+                            Im AUS-Modus werden alle Mails dorthin umgeleitet.
+                            Test-Mail-Button schickt direkt an diese Adresse.
+                        </small>
+                    </label>
+                    <label class="app-checkbox">
+                        <input type="checkbox" th:field="*{smtpAuth}">
+                        SMTP-Authentication
+                    </label>
+                    <label class="app-checkbox">
+                        <input type="checkbox" th:field="*{smtpStarttls}">
+                        STARTTLS
+                    </label>
+                </div>
+                <div style="margin-top:1rem;">
+                    <button type="submit" class="app-btn">Speichern</button>
+                    <a th:href="@{/admin/mail-einstellungen}" class="app-btn app-btn-ghost">Abbrechen</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>

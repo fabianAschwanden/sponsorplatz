@@ -177,11 +177,13 @@ locals {
     admin_email    = var.admin_email
     admin_password = var.admin_password
 
-    smtp_host     = var.smtp_host
-    smtp_port     = var.smtp_port
-    smtp_user     = var.smtp_user
-    smtp_password = var.smtp_password
-    mail_absender = var.mail_absender
+    smtp_host            = var.smtp_host
+    smtp_port            = var.smtp_port
+    smtp_user            = var.smtp_user
+    smtp_password        = var.smtp_password
+    mail_absender        = var.mail_absender
+    mail_live            = var.mail_live
+    mail_test_empfaenger = var.mail_test_empfaenger
 
     storage_provider = var.storage_provider
     bucket_uploads   = module.storage.bucket_names["uploads"]

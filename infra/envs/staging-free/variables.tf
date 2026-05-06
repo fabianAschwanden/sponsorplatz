@@ -101,6 +101,18 @@ variable "mail_absender" {
   default     = "noreply@sponsorplatz.ch"
 }
 
+variable "mail_live" {
+  type        = bool
+  description = "MAIL_LIVE-Schalter. false = alle Mails an Test-Empfänger umleiten oder skippen. true = echte Empfänger."
+  default     = false
+}
+
+variable "mail_test_empfaenger" {
+  type        = string
+  description = "Test-Empfänger für AUS-Modus-Routing. Empfehlung: dein eigenes Postfach."
+  default     = ""
+}
+
 variable "basis_url" {
   type        = string
   description = "Externe Basis-URL für Mail-Links (Token-Bestätigung). Leer = wird auf https://<domain> gesetzt"

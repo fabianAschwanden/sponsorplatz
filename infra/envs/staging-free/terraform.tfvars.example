@@ -32,5 +32,9 @@ smtp_user     = ""
 smtp_password = ""
 mail_absender = "noreply@sponsorplatz.ch"   # MUSS beim Provider verifiziert sein
 
+# Mail-Live-Modus (false = alle Mails an Test-Empfänger; true = echte Empfänger)
+mail_live            = false
+mail_test_empfaenger = "deine.adresse@beispiel.ch"
+
 # Object-Storage-Provider (oci = Cloud Buckets, lokal = VM-Volume)
 storage_provider = "oci"

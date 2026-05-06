@@ -2,21 +2,18 @@ package ch.sponsorplatz.service;
 
 import ch.sponsorplatz.event.EinladungErstelltEvent;
 import ch.sponsorplatz.model.Rolle;
-import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.MailSendException;
-import org.springframework.mail.javamail.JavaMailSender;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Tests für den {@code @TransactionalEventListener(AFTER_COMMIT)}-basierten
@@ -27,31 +24,30 @@ import static org.mockito.Mockito.when;
 class EinladungsMailListenerTest {
 
     @Mock
-    private JavaMailSender mailSender;
+    private MailService mailService;
 
     private EinladungsMailListener listener;
 
     @BeforeEach
     void setUp() {
-        listener = new EinladungsMailListener(mailSender, "http://localhost:8090", "noreply@test.local");
+        listener = new EinladungsMailListener(mailService, "http://localhost:8090");
     }
 
     /** EINL-12a: Listener sendet Mail beim Event. */
     @Test
     void eventLoestMailAus() {
-        when(mailSender.createMimeMessage()).thenReturn(mock(MimeMessage.class));
         EinladungErstelltEvent event = neuerEvent();
 
         listener.aufEinladungErstellt(event);
 
-        verify(mailSender).send(any(MimeMessage.class));
+        verify(mailService).sendeHtml(eq("neu@example.ch"), any(String.class), any());
     }
 
     /** EINL-12b: Mail-Failure führt nicht zur Exception nach oben — DB-Commit ist schon durch. */
     @Test
     void mailFailureWirdGeschluckt() {
-        when(mailSender.createMimeMessage()).thenReturn(mock(MimeMessage.class));
-        doThrow(new MailSendException("SMTP down")).when(mailSender).send(any(MimeMessage.class));
+        doThrow(new MailSendException("SMTP down"))
+                .when(mailService).sendeHtml(any(), any(), any());
 
         EinladungErstelltEvent event = neuerEvent();
 

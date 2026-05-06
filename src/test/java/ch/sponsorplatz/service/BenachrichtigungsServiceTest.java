@@ -1,26 +1,25 @@
 package ch.sponsorplatz.service;
 
+import ch.sponsorplatz.model.AnfrageStatus;
 import ch.sponsorplatz.model.SponsoringAnfrage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 class BenachrichtigungsServiceTest {
 
-    private JavaMailSender mailSender;
+    private MailService mailService;
     private BenachrichtigungsService service;
 
     @BeforeEach
     void setUp() {
-        mailSender = mock(JavaMailSender.class);
-        service = new BenachrichtigungsService(mailSender, "noreply@sponsorplatz.ch");
+        mailService = mock(MailService.class);
+        service = new BenachrichtigungsService(mailService);
     }
 
     /** BEN-01: Neue Anfrage sendet E-Mail an Kontakt-E-Mail der Anfrage. */
@@ -33,18 +32,18 @@ class BenachrichtigungsServiceTest {
 
         service.benachrichtigeUeberNeueAnfrage(anfrage, "verein@example.com");
 
-        verify(mailSender).send(any(SimpleMailMessage.class));
+        verify(mailService).sendePlain(eq("verein@example.com"), any(String.class), any(String.class));
     }
 
     /** BEN-02: Ohne Empfänger-E-Mail wird keine Mail gesendet. */
     @Test
-    void ohneMpfaengerKeineMail() {
+    void ohneEmpfaengerKeineMail() {
         SponsoringAnfrage anfrage = new SponsoringAnfrage();
         anfrage.setNachricht("Interesse");
 
         service.benachrichtigeUeberNeueAnfrage(anfrage, null);
 
-        verify(mailSender, never()).send(any(SimpleMailMessage.class));
+        verify(mailService, never()).sendePlain(any(), any(), any());
     }
 
     /** BEN-03: Anfrage angenommen sendet E-Mail an Anfragenden. */
@@ -52,11 +51,11 @@ class BenachrichtigungsServiceTest {
     void anfrageAngenommenSendetMail() {
         SponsoringAnfrage anfrage = new SponsoringAnfrage();
         anfrage.setKontaktEmail("sponsor@example.com");
+        anfrage.setStatus(AnfrageStatus.ANGENOMMEN);
         anfrage.setAntwort("Gerne, melden Sie sich!");
 
         service.benachrichtigeUeberAntwort(anfrage, "sponsor@example.com");
 
-        verify(mailSender).send(any(SimpleMailMessage.class));
+        verify(mailService).sendePlain(eq("sponsor@example.com"), any(String.class), any(String.class));
     }
 }
-

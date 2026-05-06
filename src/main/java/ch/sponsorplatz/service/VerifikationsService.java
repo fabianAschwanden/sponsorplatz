@@ -3,10 +3,7 @@ package ch.sponsorplatz.service;
 import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.repository.AppUserRepository;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,18 +20,15 @@ public class VerifikationsService {
     private static final long TOKEN_GUELTIG_STUNDEN = 24;
 
     private final AppUserRepository repository;
-    private final JavaMailSender mailSender;
+    private final MailService mailService;
     private final String basisUrl;
-    private final String absender;
 
     public VerifikationsService(AppUserRepository repository,
-                                JavaMailSender mailSender,
-                                @Value("${sponsorplatz.basis-url:http://localhost:8080}") String basisUrl,
-                                @Value("${sponsorplatz.mail.absender:noreply@sponsorplatz.ch}") String absender) {
+                                MailService mailService,
+                                @Value("${sponsorplatz.basis-url:http://localhost:8080}") String basisUrl) {
         this.repository = repository;
-        this.mailSender = mailSender;
+        this.mailService = mailService;
         this.basisUrl = basisUrl;
-        this.absender = absender;
     }
 
     /**
@@ -71,24 +65,20 @@ public class VerifikationsService {
     }
 
     private void sendeMail(String empfaenger, String name, String link) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setTo(empfaenger);
-            helper.setSubject("Sponsorplatz — E-Mail bestätigen");
-            helper.setText(
-                    "<h2>Willkommen bei Sponsorplatz, " + name + "!</h2>" +
-                    "<p>Bitte bestätigen Sie Ihre E-Mail-Adresse:</p>" +
-                    "<p><a href=\"" + link + "\">E-Mail bestätigen</a></p>" +
-                    "<p>Der Link ist 24 Stunden gültig.</p>" +
-                    "<p>Falls Sie sich nicht registriert haben, ignorieren Sie diese Mail.</p>",
-                    true
-            );
-            helper.setFrom(absender);
-            mailSender.send(message);
-        } catch (MessagingException e) {
-            throw new RuntimeException("Verifikations-Mail konnte nicht gesendet werden", e);
-        }
+        mailService.sendeHtml(empfaenger, "Sponsorplatz — E-Mail bestätigen", helper -> {
+            try {
+                helper.setText(
+                        "<h2>Willkommen bei Sponsorplatz, " + name + "!</h2>" +
+                                "<p>Bitte bestätigen Sie Ihre E-Mail-Adresse:</p>" +
+                                "<p><a href=\"" + link + "\">E-Mail bestätigen</a></p>" +
+                                "<p>Der Link ist 24 Stunden gültig.</p>" +
+                                "<p>Falls Sie sich nicht registriert haben, ignorieren Sie diese Mail.</p>",
+                        true
+                );
+            } catch (MessagingException e) {
+                throw new RuntimeException("Verifikations-Mail konnte nicht aufgebaut werden", e);
+            }
+        });
     }
 }
 

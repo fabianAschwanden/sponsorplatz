@@ -26,6 +26,7 @@
             <a th:href="@{/admin/organisationen}" class="app-btn app-btn-ghost">Organisationen</a>
             <a th:href="@{/admin/audit}" class="app-btn">Audit-Log</a>
             <a th:href="@{/admin/backups}" class="app-btn app-btn-ghost">Backups</a>
+            <a th:href="@{/admin/mail-einstellungen}" class="app-btn app-btn-ghost">Mail</a>
         </nav>
 
         <p class="app-muted" th:text="${#lists.size(auditLogs) + ' Einträge (letzte 100)'}"></p>

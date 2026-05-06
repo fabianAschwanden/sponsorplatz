@@ -313,6 +313,16 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **INFO-01** | `InfoControllerTest` | GET `/impressum` → 200 + impressum-Template, public erreichbar |
 | **INFO-02** | `InfoControllerTest` | GET `/datenschutz` → 200 + datenschutz-Template, public erreichbar |
 
+### Phase Operational — Mail-Service zentral (MAIL)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **BEN-01** | `BenachrichtigungsServiceTest` | `benachrichtigeUeberNeueAnfrage` ruft `MailService.sendePlain(empfaenger, subject, body)` |
+| **BEN-02** | `BenachrichtigungsServiceTest` | Ohne Empfänger keine Mail (defensives Skip) |
+| **BEN-03** | `BenachrichtigungsServiceTest` | `benachrichtigeUeberAntwort` ruft `MailService.sendePlain` |
+| **EV-01..04** | `VerifikationsServiceTest` | Token-Lifecycle + Mail-Versand via `MailService.sendeHtml` |
+| **EINL-12a/b** | `EinladungsMailListenerTest` | TransactionalEventListener via `MailService.sendeHtml`; Failure wird geschluckt |
+
 ### Phase 2 — Cloud-Storage + Backup (CLOUD-STO, BACKUP)
 
 #### OciStorageService (CLOUD-STO)

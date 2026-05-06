@@ -4,7 +4,6 @@ import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.repository.AppUserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.mail.javamail.JavaMailSender;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -13,20 +12,22 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class VerifikationsServiceTest {
 
     private AppUserRepository repository;
-    private JavaMailSender mailSender;
+    private MailService mailService;
     private VerifikationsService service;
 
     @BeforeEach
     void setUp() {
         repository = mock(AppUserRepository.class);
-        mailSender = mock(JavaMailSender.class);
-        service = new VerifikationsService(repository, mailSender, "http://localhost:8080", "noreply@test.local");
+        mailService = mock(MailService.class);
+        service = new VerifikationsService(repository, mailService, "http://localhost:8080");
     }
 
     /** EV-01: sendeVerifikationsMail setzt Token + Ablaufdatum auf User. */
@@ -36,13 +37,13 @@ class VerifikationsServiceTest {
         user.setEmail("test@example.com");
         user.setAnzeigename("Test");
         when(repository.save(any(AppUser.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(mailSender.createMimeMessage()).thenReturn(new jakarta.mail.internet.MimeMessage((jakarta.mail.Session) null));
 
         service.sendeVerifikationsMail(user);
 
         assertThat(user.getVerifikationsToken()).isNotNull();
         assertThat(user.getVerifikationsToken()).hasSize(64);
         assertThat(user.getTokenGueltigBis()).isAfter(Instant.now().plus(23, ChronoUnit.HOURS));
+        verify(mailService).sendeHtml(eq("test@example.com"), any(String.class), any());
     }
 
     /** EV-02: verifiziere mit gültigem Token → emailVerifiziert = true, Token gelöscht. */
@@ -85,4 +86,3 @@ class VerifikationsServiceTest {
                 .hasMessageContaining("ungültig");
     }
 }
-
