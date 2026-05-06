@@ -1,6 +1,7 @@
 package ch.sponsorplatz.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -14,10 +15,15 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 /**
- * Lokale Datei-Speicherung für Entwicklung.
+ * Lokale Datei-Speicherung — Default-Implementierung für dev/test/prod-onprem.
  * Speichert unter dem konfigurierten Basis-Pfad (default: ./uploads/).
+ *
+ * <p>Aktiv, wenn {@code sponsorplatz.storage.provider} fehlt oder {@code lokal} ist.
+ * Für OCI-Deployments gilt {@code sponsorplatz.storage.provider=oci} → siehe
+ * {@link OciStorageService}.
  */
 @Service
+@ConditionalOnProperty(name = "sponsorplatz.storage.provider", havingValue = "lokal", matchIfMissing = true)
 public class LokalerStorageService implements StorageService {
 
     private final Path basisPfad;

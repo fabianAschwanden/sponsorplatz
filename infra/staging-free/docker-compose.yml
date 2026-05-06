@@ -53,6 +53,13 @@ services:
       BASIS_URL: ${BASIS_URL}
       SPONSORPLATZ_ADMIN_EMAIL: ${SPONSORPLATZ_ADMIN_EMAIL:-}
       SPONSORPLATZ_ADMIN_PASSWORD: ${SPONSORPLATZ_ADMIN_PASSWORD:-}
+      # Storage: STORAGE_PROVIDER=oci aktiviert OCI Object Storage; ungesetzt = lokal
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-lokal}
+      OCI_AUTH_MODE: ${OCI_AUTH_MODE:-instance}
+      OCI_REGION: ${OCI_REGION:-eu-zurich-1}
+      OCI_NAMESPACE: ${OCI_NAMESPACE:-}
+      OCI_BUCKET_UPLOADS: ${OCI_BUCKET_UPLOADS:-sponsorplatz-uploads}
+      OCI_BUCKET_BACKUPS: ${OCI_BUCKET_BACKUPS:-sponsorplatz-backups}
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=70 -Xss512k"
     volumes:
       - /var/lib/sponsorplatz/uploads:/app/uploads

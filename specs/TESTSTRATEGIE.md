@@ -306,6 +306,30 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **SR-06** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` mit Validierungsfehler → bleibt auf Formular |
 | **SR-07** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` doppelte E-Mail → Fehlermeldung auf Formular |
 
+### Phase 2 — Cloud-Storage + Backup (CLOUD-STO, BACKUP)
+
+#### OciStorageService (CLOUD-STO)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **CLOUD-STO-01** | `OciStorageServiceTest` | Konstruktor wirft `IllegalStateException` bei leerem Namespace |
+| **CLOUD-STO-02** | `OciStorageServiceTest` | `speichere` ruft `putObject` mit Namespace, Bucket, Key, ContentLength korrekt |
+| **CLOUD-STO-03** | `OciStorageServiceTest` | `BmcException` aus SDK wird in `RuntimeException` mit Status-Code gewrappt |
+| **CLOUD-STO-04** | `OciStorageServiceTest` | `loesche` idempotent — 404-Antwort vom Bucket wird geschluckt |
+| **CLOUD-STO-05** | `OciStorageServiceTest` | `ladeAlsResource` liefert lesbare Resource mit dem Object-Inhalt |
+| **CLOUD-STO-06** | `OciStorageServiceTest` | `getObject` 404 → `RuntimeException("nicht gefunden")` |
+
+#### BackupService Cloud-Upload (BACKUP)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **BACKUP-01** | `BackupServiceTest` | H2-Backup erstellt Datei im konfigurierten Verzeichnis |
+| **BACKUP-02** | `BackupServiceTest` | `listeBackups` gibt leere Liste für leeres Verzeichnis |
+| **BACKUP-03** | `BackupServiceTest` | `listeBackups` findet vorhandene Backup-Files |
+| **BACKUP-04** | `BackupServiceTest` | Backup wird in Cloud hochgeladen, wenn `BackupCloudUploader` registriert |
+| **BACKUP-05** | `BackupServiceTest` | Cloud-Upload-Fehler bricht Backup nicht ab — lokales File bleibt |
+| **BACKUP-06** | `BackupServiceTest` | Ohne `BackupCloudUploader` wird kein Cloud-Call gemacht |
+
 ## CI
 
 - Bei jedem Push und PR auf `main`: `mvn -B clean verify` + Docker-Build-Smoke

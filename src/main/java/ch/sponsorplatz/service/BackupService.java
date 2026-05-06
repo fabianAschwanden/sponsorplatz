@@ -16,6 +16,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 /**
  * Backup-Service für die Datenbank.
@@ -40,6 +41,7 @@ public class BackupService {
 
     private final DataSource dataSource;
     private final AuditService auditService;
+    private final Optional<BackupCloudUploader> cloudUploader;
 
     @Value("${sponsorplatz.backup.verzeichnis:./backups}")
     private String backupVerzeichnis;
@@ -50,9 +52,11 @@ public class BackupService {
     @Value("${spring.datasource.url:}")
     private String datasourceUrl;
 
-    public BackupService(DataSource dataSource, AuditService auditService) {
+    public BackupService(DataSource dataSource, AuditService auditService,
+                         Optional<BackupCloudUploader> cloudUploader) {
         this.dataSource = dataSource;
         this.auditService = auditService;
+        this.cloudUploader = cloudUploader;
     }
 
     /**
@@ -78,8 +82,27 @@ public class BackupService {
         auditService.protokolliere(AuditAktion.BACKUP_ERSTELLT, "SYSTEM", null, "BACKUP", backupPfad.toString());
         bereinigAlteBackups(verzeichnis);
 
+        ladeInCloudHoch(backupPfad);
+
         log.info("Backup erstellt: {}", backupPfad);
         return backupPfad;
+    }
+
+    /**
+     * Lädt das Backup zusätzlich in einen Cloud-Bucket, sofern ein
+     * {@link BackupCloudUploader} im Context registriert ist. Fehler werden
+     * geloggt, aber nicht eskaliert — das lokale Backup bleibt gültig.
+     */
+    private void ladeInCloudHoch(Path backupPfad) {
+        if (cloudUploader.isEmpty()) {
+            return;
+        }
+        try {
+            String key = cloudUploader.get().lade(backupPfad);
+            log.info("Backup in Cloud gesichert: {}", key);
+        } catch (RuntimeException e) {
+            log.warn("Cloud-Backup-Upload fehlgeschlagen — lokales Backup bleibt: {}", e.getMessage());
+        }
     }
 
     /**

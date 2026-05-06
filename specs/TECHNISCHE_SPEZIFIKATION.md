@@ -40,6 +40,42 @@
 - Security: Form-Login + OIDC-Vorbereitung
 - H2-Konsole **deaktiviert**
 
+### `cloud-free` (OCI Always-Free-VM)
+
+- Erbt von `prod` (`spring.profiles.include=prod`)
+- Tomcat-Threadpool + HikariCP klein gehalten (1 GB RAM)
+- Mail über externen SMTP-Relay (Mailgun/SES)
+- Forwarded-Headers für Caddy-Reverse-Proxy
+- `STORAGE_PROVIDER=oci` aktiviert OCI Object Storage (siehe Storage-Abschnitt)
+
+## Storage
+
+`StorageService` ist die einzige Schnittstelle für Datei-Uploads. Provider-Auswahl per Property:
+
+| `sponsorplatz.storage.provider` | Implementierung | Aktiv in |
+|---|---|---|
+| `lokal` (default) | `LokalerStorageService` — Dateisystem unter `sponsorplatz.storage.lokal.basis-pfad` | dev, test, prod-onprem |
+| `oci` | `OciStorageService` — OCI Object Storage über `oci-java-sdk-objectstorage` | cloud-free |
+
+Aktivierung über `@ConditionalOnProperty` — pro Provider darf nur ein Bean existieren.
+
+### OCI-Auth (nur wenn `provider=oci`)
+
+| `sponsorplatz.storage.oci.auth-mode` | Provider | Wofür |
+|---|---|---|
+| `instance` (default) | `InstancePrincipalsAuthenticationDetailsProvider` | OCI-VMs ohne Credentials — Dynamic Group + Policy |
+| `config` | `ConfigFileAuthenticationDetailsProvider` | Lokales Testen mit `~/.oci/config` |
+
+Buckets werden **nicht** vom Code angelegt — Erstellung + Versioning + Lifecycle-Rules sind Infra-Verantwortung (Phase 3 Terraform).
+
+## Backups
+
+`BackupService` erstellt täglich (`@Scheduled cron=0 0 2 * * *`) einen DB-Dump:
+- H2 (dev): `SCRIPT TO`
+- PostgreSQL (prod/cloud-free): `pg_dump`
+
+Wenn ein optionaler `BackupCloudUploader` im Context registriert ist (z.B. `OciBackupCloudUploader` bei `provider=oci`), wird das lokale Backup zusätzlich in einen Cloud-Bucket hochgeladen. Upload-Fehler eskalieren **nicht** — das lokale Backup gilt als primärer Schutzpfad.
+
 ## Routen-Tabelle
 
 ### Phase 0 (Skelett)

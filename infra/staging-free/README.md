@@ -66,6 +66,13 @@ Alle drei Container laufen auf derselben VM. Persistente Daten unter `/var/lib/s
    IMAGE_URL=zrh.ocir.io/<NAMESPACE>/sponsorplatz:staging-latest
    SPONSORPLATZ_ADMIN_EMAIL=admin@example.ch
    SPONSORPLATZ_ADMIN_PASSWORD=<starkes-pw-für-erste-Anmeldung>
+
+   # --- Object Storage (optional, sonst lokales Volume) ---
+   # STORAGE_PROVIDER=oci          # auskommentiert lassen → lokal
+   # OCI_NAMESPACE=<oci os ns get>
+   # OCI_REGION=eu-zurich-1
+   # OCI_BUCKET_UPLOADS=sponsorplatz-uploads
+   # OCI_BUCKET_BACKUPS=sponsorplatz-backups
    ```
 
 7. **OCIR-Login + Pull + Start:**
@@ -99,7 +106,27 @@ Alle drei Container laufen auf derselben VM. Persistente Daten unter `/var/lib/s
 | Secret | `STAGING_FREE_SSH_PRIVATE_KEY` | SSH-Key für `opc@<VM-IP>` |
 | Secret | `SLACK_WEBHOOK_URL` (optional) | für Failure-Notifications |
 
-## Manuelle Backups (Phase 2 → Object Storage)
+## Object Storage (Phase 2)
+
+Mit `STORAGE_PROVIDER=oci` werden Uploads + Backups in OCI Object Storage gespeichert:
+
+- `OciStorageService` — Medien-Uploads (Logos, Cover-Bilder etc.) → Bucket `${OCI_BUCKET_UPLOADS}`
+- `OciBackupCloudUploader` — `BackupService` lädt Dumps zusätzlich nach `${OCI_BUCKET_BACKUPS}`
+
+**Buckets vorbereiten** (manuell, später Terraform):
+```bash
+oci os bucket create --name sponsorplatz-uploads --compartment-id <ocid> --versioning Enabled
+oci os bucket create --name sponsorplatz-backups --compartment-id <ocid> --versioning Enabled
+```
+
+**Auth via Instance Principal** (Default in `cloud-free`):
+- VM braucht eine Dynamic Group + IAM Policy:
+  ```
+  Allow dynamic-group <vm-dg> to manage objects in compartment <id> where target.bucket.name = /sponsorplatz-*/
+  ```
+- Kein `~/.oci/config` auf der VM nötig — `InstancePrincipalsAuthenticationDetailsProvider` zieht die Creds aus dem VM-Metadaten-Endpoint.
+
+## Fallback: Manuelle Backups (ohne Object Storage)
 
 ```bash
 # DB-Dump
@@ -108,5 +135,3 @@ ssh opc@<VM-IP> 'sudo docker exec sponsorplatz-db pg_dump -U sponsorplatz sponso
 # Uploads
 ssh opc@<VM-IP> 'sudo tar -czf - -C /var/lib/sponsorplatz uploads' > uploads-$(date +%F).tar.gz
 ```
-
-→ `BackupService.java` macht aktuell schon DB-Snapshots; Object-Storage-Sync ist Phase 2.
