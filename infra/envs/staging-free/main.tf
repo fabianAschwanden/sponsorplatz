@@ -26,7 +26,7 @@ data "oci_core_images" "oracle_linux" {
   compartment_id           = var.compartment_ocid
   operating_system         = "Oracle Linux"
   operating_system_version = "9"
-  shape                    = "VM.Standard.E2.1.Micro"
+  shape                    = "VM.Standard.E5.Flex"
   state                    = "AVAILABLE"
   sort_by                  = "TIMECREATED"
   sort_order               = "DESC"
@@ -124,12 +124,17 @@ module "storage" {
   tags             = local.tags
 }
 
-# ── VM (Always-Free E2.1.Micro) ─────────────────────────────────────────────
+# ── VM (E5.Flex 1 OCPU / 4 GB — paid während Free Trial gratis, ~$30/Monat) ─
 resource "oci_core_instance" "app" {
   compartment_id      = var.compartment_ocid
   availability_domain = var.availability_domain
   display_name        = "sponsorplatz-vm-${local.env_name}"
-  shape               = "VM.Standard.E2.1.Micro"
+  shape               = "VM.Standard.E5.Flex"
+
+  shape_config {
+    ocpus         = 1
+    memory_in_gbs = 4
+  }
 
   source_details {
     source_type = "image"

@@ -65,3 +65,6 @@ backups/
 **/terraform.tfvars
 **/terraform.tfvars.json
 **/cloud-init.rendered.yaml
+infra/envs/staging-free/plan.tfplan
+infra/envs/staging-free/cloud-init.rendered.yaml
+.claude/

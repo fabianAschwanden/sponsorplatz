@@ -12,18 +12,18 @@ package_upgrade: false
 
 write_files:
   # ── docker-compose.yml ────────────────────────────────────────────────────
-  # Enthält Klartext-PWs als ENV — Mode 0640, root:opc (opc darf für SSH-
-  # Inspection ohne sudo lesen, andere User keinen Zugriff).
+  # Enthält Klartext-PWs als ENV — Mode 0600, owner root.
+  # (`owner: root:opc` würde scheitern: opc-User wird erst nach write_files
+  # angelegt — bekannter Cloud-Init-Race.)
   - path: /opt/sponsorplatz/docker-compose.yml
-    permissions: '0640'
-    owner: 'root:opc'
+    permissions: '0600'
     content: |
       services:
         db:
           image: postgres:17-alpine
           container_name: sponsorplatz-db
           restart: unless-stopped
-          mem_limit: 384m
+          mem_limit: 512m
           environment:
             POSTGRES_DB: sponsorplatz
             POSTGRES_USER: sponsorplatz
@@ -40,7 +40,7 @@ write_files:
           image: ${image_url}
           container_name: sponsorplatz-app
           restart: unless-stopped
-          mem_limit: 768m
+          mem_limit: 2g
           depends_on:
             db:
               condition: service_healthy
@@ -64,7 +64,7 @@ write_files:
             OCI_NAMESPACE: ${object_storage_ns}
             OCI_BUCKET_UPLOADS: ${bucket_uploads}
             OCI_BUCKET_BACKUPS: ${bucket_backups}
-            JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=70 -Xss512k"
+            JAVA_OPTS: "-Xms512m -Xmx1500m"
           volumes:
             - /var/lib/sponsorplatz/uploads:/app/uploads
           expose:
@@ -80,7 +80,7 @@ write_files:
           image: caddy:2-alpine
           container_name: sponsorplatz-caddy
           restart: unless-stopped
-          mem_limit: 96m
+          mem_limit: 128m
           depends_on:
             - app
           ports:
@@ -126,7 +126,6 @@ write_files:
       Type=oneshot
       RemainAfterExit=true
       WorkingDirectory=/opt/sponsorplatz
-      ExecStartPre=/usr/bin/docker compose pull
       ExecStart=/usr/bin/docker compose up -d --remove-orphans
       ExecStop=/usr/bin/docker compose down
 
@@ -159,10 +158,11 @@ runcmd:
   - chown -R 70:70 /var/lib/sponsorplatz/db-data         # postgres-User in alpine
   - chown -R 1001:1001 /var/lib/sponsorplatz/uploads     # sponsor-User im App-Container
 
-  # OCIR-Login (Username-Format: <namespace>/<user>)
+  # OCIR-Login
   - mkdir -p /root/.docker
   - echo '${ocir_auth_token}' | docker login ${ocir_registry} -u '${object_storage_ns}/${ocir_username}' --password-stdin
 
-  # Stack starten
+  # Stack starten — auf E5.Flex (4 GB) reicht paralleler Pull problemlos
+  - cd /opt/sponsorplatz && docker compose pull
   - systemctl daemon-reload
   - systemctl enable --now sponsorplatz.service
