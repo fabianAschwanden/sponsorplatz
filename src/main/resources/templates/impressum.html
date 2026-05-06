@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impressum — Sponsorplatz</title>
+    <meta name="description" content="Impressum von Sponsorplatz, der Schweizer Sponsoring-Plattform für Sport und Gesundheit.">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="public-body">
+
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
+            <span>Sponsorplatz</span>
+        </a>
+        <nav class="public-nav">
+            <a th:href="@{/marktplatz}">Marktplatz</a>
+            <a th:href="@{/login}">Anmelden</a>
+        </nav>
+    </div>
+</header>
+
+<main class="public-main">
+    <article class="app-card" style="max-width: 720px; margin: 2rem auto;">
+        <h1>Impressum</h1>
+
+        <h2>Verantwortlich</h2>
+        <p>
+            Fabian Aschwanden<br>
+            <a href="mailto:fabian.aschwanden@gmail.com">fabian.aschwanden@gmail.com</a>
+        </p>
+
+        <h2>Zweck dieses Angebots</h2>
+        <p>
+            Sponsorplatz ist eine Schweizer Plattform, die Vereine aus Sport und Gesundheit
+            mit potenziellen Sponsoren zusammenbringt. Das Angebot befindet sich aktuell
+            im Aufbau (Phase 0 — Pilot).
+        </p>
+
+        <h2>Haftungsausschluss</h2>
+        <p>
+            Die Inhalte dieser Plattform werden mit grösstmöglicher Sorgfalt erstellt.
+            Für die Richtigkeit, Vollständigkeit und Aktualität der von Vereinen,
+            Sponsoren und sonstigen Nutzenden eingestellten Inhalte wird keine Gewähr
+            übernommen. Die Verantwortung für eingestellte Inhalte liegt bei der
+            jeweiligen Organisation bzw. Person.
+        </p>
+
+        <h2>Externe Links</h2>
+        <p>
+            Sponsorplatz enthält Verweise auf externe Websites Dritter, auf deren
+            Inhalte wir keinen Einfluss haben. Für die Inhalte verlinkter Seiten ist
+            stets der jeweilige Anbieter verantwortlich.
+        </p>
+
+        <h2>Urheberrecht</h2>
+        <p>
+            Die durch Sponsorplatz erstellten Inhalte und Werke unterliegen dem
+            schweizerischen Urheberrecht. Beiträge und Bilder, die von Vereinen oder
+            Sponsoren hochgeladen werden, bleiben deren Eigentum.
+        </p>
+
+        <p style="margin-top: 2rem; color: var(--dash-grau);">
+            <a th:href="@{/datenschutz}">Datenschutzerklärung</a> ·
+            <a th:href="@{/}">Zurück zur Startseite</a>
+        </p>
+    </article>
+</main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz · Schweiz</p>
+        <nav>
+            <a th:href="@{/impressum}">Impressum</a>
+            <a th:href="@{/datenschutz}">Datenschutz</a>
+        </nav>
+    </div>
+</footer>
+
+</body>
+</html>

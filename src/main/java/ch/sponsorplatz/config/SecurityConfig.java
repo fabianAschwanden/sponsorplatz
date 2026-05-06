@@ -31,6 +31,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
+                .requestMatchers("/impressum", "/datenschutz").permitAll()
                 .requestMatchers("/login", "/registrieren", "/verifizieren").permitAll()
                 .requestMatchers("/sponsor/**").permitAll()
                 .requestMatchers("/einladung/**").permitAll()
@@ -65,6 +66,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
+                .requestMatchers("/impressum", "/datenschutz").permitAll()
                 .requestMatchers("/login", "/registrieren", "/verifizieren").permitAll()
                 .requestMatchers("/sponsor/**").permitAll()
                 .requestMatchers("/einladung/**").permitAll()

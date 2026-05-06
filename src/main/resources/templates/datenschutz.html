@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datenschutzerklärung — Sponsorplatz</title>
+    <meta name="description" content="Datenschutzerklärung von Sponsorplatz nach Schweizer DSG: welche Daten wir wofür verarbeiten und wie du deine Rechte wahrnimmst.">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="public-body">
+
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
+            <span>Sponsorplatz</span>
+        </a>
+        <nav class="public-nav">
+            <a th:href="@{/marktplatz}">Marktplatz</a>
+            <a th:href="@{/login}">Anmelden</a>
+        </nav>
+    </div>
+</header>
+
+<main class="public-main">
+    <article class="app-card" style="max-width: 760px; margin: 2rem auto;">
+        <h1>Datenschutzerklärung</h1>
+        <p style="color: var(--dash-grau);">
+            Stand: <span th:text="${#dates.format(#dates.createNow(), 'dd.MM.yyyy')}">01.01.2026</span>
+        </p>
+
+        <h2>1. Verantwortliche Stelle</h2>
+        <p>
+            Verantwortlich für die Datenbearbeitung im Sinne des
+            <abbr title="Bundesgesetz über den Datenschutz">DSG</abbr> ist:<br>
+            Fabian Aschwanden,
+            <a href="mailto:fabian.aschwanden@gmail.com">fabian.aschwanden@gmail.com</a>
+        </p>
+
+        <h2>2. Welche Daten wir verarbeiten</h2>
+        <p>Wir verarbeiten ausschliesslich die Daten, die für den Betrieb der Plattform notwendig sind:</p>
+        <ul>
+            <li><strong>Konto-Daten:</strong> E-Mail-Adresse, Anzeigename, Passwort (nur als BCrypt-Hash gespeichert).</li>
+            <li><strong>Vereinsprofile:</strong> Name, Adresse, Branche, Beschreibung, Logo, Cover-Bild — soweit vom Verein selbst hinterlegt.</li>
+            <li><strong>Projekt-Daten:</strong> Titel, Beschreibung, Sponsoring-Pakete, Bilder.</li>
+            <li><strong>Anfragen + Konversationen:</strong> Sponsoring-Anfragen und nachfolgende Nachrichten zwischen Verein und Sponsor.</li>
+            <li><strong>Verifizierungs-Token:</strong> Einmal-Token für E-Mail-Bestätigung und Vereins-Einladungen (max. 7 Tage gültig).</li>
+            <li><strong>Audit-Log:</strong> Sicherheitsrelevante Aktionen (Verifizierung, Sperrung) für Nachvollziehbarkeit.</li>
+            <li><strong>Server-Logs:</strong> IP-Adresse, Zeitstempel, aufgerufene URL, User-Agent — für Betrieb, Fehlersuche und Missbrauchsabwehr.</li>
+        </ul>
+
+        <h2>3. Zweck der Verarbeitung</h2>
+        <ul>
+            <li>Bereitstellung der Plattform-Funktionen (Konto, Marktplatz, Anfragen, Konversationen).</li>
+            <li>Authentifizierung und Berechtigungsprüfung.</li>
+            <li>Kontaktaufnahme zwischen Vereinen und Sponsoren über die Plattform.</li>
+            <li>Sicherheit, Stabilität und Weiterentwicklung des Angebots.</li>
+        </ul>
+
+        <h2>4. Empfänger / Auftragsbearbeiter</h2>
+        <p>Sponsorplatz nutzt für den Betrieb folgende Dienste:</p>
+        <ul>
+            <li><strong>Oracle Cloud Infrastructure</strong> (Hosting, Region eu-zurich-1, Schweiz) — Server, Datenbank, Object Storage.</li>
+            <li><strong>Let's Encrypt</strong> — TLS-Zertifikate für die HTTPS-Verschlüsselung.</li>
+            <li><strong>SMTP-Provider</strong> für transaktionale E-Mails (Verifizierung, Einladungen). Aktuell ist kein externer Versand aktiv.</li>
+        </ul>
+        <p>Eine Weitergabe deiner Daten zu Werbezwecken oder an Dritte zur Vermarktung findet nicht statt.</p>
+
+        <h2>5. Speicherdauer</h2>
+        <ul>
+            <li>Konto-Daten: solange dein Konto besteht. Auf Antrag (siehe unten) löschen wir dein Konto.</li>
+            <li>Verifizierungs-Token: 7 Tage, danach automatischer Cleanup.</li>
+            <li>Audit-Logs: 12 Monate ab Eintrag.</li>
+            <li>Server-Logs: rotiert, maximal 30 Tage.</li>
+            <li>Backups: bis zu 365 Tage in versionierten Buckets, danach automatischer Lifecycle-Delete.</li>
+        </ul>
+
+        <h2>6. Cookies und Tracking</h2>
+        <p>
+            Wir setzen ausschliesslich technisch notwendige Cookies (Session, CSRF-Schutz). Es gibt
+            <strong>kein Tracking</strong>, kein Werbe- oder Analyse-Cookie. Daher gibt es auch
+            keinen Cookie-Banner.
+        </p>
+
+        <h2>7. Deine Rechte</h2>
+        <p>Nach Schweizer DSG hast du das Recht auf:</p>
+        <ul>
+            <li><strong>Auskunft</strong> über die zu deiner Person gespeicherten Daten.</li>
+            <li><strong>Berichtigung</strong> falscher Daten — direkt unter
+                <a th:href="@{/einstellungen}">Einstellungen</a> oder per Mail.</li>
+            <li><strong>Datenexport</strong> — siehe Einstellungen → Datenexport (Format JSON).</li>
+            <li><strong>Löschung</strong> deines Kontos — auf Anfrage per Mail.</li>
+            <li><strong>Beschwerde</strong> beim Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten
+                (EDÖB), <a href="https://www.edoeb.admin.ch/">edoeb.admin.ch</a>.</li>
+        </ul>
+
+        <h2>8. Sicherheit</h2>
+        <ul>
+            <li>Verschlüsselte Verbindung (HTTPS / TLS 1.2+) für alle Seiten.</li>
+            <li>Passwörter werden ausschliesslich als BCrypt-Hash gespeichert, niemals im Klartext.</li>
+            <li>Tokens (Verifizierung, Einladung) sind einmal-gültig und zeitbegrenzt.</li>
+            <li>Backups werden in versionierten, nicht-öffentlichen Speicherbuckets abgelegt.</li>
+        </ul>
+
+        <h2>9. Änderungen dieser Erklärung</h2>
+        <p>
+            Wir passen diese Datenschutzerklärung an, wenn sich Funktionen oder eingesetzte Dienste
+            ändern. Massgeblich ist jeweils die aktuelle Fassung auf dieser Seite.
+        </p>
+
+        <p style="margin-top: 2rem; color: var(--dash-grau);">
+            <a th:href="@{/impressum}">Impressum</a> ·
+            <a th:href="@{/}">Zurück zur Startseite</a>
+        </p>
+    </article>
+</main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz · Schweiz</p>
+        <nav>
+            <a th:href="@{/impressum}">Impressum</a>
+            <a th:href="@{/datenschutz}">Datenschutz</a>
+        </nav>
+    </div>
+</footer>
+
+</body>
+</html>

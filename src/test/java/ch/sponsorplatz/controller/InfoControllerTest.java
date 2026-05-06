@@ -1,0 +1,60 @@
+package ch.sponsorplatz.controller;
+
+import ch.sponsorplatz.config.SecurityConfig;
+import ch.sponsorplatz.service.AppUserService;
+import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.Mockito.mock;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+/**
+ * Tests für statische Public-Pages (Impressum, Datenschutz).
+ *
+ * Test-IDs: INFO-01, INFO-02 in {@code specs/TESTSTRATEGIE.md}.
+ */
+@WebMvcTest(InfoController.class)
+@Import({SecurityConfig.class, InfoControllerTest.MockBeans.class})
+@ActiveProfiles("dev")
+class InfoControllerTest {
+
+    @TestConfiguration
+    static class MockBeans {
+        @Bean
+        AppUserService appUserService() { return mock(AppUserService.class); }
+        @Bean
+        SponsorplatzUserDetailsService userDetailsService() { return mock(SponsorplatzUserDetailsService.class); }
+    }
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    @DisplayName("INFO-01: GET /impressum → 200 + impressum-Template, public erreichbar")
+    @WithAnonymousUser
+    void impressumOeffentlichErreichbar() throws Exception {
+        mockMvc.perform(get("/impressum"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("impressum"));
+    }
+
+    @Test
+    @DisplayName("INFO-02: GET /datenschutz → 200 + datenschutz-Template, public erreichbar")
+    @WithAnonymousUser
+    void datenschutzOeffentlichErreichbar() throws Exception {
+        mockMvc.perform(get("/datenschutz"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("datenschutz"));
+    }
+}

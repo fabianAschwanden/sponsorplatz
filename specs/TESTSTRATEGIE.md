@@ -306,6 +306,13 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **SR-06** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` mit Validierungsfehler → bleibt auf Formular |
 | **SR-07** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` doppelte E-Mail → Fehlermeldung auf Formular |
 
+### Phase Operational — DSG-Pflichtseiten (INFO)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **INFO-01** | `InfoControllerTest` | GET `/impressum` → 200 + impressum-Template, public erreichbar |
+| **INFO-02** | `InfoControllerTest` | GET `/datenschutz` → 200 + datenschutz-Template, public erreichbar |
+
 ### Phase 2 — Cloud-Storage + Backup (CLOUD-STO, BACKUP)
 
 #### OciStorageService (CLOUD-STO)
