@@ -408,6 +408,17 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **RESTORE-02** | `BackupRestoreServiceTest` | H2-Restore ruft `RUNSCRIPT FROM` + Audit-Eintrag |
 | **RESTORE-03** | `BackupRestoreServiceTest` | SQL-Failure beim RUNSCRIPT als RuntimeException propagiert |
 
+### Phase Operational — Feature-Backlog (BL)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **BL-01** | `BacklogServiceTest` | `erstelle` setzt Status OFFEN, Priorität, erstelltVon |
+| **BL-02** | `BacklogServiceTest` | `findeAlleSortiert` — offen vor erledigt, HOCH vor MITTEL vor NIEDRIG |
+| **BL-03** | `BacklogServiceTest` | `aendereStatus` setzt erledigtAm bei ERLEDIGT, nullt bei OFFEN |
+| **BL-04** | `BacklogServiceTest` | `aendereStatus` auf unbekannte ID wirft `NotFoundException` |
+| **BL-05** | `BacklogServiceTest` | `zaehleOffen` summiert OFFEN + IN_ARBEIT |
+| **BL-06** | `BacklogServiceTest` | `loesche` bei unbekannter ID wirft `NotFoundException` |
+
 ### Security-Härtung — Dev-Seed-Properties (DEV-SEED)
 
 | ID | Test-Klasse | Beschreibung |

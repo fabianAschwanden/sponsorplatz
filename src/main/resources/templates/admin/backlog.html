@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin — Feature-Backlog — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <style>
+        .backlog-table { width:100%; border-collapse:collapse; font-size:0.9rem; }
+        .backlog-table th, .backlog-table td {
+            padding:0.625rem 0.5rem; text-align:left;
+            border-bottom:1px solid #e5e7eb; vertical-align:top;
+        }
+        .backlog-table th { font-weight:600; color:#6b7280; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em; }
+        .backlog-titel { font-weight:600; color:#1f2937; }
+        .backlog-beschreibung { font-size:0.8rem; color:#64748b; white-space:pre-wrap; margin-top:0.25rem; }
+        .backlog-row-abgeschlossen .backlog-titel { text-decoration:line-through; color:#94a3b8; }
+        .backlog-row-abgeschlossen .backlog-beschreibung { color:#94a3b8; }
+        .badge {
+            display:inline-block; padding:0.125rem 0.5rem; border-radius:0.5rem;
+            font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.03em;
+        }
+        .badge-prio-HOCH    { background:#fee2e2; color:#b91c1c; }
+        .badge-prio-MITTEL  { background:#fef3c7; color:#92400e; }
+        .badge-prio-NIEDRIG { background:#e5e7eb; color:#374151; }
+        .badge-stat-OFFEN     { background:#dbeafe; color:#1e40af; }
+        .badge-stat-IN_ARBEIT { background:#ede9fe; color:#6d28d9; }
+        .badge-stat-ERLEDIGT  { background:#d1fae5; color:#065f46; }
+        .badge-stat-VERWORFEN { background:#e5e7eb; color:#6b7280; }
+        .backlog-actions { display:flex; gap:0.25rem; justify-content:flex-end; flex-wrap:nowrap; }
+        .backlog-actions form { display:inline; }
+        .backlog-icon-btn {
+            background:none; border:1px solid #e5e7eb; cursor:pointer;
+            padding:0.25rem 0.5rem; border-radius:0.375rem; color:#374151;
+            font-size:0.85rem; transition:background 0.15s;
+        }
+        .backlog-icon-btn:hover { background:#f3f4f6; }
+        .backlog-icon-btn.gefahr { color:#dc2626; border-color:#fecaca; }
+        .backlog-icon-btn.gefahr:hover { background:#fef2f2; }
+    </style>
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('admin', null)}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">Plattform-Admin</p>
+                <h1>Feature-Backlog</h1>
+                <p class="app-muted">
+                    Interner Ideen-Tracker für Verbesserungen an der App.
+                    <strong th:text="${offenAnzahl}">0</strong> offen / in Arbeit ·
+                    <strong th:text="${#lists.size(items)}">0</strong> total.
+                </p>
+            </div>
+        </header>
+
+        <nav style="display:flex; gap:0.75rem; margin-bottom:2rem; flex-wrap:wrap;">
+            <a th:href="@{/admin}" class="app-btn app-btn-ghost">Übersicht</a>
+            <a th:href="@{/admin/benutzer}" class="app-btn app-btn-ghost">Benutzer</a>
+            <a th:href="@{/admin/organisationen}" class="app-btn app-btn-ghost">Organisationen</a>
+            <a th:href="@{/admin/audit}" class="app-btn app-btn-ghost">Audit-Log</a>
+            <a th:href="@{/admin/backups}" class="app-btn app-btn-ghost">Backups</a>
+            <a th:href="@{/admin/mail-einstellungen}" class="app-btn app-btn-ghost">Mail</a>
+            <a th:href="@{/admin/system}" class="app-btn app-btn-ghost">System</a>
+            <a th:href="@{/admin/backlog}" class="app-btn">Backlog</a>
+        </nav>
+
+        <div th:if="${erfolgsMeldung}" class="app-card" style="border-left:4px solid #16a34a;"
+             th:text="${erfolgsMeldung}"></div>
+        <div th:if="${fehlermeldung}" class="app-card" style="border-left:4px solid #dc2626;"
+             th:text="${fehlermeldung}"></div>
+
+        <!-- ── Neue Idee anlegen ───────────────────────────────────── -->
+        <section class="app-card">
+            <h2>Neue Idee</h2>
+            <form th:action="@{/admin/backlog/erstellen}" th:object="${form}" method="post" class="app-form">
+                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:0.75rem;">
+                    <div class="app-form-group">
+                        <label for="titel">Titel *</label>
+                        <input id="titel" type="text" th:field="*{titel}" required maxlength="200"
+                               placeholder="z.B. PDF-Export für Sponsoring-Liste">
+                    </div>
+                    <div class="app-form-group">
+                        <label for="prioritaet">Priorität</label>
+                        <select id="prioritaet" th:field="*{prioritaet}">
+                            <option th:each="p : ${prioritaetValues}" th:value="${p}" th:text="${p.label}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="app-form-group" style="margin-top:0.75rem;">
+                    <label for="beschreibung">Beschreibung <small class="app-muted">(optional)</small></label>
+                    <textarea id="beschreibung" th:field="*{beschreibung}" rows="3"
+                              placeholder="Kontext, Use-Case, Akzeptanz-Kriterien"></textarea>
+                </div>
+                <div style="margin-top:1rem;">
+                    <button type="submit" class="app-btn">Anlegen</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ── Liste ──────────────────────────────────────────────── -->
+        <section class="app-card">
+            <h2>Backlog</h2>
+            <p class="app-muted" th:if="${#lists.isEmpty(items)}">
+                Backlog ist leer — leg oben deine erste Idee an.
+            </p>
+
+            <div th:unless="${#lists.isEmpty(items)}" style="overflow-x:auto;">
+                <table class="backlog-table">
+                    <thead>
+                    <tr>
+                        <th>Titel</th>
+                        <th style="width:80px;">Prio</th>
+                        <th style="width:110px;">Status</th>
+                        <th style="width:110px;">Erstellt</th>
+                        <th style="width:120px;">Von</th>
+                        <th style="text-align:right; width:230px;">Aktionen</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${items}"
+                        th:classappend="${item.status.istAbgeschlossen()} ? 'backlog-row-abgeschlossen' : ''">
+                        <td>
+                            <div class="backlog-titel" th:text="${item.titel}">Titel</div>
+                            <div th:if="${item.beschreibung}" class="backlog-beschreibung" th:text="${item.beschreibung}">—</div>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="'badge-prio-' + ${item.prioritaet.name()}"
+                                  th:text="${item.prioritaet.label}">Prio</span>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="'badge-stat-' + ${item.status.name()}"
+                                  th:text="${item.status.label}">Status</span>
+                        </td>
+                        <td class="app-muted" style="font-size:0.8rem;"
+                            th:text="${#temporals.format(item.erstelltAm, 'dd.MM.yyyy')}">01.01.2026</td>
+                        <td class="app-muted" style="font-size:0.8rem;"
+                            th:text="${item.erstelltVon ?: '—'}">user</td>
+                        <td>
+                            <div class="backlog-actions">
+                                <!-- In Arbeit nehmen -->
+                                <form th:if="${item.status.name() == 'OFFEN' or item.status.name() == 'VERWORFEN'}"
+                                      th:action="@{'/admin/backlog/' + ${item.id} + '/status'}" method="post">
+                                    <input type="hidden" name="status" value="IN_ARBEIT">
+                                    <button type="submit" class="backlog-icon-btn" title="In Arbeit nehmen">▶</button>
+                                </form>
+                                <!-- Erledigen -->
+                                <form th:if="${item.status.name() != 'ERLEDIGT'}"
+                                      th:action="@{'/admin/backlog/' + ${item.id} + '/status'}" method="post">
+                                    <input type="hidden" name="status" value="ERLEDIGT">
+                                    <button type="submit" class="backlog-icon-btn" title="Erledigt">✓</button>
+                                </form>
+                                <!-- Verwerfen (nur aus OFFEN) -->
+                                <form th:if="${item.status.name() == 'OFFEN'}"
+                                      th:action="@{'/admin/backlog/' + ${item.id} + '/status'}" method="post">
+                                    <input type="hidden" name="status" value="VERWORFEN">
+                                    <button type="submit" class="backlog-icon-btn" title="Verwerfen">✕</button>
+                                </form>
+                                <!-- Wieder öffnen -->
+                                <form th:if="${item.status.istAbgeschlossen()}"
+                                      th:action="@{'/admin/backlog/' + ${item.id} + '/status'}" method="post">
+                                    <input type="hidden" name="status" value="OFFEN">
+                                    <button type="submit" class="backlog-icon-btn" title="Wieder öffnen">↩</button>
+                                </form>
+                                <!-- Löschen -->
+                                <form th:action="@{'/admin/backlog/' + ${item.id} + '/loeschen'}" method="post"
+                                      th:data-titel="${item.titel}"
+                                      onsubmit="return confirm('Item «' + this.dataset.titel + '» endgültig löschen?');">
+                                    <button type="submit" class="backlog-icon-btn gefahr" title="Endgültig löschen">🗑</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="app-muted" style="margin-top:1rem; font-size:0.8rem;">
+                Sortierung: offene/in-arbeit zuerst (HOCH → MITTEL → NIEDRIG),
+                erledigte/verworfene am Schluss.
+            </p>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>
