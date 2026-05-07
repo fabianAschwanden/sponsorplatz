@@ -44,7 +44,10 @@
     "files.trimTrailingWhitespace": false
   },
 
-  "java.compile.nullAnalysis.mode": "automatic",
+  "// java.compile.nullAnalysis.mode war 'automatic' — produziert viele Lärm-": "",
+  "// Hinweise gegen Spring/Hibernate-Code. 'disabled' ist OK weil das Projekt": "",
+  "// konsequent Optional<T> nutzt, wo nullability relevant ist.": "",
+  "java.compile.nullAnalysis.mode": "disabled",
   "java.configuration.updateBuildConfiguration": "automatic",
   "java.import.maven.enabled": true,
   "java.maven.downloadSources": true,
