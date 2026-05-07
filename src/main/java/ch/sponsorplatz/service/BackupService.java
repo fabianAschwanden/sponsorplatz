@@ -118,6 +118,45 @@ public class BackupService {
     }
 
     /**
+     * Liest eine Backup-Datei als Bytes — für Download via Admin-UI.
+     *
+     * @throws IllegalArgumentException wenn die Datei nicht existiert oder
+     *                                  der Name ungültig ist (Path-Traversal)
+     */
+    public byte[] leseBackup(String dateiname) throws IOException {
+        Path pfad = pruefeUndAufloeseBackup(dateiname);
+        return Files.readAllBytes(pfad);
+    }
+
+    /**
+     * Löscht eine Backup-Datei.
+     *
+     * @throws IllegalArgumentException bei ungültigem Namen / fehlender Datei
+     */
+    public void loescheBackup(String dateiname) throws IOException {
+        Path pfad = pruefeUndAufloeseBackup(dateiname);
+        Files.delete(pfad);
+        log.info("Backup gelöscht: {}", dateiname);
+    }
+
+    /**
+     * Validiert den Dateinamen (kein Path-Traversal, muss mit Backup-Prefix
+     * starten) und löst ihn relativ zum Backup-Verzeichnis auf.
+     */
+    private Path pruefeUndAufloeseBackup(String dateiname) throws IOException {
+        if (dateiname == null
+                || !dateiname.matches("sponsorplatz_backup_[\\w-]+\\.sql")) {
+            throw new IllegalArgumentException("Ungültiger Backup-Dateiname: " + dateiname);
+        }
+        Path verzeichnis = Paths.get(backupVerzeichnis).toAbsolutePath().normalize();
+        Path pfad = verzeichnis.resolve(dateiname).normalize();
+        if (!pfad.startsWith(verzeichnis) || !Files.exists(pfad)) {
+            throw new IllegalArgumentException("Backup nicht gefunden: " + dateiname);
+        }
+        return pfad;
+    }
+
+    /**
      * Gibt alle vorhandenen Backup-Dateien zurück (neueste zuerst).
      */
     public java.util.List<Path> listeBackups() throws IOException {
@@ -149,10 +188,14 @@ public class BackupService {
     private void erstellePostgresBackup(Path backupPfad) {
         try {
             // pg_dump Aufruf — Credentials kommen aus Umgebung (PGPASSWORD etc.)
+            // --clean + --if-exists ermöglichen Restore in eine bestehende DB:
+            // psql DROPped Tabellen vor CREATE statt mit "already exists" zu failen.
             ProcessBuilder pb = new ProcessBuilder(
                     "pg_dump",
                     "--format=plain",
                     "--file=" + backupPfad.toAbsolutePath(),
+                    "--clean",
+                    "--if-exists",
                     "--no-owner",
                     "--no-privileges",
                     extractDbNameFromUrl()

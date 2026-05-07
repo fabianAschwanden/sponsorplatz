@@ -368,6 +368,11 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **BACKUP-04** | `BackupServiceTest` | Backup wird in Cloud hochgeladen, wenn `BackupCloudUploader` registriert |
 | **BACKUP-05** | `BackupServiceTest` | Cloud-Upload-Fehler bricht Backup nicht ab — lokales File bleibt |
 | **BACKUP-06** | `BackupServiceTest` | Ohne `BackupCloudUploader` wird kein Cloud-Call gemacht |
+| **BACKUP-07** | `BackupServiceTest` | `leseBackup` gibt Inhalt zurück, lehnt Path-Traversal + ungültige Namen ab |
+| **BACKUP-08** | `BackupServiceTest` | `loescheBackup` entfernt validierte Datei |
+| **RESTORE-01** | `BackupRestoreServiceTest` | Leerer/null Input wird abgelehnt |
+| **RESTORE-02** | `BackupRestoreServiceTest` | H2-Restore ruft `RUNSCRIPT FROM` + Audit-Eintrag |
+| **RESTORE-03** | `BackupRestoreServiceTest` | SQL-Failure beim RUNSCRIPT als RuntimeException propagiert |
 
 ## CI
 

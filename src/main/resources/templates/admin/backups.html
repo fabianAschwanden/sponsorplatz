@@ -61,16 +61,62 @@
                 <tr>
                     <th>Dateiname</th>
                     <th>Grösse</th>
+                    <th style="text-align:right;">Aktionen</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="b : ${backups}">
                     <td><code th:text="${b.dateiname}">backup.sql</code></td>
                     <td th:text="${b.groesse}">1.2 MB</td>
+                    <td style="text-align:right; white-space:nowrap;">
+                        <a th:href="@{'/admin/backups/' + ${b.dateiname} + '/download'}"
+                           class="app-btn app-btn-ghost" style="padding:0.25rem 0.75rem;">Download</a>
+                        <form th:action="@{'/admin/backups/' + ${b.dateiname} + '/loeschen'}"
+                              method="post" style="display:inline; margin-left:0.5rem;"
+                              onsubmit="return confirm('Backup endgültig löschen?');">
+                            <button type="submit" class="app-btn app-btn-ghost"
+                                    style="padding:0.25rem 0.75rem; color:#dc2626;">Löschen</button>
+                        </form>
+                    </td>
                 </tr>
                 </tbody>
             </table>
         </div>
+
+        <!-- ── Restore ──────────────────────────────────────────────── -->
+        <section class="app-card" style="margin-top:2rem; border-left:4px solid #dc2626;">
+            <h2 style="margin-top:0;">Restore aus SQL-Dump</h2>
+            <p class="app-muted">
+                <strong style="color:#dc2626;">Achtung:</strong> Dies ist eine
+                <strong>destruktive</strong> Operation. Alle aktuellen Daten
+                werden durch den Inhalt der hochgeladenen Datei ersetzt.
+                Empfehlung: vorher ein neues Backup erstellen.
+            </p>
+            <p class="app-muted">
+                Akzeptiert wird ein <code>pg_dump</code>-Output (Postgres, mit
+                <code>--clean --if-exists</code>) oder ein H2 <code>SCRIPT TO</code>-Output.
+                Die Datei muss zur aktuellen Schema-Version passen — Mismatch
+                führt zu fehlgeschlagenem Restore.
+            </p>
+            <form th:action="@{/admin/backups/restore}" method="post"
+                  enctype="multipart/form-data"
+                  onsubmit="return confirm('Restore startet sofort. Aktuelle Daten gehen verloren. Fortfahren?');">
+                <div class="app-form-grid" style="margin-bottom:1rem;">
+                    <label>
+                        SQL-Dump-Datei
+                        <input type="file" name="datei" accept=".sql" required>
+                    </label>
+                    <label>
+                        Bestätigung — exakt <code>RESTORE</code> tippen
+                        <input type="text" name="bestaetigung" required pattern="RESTORE"
+                               placeholder="RESTORE">
+                    </label>
+                </div>
+                <button type="submit" class="app-btn" style="background:#dc2626; color:white;">
+                    Restore ausführen
+                </button>
+            </form>
+        </section>
     </main>
 </div>
 

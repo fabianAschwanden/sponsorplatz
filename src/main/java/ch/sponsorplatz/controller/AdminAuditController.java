@@ -4,13 +4,22 @@ import ch.sponsorplatz.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.AuditLogView;
 import ch.sponsorplatz.model.AuditLog;
 import ch.sponsorplatz.service.AuditService;
+import ch.sponsorplatz.service.BackupRestoreService;
 import ch.sponsorplatz.service.BackupService;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
@@ -27,10 +36,14 @@ public class AdminAuditController {
 
     private final AuditService auditService;
     private final BackupService backupService;
+    private final BackupRestoreService restoreService;
 
-    public AdminAuditController(AuditService auditService, BackupService backupService) {
+    public AdminAuditController(AuditService auditService,
+                                BackupService backupService,
+                                BackupRestoreService restoreService) {
         this.auditService = auditService;
         this.backupService = backupService;
+        this.restoreService = restoreService;
     }
 
     // --- Audit-Log ---
@@ -69,6 +82,65 @@ public class AdminAuditController {
         } catch (Exception e) {
             redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
                     "Backup fehlgeschlagen: " + e.getMessage());
+        }
+        return "redirect:/admin/backups";
+    }
+
+    @GetMapping("/backups/{dateiname}/download")
+    public ResponseEntity<ByteArrayResource> backupDownload(@PathVariable String dateiname) throws IOException {
+        byte[] bytes = backupService.leseBackup(dateiname);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/sql"))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + dateiname + "\"")
+                .contentLength(bytes.length)
+                .body(new ByteArrayResource(bytes));
+    }
+
+    @PostMapping("/backups/{dateiname}/loeschen")
+    public String backupLoeschen(@PathVariable String dateiname, RedirectAttributes redirect) {
+        try {
+            backupService.loescheBackup(dateiname);
+            redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
+                    "Backup gelöscht: " + dateiname);
+        } catch (Exception e) {
+            redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
+                    "Löschen fehlgeschlagen: " + e.getMessage());
+        }
+        return "redirect:/admin/backups";
+    }
+
+    /**
+     * Restore aus hochgeladenem SQL-Dump. Verlangt explizite Bestätigung
+     * via getipptem "RESTORE" — destruktive Operation, alle aktuellen
+     * Daten werden ersetzt.
+     */
+    @PostMapping("/backups/restore")
+    public String backupRestore(@RequestParam("datei") MultipartFile datei,
+                                @RequestParam("bestaetigung") String bestaetigung,
+                                Authentication auth,
+                                RedirectAttributes redirect) {
+        if (!"RESTORE".equals(bestaetigung)) {
+            redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
+                    "Restore abgebrochen — Bestätigungs-Text muss exakt RESTORE sein "
+                            + "(als Schutz gegen versehentlichen Klick).");
+            return "redirect:/admin/backups";
+        }
+        if (datei == null || datei.isEmpty()) {
+            redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
+                    "Keine SQL-Datei gewählt.");
+            return "redirect:/admin/backups";
+        }
+        try {
+            String name = auth != null ? auth.getName() : "system";
+            restoreService.restore(datei.getBytes(), name);
+            redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
+                    "Restore erfolgreich — " + datei.getOriginalFilename()
+                            + " (" + datei.getSize() / 1024 + " KB) wurde eingespielt. "
+                            + "Bitte ausloggen und erneut anmelden.");
+        } catch (Exception e) {
+            redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
+                    "Restore fehlgeschlagen: " + e.getMessage());
         }
         return "redirect:/admin/backups";
     }

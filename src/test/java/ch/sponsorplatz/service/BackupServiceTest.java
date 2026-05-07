@@ -127,5 +127,37 @@ class BackupServiceTest {
 
         verify(cloudUploader, never()).lade(any(Path.class));
     }
+
+    @Test
+    @org.junit.jupiter.api.DisplayName("BACKUP-07: leseBackup gibt Inhalt zurück, lehnt Path-Traversal ab")
+    void leseBackupValidiertNamen() throws IOException {
+        Path file = tempDir.resolve("sponsorplatz_backup_20260507_120000.sql");
+        Files.writeString(file, "-- DUMP --");
+
+        assertThat(service.leseBackup("sponsorplatz_backup_20260507_120000.sql"))
+                .isEqualTo("-- DUMP --".getBytes());
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                        () -> service.leseBackup("../etc/passwd"))
+                .isInstanceOf(IllegalArgumentException.class);
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                        () -> service.leseBackup("nicht_passendes_format.sql"))
+                .isInstanceOf(IllegalArgumentException.class);
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                        () -> service.leseBackup("sponsorplatz_backup_xxx.sql"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("nicht gefunden");
+    }
+
+    @Test
+    @org.junit.jupiter.api.DisplayName("BACKUP-08: loescheBackup entfernt Datei")
+    void loescheBackupEntferntDatei() throws IOException {
+        Path file = tempDir.resolve("sponsorplatz_backup_20260507_120000.sql");
+        Files.writeString(file, "-- DUMP --");
+
+        service.loescheBackup("sponsorplatz_backup_20260507_120000.sql");
+
+        assertThat(Files.exists(file)).isFalse();
+    }
 }
 
