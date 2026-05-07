@@ -5,6 +5,7 @@ import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.repository.AppUserRepository;
 import ch.sponsorplatz.service.AppUserService;
 import ch.sponsorplatz.service.DatenExportService;
+import ch.sponsorplatz.service.MedienAssetService;
 import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,9 @@ class EinstellungenControllerTest {
 
     @MockBean
     private AppUserService appUserService;
+
+    @MockBean
+    private MedienAssetService medienAssetService;
 
     @MockBean
     private SponsorplatzUserDetailsService userDetailsService;

@@ -55,6 +55,29 @@ public class AppUser {
     @Column(name = "registriert_am", nullable = false, updatable = false)
     private Instant registriertAm;
 
+    // --- Profil-Felder ---
+
+    @Column(name = "profilbild_id")
+    private UUID profilbildId;
+
+    @Column(name = "sprache", length = 5)
+    private String sprache = "de_CH";
+
+    @Column(name = "telefon", length = 30)
+    private String telefon;
+
+    @Column(name = "bio", columnDefinition = "TEXT")
+    private String bio;
+
+    @Column(name = "ort", length = 100)
+    private String ort;
+
+    @Column(name = "website_url", length = 500)
+    private String websiteUrl;
+
+    @Column(name = "position_titel", length = 150)
+    private String positionTitel;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -107,6 +130,27 @@ public class AppUser {
 
     public Instant getRegistriertAm() { return registriertAm; }
     public void setRegistriertAm(Instant registriertAm) { this.registriertAm = registriertAm; }
+
+    public UUID getProfilbildId() { return profilbildId; }
+    public void setProfilbildId(UUID profilbildId) { this.profilbildId = profilbildId; }
+
+    public String getSprache() { return sprache; }
+    public void setSprache(String sprache) { this.sprache = sprache; }
+
+    public String getTelefon() { return telefon; }
+    public void setTelefon(String telefon) { this.telefon = telefon; }
+
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
+
+    public String getOrt() { return ort; }
+    public void setOrt(String ort) { this.ort = ort; }
+
+    public String getWebsiteUrl() { return websiteUrl; }
+    public void setWebsiteUrl(String websiteUrl) { this.websiteUrl = websiteUrl; }
+
+    public String getPositionTitel() { return positionTitel; }
+    public void setPositionTitel(String positionTitel) { this.positionTitel = positionTitel; }
 
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

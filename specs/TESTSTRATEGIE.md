@@ -408,6 +408,14 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **RESTORE-02** | `BackupRestoreServiceTest` | H2-Restore ruft `RUNSCRIPT FROM` + Audit-Eintrag |
 | **RESTORE-03** | `BackupRestoreServiceTest` | SQL-Failure beim RUNSCRIPT als RuntimeException propagiert |
 
+### Security-Härtung — Dev-Seed-Properties (DEV-SEED)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **DEV-SEED-01** | `DevSeedRunnerTest` | Property-Override für E-Mail + Passwort (`sponsorplatz.dev.email/passwort`) wird angewandt |
+| **DEV-SEED-02** | `DevSeedRunnerTest` | Idempotent — bereits existierender User wird nicht überschrieben |
+| **DEV-SEED-03** | `DevSeedRunnerTest` | Default-Passwort `dev` wird verwendet, wenn keine Property gesetzt |
+
 ## CI
 
 - Bei jedem Push und PR auf `main`: `mvn -B clean verify` + Docker-Build-Smoke

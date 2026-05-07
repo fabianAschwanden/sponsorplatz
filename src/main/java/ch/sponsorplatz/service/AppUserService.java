@@ -1,6 +1,7 @@
 package ch.sponsorplatz.service;
 
 import ch.sponsorplatz.dto.AppUserFormDto;
+import ch.sponsorplatz.dto.ProfilFormDto;
 import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.repository.AppUserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -86,5 +87,43 @@ public class AppUserService {
 
         user.setPasswortHash(passwordEncoder.encode(neuesPasswort));
         repository.save(user);
+    }
+
+    /**
+     * Aktualisiert die Profil-Daten eines Benutzers.
+     *
+     * @throws IllegalArgumentException wenn User nicht gefunden oder Anzeigename leer
+     */
+    public AppUser aktualisieresProfil(UUID userId, ProfilFormDto dto) {
+        AppUser user = repository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Benutzer nicht gefunden"));
+
+        if (dto.getAnzeigename() == null || dto.getAnzeigename().isBlank()) {
+            throw new IllegalArgumentException("Anzeigename darf nicht leer sein");
+        }
+
+        user.setAnzeigename(dto.getAnzeigename().trim());
+        user.setSprache(dto.getSprache() != null ? dto.getSprache().trim() : "de_CH");
+        user.setTelefon(leereAlsNull(dto.getTelefon()));
+        user.setBio(leereAlsNull(dto.getBio()));
+        user.setOrt(leereAlsNull(dto.getOrt()));
+        user.setWebsiteUrl(leereAlsNull(dto.getWebsiteUrl()));
+        user.setPositionTitel(leereAlsNull(dto.getPositionTitel()));
+
+        return repository.save(user);
+    }
+
+    /**
+     * Setzt das Profilbild eines Benutzers.
+     */
+    public void setzeProfilbild(UUID userId, UUID medienAssetId) {
+        AppUser user = repository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Benutzer nicht gefunden"));
+        user.setProfilbildId(medienAssetId);
+        repository.save(user);
+    }
+
+    private String leereAlsNull(String s) {
+        return (s == null || s.isBlank()) ? null : s.trim();
     }
 }
