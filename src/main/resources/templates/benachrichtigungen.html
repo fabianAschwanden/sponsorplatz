@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Benachrichtigungen — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <style>
+        .b-item { display:flex; gap:0.75rem; padding:0.875rem 1rem; border-bottom:1px solid #f1f5f9; transition:background 0.15s; }
+        .b-item:hover { background:#fafafa; }
+        .b-item:last-child { border-bottom:none; }
+        .b-item-link { display:block; color:inherit; text-decoration:none; }
+        .b-item-link:hover { text-decoration:none; }
+        .b-icon { flex:0 0 auto; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem; font-weight:700; color:#fff; }
+        .b-content { flex:1; min-width:0; }
+        .b-titel { font-weight:600; color:#1f2937; margin-bottom:0.125rem; }
+        .b-text { color:#64748b; font-size:0.875rem; line-height:1.4; }
+        .b-meta { color:#94a3b8; font-size:0.75rem; margin-top:0.25rem; }
+        .b-icon-NEUE_ANFRAGE        { background:linear-gradient(135deg, #6d28d9, #9333ea); }
+        .b-icon-ANFRAGE_ANGENOMMEN  { background:linear-gradient(135deg, #16a34a, #22c55e); }
+        .b-icon-ANFRAGE_ABGELEHNT   { background:linear-gradient(135deg, #dc2626, #ef4444); }
+        .b-icon-NEUE_NACHRICHT      { background:linear-gradient(135deg, #2563eb, #3b82f6); }
+        .b-icon-ORG_VERIFIZIERT     { background:linear-gradient(135deg, #16a34a, #22c55e); }
+        .b-icon-ORG_SUSPENDIERT     { background:linear-gradient(135deg, #f59e0b, #fbbf24); }
+        .b-icon-EINLADUNG_ERHALTEN  { background:linear-gradient(135deg, #6d28d9, #9333ea); }
+        .b-icon-MITGLIED_HINZUGEFUEGT { background:linear-gradient(135deg, #2563eb, #3b82f6); }
+        .b-icon-SYSTEM              { background:linear-gradient(135deg, #6b7280, #9ca3af); }
+    </style>
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('benachrichtigungen', null)}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">Mein Konto</p>
+                <h1>Benachrichtigungen</h1>
+                <p class="app-muted">
+                    Letzte 20 In-App-Nachrichten. Beim Öffnen werden alle automatisch
+                    als gelesen markiert.
+                </p>
+            </div>
+        </header>
+
+        <section class="app-card" style="padding:0;">
+            <p class="app-muted" style="padding:2rem; text-align:center;"
+               th:if="${#lists.isEmpty(benachrichtigungen)}">
+                Keine Benachrichtigungen vorhanden.
+            </p>
+
+            <div th:each="b : ${benachrichtigungen}" class="b-item">
+                <div th:class="${'b-icon b-icon-' + b.typ.name()}">
+                    <span th:switch="${b.typ.name()}">
+                        <span th:case="'NEUE_ANFRAGE'">📥</span>
+                        <span th:case="'ANFRAGE_ANGENOMMEN'">✓</span>
+                        <span th:case="'ANFRAGE_ABGELEHNT'">✕</span>
+                        <span th:case="'NEUE_NACHRICHT'">💬</span>
+                        <span th:case="'ORG_VERIFIZIERT'">★</span>
+                        <span th:case="'ORG_SUSPENDIERT'">⚠</span>
+                        <span th:case="'EINLADUNG_ERHALTEN'">📨</span>
+                        <span th:case="'MITGLIED_HINZUGEFUEGT'">+</span>
+                        <span th:case="*">·</span>
+                    </span>
+                </div>
+                <div class="b-content">
+                    <a th:if="${b.link}" th:href="${b.link}" class="b-item-link">
+                        <div class="b-titel" th:text="${b.titel}">Titel</div>
+                        <div th:if="${b.text}" class="b-text" th:text="${b.text}">Text</div>
+                    </a>
+                    <div th:unless="${b.link}">
+                        <div class="b-titel" th:text="${b.titel}">Titel</div>
+                        <div th:if="${b.text}" class="b-text" th:text="${b.text}">Text</div>
+                    </div>
+                    <div class="b-meta"
+                         th:text="${#temporals.format(b.createdAt, 'dd.MM.yyyy HH:mm')}">Datum</div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>

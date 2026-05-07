@@ -13,11 +13,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.security.access.AccessDeniedException;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -86,18 +88,42 @@ class NotificationServiceTest {
     }
 
     @Test
-    @DisplayName("NOTIF-05: markiereAlsGelesen setzt gelesen=true")
+    @DisplayName("NOTIF-05: markiereAlsGelesen setzt gelesen=true wenn User der Empfänger ist")
     void markiereEinzelne() {
-        UUID id = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID notifId = UUID.randomUUID();
+        AppUser user = new AppUser();
+        user.setId(userId);
         Benachrichtigung b = new Benachrichtigung();
-        b.setId(id);
+        b.setId(notifId);
+        b.setEmpfaenger(user);
         b.setGelesen(false);
-        when(repository.findById(id)).thenReturn(Optional.of(b));
+        when(repository.findById(notifId)).thenReturn(Optional.of(b));
 
-        service.markiereAlsGelesen(id);
+        service.markiereAlsGelesen(notifId, userId);
 
         verify(repository).save(b);
         assertThat(b.isGelesen()).isTrue();
+    }
+
+    @Test
+    @DisplayName("NOTIF-06: markiereAlsGelesen wirft AccessDeniedException bei fremder Notif (IDOR)")
+    void markiereFremdeNotifAccessDenied() {
+        UUID empfaengerId = UUID.randomUUID();
+        UUID fremderUserId = UUID.randomUUID();
+        UUID notifId = UUID.randomUUID();
+        AppUser empfaenger = new AppUser();
+        empfaenger.setId(empfaengerId);
+        Benachrichtigung b = new Benachrichtigung();
+        b.setId(notifId);
+        b.setEmpfaenger(empfaenger);
+        when(repository.findById(notifId)).thenReturn(Optional.of(b));
+
+        assertThatThrownBy(() -> service.markiereAlsGelesen(notifId, fremderUserId))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verify(repository, never()).save(any());
+        assertThat(b.isGelesen()).isFalse();
     }
 }
 

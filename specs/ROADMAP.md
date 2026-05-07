@@ -146,6 +146,10 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
     - Sidebar: Glocke mit rotem Badge (ungelesene Anzahl)
     - Verdrahtet in `SponsoringAnfrageService` (erstelle/annehme/lehneAb → Notification an Org-Mitglieder)
     - Tests: NOTIF-01..05 (285 Tests gesamt)
+- [x] Passwort-Reset: `PasswortResetService` (Token-basiert, 1h gültig), `PasswortResetController`
+    - Migration V20, `/passwort-vergessen` + `/passwort-reset?token=...`
+    - Kein Information-Leak (immer Erfolg), Passwort-Bestätigung, Link auf Login-Seite
+    - Tests: PWRESET-01..07, PWRCTRL-01..06 (305 Tests gesamt)
 - [ ] Mehrsprachigkeit FR/IT
 - [ ] Vertrags-Generator
 - [ ] Zahlungs-Integration

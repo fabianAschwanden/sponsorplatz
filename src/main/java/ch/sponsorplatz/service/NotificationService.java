@@ -8,6 +8,7 @@ import ch.sponsorplatz.repository.BenachrichtigungRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,24 +57,6 @@ public class NotificationService {
     }
 
     /**
-     * Erstellt eine Notification für einen User per E-Mail (lookup).
-     */
-    @Async
-    public void benachrichtigePerEmail(String empfaengerEmail, BenachrichtigungTyp typ,
-                                        String titel, String text, String link) {
-        appUserRepository.findByEmail(empfaengerEmail)
-                .ifPresent(user -> {
-                    Benachrichtigung b = new Benachrichtigung();
-                    b.setEmpfaenger(user);
-                    b.setTyp(typ);
-                    b.setTitel(titel);
-                    b.setText(text);
-                    b.setLink(link);
-                    repository.save(b);
-                });
-    }
-
-    /**
      * Gibt die letzten 20 Benachrichtigungen eines Users zurück.
      */
     @Transactional(readOnly = true)
@@ -97,13 +80,20 @@ public class NotificationService {
     }
 
     /**
-     * Markiert eine einzelne Benachrichtigung als gelesen.
+     * Markiert eine einzelne Benachrichtigung als gelesen — nur wenn der
+     * angegebene User auch der Empfänger ist (verhindert IDOR: fremde
+     * Notifications via beliebiger UUID auf "gelesen" setzen).
+     *
+     * @throws AccessDeniedException wenn der User nicht Empfänger ist
      */
-    public void markiereAlsGelesen(UUID benachrichtigungId) {
+    public void markiereAlsGelesen(UUID benachrichtigungId, UUID anfragenderUserId) {
         repository.findById(benachrichtigungId).ifPresent(b -> {
+            if (!b.getEmpfaenger().getId().equals(anfragenderUserId)) {
+                throw new AccessDeniedException(
+                        "Notification gehört nicht zum eingeloggten User");
+            }
             b.setGelesen(true);
             repository.save(b);
         });
     }
 }
-

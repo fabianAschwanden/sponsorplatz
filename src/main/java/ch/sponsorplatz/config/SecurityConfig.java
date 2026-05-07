@@ -44,6 +44,7 @@ public class SecurityConfig {
                 .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
                 .requestMatchers("/impressum", "/datenschutz").permitAll()
                 .requestMatchers("/login", "/registrieren", "/verifizieren").permitAll()
+                .requestMatchers("/passwort-vergessen", "/passwort-reset").permitAll()
                 .requestMatchers("/sponsor/**").permitAll()
                 .requestMatchers("/einladung/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
@@ -65,7 +66,10 @@ public class SecurityConfig {
                 .permitAll()
             )
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**")
+                // /benachrichtigungen/**: interne State-Mutation per fetch ohne CSRF-
+                // Token. Owner-Check im Service schützt vor IDOR; Cross-Origin durch
+                // SameSite-Cookies blockiert.
+                .ignoringRequestMatchers("/h2-console/**", "/benachrichtigungen/**")
             )
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .headers(h -> h.frameOptions(f -> f.disable()));
@@ -80,6 +84,7 @@ public class SecurityConfig {
                 .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
                 .requestMatchers("/impressum", "/datenschutz").permitAll()
                 .requestMatchers("/login", "/registrieren", "/verifizieren").permitAll()
+                .requestMatchers("/passwort-vergessen", "/passwort-reset").permitAll()
                 .requestMatchers("/sponsor/**").permitAll()
                 .requestMatchers("/einladung/**").permitAll()
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
@@ -94,6 +99,10 @@ public class SecurityConfig {
                 .loginPage("/login")
                 .defaultSuccessUrl("/dashboard", true)
                 .permitAll()
+            )
+            .csrf(csrf -> csrf
+                // siehe devFilterChain — gleiche Begründung
+                .ignoringRequestMatchers("/benachrichtigungen/**")
             )
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .logout(Customizer.withDefaults());

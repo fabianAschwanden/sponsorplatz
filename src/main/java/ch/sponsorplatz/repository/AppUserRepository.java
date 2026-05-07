@@ -15,6 +15,8 @@ public interface AppUserRepository extends JpaRepository<AppUser, UUID> {
 
     Optional<AppUser> findByVerifikationsToken(String verifikationsToken);
 
+    Optional<AppUser> findByResetToken(String resetToken);
+
     boolean existsByEmail(String email);
 
     long countByAktivTrue();

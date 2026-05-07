@@ -52,6 +52,12 @@ public class AppUser {
     @Column(name = "token_gueltig_bis")
     private Instant tokenGueltigBis;
 
+    @Column(name = "reset_token", length = 64)
+    private String resetToken;
+
+    @Column(name = "reset_token_gueltig_bis")
+    private Instant resetTokenGueltigBis;
+
     @Column(name = "registriert_am", nullable = false, updatable = false)
     private Instant registriertAm;
 
@@ -127,6 +133,12 @@ public class AppUser {
 
     public Instant getTokenGueltigBis() { return tokenGueltigBis; }
     public void setTokenGueltigBis(Instant tokenGueltigBis) { this.tokenGueltigBis = tokenGueltigBis; }
+
+    public String getResetToken() { return resetToken; }
+    public void setResetToken(String resetToken) { this.resetToken = resetToken; }
+
+    public Instant getResetTokenGueltigBis() { return resetTokenGueltigBis; }
+    public void setResetTokenGueltigBis(Instant resetTokenGueltigBis) { this.resetTokenGueltigBis = resetTokenGueltigBis; }
 
     public Instant getRegistriertAm() { return registriertAm; }
     public void setRegistriertAm(Instant registriertAm) { this.registriertAm = registriertAm; }

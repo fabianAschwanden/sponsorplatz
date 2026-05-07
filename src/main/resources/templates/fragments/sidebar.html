@@ -134,9 +134,10 @@
         updateBadge();
         setInterval(updateBadge, 30000); // alle 30 Sekunden
 
+        // Bell-Click: navigiert auf die HTML-Liste — der Server markiert beim
+        // Laden alle als gelesen (atomar, keine fetch+navigate-Race-Condition).
         document.getElementById('notificationBell').addEventListener('click', function() {
-            window.location.href = '/benachrichtigungen/liste';
-            fetch('/benachrichtigungen/gelesen', { method: 'POST' });
+            window.location.href = '/benachrichtigungen';
         });
     })();
 </script>
