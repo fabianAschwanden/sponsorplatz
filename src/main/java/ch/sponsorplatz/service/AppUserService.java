@@ -94,7 +94,7 @@ public class AppUserService {
      *
      * @throws IllegalArgumentException wenn User nicht gefunden oder Anzeigename leer
      */
-    public AppUser aktualisieresProfil(UUID userId, ProfilFormDto dto) {
+    public AppUser aktualisiereProfil(UUID userId, ProfilFormDto dto) {
         AppUser user = repository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Benutzer nicht gefunden"));
 

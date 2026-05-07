@@ -77,7 +77,7 @@ public class EinstellungenController {
 
         AppUser user = ladeUser(auth);
         try {
-            appUserService.aktualisieresProfil(user.getId(), dto);
+            appUserService.aktualisiereProfil(user.getId(), dto);
             redirect.addFlashAttribute("erfolgsMeldung", "Profil gespeichert");
         } catch (IllegalArgumentException e) {
             redirect.addFlashAttribute("fehlermeldung", e.getMessage());
