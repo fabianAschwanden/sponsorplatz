@@ -6,7 +6,7 @@ import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.model.Nachricht;
 import ch.sponsorplatz.model.SponsoringAnfrage;
 import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.repository.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import ch.sponsorplatz.repository.NachrichtRepository;
 import ch.sponsorplatz.repository.SponsoringAnfrageRepository;
 import org.springframework.security.access.AccessDeniedException;

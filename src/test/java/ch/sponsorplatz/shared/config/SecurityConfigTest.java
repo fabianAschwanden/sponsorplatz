@@ -1,11 +1,11 @@
 package ch.sponsorplatz.shared.config;
 
 import ch.sponsorplatz.benutzer.LoginController;
-import ch.sponsorplatz.controller.OrganisationController;
+import ch.sponsorplatz.organisation.OrganisationController;
 import ch.sponsorplatz.benutzer.RegistrierungController;
-import ch.sponsorplatz.service.AccessControl;
+import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.benutzer.AppUserService;
-import ch.sponsorplatz.service.OrganisationService;
+import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

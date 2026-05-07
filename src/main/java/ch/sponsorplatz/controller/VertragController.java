@@ -1,10 +1,11 @@
 package ch.sponsorplatz.controller;
+import ch.sponsorplatz.organisation.Organisation;
 
 import ch.sponsorplatz.dto.VertragFormDto;
 import ch.sponsorplatz.dto.VertragView;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.model.Vertrag;
-import ch.sponsorplatz.service.AccessControl;
+import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.shared.pdf.PdfGeneratorService;
 import ch.sponsorplatz.service.VertragService;
 import jakarta.validation.Valid;

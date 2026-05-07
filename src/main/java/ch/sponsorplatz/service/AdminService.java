@@ -1,8 +1,9 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.organisation.OrganisationRepository;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 
 import ch.sponsorplatz.dto.AdminStatistiken;
-import ch.sponsorplatz.model.OrgStatus;
+import ch.sponsorplatz.organisation.OrgStatus;
 import ch.sponsorplatz.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

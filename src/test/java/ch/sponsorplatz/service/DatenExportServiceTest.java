@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.PlatformRolle;
 import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.repository.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import ch.sponsorplatz.repository.WatchlistRepository;
 
 class DatenExportServiceTest {

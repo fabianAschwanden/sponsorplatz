@@ -1,4 +1,5 @@
 package ch.sponsorplatz.benutzer;
+import ch.sponsorplatz.organisation.Rolle;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

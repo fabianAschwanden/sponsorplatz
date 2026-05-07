@@ -3,7 +3,7 @@ package ch.sponsorplatz.service;
 import ch.sponsorplatz.dto.DashboardDaten;
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.repository.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

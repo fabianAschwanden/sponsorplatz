@@ -4,7 +4,7 @@ import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.dto.EinladungVorschauView;
 import ch.sponsorplatz.shared.exception.BenutzerNichtRegistriertException;
-import ch.sponsorplatz.model.Rolle;
+import ch.sponsorplatz.organisation.Rolle;
 import ch.sponsorplatz.service.EinladungsService;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;

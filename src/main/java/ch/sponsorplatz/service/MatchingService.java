@@ -1,11 +1,11 @@
 package ch.sponsorplatz.service;
 
-import ch.sponsorplatz.model.Branche;
-import ch.sponsorplatz.model.Organisation;
+import ch.sponsorplatz.organisation.Branche;
+import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.Sichtbarkeit;
-import ch.sponsorplatz.repository.MitgliedschaftRepository;
-import ch.sponsorplatz.repository.OrganisationRepository;
+import ch.sponsorplatz.organisation.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.OrganisationRepository;
 import ch.sponsorplatz.repository.ProjektRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

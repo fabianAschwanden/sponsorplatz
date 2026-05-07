@@ -22,10 +22,10 @@ import org.springframework.security.access.AccessDeniedException;
 import ch.sponsorplatz.model.AnfrageStatus;
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.model.Nachricht;
-import ch.sponsorplatz.model.Organisation;
+import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.model.SponsoringAnfrage;
 import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.repository.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import ch.sponsorplatz.repository.NachrichtRepository;
 import ch.sponsorplatz.repository.SponsoringAnfrageRepository;
 

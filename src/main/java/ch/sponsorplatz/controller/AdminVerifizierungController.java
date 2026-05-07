@@ -1,11 +1,12 @@
 package ch.sponsorplatz.controller;
+import ch.sponsorplatz.organisation.Rolle;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import ch.sponsorplatz.benutzer.AppUser;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.dto.OrganisationView;
-import ch.sponsorplatz.model.Organisation;
-import ch.sponsorplatz.service.OrganisationService;
+import ch.sponsorplatz.organisation.OrganisationView;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.OrganisationService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

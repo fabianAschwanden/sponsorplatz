@@ -1,10 +1,11 @@
 package ch.sponsorplatz.controller;
+import ch.sponsorplatz.organisation.Rolle;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
-import ch.sponsorplatz.model.OrgStatus;
-import ch.sponsorplatz.model.OrgTyp;
-import ch.sponsorplatz.model.Organisation;
-import ch.sponsorplatz.service.OrganisationService;
+import ch.sponsorplatz.organisation.OrgStatus;
+import ch.sponsorplatz.organisation.OrgTyp;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

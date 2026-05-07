@@ -2,7 +2,7 @@ package ch.sponsorplatz.service;
 import ch.sponsorplatz.shared.util.SlugGenerator;
 
 import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.model.Organisation;
+import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.Sichtbarkeit;
 import ch.sponsorplatz.repository.ProjektRepository;

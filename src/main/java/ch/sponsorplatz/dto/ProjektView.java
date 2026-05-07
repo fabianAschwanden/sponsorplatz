@@ -1,4 +1,5 @@
 package ch.sponsorplatz.dto;
+import ch.sponsorplatz.organisation.Organisation;
 
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.Sichtbarkeit;
@@ -50,7 +51,7 @@ public record ProjektView(
      * Kurzversion einer Organisation für nested Darstellung.
      */
     public record OrganisationKurzView(UUID id, String name, String slug) {
-        public static OrganisationKurzView von(ch.sponsorplatz.model.Organisation org) {
+        public static OrganisationKurzView von(ch.sponsorplatz.organisation.Organisation org) {
             return new OrganisationKurzView(org.getId(), org.getName(), org.getSlug());
         }
     }

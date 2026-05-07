@@ -1,4 +1,5 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.organisation.Organisation;
 
 import ch.sponsorplatz.model.AuditAktion;
 import ch.sponsorplatz.model.AuditLog;

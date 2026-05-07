@@ -1,8 +1,8 @@
 package ch.sponsorplatz.controller;
 
-import ch.sponsorplatz.model.Organisation;
+import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.model.Projekt;
-import ch.sponsorplatz.service.OrganisationService;
+import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.service.ProjektService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;

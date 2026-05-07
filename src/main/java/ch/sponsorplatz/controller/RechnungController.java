@@ -1,9 +1,10 @@
 package ch.sponsorplatz.controller;
+import ch.sponsorplatz.organisation.Organisation;
 
 import ch.sponsorplatz.dto.RechnungView;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.model.Rechnung;
-import ch.sponsorplatz.service.AccessControl;
+import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.shared.pdf.PdfGeneratorService;
 import ch.sponsorplatz.service.QrBillService;
 import ch.sponsorplatz.service.RechnungService;

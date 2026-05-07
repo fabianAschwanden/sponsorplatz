@@ -2,12 +2,12 @@ package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.AnfrageView;
-import ch.sponsorplatz.dto.OrganisationView;
+import ch.sponsorplatz.organisation.OrganisationView;
 import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.model.Organisation;
+import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.model.SponsoringAnfrage;
-import ch.sponsorplatz.service.AccessControl;
-import ch.sponsorplatz.service.OrganisationService;
+import ch.sponsorplatz.organisation.AccessControl;
+import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.service.SponsoringAnfrageService;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;

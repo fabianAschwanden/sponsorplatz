@@ -15,7 +15,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import ch.sponsorplatz.model.Organisation;
+import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.Sichtbarkeit;
 import ch.sponsorplatz.repository.ProjektRepository;

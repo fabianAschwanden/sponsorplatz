@@ -1,4 +1,5 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.organisation.Organisation;
 
 import ch.sponsorplatz.model.Rechnung;
 import net.codecrete.qrbill.canvas.PNGCanvas;

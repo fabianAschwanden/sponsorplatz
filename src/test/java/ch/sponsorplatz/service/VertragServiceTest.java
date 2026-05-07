@@ -2,7 +2,7 @@ package ch.sponsorplatz.service;
 
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.model.AnfrageStatus;
-import ch.sponsorplatz.model.Organisation;
+import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.model.SponsoringAnfrage;
 import ch.sponsorplatz.model.SponsoringPaket;
 import ch.sponsorplatz.model.Vertrag;

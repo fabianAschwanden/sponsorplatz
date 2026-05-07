@@ -1,6 +1,6 @@
 package ch.sponsorplatz.event;
 
-import ch.sponsorplatz.model.Rolle;
+import ch.sponsorplatz.organisation.Rolle;
 
 /**
  * Domain-Event: eine Einladung wurde erfolgreich in der DB persistiert.

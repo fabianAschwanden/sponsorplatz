@@ -28,17 +28,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.model.AnfrageStatus;
 import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.model.Branche;
+import ch.sponsorplatz.organisation.Branche;
 import ch.sponsorplatz.model.Nachricht;
-import ch.sponsorplatz.model.OrgTyp;
-import ch.sponsorplatz.model.Organisation;
+import ch.sponsorplatz.organisation.OrgTyp;
+import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.model.SponsoringAnfrage;
 import ch.sponsorplatz.model.SponsoringPaket;
 import ch.sponsorplatz.repository.SponsoringAnfrageRepository;
-import ch.sponsorplatz.service.AccessControl;
+import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.service.NachrichtService;
-import ch.sponsorplatz.service.OrganisationService;
+import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 
 /**

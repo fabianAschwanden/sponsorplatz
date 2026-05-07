@@ -1,7 +1,7 @@
 package ch.sponsorplatz.service;
 
 import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.model.Organisation;
+import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.model.Rechnung;
 import ch.sponsorplatz.model.RechnungsStatus;
 import ch.sponsorplatz.model.Vertrag;

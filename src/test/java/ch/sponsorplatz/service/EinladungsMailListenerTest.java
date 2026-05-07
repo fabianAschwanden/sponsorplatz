@@ -2,7 +2,7 @@ package ch.sponsorplatz.service;
 import ch.sponsorplatz.shared.mail.MailService;
 
 import ch.sponsorplatz.event.EinladungErstelltEvent;
-import ch.sponsorplatz.model.Rolle;
+import ch.sponsorplatz.organisation.Rolle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

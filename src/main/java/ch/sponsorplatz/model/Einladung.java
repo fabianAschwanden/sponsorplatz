@@ -1,4 +1,6 @@
 package ch.sponsorplatz.model;
+import ch.sponsorplatz.organisation.Rolle;
+import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.benutzer.AppUser;
 
 import jakarta.persistence.Column;

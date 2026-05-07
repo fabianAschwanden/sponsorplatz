@@ -16,7 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
-import ch.sponsorplatz.service.OrganisationService;
+import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.service.ProjektService;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 

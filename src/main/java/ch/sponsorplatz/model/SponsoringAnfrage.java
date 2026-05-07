@@ -1,4 +1,5 @@
 package ch.sponsorplatz.model;
+import ch.sponsorplatz.organisation.Organisation;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

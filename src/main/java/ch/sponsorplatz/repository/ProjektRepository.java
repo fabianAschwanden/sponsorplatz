@@ -1,6 +1,6 @@
 package ch.sponsorplatz.repository;
 
-import ch.sponsorplatz.model.Branche;
+import ch.sponsorplatz.organisation.Branche;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.Sichtbarkeit;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.repository.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import ch.sponsorplatz.repository.WatchlistRepository;
 
 /**

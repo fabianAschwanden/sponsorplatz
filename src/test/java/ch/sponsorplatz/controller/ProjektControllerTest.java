@@ -1,13 +1,13 @@
 package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
-import ch.sponsorplatz.model.Organisation;
-import ch.sponsorplatz.model.OrgTyp;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.Sichtbarkeit;
-import ch.sponsorplatz.service.AccessControl;
+import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.service.MedienAssetService;
-import ch.sponsorplatz.service.OrganisationService;
+import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.service.ProjektService;
 import ch.sponsorplatz.service.SponsoringPaketService;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;

@@ -2,10 +2,10 @@ package ch.sponsorplatz.controller;
 import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
-import ch.sponsorplatz.model.Organisation;
-import ch.sponsorplatz.model.OrgTyp;
-import ch.sponsorplatz.service.AccessControl;
-import ch.sponsorplatz.service.OrganisationService;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.OrgTyp;
+import ch.sponsorplatz.organisation.AccessControl;
+import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.service.SponsoringAnfrageService;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;

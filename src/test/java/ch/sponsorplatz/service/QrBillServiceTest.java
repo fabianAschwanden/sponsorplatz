@@ -1,6 +1,6 @@
 package ch.sponsorplatz.service;
 
-import ch.sponsorplatz.model.Organisation;
+import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.model.Rechnung;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

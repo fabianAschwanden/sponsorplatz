@@ -1,4 +1,6 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.organisation.MitgliedschaftService;
+import ch.sponsorplatz.organisation.Mitgliedschaft;
 import ch.sponsorplatz.shared.util.TokenGenerator;
 
 import ch.sponsorplatz.dto.EinladungVorschauView;
@@ -6,11 +8,11 @@ import ch.sponsorplatz.event.EinladungErstelltEvent;
 import ch.sponsorplatz.shared.exception.BenutzerNichtRegistriertException;
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.model.Einladung;
-import ch.sponsorplatz.model.Organisation;
-import ch.sponsorplatz.model.Rolle;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.Rolle;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.repository.EinladungRepository;
-import ch.sponsorplatz.repository.OrganisationRepository;
+import ch.sponsorplatz.organisation.OrganisationRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

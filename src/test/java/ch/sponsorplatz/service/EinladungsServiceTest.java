@@ -1,14 +1,16 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.organisation.MitgliedschaftService;
+import ch.sponsorplatz.organisation.Mitgliedschaft;
 
 import ch.sponsorplatz.event.EinladungErstelltEvent;
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.model.Einladung;
-import ch.sponsorplatz.model.Organisation;
-import ch.sponsorplatz.model.OrgTyp;
-import ch.sponsorplatz.model.Rolle;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.OrgTyp;
+import ch.sponsorplatz.organisation.Rolle;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.repository.EinladungRepository;
-import ch.sponsorplatz.repository.OrganisationRepository;
+import ch.sponsorplatz.organisation.OrganisationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

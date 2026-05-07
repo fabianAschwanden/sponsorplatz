@@ -1,7 +1,7 @@
 package ch.sponsorplatz.dto;
 
 import ch.sponsorplatz.model.Einladung;
-import ch.sponsorplatz.model.Rolle;
+import ch.sponsorplatz.organisation.Rolle;
 
 import java.time.Instant;
 

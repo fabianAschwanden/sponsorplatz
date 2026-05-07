@@ -19,9 +19,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.model.MedienAsset;
-import ch.sponsorplatz.service.AccessControl;
+import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.service.MedienAssetService;
-import ch.sponsorplatz.service.OrganisationService;
+import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.service.ProjektService;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import ch.sponsorplatz.shared.storage.StorageService;
