@@ -7,7 +7,7 @@ import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.Sichtbarkeit;
 import ch.sponsorplatz.service.MedienAssetService;
 import ch.sponsorplatz.service.ProjektService;
-import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

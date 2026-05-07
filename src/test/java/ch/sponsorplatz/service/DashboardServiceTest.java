@@ -1,8 +1,8 @@
 package ch.sponsorplatz.service;
 
 import ch.sponsorplatz.dto.DashboardDaten;
-import ch.sponsorplatz.model.AppUser;
-import ch.sponsorplatz.repository.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUser;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.repository.MitgliedschaftRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

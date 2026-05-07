@@ -1,8 +1,6 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.benutzer;
 import ch.sponsorplatz.shared.mail.MailService;
 
-import ch.sponsorplatz.model.AppUser;
-import ch.sponsorplatz.repository.AppUserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

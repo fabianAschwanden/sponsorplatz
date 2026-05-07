@@ -27,7 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.model.AnfrageStatus;
-import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.model.Branche;
 import ch.sponsorplatz.model.Nachricht;
 import ch.sponsorplatz.model.OrgTyp;
@@ -36,10 +36,10 @@ import ch.sponsorplatz.model.SponsoringAnfrage;
 import ch.sponsorplatz.model.SponsoringPaket;
 import ch.sponsorplatz.repository.SponsoringAnfrageRepository;
 import ch.sponsorplatz.service.AccessControl;
-import ch.sponsorplatz.service.AppUserService;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.service.NachrichtService;
 import ch.sponsorplatz.service.OrganisationService;
-import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 
 /**
  * Tests für NachrichtController (MSG-05..08).

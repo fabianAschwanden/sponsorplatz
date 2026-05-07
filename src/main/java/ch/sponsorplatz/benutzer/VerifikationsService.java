@@ -1,9 +1,7 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.benutzer;
 import ch.sponsorplatz.shared.mail.MailService;
 import ch.sponsorplatz.shared.util.TokenGenerator;
 
-import ch.sponsorplatz.model.AppUser;
-import ch.sponsorplatz.repository.AppUserRepository;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

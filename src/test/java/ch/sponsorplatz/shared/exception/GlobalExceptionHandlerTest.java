@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
-import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;

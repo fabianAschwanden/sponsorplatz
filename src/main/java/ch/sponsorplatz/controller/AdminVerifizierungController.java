@@ -1,4 +1,6 @@
 package ch.sponsorplatz.controller;
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.benutzer.AppUser;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.OrganisationView;

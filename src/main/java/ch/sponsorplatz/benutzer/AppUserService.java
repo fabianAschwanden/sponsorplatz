@@ -1,9 +1,5 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.benutzer;
 
-import ch.sponsorplatz.dto.AppUserFormDto;
-import ch.sponsorplatz.dto.ProfilFormDto;
-import ch.sponsorplatz.model.AppUser;
-import ch.sponsorplatz.repository.AppUserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,4 +1,4 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.benutzer;
 import ch.sponsorplatz.shared.mail.MailService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,8 +22,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import ch.sponsorplatz.model.AppUser;
-import ch.sponsorplatz.repository.AppUserRepository;
 
 @ExtendWith(MockitoExtension.class)
 class PasswortResetServiceTest {

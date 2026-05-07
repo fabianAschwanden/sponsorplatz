@@ -1,4 +1,5 @@
 package ch.sponsorplatz.dto;
+import ch.sponsorplatz.benutzer.AppUser;
 
 import ch.sponsorplatz.model.Branche;
 import jakarta.validation.constraints.Email;

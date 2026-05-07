@@ -1,8 +1,6 @@
-package ch.sponsorplatz.controller;
+package ch.sponsorplatz.benutzer;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.dto.AppUserFormDto;
-import ch.sponsorplatz.service.AppUserService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

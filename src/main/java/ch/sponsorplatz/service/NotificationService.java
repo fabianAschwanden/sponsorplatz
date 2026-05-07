@@ -1,9 +1,9 @@
 package ch.sponsorplatz.service;
 
-import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.model.Benachrichtigung;
 import ch.sponsorplatz.model.BenachrichtigungTyp;
-import ch.sponsorplatz.repository.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.repository.BenachrichtigungRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

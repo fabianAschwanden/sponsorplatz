@@ -1,8 +1,8 @@
 package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
-import ch.sponsorplatz.service.AppUserService;
-import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.benutzer.AppUserService;
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

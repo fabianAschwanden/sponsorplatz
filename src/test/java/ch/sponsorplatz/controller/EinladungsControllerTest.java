@@ -6,7 +6,7 @@ import ch.sponsorplatz.dto.EinladungVorschauView;
 import ch.sponsorplatz.shared.exception.BenutzerNichtRegistriertException;
 import ch.sponsorplatz.model.Rolle;
 import ch.sponsorplatz.service.EinladungsService;
-import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

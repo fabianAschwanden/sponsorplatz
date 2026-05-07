@@ -1,7 +1,5 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.benutzer;
 
-import ch.sponsorplatz.model.AppUser;
-import ch.sponsorplatz.repository.AppUserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;

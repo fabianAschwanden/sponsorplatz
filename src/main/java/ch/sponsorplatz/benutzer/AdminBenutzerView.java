@@ -1,7 +1,5 @@
-package ch.sponsorplatz.dto;
+package ch.sponsorplatz.benutzer;
 
-import ch.sponsorplatz.model.AppUser;
-import ch.sponsorplatz.model.PlatformRolle;
 
 import java.time.Instant;
 import java.util.List;

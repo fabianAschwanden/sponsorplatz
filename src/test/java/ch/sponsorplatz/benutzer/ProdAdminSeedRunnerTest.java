@@ -1,8 +1,5 @@
-package ch.sponsorplatz.startup;
+package ch.sponsorplatz.benutzer;
 
-import ch.sponsorplatz.model.AppUser;
-import ch.sponsorplatz.model.PlatformRolle;
-import ch.sponsorplatz.repository.AppUserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

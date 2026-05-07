@@ -1,6 +1,6 @@
 package ch.sponsorplatz.dto;
 
-import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.model.Mitgliedschaft;
 import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.model.Rolle;

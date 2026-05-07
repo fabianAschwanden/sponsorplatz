@@ -1,4 +1,5 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 
 import ch.sponsorplatz.dto.AdminStatistiken;
 import ch.sponsorplatz.model.OrgStatus;

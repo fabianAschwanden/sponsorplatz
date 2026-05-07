@@ -8,8 +8,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ch.sponsorplatz.model.AppUser;
-import ch.sponsorplatz.repository.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUser;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.repository.MitgliedschaftRepository;
 import ch.sponsorplatz.repository.WatchlistRepository;
 

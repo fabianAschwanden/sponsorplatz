@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.DashboardDaten;
 import ch.sponsorplatz.dto.ProjektView;
-import ch.sponsorplatz.service.AppUserService;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.service.DashboardService;
 import ch.sponsorplatz.service.MatchingService;
 

@@ -1,6 +1,6 @@
 package ch.sponsorplatz.dto;
 
-import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.model.Nachricht;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

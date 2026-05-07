@@ -1,9 +1,10 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.benutzer.AppUserService;
 
-import ch.sponsorplatz.dto.AppUserFormDto;
+import ch.sponsorplatz.benutzer.AppUserFormDto;
 import ch.sponsorplatz.dto.OrganisationFormDto;
 import ch.sponsorplatz.dto.SponsorRegistrierungFormDto;
-import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.model.OrgTyp;
 import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.model.Rolle;

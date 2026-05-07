@@ -2,9 +2,9 @@ package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.dto.BenachrichtigungView;
 import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.model.Benachrichtigung;
-import ch.sponsorplatz.repository.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.service.NotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

@@ -1,4 +1,4 @@
-package ch.sponsorplatz.model;
+package ch.sponsorplatz.benutzer;
 
 /**
  * Globale Plattform-Rollen — unabhängig von Organisationen.

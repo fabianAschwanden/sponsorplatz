@@ -1,6 +1,5 @@
-package ch.sponsorplatz.controller;
+package ch.sponsorplatz.benutzer;
 
-import ch.sponsorplatz.service.VerifikationsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

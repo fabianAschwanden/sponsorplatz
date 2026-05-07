@@ -1,8 +1,8 @@
 package ch.sponsorplatz.service;
 
-import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.model.Rolle;
-import ch.sponsorplatz.repository.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.repository.MitgliedschaftRepository;
 import ch.sponsorplatz.repository.OrganisationRepository;
 import org.springframework.security.core.Authentication;

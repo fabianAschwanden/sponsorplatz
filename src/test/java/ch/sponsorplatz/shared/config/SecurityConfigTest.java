@@ -1,12 +1,12 @@
 package ch.sponsorplatz.shared.config;
 
-import ch.sponsorplatz.controller.LoginController;
+import ch.sponsorplatz.benutzer.LoginController;
 import ch.sponsorplatz.controller.OrganisationController;
-import ch.sponsorplatz.controller.RegistrierungController;
+import ch.sponsorplatz.benutzer.RegistrierungController;
 import ch.sponsorplatz.service.AccessControl;
-import ch.sponsorplatz.service.AppUserService;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.service.OrganisationService;
-import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

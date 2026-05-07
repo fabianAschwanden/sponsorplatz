@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.service.OrganisationService;
 import ch.sponsorplatz.service.ProjektService;
-import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 
 @WebMvcTest(controllers = SitemapController.class)
 @Import(SecurityConfig.class)

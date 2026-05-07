@@ -1,14 +1,14 @@
 package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.dto.AdminBenutzerView;
+import ch.sponsorplatz.benutzer.AdminBenutzerView;
 import ch.sponsorplatz.dto.OrganisationView;
 import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.model.AuditAktion;
 import ch.sponsorplatz.model.Organisation;
-import ch.sponsorplatz.model.PlatformRolle;
-import ch.sponsorplatz.repository.AppUserRepository;
+import ch.sponsorplatz.benutzer.PlatformRolle;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.service.AuditService;
 import ch.sponsorplatz.service.OrganisationService;
 import org.springframework.security.access.prepost.PreAuthorize;

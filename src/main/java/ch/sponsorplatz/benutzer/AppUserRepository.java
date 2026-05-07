@@ -1,6 +1,5 @@
-package ch.sponsorplatz.repository;
+package ch.sponsorplatz.benutzer;
 
-import ch.sponsorplatz.model.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

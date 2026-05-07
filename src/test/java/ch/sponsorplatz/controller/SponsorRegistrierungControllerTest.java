@@ -3,7 +3,7 @@ package ch.sponsorplatz.controller;
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.dto.SponsorRegistrierungFormDto;
 import ch.sponsorplatz.service.SponsorRegistrierungService;
-import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

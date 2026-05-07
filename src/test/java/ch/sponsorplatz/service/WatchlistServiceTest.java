@@ -1,6 +1,6 @@
 package ch.sponsorplatz.service;
 
-import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.WatchlistEintrag;
 import ch.sponsorplatz.repository.WatchlistRepository;

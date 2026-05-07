@@ -7,7 +7,7 @@ import ch.sponsorplatz.model.OrgTyp;
 import ch.sponsorplatz.service.AccessControl;
 import ch.sponsorplatz.service.OrganisationService;
 import ch.sponsorplatz.service.SponsoringAnfrageService;
-import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

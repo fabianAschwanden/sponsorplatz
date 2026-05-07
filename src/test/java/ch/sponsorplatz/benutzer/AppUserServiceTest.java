@@ -1,8 +1,5 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.benutzer;
 
-import ch.sponsorplatz.dto.AppUserFormDto;
-import ch.sponsorplatz.model.AppUser;
-import ch.sponsorplatz.repository.AppUserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

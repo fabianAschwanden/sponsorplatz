@@ -13,9 +13,9 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import ch.sponsorplatz.model.AppUser;
-import ch.sponsorplatz.model.PlatformRolle;
-import ch.sponsorplatz.repository.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUser;
+import ch.sponsorplatz.benutzer.PlatformRolle;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.repository.MitgliedschaftRepository;
 import ch.sponsorplatz.repository.WatchlistRepository;
 

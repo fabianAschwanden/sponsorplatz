@@ -23,7 +23,7 @@ import ch.sponsorplatz.service.AccessControl;
 import ch.sponsorplatz.service.MedienAssetService;
 import ch.sponsorplatz.service.OrganisationService;
 import ch.sponsorplatz.service.ProjektService;
-import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import ch.sponsorplatz.shared.storage.StorageService;
 
 @WebMvcTest(controllers = MedienController.class)

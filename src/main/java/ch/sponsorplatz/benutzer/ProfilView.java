@@ -1,6 +1,5 @@
-package ch.sponsorplatz.dto;
+package ch.sponsorplatz.benutzer;
 
-import ch.sponsorplatz.model.AppUser;
 
 import java.time.Instant;
 import java.util.UUID;

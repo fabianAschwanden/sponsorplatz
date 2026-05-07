@@ -1,13 +1,8 @@
-package ch.sponsorplatz.controller;
+package ch.sponsorplatz.benutzer;
 
-import ch.sponsorplatz.dto.ProfilFormDto;
-import ch.sponsorplatz.dto.ProfilView;
 import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.model.AssetTyp;
 import ch.sponsorplatz.model.EntityTyp;
-import ch.sponsorplatz.repository.AppUserRepository;
-import ch.sponsorplatz.service.AppUserService;
 import ch.sponsorplatz.service.DatenExportService;
 import ch.sponsorplatz.service.MedienAssetService;
 import jakarta.validation.Valid;

@@ -1,4 +1,4 @@
-package ch.sponsorplatz.dto;
+package ch.sponsorplatz.benutzer;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

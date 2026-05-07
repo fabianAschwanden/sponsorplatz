@@ -1,8 +1,5 @@
-package ch.sponsorplatz.startup;
+package ch.sponsorplatz.benutzer;
 
-import ch.sponsorplatz.model.AppUser;
-import ch.sponsorplatz.model.PlatformRolle;
-import ch.sponsorplatz.repository.AppUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

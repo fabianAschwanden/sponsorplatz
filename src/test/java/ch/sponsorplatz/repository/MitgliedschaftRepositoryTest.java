@@ -1,6 +1,7 @@
 package ch.sponsorplatz.repository;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 
-import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.model.Branche;
 import ch.sponsorplatz.model.Mitgliedschaft;
 import ch.sponsorplatz.model.OrgTyp;

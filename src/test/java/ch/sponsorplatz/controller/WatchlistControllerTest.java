@@ -2,12 +2,12 @@ package ch.sponsorplatz.controller;
 import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
-import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.WatchlistEintrag;
-import ch.sponsorplatz.repository.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.service.ProjektService;
-import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import ch.sponsorplatz.service.WatchlistService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

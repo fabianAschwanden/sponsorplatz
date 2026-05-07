@@ -1,7 +1,8 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.benutzer.AppUser;
 
 import ch.sponsorplatz.dto.DashboardDaten;
-import ch.sponsorplatz.repository.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.repository.MitgliedschaftRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

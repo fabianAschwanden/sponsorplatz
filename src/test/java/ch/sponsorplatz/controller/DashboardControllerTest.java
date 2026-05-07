@@ -2,10 +2,10 @@ package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.dto.DashboardDaten;
-import ch.sponsorplatz.service.AppUserService;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.service.DashboardService;
 import ch.sponsorplatz.service.MatchingService;
-import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
