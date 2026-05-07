@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" lang="de-CH">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Sponsoring-Vertrag</title>
+    <style>
+        @page { size: A4; margin: 22mm 20mm 25mm 20mm; }
+        body { font-family: "Helvetica", "Arial", sans-serif; font-size: 10.5pt; color: #1f2937; line-height: 1.5; }
+        h1 { font-size: 18pt; color: #6d28d9; margin: 0 0 4pt; }
+        h2 { font-size: 12pt; color: #6d28d9; margin: 18pt 0 6pt; border-bottom: 0.4pt solid #6d28d9; padding-bottom: 2pt; }
+        .rubrik { font-size: 9pt; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta { font-size: 9pt; color: #6b7280; margin-bottom: 14pt; }
+        .partner-grid { display: table; width: 100%; margin: 6pt 0; }
+        .partner-row { display: table-row; }
+        .partner-cell { display: table-cell; width: 50%; vertical-align: top; padding-right: 8pt; }
+        .partner-cell strong { display: block; font-size: 9pt; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; }
+        .konditionen { width: 100%; border-collapse: collapse; margin: 6pt 0; }
+        .konditionen th { text-align: left; background: #f3f4f6; padding: 4pt 6pt; font-weight: 600; font-size: 9pt; color: #6b7280; }
+        .konditionen td { padding: 5pt 6pt; border-bottom: 0.3pt solid #e5e7eb; vertical-align: top; }
+        .preis { font-size: 14pt; color: #6d28d9; font-weight: 700; }
+        .leistung { margin: 6pt 0; padding: 8pt 10pt; background: #f9fafb; border-left: 2pt solid #6d28d9; }
+        .signaturen { margin-top: 30pt; display: table; width: 100%; }
+        .signaturen .partner-row { display: table-row; }
+        .signaturen .partner-cell { padding-top: 24pt; }
+        .signatur-line { border-top: 0.5pt solid #1f2937; padding-top: 3pt; font-size: 9pt; color: #6b7280; }
+        .footer { position: running(footer); font-size: 8pt; color: #9ca3af; text-align: center; margin-top: 14pt; }
+        @page { @bottom-center { content: element(footer); } }
+        .agb { font-size: 8.5pt; color: #4b5563; line-height: 1.45; }
+        .status-banner { padding: 6pt 10pt; margin-bottom: 12pt; font-size: 9pt; }
+        .status-entwurf { background: #fef3c7; border-left: 3pt solid #f59e0b; }
+        .status-signed { background: #d1fae5; border-left: 3pt solid #16a34a; }
+    </style>
+</head>
+<body>
+
+<p class="rubrik">Sponsoring-Vertrag · Sponsorplatz</p>
+<h1 th:text="${vertrag.paketName}">Sponsoring-Paket</h1>
+<p class="meta">
+    Vertrags-Nr.: <span th:text="${vertrag.id}">—</span><br />
+    Erstellt am: <span th:text="${#temporals.format(vertrag.erstelltAm, 'dd.MM.yyyy')}">—</span>
+</p>
+
+<div th:if="${vertrag.status.name() == 'ENTWURF'}" class="status-banner status-entwurf">
+    <strong>Entwurf</strong> — beide Seiten müssen noch unterzeichnen.
+</div>
+<div th:if="${vertrag.status.name() == 'UNTERZEICHNET'}" class="status-banner status-signed">
+    <strong>Unterzeichnet</strong> am
+    <span th:text="${#temporals.format(vertrag.unterzeichnetAm, 'dd.MM.yyyy')}">—</span>.
+</div>
+
+<h2>Vertragspartner</h2>
+<div class="partner-grid">
+    <div class="partner-row">
+        <div class="partner-cell">
+            <strong>Verein / Empfänger</strong>
+            <p style="margin:2pt 0;" th:text="${vertrag.orgName}">Verein</p>
+        </div>
+        <div class="partner-cell">
+            <strong>Sponsor</strong>
+            <p style="margin:2pt 0;" th:text="${vertrag.sponsorOrgName ?: vertrag.sponsorName ?: '—'}">Sponsor</p>
+            <p style="margin:0; font-size:9pt; color:#6b7280;"
+               th:if="${vertrag.sponsorName and vertrag.sponsorOrgName}"
+               th:text="${'Kontakt: ' + vertrag.sponsorName}">Kontakt</p>
+            <p style="margin:0; font-size:9pt; color:#6b7280;"
+               th:if="${vertrag.sponsorEmail}" th:text="${vertrag.sponsorEmail}">email</p>
+        </div>
+    </div>
+</div>
+
+<h2>Konditionen</h2>
+<table class="konditionen">
+    <tr>
+        <th style="width:30%;">Beschreibung</th>
+        <td th:text="${vertrag.paketBeschreibung ?: '—'}">—</td>
+    </tr>
+    <tr>
+        <th>Preis</th>
+        <td><span class="preis" th:text="'CHF ' + ${#numbers.formatDecimal(vertrag.preisChf, 1, 'POINT', 2, 'POINT')}">CHF —</span></td>
+    </tr>
+    <tr>
+        <th>Laufzeit</th>
+        <td>
+            <span th:if="${vertrag.laufzeitVon}"
+                  th:text="${#temporals.format(vertrag.laufzeitVon, 'dd.MM.yyyy')}">—</span>
+            <span th:if="${vertrag.laufzeitBis}"
+                  th:text="' — ' + ${#temporals.format(vertrag.laufzeitBis, 'dd.MM.yyyy')}"></span>
+            <span th:unless="${vertrag.laufzeitVon or vertrag.laufzeitBis}">noch nicht festgelegt</span>
+        </td>
+    </tr>
+</table>
+
+<h2>Leistungen</h2>
+<div class="leistung">
+    <strong>Verein erbringt:</strong>
+    <p style="margin:3pt 0 0;" th:text="${vertrag.leistungVerein ?: '—'}">—</p>
+</div>
+<div class="leistung">
+    <strong>Sponsor erbringt:</strong>
+    <p style="margin:3pt 0 0;" th:text="${vertrag.leistungSponsor ?: '—'}">—</p>
+</div>
+
+<h2>Allgemeine Bestimmungen</h2>
+<div class="agb">
+    <p>1. Dieser Vertrag regelt die in den Konditionen festgehaltenen
+       gegenseitigen Leistungen zwischen Verein und Sponsor.</p>
+    <p>2. Eine Kündigung ist mit einer Frist von 30 Tagen vor Ablauf der
+       Laufzeit schriftlich möglich. Ohne Kündigung endet der Vertrag mit
+       dem im «Laufzeit bis»-Datum festgelegten Tag.</p>
+    <p>3. Beide Parteien verpflichten sich zur diskreten Behandlung von
+       Geschäfts- und Finanzdaten. Personenbezogene Daten werden nach
+       Schweizer DSG verarbeitet.</p>
+    <p>4. Es gilt Schweizer Recht. Gerichtsstand ist der Sitz des Vereins.</p>
+    <p>5. Der Vertrag wird über die Plattform Sponsorplatz vermittelt.
+       Sponsorplatz ist nicht Vertragspartei und übernimmt keine Gewähr
+       für die Vertragserfüllung.</p>
+</div>
+
+<div class="signaturen">
+    <div class="partner-row">
+        <div class="partner-cell">
+            <div class="signatur-line">Ort, Datum &amp; Unterschrift Verein</div>
+        </div>
+        <div class="partner-cell">
+            <div class="signatur-line">Ort, Datum &amp; Unterschrift Sponsor</div>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    Vermittelt über Sponsorplatz · sponsorplatz.for-better.biz
+</div>
+
+</body>
+</html>

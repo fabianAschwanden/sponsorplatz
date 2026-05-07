@@ -36,6 +36,10 @@
         <div th:if="${a.status.name() == 'ANGENOMMEN'}" class="anfrage-actions">
             <a th:href="@{'/organisationen/' + ${org.slug} + '/anfragen/' + ${a.id} + '/nachrichten'}"
                class="btn btn-primary">Konversation öffnen</a>
+            <form th:action="@{'/organisationen/' + ${org.slug} + '/anfragen/' + ${a.id} + '/vertrag/erstellen'}"
+                  method="post" style="display:inline; margin-left:0.5rem;">
+                <button type="submit" class="btn">Vertrag erstellen</button>
+            </form>
         </div>
 
         <div th:if="${a.status.name() == 'NEU'}" class="anfrage-actions">

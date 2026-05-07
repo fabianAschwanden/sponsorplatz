@@ -306,6 +306,17 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **SR-06** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` mit Validierungsfehler → bleibt auf Formular |
 | **SR-07** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` doppelte E-Mail → Fehlermeldung auf Formular |
 
+### Phase Wachstum — Vertrags-Generator (VTR)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **VTR-01** | `VertragServiceTest` | `erstelle` aus angenommener Anfrage kopiert Snapshot-Felder (Org, Sponsor, Paket, Preis) |
+| **VTR-02** | `VertragServiceTest` | `erstelle` bei Status NEU wirft `IllegalStateException` |
+| **VTR-03** | `VertragServiceTest` | `erstelle` bei vorhandenem Vertrag wirft `IllegalStateException` |
+| **VTR-04** | `VertragServiceTest` | `erstelle` bei unbekannter Anfrage wirft `NotFoundException` |
+| **VTR-05** | `VertragServiceTest` | `markiereUnterzeichnet` setzt Status, Zeitstempel, User |
+| **VTR-06** | `VertragServiceTest` | `markiereUnterzeichnet` auf bereits unterzeichnetem Vertrag wirft |
+
 ### Phase Operational — DSG-Pflichtseiten (INFO)
 
 | ID | Test-Klasse | Beschreibung |
