@@ -141,6 +141,11 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 - [x] Backup-Funktion: `BackupService` (H2 SCRIPT TO / pg_dump), Cron-Job täglich 02:00, Admin-UI unter `/admin/backups`
     - Manueller Backup-Button, Cleanup nach 30 Tagen, Cloud-fähig via Erweiterung
     - Tests: AUDIT-01..03, BACKUP-01..03 (230 Tests gesamt)
+- [x] In-App-Notifications (Glocke): `Benachrichtigung`-Entity, `NotificationService`, `NotificationController`
+    - Migration V19, Badge-Polling (30s), JSON-API `/benachrichtigungen/anzahl|liste|gelesen`
+    - Sidebar: Glocke mit rotem Badge (ungelesene Anzahl)
+    - Verdrahtet in `SponsoringAnfrageService` (erstelle/annehme/lehneAb → Notification an Org-Mitglieder)
+    - Tests: NOTIF-01..05 (285 Tests gesamt)
 - [ ] Mehrsprachigkeit FR/IT
 - [ ] Vertrags-Generator
 - [ ] Zahlungs-Integration

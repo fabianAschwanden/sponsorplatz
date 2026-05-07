@@ -1,9 +1,11 @@
 package ch.sponsorplatz.service;
 
 import ch.sponsorplatz.model.AnfrageStatus;
+import ch.sponsorplatz.model.BenachrichtigungTyp;
 import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.model.SponsoringAnfrage;
 import ch.sponsorplatz.model.SponsoringPaket;
+import ch.sponsorplatz.repository.MitgliedschaftRepository;
 import ch.sponsorplatz.repository.SponsoringAnfrageRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,11 +25,17 @@ public class SponsoringAnfrageService {
 
     private final SponsoringAnfrageRepository repository;
     private final BenachrichtigungsService benachrichtigungsService;
+    private final NotificationService notificationService;
+    private final MitgliedschaftRepository mitgliedschaftRepository;
 
     public SponsoringAnfrageService(SponsoringAnfrageRepository repository,
-                                     BenachrichtigungsService benachrichtigungsService) {
+                                     BenachrichtigungsService benachrichtigungsService,
+                                     NotificationService notificationService,
+                                     MitgliedschaftRepository mitgliedschaftRepository) {
         this.repository = repository;
         this.benachrichtigungsService = benachrichtigungsService;
+        this.notificationService = notificationService;
+        this.mitgliedschaftRepository = mitgliedschaftRepository;
     }
 
     @Transactional(readOnly = true)
@@ -86,6 +94,12 @@ public class SponsoringAnfrageService {
         // Benachrichtigung an Empfänger-Org (async)
         benachrichtigungsService.benachrichtigeUeberNeueAnfrage(gespeichert, kontaktEmail);
 
+        // In-App-Notification an alle Mitglieder der Empfänger-Org
+        benachrichtigeMitglieder(empfaengerOrg.getId(), BenachrichtigungTyp.NEUE_ANFRAGE,
+                "Neue Sponsoring-Anfrage",
+                "Von " + (kontaktName != null ? kontaktName : "Unbekannt"),
+                "/organisationen/" + empfaengerOrg.getSlug() + "/anfragen");
+
         return gespeichert;
     }
 
@@ -99,6 +113,13 @@ public class SponsoringAnfrageService {
         SponsoringAnfrage gespeichert = repository.save(anfrage);
 
         benachrichtigungsService.benachrichtigeUeberAntwort(gespeichert, anfrage.getKontaktEmail());
+
+        // In-App-Notification an anfragende Org
+        benachrichtigeMitglieder(anfrage.getAnfragenderOrg().getId(), BenachrichtigungTyp.ANFRAGE_ANGENOMMEN,
+                "Anfrage angenommen",
+                "Ihre Anfrage wurde angenommen",
+                "/organisationen/" + anfrage.getAnfragenderOrg().getSlug() + "/anfragen");
+
         return gespeichert;
     }
 
@@ -112,7 +133,21 @@ public class SponsoringAnfrageService {
         SponsoringAnfrage gespeichert = repository.save(anfrage);
 
         benachrichtigungsService.benachrichtigeUeberAntwort(gespeichert, anfrage.getKontaktEmail());
+
+        // In-App-Notification an anfragende Org
+        benachrichtigeMitglieder(anfrage.getAnfragenderOrg().getId(), BenachrichtigungTyp.ANFRAGE_ABGELEHNT,
+                "Anfrage abgelehnt",
+                "Ihre Anfrage wurde leider abgelehnt",
+                "/organisationen/" + anfrage.getAnfragenderOrg().getSlug() + "/anfragen");
+
         return gespeichert;
+    }
+
+    private void benachrichtigeMitglieder(UUID orgId, BenachrichtigungTyp typ,
+                                           String titel, String text, String link) {
+        mitgliedschaftRepository.findByOrgId(orgId).forEach(m ->
+                notificationService.benachrichtige(m.getUser().getId(), typ, titel, text, link)
+        );
     }
 
     private SponsoringAnfrage laden(UUID id) {

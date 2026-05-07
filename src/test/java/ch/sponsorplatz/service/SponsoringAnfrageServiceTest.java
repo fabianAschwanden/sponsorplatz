@@ -1,35 +1,43 @@
 package ch.sponsorplatz.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import ch.sponsorplatz.model.AnfrageStatus;
 import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.model.SponsoringAnfrage;
 import ch.sponsorplatz.model.SponsoringPaket;
+import ch.sponsorplatz.repository.MitgliedschaftRepository;
 import ch.sponsorplatz.repository.SponsoringAnfrageRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class SponsoringAnfrageServiceTest {
 
     private SponsoringAnfrageRepository repository;
     private BenachrichtigungsService benachrichtigungsService;
+    private NotificationService notificationService;
+    private MitgliedschaftRepository mitgliedschaftRepository;
     private SponsoringAnfrageService service;
 
     @BeforeEach
     void setUp() {
         repository = mock(SponsoringAnfrageRepository.class);
         benachrichtigungsService = mock(BenachrichtigungsService.class);
-        service = new SponsoringAnfrageService(repository, benachrichtigungsService);
+        notificationService = mock(NotificationService.class);
+        mitgliedschaftRepository = mock(MitgliedschaftRepository.class);
+        service = new SponsoringAnfrageService(repository, benachrichtigungsService,
+                notificationService, mitgliedschaftRepository);
+        when(mitgliedschaftRepository.findByOrgId(any())).thenReturn(Collections.emptyList());
     }
 
     /** ANF-01: Anfrage erstellen setzt Status NEU. */
@@ -44,7 +52,8 @@ class SponsoringAnfrageServiceTest {
 
         when(repository.save(any(SponsoringAnfrage.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        SponsoringAnfrage anfrage = service.erstelle(paket, anfragender, empfaenger, "Interesse am Gold-Paket", "Max Muster", "max@example.com");
+        SponsoringAnfrage anfrage = service.erstelle(paket, anfragender, empfaenger, "Interesse am Gold-Paket",
+                "Max Muster", "max@example.com");
 
         assertThat(anfrage.getStatus()).isEqualTo(AnfrageStatus.NEU);
         assertThat(anfrage.getNachricht()).isEqualTo("Interesse am Gold-Paket");
@@ -69,6 +78,10 @@ class SponsoringAnfrageServiceTest {
         SponsoringAnfrage anfrage = new SponsoringAnfrage();
         anfrage.setId(UUID.randomUUID());
         anfrage.setStatus(AnfrageStatus.NEU);
+        Organisation anfOrg = new Organisation();
+        anfOrg.setId(UUID.randomUUID());
+        anfOrg.setSlug("sponsor-ag");
+        anfrage.setAnfragenderOrg(anfOrg);
         when(repository.findById(anfrage.getId())).thenReturn(Optional.of(anfrage));
         when(repository.save(any(SponsoringAnfrage.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -85,6 +98,10 @@ class SponsoringAnfrageServiceTest {
         SponsoringAnfrage anfrage = new SponsoringAnfrage();
         anfrage.setId(UUID.randomUUID());
         anfrage.setStatus(AnfrageStatus.NEU);
+        Organisation anfOrg = new Organisation();
+        anfOrg.setId(UUID.randomUUID());
+        anfOrg.setSlug("sponsor-ag");
+        anfrage.setAnfragenderOrg(anfOrg);
         when(repository.findById(anfrage.getId())).thenReturn(Optional.of(anfrage));
         when(repository.save(any(SponsoringAnfrage.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -130,6 +147,10 @@ class SponsoringAnfrageServiceTest {
         anfrage.setId(UUID.randomUUID());
         anfrage.setStatus(AnfrageStatus.NEU);
         anfrage.setKontaktEmail("sponsor@test.ch");
+        Organisation anfOrg = new Organisation();
+        anfOrg.setId(UUID.randomUUID());
+        anfOrg.setSlug("sponsor-ag");
+        anfrage.setAnfragenderOrg(anfOrg);
         when(repository.findById(anfrage.getId())).thenReturn(Optional.of(anfrage));
         when(repository.save(any(SponsoringAnfrage.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -138,4 +159,3 @@ class SponsoringAnfrageServiceTest {
         verify(benachrichtigungsService).benachrichtigeUeberAntwort(any(SponsoringAnfrage.class), any());
     }
 }
-

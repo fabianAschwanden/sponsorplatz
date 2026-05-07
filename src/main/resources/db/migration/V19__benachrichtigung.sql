@@ -1,6 +1,6 @@
 -- V19: In-App-Benachrichtigungen
 CREATE TABLE benachrichtigung (
-    id          UUID DEFAULT random_uuid() NOT NULL PRIMARY KEY,
+    id          UUID DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
     empfaenger_id UUID NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
     typ         VARCHAR(50) NOT NULL,
     titel       VARCHAR(255) NOT NULL,
