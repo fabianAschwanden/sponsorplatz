@@ -34,6 +34,10 @@
                       onsubmit="return confirm('Vertrag als unterzeichnet markieren? Die Konditionen werden danach gesperrt.');">
                     <button type="submit" class="app-btn">Als unterzeichnet markieren</button>
                 </form>
+                <form th:action="@{'/organisationen/' + ${vertrag.orgSlug} + '/vertraege/' + ${vertrag.id} + '/rechnung/erstellen'}"
+                      method="post">
+                    <button type="submit" class="app-btn">Rechnung erstellen</button>
+                </form>
             </div>
         </header>
 

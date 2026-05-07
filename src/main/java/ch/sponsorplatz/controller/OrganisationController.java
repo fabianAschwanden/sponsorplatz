@@ -151,6 +151,10 @@ public class OrganisationController {
         dto.setBranche(org.getBranche());
         dto.setBeschreibung(org.getBeschreibung());
         dto.setWebsiteUrl(org.getWebsiteUrl());
+        dto.setIban(org.getIban());
+        dto.setStrasse(org.getStrasse());
+        dto.setPostleitzahl(org.getPostleitzahl());
+        dto.setOrt(org.getOrt());
         return dto;
     }
 }

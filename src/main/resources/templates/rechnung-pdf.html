@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" lang="de-CH">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Rechnung</title>
+    <style>
+        @page { size: A4; margin: 18mm 18mm 0 18mm; }
+        body { font-family: "Helvetica", "Arial", sans-serif; font-size: 10.5pt; color: #1f2937; line-height: 1.5; }
+        h1 { font-size: 18pt; color: #6d28d9; margin: 0 0 4pt; }
+        h2 { font-size: 11pt; color: #6d28d9; margin: 14pt 0 4pt; }
+        .rubrik { font-size: 9pt; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta { font-size: 9pt; color: #6b7280; margin-bottom: 12pt; }
+        .partner-grid { display: table; width: 100%; margin: 6pt 0; }
+        .partner-row { display: table-row; }
+        .partner-cell { display: table-cell; width: 50%; vertical-align: top; padding-right: 8pt; }
+        .partner-cell strong { display: block; font-size: 9pt; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; }
+        .pos-table { width: 100%; border-collapse: collapse; margin: 6pt 0; }
+        .pos-table th { text-align: left; background: #f3f4f6; padding: 5pt 6pt; font-weight: 600; font-size: 9pt; color: #6b7280; }
+        .pos-table td { padding: 6pt; border-bottom: 0.3pt solid #e5e7eb; }
+        .pos-table .right { text-align: right; }
+        .total { background: #f9fafb; font-weight: 700; }
+        .total .preis { color: #6d28d9; font-size: 13pt; }
+        .qr-block { margin-top: 18pt; page-break-inside: avoid; }
+        .qr-block img { width: 100%; height: auto; }
+        .footer { font-size: 8pt; color: #9ca3af; text-align: center; margin-top: 8pt; }
+    </style>
+</head>
+<body>
+
+<p class="rubrik">Rechnung · Sponsorplatz</p>
+<h1 th:text="'Rechnung ' + ${rechnung.rechnungsnummer}">Rechnung</h1>
+<p class="meta">
+    Erstellt am <span th:text="${#temporals.format(rechnung.erstelltAm, 'dd.MM.yyyy')}">—</span> ·
+    Fällig am <span th:text="${#temporals.format(rechnung.faelligAm, 'dd.MM.yyyy')}">—</span>
+</p>
+
+<h2>Vertragspartner</h2>
+<div class="partner-grid">
+    <div class="partner-row">
+        <div class="partner-cell">
+            <strong>Empfänger</strong>
+            <p style="margin:2pt 0;" th:text="${rechnung.orgName}">Verein</p>
+            <p style="margin:0; font-size:9pt; color:#6b7280;">
+                IBAN: <span th:text="${rechnung.iban}">CH...</span>
+            </p>
+        </div>
+        <div class="partner-cell">
+            <strong>Schuldner</strong>
+            <p style="margin:2pt 0;" th:text="${rechnung.sponsorName}">Sponsor</p>
+            <p style="margin:0; font-size:9pt; color:#6b7280;"
+               th:if="${rechnung.sponsorEmail}" th:text="${rechnung.sponsorEmail}">email</p>
+        </div>
+    </div>
+</div>
+
+<h2>Position</h2>
+<table class="pos-table">
+    <tr>
+        <th style="width:70%;">Beschreibung</th>
+        <th class="right">Betrag CHF</th>
+    </tr>
+    <tr>
+        <td th:text="${rechnung.zahlungszweck ?: 'Sponsoring-Paket'}">—</td>
+        <td class="right" th:text="${#numbers.formatDecimal(rechnung.betragChf, 1, 'POINT', 2, 'POINT')}">—</td>
+    </tr>
+    <tr class="total">
+        <td>Total</td>
+        <td class="right">
+            <span class="preis"
+                  th:text="'CHF ' + ${#numbers.formatDecimal(rechnung.betragChf, 1, 'POINT', 2, 'POINT')}">
+                CHF —
+            </span>
+        </td>
+    </tr>
+</table>
+
+<p style="margin-top:14pt; font-size:9.5pt; color:#4b5563;">
+    Bezahlbar innert 30 Tagen nach Rechnungsdatum, unter Verwendung des
+    untenstehenden QR-Codes oder per Banküberweisung an die genannte IBAN.
+    Bei Fragen: <span th:text="${rechnung.sponsorEmail ?: 'Verein direkt kontaktieren'}">—</span>.
+</p>
+
+<div class="qr-block">
+    <img th:src="${qrBildDataUrl}" alt="Swiss QR-Bill" />
+</div>
+
+<div class="footer">
+    Erstellt über Sponsorplatz · sponsorplatz.for-better.biz
+</div>
+
+</body>
+</html>

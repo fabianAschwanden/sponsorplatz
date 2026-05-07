@@ -63,6 +63,18 @@ public class Organisation {
     @Column(name = "zefix_uid", length = 20)
     private String zefixUid;
 
+    @Column(name = "iban", length = 34)
+    private String iban;
+
+    @Column(name = "strasse", length = 70)
+    private String strasse;
+
+    @Column(name = "postleitzahl", length = 16)
+    private String postleitzahl;
+
+    @Column(name = "ort", length = 70)
+    private String ort;
+
     @Column(name = "registriert_am", nullable = false, updatable = false)
     private Instant registriertAm;
 
@@ -179,6 +191,23 @@ public class Organisation {
     public void setZefixUid(String zefixUid) {
         this.zefixUid = zefixUid;
     }
+
+    public String getIban() {
+        return iban;
+    }
+
+    public void setIban(String iban) {
+        this.iban = iban;
+    }
+
+    public String getStrasse() { return strasse; }
+    public void setStrasse(String strasse) { this.strasse = strasse; }
+
+    public String getPostleitzahl() { return postleitzahl; }
+    public void setPostleitzahl(String postleitzahl) { this.postleitzahl = postleitzahl; }
+
+    public String getOrt() { return ort; }
+    public void setOrt(String ort) { this.ort = ort; }
 
     public Instant getRegistriertAm() {
         return registriertAm;

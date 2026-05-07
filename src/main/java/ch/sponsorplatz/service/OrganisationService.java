@@ -102,6 +102,11 @@ public class OrganisationService {
         org.setBranche(dto.getBranche());
         org.setBeschreibung(leereAlsNull(dto.getBeschreibung()));
         org.setWebsiteUrl(leereAlsNull(dto.getWebsiteUrl()));
+        String iban = leereAlsNull(dto.getIban());
+        org.setIban(iban != null ? iban.replace(" ", "").toUpperCase() : null);
+        org.setStrasse(leereAlsNull(dto.getStrasse()));
+        org.setPostleitzahl(leereAlsNull(dto.getPostleitzahl()));
+        org.setOrt(leereAlsNull(dto.getOrt()));
     }
 
     public void loesche(UUID id) {

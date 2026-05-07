@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Rechnung ' + ${rechnung.rechnungsnummer} + ' — Sponsorplatz'">Rechnung</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('anfragen', null)}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">
+                    <a th:href="@{'/organisationen/' + ${rechnung.orgSlug} + '/anfragen'}">Anfragen</a>
+                    · Rechnung
+                </p>
+                <h1 th:text="'Rechnung ' + ${rechnung.rechnungsnummer}">Rechnung</h1>
+                <p class="app-muted">
+                    <span th:text="${rechnung.orgName}">Verein</span> →
+                    <span th:text="${rechnung.sponsorName}">Sponsor</span>
+                </p>
+            </div>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <a th:href="@{'/organisationen/' + ${rechnung.orgSlug} + '/rechnungen/' + ${rechnung.id} + '/pdf'}"
+                   class="app-btn app-btn-ghost">PDF mit QR-Bill herunterladen</a>
+                <form th:if="${rechnung.status.name() == 'OFFEN'}"
+                      th:action="@{'/organisationen/' + ${rechnung.orgSlug} + '/rechnungen/' + ${rechnung.id} + '/bezahlt'}"
+                      method="post"
+                      onsubmit="return confirm('Rechnung als bezahlt markieren? Die Zahlung muss auf dem Verein-Konto eingegangen sein.');">
+                    <button type="submit" class="app-btn">Als bezahlt markieren</button>
+                </form>
+                <form th:if="${rechnung.status.name() == 'OFFEN'}"
+                      th:action="@{'/organisationen/' + ${rechnung.orgSlug} + '/rechnungen/' + ${rechnung.id} + '/stornieren'}"
+                      method="post"
+                      onsubmit="return confirm('Rechnung stornieren? Sie bleibt zur Doku in der Liste, kann aber nicht mehr bezahlt werden.');">
+                    <button type="submit" class="app-btn app-btn-ghost" style="color:#dc2626;">Stornieren</button>
+                </form>
+            </div>
+        </header>
+
+        <div th:if="${erfolgsMeldung}" class="app-card" style="border-left:4px solid #16a34a;"
+             th:text="${erfolgsMeldung}"></div>
+        <div th:if="${fehlermeldung}" class="app-card" style="border-left:4px solid #dc2626;"
+             th:text="${fehlermeldung}"></div>
+
+        <!-- Status-Banner -->
+        <div class="app-card"
+             th:style="${rechnung.status.name() == 'BEZAHLT'} ? 'border-left:4px solid #16a34a;' :
+                       (${rechnung.status.name() == 'STORNIERT'} ? 'border-left:4px solid #94a3b8;' : 'border-left:4px solid #f59e0b;')">
+            <strong th:if="${rechnung.status.name() == 'OFFEN'}">Status: Offen</strong>
+            <strong th:if="${rechnung.status.name() == 'BEZAHLT'}">Status: Bezahlt</strong>
+            <strong th:if="${rechnung.status.name() == 'STORNIERT'}">Status: Storniert</strong>
+            <p style="margin:0.25rem 0 0;" th:if="${rechnung.status.name() == 'OFFEN'}">
+                Fällig am <span th:text="${#temporals.format(rechnung.faelligAm, 'dd.MM.yyyy')}">—</span>.
+                Sponsor scannt den QR-Code mit der Banking-App.
+            </p>
+            <p style="margin:0.25rem 0 0;" th:if="${rechnung.status.name() == 'BEZAHLT'}">
+                Bezahlt am <span th:text="${#temporals.format(rechnung.bezahltAm, 'dd.MM.yyyy HH:mm')}">—</span>
+                durch <span th:text="${rechnung.bezahltVon}">—</span>.
+            </p>
+        </div>
+
+        <!-- Rechnungs-Daten -->
+        <section class="app-card">
+            <h2>Rechnungs-Daten</h2>
+            <dl class="app-dl">
+                <dt>Empfänger (Verein)</dt>
+                <dd th:text="${rechnung.orgName}">—</dd>
+                <dt>Schuldner (Sponsor)</dt>
+                <dd>
+                    <span th:text="${rechnung.sponsorName}">—</span>
+                    <span th:if="${rechnung.sponsorEmail}"
+                          class="app-muted" th:text="' · ' + ${rechnung.sponsorEmail}"></span>
+                </dd>
+                <dt>Betrag</dt>
+                <dd>
+                    <strong style="font-size:1.5rem; color:#6d28d9;"
+                            th:text="'CHF ' + ${#numbers.formatDecimal(rechnung.betragChf, 1, 'POINT', 2, 'POINT')}">
+                        CHF —
+                    </strong>
+                </dd>
+                <dt>IBAN</dt>
+                <dd><code th:text="${rechnung.iban}">CH...</code></dd>
+                <dt th:if="${rechnung.qrReferenz}">QR-Referenz</dt>
+                <dd th:if="${rechnung.qrReferenz}"><code th:text="${rechnung.qrReferenz}">—</code></dd>
+                <dt>Zahlungszweck</dt>
+                <dd th:text="${rechnung.zahlungszweck}">—</dd>
+                <dt>Fällig am</dt>
+                <dd th:text="${#temporals.format(rechnung.faelligAm, 'dd.MM.yyyy')}">—</dd>
+            </dl>
+        </section>
+
+        <!-- QR-Bill Vorschau -->
+        <section class="app-card">
+            <h2>Swiss QR-Bill</h2>
+            <p class="app-muted">
+                Der Sponsor scannt diesen Code mit seiner Banking-App. Die Rechnung
+                kann auch als PDF heruntergeladen und dem Sponsor per Mail/Post
+                zugestellt werden.
+            </p>
+            <div style="text-align:center; padding:1rem; background:#fff; border:1px solid #e5e7eb; border-radius:8px;">
+                <img th:src="${qrBildDataUrl}" alt="Swiss QR-Bill"
+                     style="max-width:100%; height:auto;">
+            </div>
+        </section>
+
+        <p class="app-muted" style="margin-top:1.5rem; font-size:0.875rem;">
+            Erstellt am <span th:text="${#temporals.format(rechnung.erstelltAm, 'dd.MM.yyyy HH:mm')}">—</span>
+            durch <span th:text="${rechnung.erstelltVon}">—</span>.
+        </p>
+    </main>
+</div>
+
+</body>
+</html>

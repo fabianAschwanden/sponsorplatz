@@ -306,6 +306,20 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **SR-06** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` mit Validierungsfehler → bleibt auf Formular |
 | **SR-07** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` doppelte E-Mail → Fehlermeldung auf Formular |
 
+### Phase Wachstum — Zahlungs-Integration (RECH, QRB)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **RECH-01** | `RechnungServiceTest` | `erstelle` aus Vertrag kopiert IBAN + Sponsor + Betrag, Status OFFEN |
+| **RECH-02** | `RechnungServiceTest` | `erstelle` bei vorhandener Rechnung wirft `IllegalStateException` |
+| **RECH-03** | `RechnungServiceTest` | `erstelle` ohne IBAN auf der Org wirft mit klarer Message |
+| **RECH-04** | `RechnungServiceTest` | QR-Referenz nur bei QR-IBAN (Institut-ID 30000-31999) generiert |
+| **RECH-05** | `RechnungServiceTest` | `markiereBezahlt` setzt Status, Zeitstempel, User |
+| **RECH-06** | `RechnungServiceTest` | `stornieren` bezahlter Rechnung wirft `IllegalStateException` |
+| **QRB-01** | `QrBillServiceTest` | erzeuge liefert PNG mit Magic Bytes (≥ 1 KB) |
+| **QRB-02** | `QrBillServiceTest` | `erzeugeAlsDataUrl` gibt `data:image/png;base64,…` zurück |
+| **QRB-03** | `QrBillServiceTest` | Ohne IBAN wirft `IllegalArgumentException` |
+
 ### Phase Wachstum — Vertrags-Generator (VTR)
 
 | ID | Test-Klasse | Beschreibung |
