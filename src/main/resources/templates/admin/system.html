@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin — System — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <style>
+        .ops-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; margin-bottom:1.5rem; }
+        .ops-metric { display:flex; flex-direction:column; gap:0.25rem; }
+        .ops-metric-value { font-size:1.75rem; font-weight:700; }
+        .ops-metric-sub { font-size:0.875rem; color:#64748b; }
+        .ops-bar { height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden; margin-top:0.5rem; }
+        .ops-bar-fill { height:100%; background:linear-gradient(90deg, #16a34a, #f59e0b 70%, #dc2626 90%); }
+        .ops-error-item { border-left:3px solid #dc2626; padding:0.5rem 0.75rem; margin-bottom:0.5rem; background:#fef2f2; font-size:0.875rem; }
+        .ops-error-meta { color:#64748b; font-size:0.75rem; }
+        .ops-error-stack { font-family:'SFMono-Regular', monospace; font-size:0.75rem; white-space:pre-wrap; max-height:8rem; overflow:auto; margin-top:0.25rem; color:#475569; }
+    </style>
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('admin', null)}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">Plattform-Admin</p>
+                <h1>System</h1>
+                <p class="app-muted" th:text="'Snapshot ' + ${#temporals.format(snapshot.zeitstempel, 'dd.MM.yyyy HH:mm:ss')}">Snapshot —</p>
+            </div>
+        </header>
+
+        <nav style="display:flex; gap:0.75rem; margin-bottom:2rem; flex-wrap:wrap;">
+            <a th:href="@{/admin}" class="app-btn app-btn-ghost">Übersicht</a>
+            <a th:href="@{/admin/benutzer}" class="app-btn app-btn-ghost">Benutzer</a>
+            <a th:href="@{/admin/organisationen}" class="app-btn app-btn-ghost">Organisationen</a>
+            <a th:href="@{/admin/audit}" class="app-btn app-btn-ghost">Audit-Log</a>
+            <a th:href="@{/admin/backups}" class="app-btn app-btn-ghost">Backups</a>
+            <a th:href="@{/admin/mail-einstellungen}" class="app-btn app-btn-ghost">Mail</a>
+            <a th:href="@{/admin/system}" class="app-btn">System</a>
+        </nav>
+
+        <!-- ── JVM / Runtime ─────────────────────────────────────────── -->
+        <section class="app-card">
+            <h2>Laufzeit</h2>
+            <div class="ops-grid">
+                <div class="ops-metric">
+                    <span class="ops-metric-sub">Heap (used / max)</span>
+                    <span class="ops-metric-value"
+                          th:text="${#numbers.formatDecimal(snapshot.heap.usedMb, 1, 0)} + ' / ' + ${snapshot.heap.maxMb} + ' MB'">— MB</span>
+                    <div class="ops-bar"><div class="ops-bar-fill" th:style="'width:' + ${#numbers.formatDecimal(snapshot.heap.prozent, 1, 1)} + '%'"></div></div>
+                    <span class="ops-metric-sub" th:text="${#numbers.formatDecimal(snapshot.heap.prozent, 1, 1)} + '% belegt'">—</span>
+                </div>
+                <div class="ops-metric">
+                    <span class="ops-metric-sub">CPU (process / system)</span>
+                    <span class="ops-metric-value"
+                          th:text="${#numbers.formatDecimal(snapshot.cpu.processProzent, 1, 1)} + ' / ' + ${#numbers.formatDecimal(snapshot.cpu.systemProzent, 1, 1)} + ' %'">— %</span>
+                    <span class="ops-metric-sub" th:text="'Load 1m: ' + ${#numbers.formatDecimal(snapshot.cpu.load1m, 1, 2)}">—</span>
+                </div>
+                <div class="ops-metric">
+                    <span class="ops-metric-sub">Uptime</span>
+                    <span class="ops-metric-value" th:text="${snapshot.uptime}">—</span>
+                    <span class="ops-metric-sub"
+                          th:text="'seit ' + ${#temporals.format(snapshot.gestartetAm, 'dd.MM. HH:mm')}">—</span>
+                </div>
+                <div class="ops-metric">
+                    <span class="ops-metric-sub">JVM</span>
+                    <span class="ops-metric-value" style="font-size:1rem;" th:text="${snapshot.jvm.version}">—</span>
+                    <span class="ops-metric-sub" th:text="${snapshot.jvm.vmName}">—</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Datenbank ─────────────────────────────────────────────── -->
+        <section class="app-card">
+            <h2>Datenbank</h2>
+            <div class="ops-grid">
+                <div class="ops-metric">
+                    <span class="ops-metric-sub">Connection-Pool (active / max)</span>
+                    <span class="ops-metric-value"
+                          th:text="${snapshot.dbPool.active} + ' / ' + ${snapshot.dbPool.max}">—</span>
+                    <span class="ops-metric-sub"
+                          th:text="'idle: ' + ${snapshot.dbPool.idle} + ' · pending: ' + ${snapshot.dbPool.pending}">—</span>
+                </div>
+                <div class="ops-metric">
+                    <span class="ops-metric-sub">Datenbank-Grösse</span>
+                    <span class="ops-metric-value" th:if="${snapshot.dbSize.verfuegbar}"
+                          th:text="${#numbers.formatDecimal(snapshot.dbSize.mb, 1, 1)} + ' MB'">— MB</span>
+                    <span class="ops-metric-value" th:unless="${snapshot.dbSize.verfuegbar}" style="color:#94a3b8;">—</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Object Storage ────────────────────────────────────────── -->
+        <section class="app-card" th:if="${not #maps.isEmpty(snapshot.buckets)}">
+            <h2>Object Storage</h2>
+            <div class="ops-grid">
+                <div class="ops-metric" th:each="entry : ${snapshot.buckets}">
+                    <span class="ops-metric-sub" th:text="'Bucket: ' + ${entry.key}">bucket</span>
+                    <span class="ops-metric-value" th:if="${entry.value.verfuegbar}"
+                          th:text="${entry.value.anzahl} + ' Objekte'">—</span>
+                    <span class="ops-metric-value" th:unless="${entry.value.verfuegbar}" style="color:#94a3b8;">—</span>
+                    <span class="ops-metric-sub" th:if="${entry.value.verfuegbar}"
+                          th:text="${#numbers.formatDecimal(entry.value.mb, 1, 1)} + ' MB total'">—</span>
+                    <span class="ops-metric-sub" th:unless="${entry.value.verfuegbar}">nicht verfügbar (lokal oder API-Fehler)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Recent Errors ─────────────────────────────────────────── -->
+        <section class="app-card">
+            <h2>Letzte Errors
+                <span class="app-muted" style="font-weight:400; font-size:0.875rem;"
+                      th:text="'(' + ${snapshot.errorAnzahlTotal} + ' total)'">—</span>
+            </h2>
+            <p class="app-muted" th:if="${#lists.isEmpty(snapshot.recentErrors)}">
+                Keine Errors seit App-Start. ✓
+            </p>
+            <div th:each="err : ${snapshot.recentErrors}" class="ops-error-item">
+                <strong th:text="${err.level}">ERROR</strong>
+                <span th:text="${err.message}">message</span>
+                <div class="ops-error-meta"
+                     th:text="${#temporals.format(err.timestamp, 'dd.MM. HH:mm:ss')} + ' · ' + ${err.logger} + ' · ' + ${err.thread}">meta</div>
+                <pre th:if="${err.stacktrace}" class="ops-error-stack" th:text="${err.stacktrace}"></pre>
+            </div>
+        </section>
+
+        <p class="app-muted" style="margin-top:1.5rem; font-size:0.875rem;">
+            JSON-Snapshot: <code><a th:href="@{/admin/system/data}">/admin/system/data</a></code>
+            · Page-Reload für aktuelle Werte.
+        </p>
+    </main>
+</div>
+
+</body>
+</html>

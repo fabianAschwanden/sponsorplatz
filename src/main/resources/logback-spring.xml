@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="false">
+
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!--
+        In-Memory-Ringbuffer der letzten ERROR-Events — wird im Ops-Dashboard
+        /admin/system angezeigt. Profil-unabhängig, daher ausserhalb von
+        springProfile-Blöcken.
+    -->
+    <appender name="RECENT_ERRORS" class="ch.sponsorplatz.service.RecentErrorsAppender"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="RECENT_ERRORS"/>
+    </root>
+
+    <springProfile name="dev,test,default">
+        <logger name="ch.sponsorplatz" level="DEBUG"/>
+    </springProfile>
+
+    <springProfile name="prod,cloud-free">
+        <logger name="ch.sponsorplatz" level="INFO"/>
+    </springProfile>
+
+</configuration>

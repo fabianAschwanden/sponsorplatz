@@ -313,6 +313,18 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **INFO-01** | `InfoControllerTest` | GET `/impressum` → 200 + impressum-Template, public erreichbar |
 | **INFO-02** | `InfoControllerTest` | GET `/datenschutz` → 200 + datenschutz-Template, public erreichbar |
 
+### Phase Operational — Ops-Dashboard + Alerts (OPS)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **OPS-01** | `RecentErrorsServiceTest` | Logback-Appender filtert auf ERROR-Level |
+| **OPS-02** | `RecentErrorsServiceTest` | Buffer-Cap (50), neueste behalten |
+| **OPS-03** | `RecentErrorsServiceTest` | `letzteErrors(limit)` begrenzt Rückgabe |
+| **OPS-04** | `OpsAlertJobTest` | Heap unter Grenze → keine Mail |
+| **OPS-05** | `OpsAlertJobTest` | Heap über Grenze → Mail an Test-Empfänger |
+| **OPS-06** | `OpsAlertJobTest` | Wiederholter Alert innerhalb min-pause → unterdrückt |
+| **OPS-07** | `OpsAlertJobTest` | Neue Errors über Schwelle → Alert mit Error-Vorschau |
+
 ### Phase Operational — Rate-Limiting (RATE)
 
 | ID | Test-Klasse | Beschreibung |
