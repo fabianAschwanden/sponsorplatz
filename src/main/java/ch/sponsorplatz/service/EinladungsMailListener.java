@@ -1,4 +1,5 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.shared.mail.MailService;
 
 import ch.sponsorplatz.event.EinladungErstelltEvent;
 import jakarta.mail.MessagingException;

@@ -1,6 +1,6 @@
 package ch.sponsorplatz.controller;
 
-import ch.sponsorplatz.config.SecurityConfig;
+import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.dto.SponsorRegistrierungFormDto;
 import ch.sponsorplatz.service.SponsorRegistrierungService;
 import ch.sponsorplatz.service.SponsorplatzUserDetailsService;

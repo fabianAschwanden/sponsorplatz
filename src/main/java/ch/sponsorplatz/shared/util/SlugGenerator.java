@@ -1,4 +1,4 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.shared.util;
 
 import org.springframework.stereotype.Component;
 

@@ -2,10 +2,10 @@ package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.dto.VertragFormDto;
 import ch.sponsorplatz.dto.VertragView;
-import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.model.Vertrag;
 import ch.sponsorplatz.service.AccessControl;
-import ch.sponsorplatz.service.PdfGeneratorService;
+import ch.sponsorplatz.shared.pdf.PdfGeneratorService;
 import ch.sponsorplatz.service.VertragService;
 import jakarta.validation.Valid;
 import org.springframework.core.io.ByteArrayResource;

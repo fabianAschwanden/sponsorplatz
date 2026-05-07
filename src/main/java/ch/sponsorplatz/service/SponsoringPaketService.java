@@ -1,6 +1,6 @@
 package ch.sponsorplatz.service;
 
-import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.SponsoringPaket;
 import ch.sponsorplatz.repository.SponsoringPaketRepository;

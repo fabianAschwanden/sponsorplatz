@@ -1,13 +1,13 @@
 package ch.sponsorplatz.controller;
 
-import ch.sponsorplatz.config.ModelAttributeNames;
+import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.MedienAssetView;
 import ch.sponsorplatz.dto.OrganisationView;
 import ch.sponsorplatz.dto.ProjektFormDto;
 import ch.sponsorplatz.dto.ProjektView;
 import ch.sponsorplatz.dto.SponsoringPaketFormDto;
 import ch.sponsorplatz.dto.SponsoringPaketView;
-import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.model.EntityTyp;
 import ch.sponsorplatz.model.MedienAsset;
 import ch.sponsorplatz.model.Organisation;

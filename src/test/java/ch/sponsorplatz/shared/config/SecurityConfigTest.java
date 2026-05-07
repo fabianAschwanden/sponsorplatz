@@ -1,6 +1,8 @@
-package ch.sponsorplatz.controller;
+package ch.sponsorplatz.shared.config;
 
-import ch.sponsorplatz.config.SecurityConfig;
+import ch.sponsorplatz.controller.LoginController;
+import ch.sponsorplatz.controller.OrganisationController;
+import ch.sponsorplatz.controller.RegistrierungController;
 import ch.sponsorplatz.service.AccessControl;
 import ch.sponsorplatz.service.AppUserService;
 import ch.sponsorplatz.service.OrganisationService;

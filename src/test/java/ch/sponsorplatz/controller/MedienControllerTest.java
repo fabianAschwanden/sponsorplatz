@@ -1,15 +1,13 @@
 package ch.sponsorplatz.controller;
 
-import ch.sponsorplatz.config.SecurityConfig;
-import ch.sponsorplatz.model.AssetTyp;
-import ch.sponsorplatz.model.EntityTyp;
-import ch.sponsorplatz.model.MedienAsset;
-import ch.sponsorplatz.service.MedienAssetService;
-import ch.sponsorplatz.service.StorageService;
-import ch.sponsorplatz.service.OrganisationService;
-import ch.sponsorplatz.service.ProjektService;
-import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
-import ch.sponsorplatz.service.AccessControl;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Optional;
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -19,13 +17,14 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import ch.sponsorplatz.shared.config.SecurityConfig;
+import ch.sponsorplatz.model.MedienAsset;
+import ch.sponsorplatz.service.AccessControl;
+import ch.sponsorplatz.service.MedienAssetService;
+import ch.sponsorplatz.service.OrganisationService;
+import ch.sponsorplatz.service.ProjektService;
+import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.shared.storage.StorageService;
 
 @WebMvcTest(controllers = MedienController.class)
 @Import(SecurityConfig.class)
@@ -35,12 +34,18 @@ class MedienControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean private MedienAssetService medienAssetService;
-    @MockBean private StorageService storageService;
-    @MockBean private ProjektService projektService;
-    @MockBean private OrganisationService organisationService;
-    @MockBean private AccessControl accessControl;
-    @MockBean private SponsorplatzUserDetailsService userDetailsService;
+    @MockBean
+    private MedienAssetService medienAssetService;
+    @MockBean
+    private StorageService storageService;
+    @MockBean
+    private ProjektService projektService;
+    @MockBean
+    private OrganisationService organisationService;
+    @MockBean
+    private AccessControl accessControl;
+    @MockBean
+    private SponsorplatzUserDetailsService userDetailsService;
 
     /** MA-07: GET /medien/{id} liefert Bild mit korrektem Content-Type. */
     @Test
@@ -53,7 +58,7 @@ class MedienControllerTest {
 
         when(medienAssetService.findeNachId(id)).thenReturn(Optional.of(asset));
         when(storageService.ladeAlsResource("projekt/123/bild.png"))
-                .thenReturn(new ByteArrayResource(new byte[]{1, 2, 3}));
+                .thenReturn(new ByteArrayResource(new byte[] { 1, 2, 3 }));
 
         mockMvc.perform(get("/medien/{id}", id))
                 .andExpect(status().isOk())
@@ -71,4 +76,3 @@ class MedienControllerTest {
                 .andExpect(status().isNotFound());
     }
 }
-

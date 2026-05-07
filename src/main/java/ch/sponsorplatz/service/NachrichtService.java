@@ -1,6 +1,6 @@
 package ch.sponsorplatz.service;
 
-import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.model.AnfrageStatus;
 import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.model.Nachricht;

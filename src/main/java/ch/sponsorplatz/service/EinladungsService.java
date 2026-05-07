@@ -1,8 +1,9 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.shared.util.TokenGenerator;
 
 import ch.sponsorplatz.dto.EinladungVorschauView;
 import ch.sponsorplatz.event.EinladungErstelltEvent;
-import ch.sponsorplatz.exception.BenutzerNichtRegistriertException;
+import ch.sponsorplatz.shared.exception.BenutzerNichtRegistriertException;
 import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.model.Einladung;
 import ch.sponsorplatz.model.Organisation;

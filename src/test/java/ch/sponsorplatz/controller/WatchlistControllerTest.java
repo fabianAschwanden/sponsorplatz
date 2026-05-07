@@ -1,6 +1,7 @@
 package ch.sponsorplatz.controller;
+import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
 
-import ch.sponsorplatz.config.SecurityConfig;
+import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.WatchlistEintrag;

@@ -1,6 +1,6 @@
 package ch.sponsorplatz.controller;
 
-import ch.sponsorplatz.config.SecurityConfig;
+import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.service.AppUserService;
 import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.DisplayName;

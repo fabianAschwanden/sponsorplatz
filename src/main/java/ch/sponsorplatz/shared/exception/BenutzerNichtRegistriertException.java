@@ -1,4 +1,4 @@
-package ch.sponsorplatz.exception;
+package ch.sponsorplatz.shared.exception;
 
 /**
  * Wird geworfen wenn eine Aktion auf einen User-Account angewiesen ist, der noch nicht

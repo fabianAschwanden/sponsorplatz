@@ -2,7 +2,7 @@ package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.dto.ProfilFormDto;
 import ch.sponsorplatz.dto.ProfilView;
-import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.model.AssetTyp;
 import ch.sponsorplatz.model.EntityTyp;

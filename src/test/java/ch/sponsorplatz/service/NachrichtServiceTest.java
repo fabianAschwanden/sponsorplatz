@@ -1,11 +1,15 @@
 package ch.sponsorplatz.service;
 
-import ch.sponsorplatz.exception.NotFoundException;
-import ch.sponsorplatz.model.*;
-import ch.sponsorplatz.repository.AppUserRepository;
-import ch.sponsorplatz.repository.MitgliedschaftRepository;
-import ch.sponsorplatz.repository.NachrichtRepository;
-import ch.sponsorplatz.repository.SponsoringAnfrageRepository;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,14 +19,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import ch.sponsorplatz.model.AnfrageStatus;
+import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.model.Nachricht;
+import ch.sponsorplatz.model.Organisation;
+import ch.sponsorplatz.model.SponsoringAnfrage;
+import ch.sponsorplatz.repository.AppUserRepository;
+import ch.sponsorplatz.repository.MitgliedschaftRepository;
+import ch.sponsorplatz.repository.NachrichtRepository;
+import ch.sponsorplatz.repository.SponsoringAnfrageRepository;
 
 /**
  * Unit-Tests für NachrichtService (MSG-01..04).
@@ -30,10 +35,14 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class NachrichtServiceTest {
 
-    @Mock private NachrichtRepository nachrichtRepository;
-    @Mock private SponsoringAnfrageRepository anfrageRepository;
-    @Mock private AppUserRepository appUserRepository;
-    @Mock private MitgliedschaftRepository mitgliedschaftRepository;
+    @Mock
+    private NachrichtRepository nachrichtRepository;
+    @Mock
+    private SponsoringAnfrageRepository anfrageRepository;
+    @Mock
+    private AppUserRepository appUserRepository;
+    @Mock
+    private MitgliedschaftRepository mitgliedschaftRepository;
 
     private NachrichtService service;
 
@@ -44,7 +53,8 @@ class NachrichtServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new NachrichtService(nachrichtRepository, anfrageRepository, appUserRepository, mitgliedschaftRepository);
+        service = new NachrichtService(nachrichtRepository, anfrageRepository, appUserRepository,
+                mitgliedschaftRepository);
         anfrageId = UUID.randomUUID();
         userId = UUID.randomUUID();
         anfragenderOrgId = UUID.randomUUID();
@@ -142,4 +152,3 @@ class NachrichtServiceTest {
                 .hasMessageContaining("nicht leer");
     }
 }
-

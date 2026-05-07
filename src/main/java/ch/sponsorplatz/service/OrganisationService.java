@@ -1,7 +1,8 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.shared.util.SlugGenerator;
 
 import ch.sponsorplatz.dto.OrganisationFormDto;
-import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.model.OrgStatus;
 import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.repository.MitgliedschaftRepository;

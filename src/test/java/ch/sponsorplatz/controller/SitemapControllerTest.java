@@ -1,9 +1,12 @@
 package ch.sponsorplatz.controller;
 
-import ch.sponsorplatz.config.SecurityConfig;
-import ch.sponsorplatz.service.OrganisationService;
-import ch.sponsorplatz.service.ProjektService;
-import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -12,13 +15,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.xpath;
+import ch.sponsorplatz.shared.config.SecurityConfig;
+import ch.sponsorplatz.service.OrganisationService;
+import ch.sponsorplatz.service.ProjektService;
+import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
 
 @WebMvcTest(controllers = SitemapController.class)
 @Import(SecurityConfig.class)
@@ -50,4 +50,3 @@ class SitemapControllerTest {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("/marktplatz")));
     }
 }
-

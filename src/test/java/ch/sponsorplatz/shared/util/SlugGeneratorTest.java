@@ -1,4 +1,4 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.shared.util;
 
 import org.junit.jupiter.api.Test;
 

@@ -1,6 +1,7 @@
 package ch.sponsorplatz.controller;
+import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
 
-import ch.sponsorplatz.config.SecurityConfig;
+import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.model.Branche;
 import ch.sponsorplatz.model.OrgStatus;
 import ch.sponsorplatz.model.OrgTyp;

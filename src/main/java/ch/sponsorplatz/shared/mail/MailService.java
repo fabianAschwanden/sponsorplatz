@@ -1,6 +1,7 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.shared.mail;
+import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungenService;
 
-import ch.sponsorplatz.model.PlattformEinstellungen;
+import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungen;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;

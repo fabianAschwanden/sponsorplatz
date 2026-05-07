@@ -1,4 +1,5 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.shared.mail.MailService;
 
 import ch.sponsorplatz.model.SponsoringAnfrage;
 import org.slf4j.Logger;

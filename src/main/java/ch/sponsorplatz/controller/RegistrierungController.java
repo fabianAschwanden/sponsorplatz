@@ -1,6 +1,6 @@
 package ch.sponsorplatz.controller;
 
-import ch.sponsorplatz.config.ModelAttributeNames;
+import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.AppUserFormDto;
 import ch.sponsorplatz.service.AppUserService;
 import jakarta.validation.Valid;

@@ -1,21 +1,21 @@
 package ch.sponsorplatz.service;
 
-import ch.sponsorplatz.model.AppUser;
-import ch.sponsorplatz.model.Mitgliedschaft;
-import ch.sponsorplatz.model.WatchlistEintrag;
-import ch.sponsorplatz.repository.AppUserRepository;
-import ch.sponsorplatz.repository.MitgliedschaftRepository;
-import ch.sponsorplatz.repository.WatchlistRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.repository.AppUserRepository;
+import ch.sponsorplatz.repository.MitgliedschaftRepository;
+import ch.sponsorplatz.repository.WatchlistRepository;
+
 /**
- * DSG-konformer Datenexport: Gibt alle gespeicherten Daten eines Users als Map zurück
+ * DSG-konformer Datenexport: Gibt alle gespeicherten Daten eines Users als Map
+ * zurück
  * (JSON-serialisierbar für Download).
  */
 @Service
@@ -27,8 +27,8 @@ public class DatenExportService {
     private final WatchlistRepository watchlistRepository;
 
     public DatenExportService(AppUserRepository appUserRepository,
-                              MitgliedschaftRepository mitgliedschaftRepository,
-                              WatchlistRepository watchlistRepository) {
+            MitgliedschaftRepository mitgliedschaftRepository,
+            WatchlistRepository watchlistRepository) {
         this.appUserRepository = appUserRepository;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
         this.watchlistRepository = watchlistRepository;
@@ -61,8 +61,7 @@ public class DatenExportService {
         return mitgliedschaftRepository.findByUserId(userId).stream()
                 .map(m -> Map.of(
                         "organisation", m.getOrg().getName(),
-                        "rolle", m.getRolle().name()
-                ))
+                        "rolle", m.getRolle().name()))
                 .toList();
     }
 
@@ -70,9 +69,7 @@ public class DatenExportService {
         return watchlistRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
                 .map(w -> Map.of(
                         "projekt", w.getProjekt().getName(),
-                        "gemerkAm", w.getCreatedAt().toString()
-                ))
+                        "gemerkAm", w.getCreatedAt().toString()))
                 .toList();
     }
 }
-

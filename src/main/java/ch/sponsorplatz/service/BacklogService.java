@@ -1,6 +1,6 @@
 package ch.sponsorplatz.service;
 
-import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.model.BacklogItem;
 import ch.sponsorplatz.model.BacklogPrioritaet;
 import ch.sponsorplatz.model.BacklogStatus;

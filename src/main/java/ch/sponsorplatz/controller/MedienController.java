@@ -1,13 +1,13 @@
 package ch.sponsorplatz.controller;
 
-import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.model.AssetTyp;
 import ch.sponsorplatz.model.EntityTyp;
 import ch.sponsorplatz.model.MedienAsset;
 import ch.sponsorplatz.service.MedienAssetService;
 import ch.sponsorplatz.service.OrganisationService;
 import ch.sponsorplatz.service.ProjektService;
-import ch.sponsorplatz.service.StorageService;
+import ch.sponsorplatz.shared.storage.StorageService;
 import ch.sponsorplatz.service.AccessControl;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;

@@ -1,8 +1,8 @@
 package ch.sponsorplatz.controller;
 
-import ch.sponsorplatz.config.ModelAttributeNames;
+import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.WatchlistEintragView;
-import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.WatchlistEintrag;

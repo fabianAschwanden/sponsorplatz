@@ -1,19 +1,19 @@
 package ch.sponsorplatz.controller;
 
-import ch.sponsorplatz.config.ModelAttributeNames;
-import ch.sponsorplatz.dto.DashboardDaten;
-import ch.sponsorplatz.dto.ProjektView;
-import ch.sponsorplatz.model.Projekt;
-import ch.sponsorplatz.service.AppUserService;
-import ch.sponsorplatz.service.DashboardService;
-import ch.sponsorplatz.service.MatchingService;
+import java.util.List;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.List;
+import ch.sponsorplatz.shared.config.ModelAttributeNames;
+import ch.sponsorplatz.dto.DashboardDaten;
+import ch.sponsorplatz.dto.ProjektView;
+import ch.sponsorplatz.service.AppUserService;
+import ch.sponsorplatz.service.DashboardService;
+import ch.sponsorplatz.service.MatchingService;
 
 /**
  * Dashboard für angemeldete Benutzer — zeigt persönliche Übersicht
@@ -27,8 +27,8 @@ public class DashboardController {
     private final AppUserService appUserService;
 
     public DashboardController(DashboardService dashboardService,
-                               MatchingService matchingService,
-                               AppUserService appUserService) {
+            MatchingService matchingService,
+            AppUserService appUserService) {
         this.dashboardService = dashboardService;
         this.matchingService = matchingService;
         this.appUserService = appUserService;

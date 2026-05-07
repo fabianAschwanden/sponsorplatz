@@ -1,4 +1,4 @@
-package ch.sponsorplatz.config;
+package ch.sponsorplatz.shared.config;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;

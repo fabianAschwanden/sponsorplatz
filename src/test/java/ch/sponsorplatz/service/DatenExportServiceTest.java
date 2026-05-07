@@ -1,24 +1,23 @@
 package ch.sponsorplatz.service;
 
-import ch.sponsorplatz.model.AppUser;
-import ch.sponsorplatz.model.Mitgliedschaft;
-import ch.sponsorplatz.model.PlatformRolle;
-import ch.sponsorplatz.model.WatchlistEintrag;
-import ch.sponsorplatz.repository.AppUserRepository;
-import ch.sponsorplatz.repository.MitgliedschaftRepository;
-import ch.sponsorplatz.repository.WatchlistRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.model.PlatformRolle;
+import ch.sponsorplatz.repository.AppUserRepository;
+import ch.sponsorplatz.repository.MitgliedschaftRepository;
+import ch.sponsorplatz.repository.WatchlistRepository;
 
 class DatenExportServiceTest {
 
@@ -103,4 +102,3 @@ class DatenExportServiceTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }
-

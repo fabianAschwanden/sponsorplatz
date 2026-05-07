@@ -1,8 +1,9 @@
 package ch.sponsorplatz.controller;
+import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
 
-import ch.sponsorplatz.config.SecurityConfig;
+import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.dto.EinladungVorschauView;
-import ch.sponsorplatz.exception.BenutzerNichtRegistriertException;
+import ch.sponsorplatz.shared.exception.BenutzerNichtRegistriertException;
 import ch.sponsorplatz.model.Rolle;
 import ch.sponsorplatz.service.EinladungsService;
 import ch.sponsorplatz.service.SponsorplatzUserDetailsService;

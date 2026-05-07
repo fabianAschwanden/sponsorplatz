@@ -1,4 +1,5 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.shared.storage.StorageService;
 
 import ch.sponsorplatz.model.AssetTyp;
 import ch.sponsorplatz.model.EntityTyp;

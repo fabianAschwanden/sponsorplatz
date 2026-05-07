@@ -1,7 +1,7 @@
 package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.dto.BenachrichtigungView;
-import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.model.AppUser;
 import ch.sponsorplatz.model.Benachrichtigung;
 import ch.sponsorplatz.repository.AppUserRepository;

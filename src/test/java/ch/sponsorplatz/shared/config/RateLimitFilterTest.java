@@ -1,22 +1,22 @@
-package ch.sponsorplatz.config;
+package ch.sponsorplatz.shared.config;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.io.IOException;
+import java.time.Duration;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-
-import java.io.IOException;
-import java.time.Duration;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 /**
  * Tests für den IP-basierten Rate-Limit-Filter auf Public-POST-Endpoints.
@@ -102,7 +102,7 @@ class RateLimitFilterTest {
     void honoriertXForwardedFor() throws ServletException, IOException {
         for (int i = 0; i < 3; i++) {
             MockHttpServletRequest r = new MockHttpServletRequest("POST", "/registrieren");
-            r.setRemoteAddr("127.0.0.1");                 // Caddy-Localhost
+            r.setRemoteAddr("127.0.0.1"); // Caddy-Localhost
             r.addHeader("X-Forwarded-For", "5.5.5.5");
             filter.doFilter(r, new MockHttpServletResponse(), chain);
         }

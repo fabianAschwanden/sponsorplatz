@@ -2,9 +2,9 @@ package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.dto.MailEinstellungenFormDto;
 import ch.sponsorplatz.dto.MailEinstellungenView;
-import ch.sponsorplatz.model.PlattformEinstellungen;
-import ch.sponsorplatz.service.MailService;
-import ch.sponsorplatz.service.PlattformEinstellungenService;
+import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungen;
+import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;

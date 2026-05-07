@@ -1,9 +1,9 @@
 package ch.sponsorplatz.controller;
 
-import ch.sponsorplatz.config.ModelAttributeNames;
+import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.OrganisationView;
 import ch.sponsorplatz.dto.ProjektView;
-import ch.sponsorplatz.exception.NotFoundException;
+import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.model.Projekt;
 import ch.sponsorplatz.model.Sichtbarkeit;

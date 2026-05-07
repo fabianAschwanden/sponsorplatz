@@ -1,6 +1,6 @@
 package ch.sponsorplatz.controller;
 
-import ch.sponsorplatz.config.ModelAttributeNames;
+import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.OrganisationView;
 import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.service.OrganisationService;

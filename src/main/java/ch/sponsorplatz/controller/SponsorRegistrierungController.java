@@ -1,6 +1,6 @@
 package ch.sponsorplatz.controller;
 
-import ch.sponsorplatz.config.ModelAttributeNames;
+import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.dto.SponsorRegistrierungFormDto;
 import ch.sponsorplatz.model.Branche;
 import ch.sponsorplatz.service.SponsorRegistrierungService;

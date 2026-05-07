@@ -1,7 +1,5 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.shared.einstellungen;
 
-import ch.sponsorplatz.model.PlattformEinstellungen;
-import ch.sponsorplatz.repository.PlattformEinstellungenRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

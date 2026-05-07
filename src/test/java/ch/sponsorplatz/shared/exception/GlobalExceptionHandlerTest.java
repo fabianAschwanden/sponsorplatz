@@ -1,6 +1,5 @@
-package ch.sponsorplatz.controller;
+package ch.sponsorplatz.shared.exception;
 
-import ch.sponsorplatz.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import ch.sponsorplatz.config.SecurityConfig;
+import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
 import org.springframework.test.context.ActiveProfiles;
 

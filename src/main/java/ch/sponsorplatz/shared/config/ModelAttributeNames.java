@@ -1,4 +1,4 @@
-package ch.sponsorplatz.config;
+package ch.sponsorplatz.shared.config;
 
 /**
  * Zentrale Konstanten für Model-Attribut-Keys.

@@ -1,23 +1,24 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.shared.util.SlugGenerator;
 
-import ch.sponsorplatz.model.Organisation;
-import ch.sponsorplatz.model.Projekt;
-import ch.sponsorplatz.model.Sichtbarkeit;
-import ch.sponsorplatz.repository.ProjektRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import ch.sponsorplatz.model.Organisation;
+import ch.sponsorplatz.model.Projekt;
+import ch.sponsorplatz.model.Sichtbarkeit;
+import ch.sponsorplatz.repository.ProjektRepository;
 
 class ProjektServiceTest {
 
@@ -96,7 +97,9 @@ class ProjektServiceTest {
         verify(volltext).suchen("Sommer");
     }
 
-    /** VTS-02: leerer Suchbegriff wird auch durch VolltextSucheService entschieden. */
+    /**
+     * VTS-02: leerer Suchbegriff wird auch durch VolltextSucheService entschieden.
+     */
     @Test
     void sucheLeerDelegiertEbenfalls() {
         when(volltext.suchen("")).thenReturn(List.of());
@@ -107,4 +110,3 @@ class ProjektServiceTest {
         verify(volltext).suchen("");
     }
 }
-

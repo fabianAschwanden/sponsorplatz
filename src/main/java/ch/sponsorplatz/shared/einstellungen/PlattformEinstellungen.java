@@ -1,4 +1,5 @@
-package ch.sponsorplatz.model;
+package ch.sponsorplatz.shared.einstellungen;
+import ch.sponsorplatz.shared.mail.MailService;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

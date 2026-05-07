@@ -1,6 +1,5 @@
-package ch.sponsorplatz.repository;
+package ch.sponsorplatz.shared.einstellungen;
 
-import ch.sponsorplatz.model.PlattformEinstellungen;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

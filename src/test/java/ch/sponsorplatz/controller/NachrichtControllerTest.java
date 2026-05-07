@@ -1,10 +1,20 @@
 package ch.sponsorplatz.controller;
 
-import ch.sponsorplatz.config.SecurityConfig;
-import ch.sponsorplatz.dto.AnfrageView;
-import ch.sponsorplatz.model.*;
-import ch.sponsorplatz.repository.SponsoringAnfrageRepository;
-import ch.sponsorplatz.service.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.util.Collections;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,17 +25,21 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Collections;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import ch.sponsorplatz.shared.config.SecurityConfig;
+import ch.sponsorplatz.model.AnfrageStatus;
+import ch.sponsorplatz.model.AppUser;
+import ch.sponsorplatz.model.Branche;
+import ch.sponsorplatz.model.Nachricht;
+import ch.sponsorplatz.model.OrgTyp;
+import ch.sponsorplatz.model.Organisation;
+import ch.sponsorplatz.model.SponsoringAnfrage;
+import ch.sponsorplatz.model.SponsoringPaket;
+import ch.sponsorplatz.repository.SponsoringAnfrageRepository;
+import ch.sponsorplatz.service.AccessControl;
+import ch.sponsorplatz.service.AppUserService;
+import ch.sponsorplatz.service.NachrichtService;
+import ch.sponsorplatz.service.OrganisationService;
+import ch.sponsorplatz.service.SponsorplatzUserDetailsService;
 
 /**
  * Tests für NachrichtController (MSG-05..08).
@@ -38,12 +52,18 @@ class NachrichtControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean private NachrichtService nachrichtService;
-    @MockBean private OrganisationService organisationService;
-    @MockBean private SponsoringAnfrageRepository anfrageRepository;
-    @MockBean private AppUserService appUserService;
-    @MockBean private AccessControl accessControl;
-    @MockBean private SponsorplatzUserDetailsService userDetailsService;
+    @MockBean
+    private NachrichtService nachrichtService;
+    @MockBean
+    private OrganisationService organisationService;
+    @MockBean
+    private SponsoringAnfrageRepository anfrageRepository;
+    @MockBean
+    private AppUserService appUserService;
+    @MockBean
+    private AccessControl accessControl;
+    @MockBean
+    private SponsorplatzUserDetailsService userDetailsService;
 
     private static final String ORG_SLUG = "test-verein";
     private static final UUID ANFRAGE_ID = UUID.randomUUID();
@@ -113,8 +133,8 @@ class NachrichtControllerTest {
         when(nachrichtService.sendeNachricht(any(), any(), any())).thenReturn(new Nachricht());
 
         mockMvc.perform(post("/organisationen/" + ORG_SLUG + "/anfragen/" + ANFRAGE_ID + "/nachrichten")
-                        .param("text", "Meine Antwort")
-                        .with(csrf()))
+                .param("text", "Meine Antwort")
+                .with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/organisationen/" + ORG_SLUG + "/anfragen/" + ANFRAGE_ID + "/nachrichten"));
     }
@@ -132,9 +152,8 @@ class NachrichtControllerTest {
                 .thenThrow(new IllegalArgumentException("Nachricht darf nicht leer sein"));
 
         mockMvc.perform(post("/organisationen/" + ORG_SLUG + "/anfragen/" + ANFRAGE_ID + "/nachrichten")
-                        .param("text", "")
-                        .with(csrf()))
+                .param("text", "")
+                .with(csrf()))
                 .andExpect(status().is3xxRedirection());
     }
 }
-

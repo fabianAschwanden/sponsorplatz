@@ -1,6 +1,6 @@
 package ch.sponsorplatz.controller;
 
-import ch.sponsorplatz.config.SecurityConfig;
+import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.model.Organisation;
 import ch.sponsorplatz.model.OrgTyp;
 import ch.sponsorplatz.service.AccessControl;

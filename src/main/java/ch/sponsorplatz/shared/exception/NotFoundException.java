@@ -1,4 +1,4 @@
-package ch.sponsorplatz.exception;
+package ch.sponsorplatz.shared.exception;
 
 /**
  * Wird geworfen, wenn eine angeforderte Ressource (Slug, ID) nicht existiert.

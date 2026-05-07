@@ -1,6 +1,7 @@
 package ch.sponsorplatz.dto;
+import ch.sponsorplatz.shared.mail.MailService;
 
-import ch.sponsorplatz.model.PlattformEinstellungen;
+import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungen;
 
 /**
  * View-DTO für die Mail-Einstellungs-Seite.
