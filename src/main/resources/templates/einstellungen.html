@@ -1,121 +1,159 @@
 <!DOCTYPE html>
-<html lang="de-CH"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Einstellungen</title>
+    <meta charset="UTF-8">
+    <title>Mein Profil — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body>
-<main layout:fragment="inhalt">
-    <div class="container">
-        <h1>Einstellungen</h1>
+<body class="app-body">
 
-        <div th:if="${erfolgsMeldung}" class="meldung erfolg" th:text="${erfolgsMeldung}"></div>
-        <div th:if="${fehlermeldung}" class="meldung fehler" th:text="${fehlermeldung}"></div>
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('einstellungen', null)}"></aside>
 
-        <!-- Profil -->
-        <section class="karte">
-            <h2>Profil</h2>
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">Mein Konto</p>
+                <h1>Profil &amp; Einstellungen</h1>
+                <p class="app-muted">
+                    E-Mail: <span th:text="${profil.email}">user@example.ch</span> ·
+                    Mitglied seit
+                    <span th:text="${profil.registriertAm != null ? #temporals.format(profil.registriertAm, 'dd.MM.yyyy') : '—'}">01.01.2026</span>
+                </p>
+            </div>
+        </header>
 
-            <!-- Profilbild -->
-            <div style="display:flex; align-items:center; gap:1.5rem; margin-bottom:1.5rem;">
-                <div class="profil-avatar">
-                    <img th:if="${profil.profilbildUrl}" th:src="${profil.profilbildUrl}" alt="Profilbild"
-                         style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
-                    <div th:unless="${profil.profilbildUrl}" class="profil-avatar-placeholder"
+        <div th:if="${erfolgsMeldung}" class="app-card" style="border-left:4px solid #16a34a;"
+             th:text="${erfolgsMeldung}"></div>
+        <div th:if="${fehlermeldung}" class="app-card" style="border-left:4px solid #dc2626;"
+             th:text="${fehlermeldung}"></div>
+
+        <!-- ── Profilbild ───────────────────────────────────────────── -->
+        <section class="app-card">
+            <h2>Profilbild</h2>
+            <div class="profil-bild-block">
+                <div class="profil-bild">
+                    <img th:if="${profil.profilbildUrl}" th:src="${profil.profilbildUrl}" alt="Profilbild">
+                    <div th:unless="${profil.profilbildUrl}" class="profil-bild-platzhalter"
                          th:text="${#strings.substring(#strings.toUpperCase(profil.anzeigename), 0, 2)}">FA</div>
                 </div>
                 <form th:action="@{/einstellungen/profilbild}" method="post" enctype="multipart/form-data"
-                      style="display:flex; align-items:center; gap:0.75rem;">
-                    <input type="file" name="datei" accept="image/jpeg,image/png,image/webp" required>
-                    <button type="submit" class="btn btn-sm">Foto hochladen</button>
+                      class="profil-bild-form">
+                    <label class="app-muted" for="profilbild-datei">JPEG / PNG / WebP, max. 5 MB</label>
+                    <div style="display:flex; gap:0.5rem; align-items:center;">
+                        <input id="profilbild-datei" type="file" name="datei"
+                               accept="image/jpeg,image/png,image/webp" required>
+                        <button type="submit" class="app-btn">Hochladen</button>
+                    </div>
                 </form>
             </div>
+        </section>
 
-            <!-- Profil-Formular -->
-            <form th:action="@{/einstellungen/profil}" th:object="${profilForm}" method="post">
-                <div class="formular-grid">
-                    <div class="formular-gruppe">
+        <!-- ── Profil-Form ──────────────────────────────────────────── -->
+        <section class="app-card">
+            <h2>Profil-Daten</h2>
+            <form th:action="@{/einstellungen/profil}" th:object="${profilForm}" method="post" class="app-form" novalidate>
+                <div class="app-form-grid">
+                    <div class="app-form-group">
                         <label for="anzeigename">Anzeigename *</label>
                         <input type="text" id="anzeigename" th:field="*{anzeigename}" required>
-                        <p class="fehler-text" th:if="${#fields.hasErrors('anzeigename')}" th:errors="*{anzeigename}"></p>
+                        <p class="app-meldung fehler" th:if="${#fields.hasErrors('anzeigename')}" th:errors="*{anzeigename}"></p>
                     </div>
-                    <div class="formular-gruppe">
+                    <div class="app-form-group">
                         <label for="positionTitel">Position / Titel</label>
                         <input type="text" id="positionTitel" th:field="*{positionTitel}"
                                placeholder="z.B. Geschäftsführer, Präsidentin">
                     </div>
-                    <div class="formular-gruppe">
+                    <div class="app-form-group">
                         <label for="sprache">Bevorzugte Sprache</label>
                         <select id="sprache" th:field="*{sprache}">
                             <option th:each="entry : ${sprachen}" th:value="${entry.key}" th:text="${entry.value}"></option>
                         </select>
                     </div>
-                    <div class="formular-gruppe">
+                    <div class="app-form-group">
                         <label for="telefon">Telefon</label>
                         <input type="tel" id="telefon" th:field="*{telefon}" placeholder="+41 79 123 45 67">
                     </div>
-                    <div class="formular-gruppe">
+                    <div class="app-form-group">
                         <label for="ort">Ort</label>
                         <input type="text" id="ort" th:field="*{ort}" placeholder="z.B. Zürich">
                     </div>
-                    <div class="formular-gruppe">
+                    <div class="app-form-group">
                         <label for="websiteUrl">Persönliche Website</label>
                         <input type="url" id="websiteUrl" th:field="*{websiteUrl}" placeholder="https://...">
                     </div>
                 </div>
-                <div class="formular-gruppe" style="margin-top:1rem;">
+                <div class="app-form-group" style="margin-top:1rem;">
                     <label for="bio">Über mich</label>
                     <textarea id="bio" th:field="*{bio}" rows="4"
                               placeholder="Kurze Beschreibung über Sie und Ihre Rolle..."></textarea>
                 </div>
                 <div style="margin-top:1.5rem;">
-                    <button type="submit" class="btn">Profil speichern</button>
+                    <button type="submit" class="app-btn">Profil speichern</button>
                 </div>
             </form>
-
-            <p class="meta" style="margin-top:1rem; font-size:0.85rem; opacity:0.6;">
-                E-Mail: <span th:text="${profil.email}">user@test.ch</span> ·
-                Mitglied seit <span th:text="${profil.registriertAm != null ? #temporals.format(profil.registriertAm, 'dd.MM.yyyy') : '—'}">01.01.2026</span>
-            </p>
         </section>
 
-        <!-- Passwort -->
-        <section class="karte">
+        <!-- ── Passwort ─────────────────────────────────────────────── -->
+        <section class="app-card">
             <h2>Passwort ändern</h2>
-            <form th:action="@{/einstellungen/passwort}" method="post">
-                <div class="formular-gruppe">
-                    <label for="altesPasswort">Aktuelles Passwort</label>
-                    <input type="password" id="altesPasswort" name="altesPasswort" required>
+            <form th:action="@{/einstellungen/passwort}" method="post" class="app-form">
+                <div class="app-form-grid">
+                    <div class="app-form-group">
+                        <label for="altesPasswort">Aktuelles Passwort</label>
+                        <input type="password" id="altesPasswort" name="altesPasswort" required autocomplete="current-password">
+                    </div>
+                    <div class="app-form-group">
+                        <label for="neuesPasswort">Neues Passwort</label>
+                        <input type="password" id="neuesPasswort" name="neuesPasswort" required minlength="8" autocomplete="new-password">
+                        <small class="app-muted">Mindestens 8 Zeichen.</small>
+                    </div>
                 </div>
-                <div class="formular-gruppe">
-                    <label for="neuesPasswort">Neues Passwort (mind. 8 Zeichen)</label>
-                    <input type="password" id="neuesPasswort" name="neuesPasswort" required minlength="8">
+                <div style="margin-top:1.5rem;">
+                    <button type="submit" class="app-btn">Passwort ändern</button>
                 </div>
-                <button type="submit" class="btn">Passwort ändern</button>
             </form>
         </section>
 
-        <!-- Datenexport -->
-        <section class="karte">
-            <h2>Datenexport (DSG)</h2>
-            <p>Laden Sie alle über Sie gespeicherten Daten als JSON herunter.</p>
-            <a th:href="@{/einstellungen/datenexport}" class="btn">Daten exportieren</a>
+        <!-- ── Datenexport (DSG) ────────────────────────────────────── -->
+        <section class="app-card">
+            <h2>Datenexport</h2>
+            <p class="app-muted">
+                Schweizer DSG-Recht: lade alle über dich gespeicherten Daten als JSON
+                herunter. Enthält Konto, Mitgliedschaften, Anfragen und
+                Konversationen — keine Passwörter oder Verifikations-Token.
+            </p>
+            <a th:href="@{/einstellungen/datenexport}" class="app-btn app-btn-ghost">Daten als JSON herunterladen</a>
         </section>
-    </div>
+    </main>
+</div>
 
-    <style>
-        .formular-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        @media (max-width: 640px) { .formular-grid { grid-template-columns: 1fr; } }
-        .profil-avatar-placeholder {
-            width: 80px; height: 80px; border-radius: 50%;
-            background: var(--dash-primary, #2563eb); color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; font-weight: 700;
-        }
-    </style>
-</main>
+<style>
+    .profil-bild-block {
+        display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+    }
+    .profil-bild img,
+    .profil-bild-platzhalter {
+        width: 96px; height: 96px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        object-fit: cover; flex: 0 0 auto;
+    }
+    .profil-bild-platzhalter {
+        background: linear-gradient(135deg, #6d28d9, #9333ea);
+        color: #fff; font-size: 1.75rem; font-weight: 700;
+    }
+    .profil-bild-form {
+        display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-width: 240px;
+    }
+    .app-form-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    }
+    @media (max-width: 640px) {
+        .app-form-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
 </body>
 </html>
-
