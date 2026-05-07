@@ -22,12 +22,14 @@ import static org.mockito.Mockito.when;
 class ProjektServiceTest {
 
     private ProjektRepository repository;
+    private VolltextSucheService volltext;
     private ProjektService service;
 
     @BeforeEach
     void setUp() {
         repository = mock(ProjektRepository.class);
-        service = new ProjektService(repository, new SlugGenerator());
+        volltext = mock(VolltextSucheService.class);
+        service = new ProjektService(repository, new SlugGenerator(), volltext);
     }
 
     /** PRJ-01: Projekt erstellen mit gültigem Namen. */
@@ -81,30 +83,28 @@ class ProjektServiceTest {
                 .isInstanceOf(IllegalStateException.class);
     }
 
-    /** VTS-01: suche mit Begriff delegiert an Repository. */
+    /** VTS-01: suche delegiert an VolltextSucheService (Dialect-Routing dort). */
     @Test
-    void sucheDelegiertAnRepository() {
+    void sucheDelegiertAnVolltextService() {
         Projekt p = new Projekt();
         p.setName("Sommerfest");
-        when(repository.sucheOeffentliche("Sommer", Sichtbarkeit.OEFFENTLICH))
-                .thenReturn(List.of(p));
+        when(volltext.suchen("Sommer")).thenReturn(List.of(p));
 
         List<Projekt> ergebnis = service.suche("Sommer");
 
         assertThat(ergebnis).hasSize(1);
-        verify(repository).sucheOeffentliche("Sommer", Sichtbarkeit.OEFFENTLICH);
+        verify(volltext).suchen("Sommer");
     }
 
-    /** VTS-02: suche mit leerem Begriff gibt alle öffentlichen zurück. */
+    /** VTS-02: leerer Suchbegriff wird auch durch VolltextSucheService entschieden. */
     @Test
-    void sucheLeerGibtAlleZurueck() {
-        when(repository.findBySichtbarkeitOrderByVeroeffentlichtAmDesc(Sichtbarkeit.OEFFENTLICH))
-                .thenReturn(List.of());
+    void sucheLeerDelegiertEbenfalls() {
+        when(volltext.suchen("")).thenReturn(List.of());
 
         List<Projekt> ergebnis = service.suche("");
 
         assertThat(ergebnis).isEmpty();
-        verify(repository).findBySichtbarkeitOrderByVeroeffentlichtAmDesc(Sichtbarkeit.OEFFENTLICH);
+        verify(volltext).suchen("");
     }
 }
 

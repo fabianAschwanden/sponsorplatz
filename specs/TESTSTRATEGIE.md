@@ -306,6 +306,15 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **SR-06** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` mit Validierungsfehler → bleibt auf Formular |
 | **SR-07** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` doppelte E-Mail → Fehlermeldung auf Formular |
 
+### Phase Wachstum — Postgres-Volltextsuche (VTS-PG)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **VTS-PG-01** | `VolltextSucheServiceTest` | Leerer Suchbegriff → alle öffentlichen Projekte (kein JdbcTemplate-Call) |
+| **VTS-PG-02** | `VolltextSucheServiceTest` | H2-DataSource-URL → Fallback auf `repository.sucheOeffentliche` (LIKE) |
+| **VTS-PG-03** | `VolltextSucheServiceTest` | Postgres-DataSource-URL → JdbcTemplate native tsvector-Query |
+| **VTS-PG-04** | `VolltextSucheServiceTest` | Postgres-Query-Fehler → Fallback auf LIKE-Suche |
+
 ### Phase Wachstum — Zahlungs-Integration (RECH, QRB)
 
 | ID | Test-Klasse | Beschreibung |

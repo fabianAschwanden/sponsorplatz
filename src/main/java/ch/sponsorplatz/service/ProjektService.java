@@ -20,10 +20,14 @@ public class ProjektService {
 
     private final ProjektRepository repository;
     private final SlugGenerator slugGenerator;
+    private final VolltextSucheService volltextSuche;
 
-    public ProjektService(ProjektRepository repository, SlugGenerator slugGenerator) {
+    public ProjektService(ProjektRepository repository,
+                          SlugGenerator slugGenerator,
+                          VolltextSucheService volltextSuche) {
         this.repository = repository;
         this.slugGenerator = slugGenerator;
+        this.volltextSuche = volltextSuche;
     }
 
     @Transactional(readOnly = true)
@@ -45,12 +49,14 @@ public class ProjektService {
      * Durchsucht öffentliche Projekte nach einem Suchbegriff.
      * Sucht in: Name, Beschreibung, Kategorie, Ort, Org-Name.
      */
+    /**
+     * Durchsucht öffentliche Projekte. Postgres nutzt tsvector + GIN-Index
+     * mit german-Stemmer; H2 fällt auf JPQL-LIKE zurück. Routing in
+     * {@link VolltextSucheService#suchen}.
+     */
     @Transactional(readOnly = true)
     public List<Projekt> suche(String suchbegriff) {
-        if (suchbegriff == null || suchbegriff.isBlank()) {
-            return findeOeffentliche();
-        }
-        return repository.sucheOeffentliche(suchbegriff.trim(), Sichtbarkeit.OEFFENTLICH);
+        return volltextSuche.suchen(suchbegriff);
     }
 
     /**
