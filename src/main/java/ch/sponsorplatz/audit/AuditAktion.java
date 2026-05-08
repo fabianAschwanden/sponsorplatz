@@ -1,4 +1,4 @@
-package ch.sponsorplatz.model;
+package ch.sponsorplatz.audit;
 
 /**
  * Mögliche Audit-Aktionen.

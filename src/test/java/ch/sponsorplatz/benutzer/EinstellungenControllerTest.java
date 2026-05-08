@@ -2,7 +2,7 @@ package ch.sponsorplatz.benutzer;
 import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
-import ch.sponsorplatz.service.DatenExportService;
+import ch.sponsorplatz.audit.DatenExportService;
 import ch.sponsorplatz.projekt.MedienAssetService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

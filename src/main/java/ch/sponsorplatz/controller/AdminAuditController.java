@@ -1,11 +1,11 @@
 package ch.sponsorplatz.controller;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.dto.AuditLogView;
-import ch.sponsorplatz.model.AuditLog;
-import ch.sponsorplatz.service.AuditService;
-import ch.sponsorplatz.service.BackupRestoreService;
-import ch.sponsorplatz.service.BackupService;
+import ch.sponsorplatz.audit.AuditLogView;
+import ch.sponsorplatz.audit.AuditLog;
+import ch.sponsorplatz.audit.AuditService;
+import ch.sponsorplatz.backup.BackupRestoreService;
+import ch.sponsorplatz.backup.BackupService;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

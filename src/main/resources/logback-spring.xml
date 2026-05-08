@@ -9,7 +9,7 @@
         /admin/system angezeigt. Profil-unabhängig, daher ausserhalb von
         springProfile-Blöcken.
     -->
-    <appender name="RECENT_ERRORS" class="ch.sponsorplatz.service.RecentErrorsAppender"/>
+    <appender name="RECENT_ERRORS" class="ch.sponsorplatz.ops.RecentErrorsAppender"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>

@@ -1,6 +1,5 @@
-package ch.sponsorplatz.dto;
+package ch.sponsorplatz.audit;
 
-import ch.sponsorplatz.model.AuditLog;
 
 import java.time.Instant;
 import java.util.List;

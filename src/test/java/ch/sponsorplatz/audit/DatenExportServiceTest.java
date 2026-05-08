@@ -1,4 +1,4 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.audit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

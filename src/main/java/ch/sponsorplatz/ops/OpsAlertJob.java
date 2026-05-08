@@ -1,7 +1,6 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.ops;
 import ch.sponsorplatz.shared.mail.MailService;
 
-import ch.sponsorplatz.dto.SystemSnapshotView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

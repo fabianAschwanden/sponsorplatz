@@ -3,7 +3,7 @@ package ch.sponsorplatz.benutzer;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.projekt.AssetTyp;
 import ch.sponsorplatz.projekt.EntityTyp;
-import ch.sponsorplatz.service.DatenExportService;
+import ch.sponsorplatz.audit.DatenExportService;
 import ch.sponsorplatz.projekt.MedienAssetService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;

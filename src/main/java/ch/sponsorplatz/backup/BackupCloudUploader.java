@@ -1,4 +1,4 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.backup;
 
 import java.nio.file.Path;
 

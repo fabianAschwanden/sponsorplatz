@@ -1,4 +1,5 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.backup;
+import ch.sponsorplatz.audit.AuditService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

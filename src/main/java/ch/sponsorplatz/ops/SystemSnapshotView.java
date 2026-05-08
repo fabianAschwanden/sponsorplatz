@@ -1,9 +1,7 @@
-package ch.sponsorplatz.dto;
-import ch.sponsorplatz.service.RecentErrorsAppender;
-import ch.sponsorplatz.service.BucketStatsService;
+package ch.sponsorplatz.ops;
 
-import ch.sponsorplatz.service.BucketStatsService.BucketStats;
-import ch.sponsorplatz.service.RecentErrorsAppender.RecentError;
+import ch.sponsorplatz.ops.BucketStatsService.BucketStats;
+import ch.sponsorplatz.ops.RecentErrorsAppender.RecentError;
 
 import java.time.LocalDateTime;
 import java.util.List;

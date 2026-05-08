@@ -1,6 +1,5 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.ops;
 
-import ch.sponsorplatz.dto.SystemSnapshotView;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Service;
 

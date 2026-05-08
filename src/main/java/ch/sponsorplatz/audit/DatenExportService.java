@@ -1,4 +1,4 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.audit;
 
 import java.util.LinkedHashMap;
 import java.util.List;

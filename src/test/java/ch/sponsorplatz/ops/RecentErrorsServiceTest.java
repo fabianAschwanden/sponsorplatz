@@ -1,4 +1,4 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.ops;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.LoggingEvent;

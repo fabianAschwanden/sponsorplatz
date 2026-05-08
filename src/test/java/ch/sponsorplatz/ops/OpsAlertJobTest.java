@@ -1,12 +1,11 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.ops;
 import ch.sponsorplatz.shared.mail.MailService;
 
-import ch.sponsorplatz.dto.SystemSnapshotView;
-import ch.sponsorplatz.dto.SystemSnapshotView.Cpu;
-import ch.sponsorplatz.dto.SystemSnapshotView.DbPool;
-import ch.sponsorplatz.dto.SystemSnapshotView.DbSize;
-import ch.sponsorplatz.dto.SystemSnapshotView.Heap;
-import ch.sponsorplatz.dto.SystemSnapshotView.Jvm;
+import ch.sponsorplatz.ops.SystemSnapshotView.Cpu;
+import ch.sponsorplatz.ops.SystemSnapshotView.DbPool;
+import ch.sponsorplatz.ops.SystemSnapshotView.DbSize;
+import ch.sponsorplatz.ops.SystemSnapshotView.Heap;
+import ch.sponsorplatz.ops.SystemSnapshotView.Jvm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

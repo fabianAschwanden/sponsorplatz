@@ -1,6 +1,5 @@
-package ch.sponsorplatz.repository;
+package ch.sponsorplatz.audit;
 
-import ch.sponsorplatz.model.AuditLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.ops;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

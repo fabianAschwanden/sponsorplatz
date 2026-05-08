@@ -1,4 +1,4 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.ops;
 
 import org.springframework.stereotype.Service;
 

@@ -1,7 +1,5 @@
-package ch.sponsorplatz.controller;
+package ch.sponsorplatz.ops;
 
-import ch.sponsorplatz.dto.SystemSnapshotView;
-import ch.sponsorplatz.service.SystemSnapshotService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

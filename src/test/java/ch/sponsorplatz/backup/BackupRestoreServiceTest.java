@@ -1,5 +1,6 @@
-package ch.sponsorplatz.service;
-import ch.sponsorplatz.model.AuditAktion;
+package ch.sponsorplatz.backup;
+import ch.sponsorplatz.audit.AuditService;
+import ch.sponsorplatz.audit.AuditAktion;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -62,7 +63,7 @@ class BackupRestoreServiceTest {
 
         verify(stmt).execute(contains("RUNSCRIPT FROM"));
         verify(auditService).protokolliere(
-                org.mockito.ArgumentMatchers.eq(ch.sponsorplatz.model.AuditAktion.BACKUP_ERSTELLT),
+                org.mockito.ArgumentMatchers.eq(ch.sponsorplatz.audit.AuditAktion.BACKUP_ERSTELLT),
                 org.mockito.ArgumentMatchers.eq("admin"),
                 org.mockito.ArgumentMatchers.isNull(),
                 org.mockito.ArgumentMatchers.eq("RESTORE"),

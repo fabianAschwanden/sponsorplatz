@@ -1,6 +1,7 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.backup;
+import ch.sponsorplatz.audit.AuditService;
 
-import ch.sponsorplatz.model.AuditAktion;
+import ch.sponsorplatz.audit.AuditAktion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,9 +1,6 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.audit;
 import ch.sponsorplatz.organisation.Organisation;
 
-import ch.sponsorplatz.model.AuditAktion;
-import ch.sponsorplatz.model.AuditLog;
-import ch.sponsorplatz.repository.AuditLogRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

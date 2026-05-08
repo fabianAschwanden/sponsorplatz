@@ -1,7 +1,5 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.audit;
 
-import ch.sponsorplatz.model.AuditLog;
-import ch.sponsorplatz.repository.AuditLogRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
