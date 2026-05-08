@@ -1,4 +1,6 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.model.Nachricht;
+import ch.sponsorplatz.model.Benachrichtigung;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -17,7 +19,7 @@ import org.junit.jupiter.api.Test;
 import ch.sponsorplatz.model.AnfrageStatus;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.model.SponsoringAnfrage;
-import ch.sponsorplatz.model.SponsoringPaket;
+import ch.sponsorplatz.projekt.SponsoringPaket;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import ch.sponsorplatz.repository.SponsoringAnfrageRepository;
 

@@ -1,4 +1,5 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.model.Benachrichtigung;
 import ch.sponsorplatz.shared.mail.MailService;
 
 import ch.sponsorplatz.model.SponsoringAnfrage;

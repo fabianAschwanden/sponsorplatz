@@ -1,4 +1,6 @@
 package ch.sponsorplatz.dto;
+import ch.sponsorplatz.service.RecentErrorsAppender;
+import ch.sponsorplatz.service.BucketStatsService;
 
 import ch.sponsorplatz.service.BucketStatsService.BucketStats;
 import ch.sponsorplatz.service.RecentErrorsAppender.RecentError;

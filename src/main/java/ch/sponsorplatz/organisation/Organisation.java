@@ -1,4 +1,5 @@
 package ch.sponsorplatz.organisation;
+import ch.sponsorplatz.projekt.Sichtbarkeit;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

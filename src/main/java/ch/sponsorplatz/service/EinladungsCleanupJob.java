@@ -1,4 +1,5 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.model.Einladung;
 
 import ch.sponsorplatz.repository.EinladungRepository;
 import org.slf4j.Logger;

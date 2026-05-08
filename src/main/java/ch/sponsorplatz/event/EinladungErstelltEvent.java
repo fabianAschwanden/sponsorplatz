@@ -1,4 +1,7 @@
 package ch.sponsorplatz.event;
+import ch.sponsorplatz.model.Einladung;
+import ch.sponsorplatz.service.EinladungsService;
+import ch.sponsorplatz.service.EinladungsMailListener;
 
 import ch.sponsorplatz.organisation.Rolle;
 

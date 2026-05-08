@@ -1,4 +1,5 @@
 package ch.sponsorplatz.controller;
+import ch.sponsorplatz.model.Einladung;
 
 import ch.sponsorplatz.dto.EinladungVorschauView;
 import ch.sponsorplatz.shared.exception.BenutzerNichtRegistriertException;

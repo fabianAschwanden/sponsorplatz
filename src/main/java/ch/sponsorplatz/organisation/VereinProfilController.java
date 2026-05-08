@@ -1,11 +1,11 @@
 package ch.sponsorplatz.organisation;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.dto.ProjektView;
+import ch.sponsorplatz.projekt.ProjektView;
 import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.model.Projekt;
-import ch.sponsorplatz.model.Sichtbarkeit;
-import ch.sponsorplatz.service.ProjektService;
+import ch.sponsorplatz.projekt.Projekt;
+import ch.sponsorplatz.projekt.Sichtbarkeit;
+import ch.sponsorplatz.projekt.ProjektService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

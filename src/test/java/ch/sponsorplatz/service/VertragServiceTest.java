@@ -4,7 +4,7 @@ import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.model.AnfrageStatus;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.model.SponsoringAnfrage;
-import ch.sponsorplatz.model.SponsoringPaket;
+import ch.sponsorplatz.projekt.SponsoringPaket;
 import ch.sponsorplatz.model.Vertrag;
 import ch.sponsorplatz.model.VertragsStatus;
 import ch.sponsorplatz.repository.SponsoringAnfrageRepository;

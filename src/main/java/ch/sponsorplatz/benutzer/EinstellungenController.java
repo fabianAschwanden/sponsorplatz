@@ -1,10 +1,10 @@
 package ch.sponsorplatz.benutzer;
 
 import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.model.AssetTyp;
-import ch.sponsorplatz.model.EntityTyp;
+import ch.sponsorplatz.projekt.AssetTyp;
+import ch.sponsorplatz.projekt.EntityTyp;
 import ch.sponsorplatz.service.DatenExportService;
-import ch.sponsorplatz.service.MedienAssetService;
+import ch.sponsorplatz.projekt.MedienAssetService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

@@ -1,4 +1,5 @@
 package ch.sponsorplatz.controller;
+import ch.sponsorplatz.model.Einladung;
 import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;

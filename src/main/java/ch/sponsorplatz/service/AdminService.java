@@ -1,4 +1,7 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.repository.SponsoringAnfrageRepository;
+import ch.sponsorplatz.repository.NachrichtRepository;
+import ch.sponsorplatz.projekt.ProjektRepository;
 import ch.sponsorplatz.organisation.OrganisationRepository;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 

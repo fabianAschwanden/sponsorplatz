@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
-import ch.sponsorplatz.repository.WatchlistRepository;
+import ch.sponsorplatz.projekt.WatchlistRepository;
 
 /**
  * DSG-konformer Datenexport: Gibt alle gespeicherten Daten eines Users als Map

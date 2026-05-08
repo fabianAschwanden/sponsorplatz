@@ -1,4 +1,5 @@
 package ch.sponsorplatz.repository;
+import ch.sponsorplatz.service.EinladungsCleanupJob;
 
 import ch.sponsorplatz.model.Einladung;
 import org.springframework.data.jpa.repository.JpaRepository;

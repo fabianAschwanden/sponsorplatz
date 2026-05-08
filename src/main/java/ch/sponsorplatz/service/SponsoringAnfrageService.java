@@ -1,10 +1,12 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.model.Nachricht;
+import ch.sponsorplatz.model.Benachrichtigung;
 
 import ch.sponsorplatz.model.AnfrageStatus;
 import ch.sponsorplatz.model.BenachrichtigungTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.model.SponsoringAnfrage;
-import ch.sponsorplatz.model.SponsoringPaket;
+import ch.sponsorplatz.projekt.SponsoringPaket;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import ch.sponsorplatz.repository.SponsoringAnfrageRepository;
 import org.springframework.stereotype.Service;

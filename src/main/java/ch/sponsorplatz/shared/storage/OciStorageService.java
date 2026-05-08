@@ -1,4 +1,5 @@
 package ch.sponsorplatz.shared.storage;
+import ch.sponsorplatz.projekt.MedienAssetService;
 
 import com.oracle.bmc.model.BmcException;
 import com.oracle.bmc.objectstorage.ObjectStorage;

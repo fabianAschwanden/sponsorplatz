@@ -1,4 +1,5 @@
 package ch.sponsorplatz.service;
+import ch.sponsorplatz.model.AuditAktion;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

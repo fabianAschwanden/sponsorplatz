@@ -3,7 +3,7 @@ package ch.sponsorplatz.dto;
 import ch.sponsorplatz.model.AnfrageStatus;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.model.SponsoringAnfrage;
-import ch.sponsorplatz.model.SponsoringPaket;
+import ch.sponsorplatz.projekt.SponsoringPaket;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;

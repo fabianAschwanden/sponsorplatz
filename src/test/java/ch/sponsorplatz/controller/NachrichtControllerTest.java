@@ -33,7 +33,7 @@ import ch.sponsorplatz.model.Nachricht;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.model.SponsoringAnfrage;
-import ch.sponsorplatz.model.SponsoringPaket;
+import ch.sponsorplatz.projekt.SponsoringPaket;
 import ch.sponsorplatz.repository.SponsoringAnfrageRepository;
 import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.benutzer.AppUserService;

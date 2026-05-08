@@ -3,7 +3,7 @@ import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.service.DatenExportService;
-import ch.sponsorplatz.service.MedienAssetService;
+import ch.sponsorplatz.projekt.MedienAssetService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
