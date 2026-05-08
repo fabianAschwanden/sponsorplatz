@@ -2,7 +2,7 @@ package ch.sponsorplatz.service;
 import ch.sponsorplatz.model.Benachrichtigung;
 import ch.sponsorplatz.shared.mail.MailService;
 
-import ch.sponsorplatz.model.SponsoringAnfrage;
+import ch.sponsorplatz.anfrage.SponsoringAnfrage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;

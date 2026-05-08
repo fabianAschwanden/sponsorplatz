@@ -1,5 +1,5 @@
 package ch.sponsorplatz.projekt;
-import ch.sponsorplatz.service.SponsoringAnfrageService;
+import ch.sponsorplatz.anfrage.SponsoringAnfrageService;
 import ch.sponsorplatz.benutzer.AppUser;
 
 import ch.sponsorplatz.benutzer.AppUserRepository;
