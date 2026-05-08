@@ -100,11 +100,12 @@ Diese Regeln gelten für jede Code-Änderung:
 
 **Schnell-Check in Code-Review:**
 ```bash
-# Diese grep-Zeile darf NIE Treffer liefern (außer in /dto/ und Tests):
-grep -rn 'model.addAttribute.*\(service\.\|repository\.\|.get\)' src/main/java/ch/sponsorplatz/controller/
+# Diese grep-Zeile darf NIE Treffer liefern (außer in den fachlichen Packages und Tests):
+grep -rn 'model.addAttribute' src/main/java/ch/sponsorplatz/ \
+  | grep -E '(service|repository)\.|\.get'
 ```
 
-**Bestehende Views** (alle in `ch.sponsorplatz.dto`):
+**Bestehende Views** (jeweils im fachlichen Bounded-Context, z. B. `ch.sponsorplatz.organisation.OrganisationView`):
 
 | View | Wofür |
 |---|---|
@@ -126,7 +127,7 @@ model.addAttribute("anfragen", AnfrageView.von(anfragen));
 ```
 
 **Neue Entity → neuer View:**
-1. Java-`record` in `src/main/java/ch/sponsorplatz/dto/<Entity>View.java`
+1. Java-`record` neben der Entity im selben fachlichen Package (z. B. `src/main/java/ch/sponsorplatz/organisation/<Entity>View.java`)
 2. Statische `von(entity)` und `von(List<entity>)`-Methoden
 3. **Mapping-Test** `<Entity>ViewTest` mit Test-ID `VIEW-NN` in `specs/TESTSTRATEGIE.md`
 4. Niemals Felder ins View packen, die nicht auf einer Detail-/Liste-Seite gerendert werden (Defense in depth — z. B. nie `passwortHash`, `verifikationsToken`)
@@ -150,17 +151,38 @@ model.addAttribute("anfragen", AnfrageView.von(anfragen));
 
 ### Verzeichnisstruktur
 
+Bounded-Context-orientiert: jedes fachliche Package hält seine eigenen
+Entities, Repositories, Services, Controller und DTOs zusammen.
+
 ```
 src/main/java/ch/sponsorplatz/
 ├── PlatformApplication.java
-├── config/        # Security, ModelAttributeNames
-├── controller/    # + GlobalExceptionHandler
-├── dto/           # Form-DTOs (Schreibe) + View-DTOs (Lese, records)
-├── exception/     # NotFoundException etc.
-├── model/         # JPA-Entities + Enums (NIE direkt ins Model!)
-├── repository/    # Spring Data JPA
-├── service/       # Business-Logik, @Transactional
-└── startup/       # CommandLineRunner
+├── shared/                # Querschnitts-Infrastruktur, kein Domänen-State
+│   ├── config/            # SecurityConfig, RateLimitFilter, ModelAttributeNames
+│   ├── exception/         # NotFoundException, GlobalExceptionHandler
+│   ├── util/              # SlugGenerator, TokenGenerator
+│   ├── pdf/               # PdfGeneratorService
+│   ├── storage/           # StorageService + Lokal/OCI-Implementierung
+│   ├── mail/              # MailService (zentrale SMTP-Abstraktion)
+│   └── einstellungen/     # PlattformEinstellungen (DB-Settings)
+│
+├── benutzer/              # AppUser, Auth, Profil, Verifizierung,
+│                          # PasswortReset, Einstellungen, Seed-Runner
+├── organisation/          # Organisation, Mitgliedschaft, AccessControl,
+│                          # Branche, Zefix, Sponsor-Self-Service-Reg
+├── projekt/               # Projekt, Sponsoring-Pakete, Watchlist,
+│                          # MedienAssets, Marktplatz, Suche, Matching,
+│                          # Dashboard, Sitemap
+├── anfrage/               # SponsoringAnfrage + Vertrag + Rechnung +
+│                          # QR-Bill + Nachrichten + Mail-Benachrichtigung
+├── einladung/             # Einladung + Mail-Listener + Cleanup-Job
+├── benachrichtigung/      # In-App-Glocke (NotificationService + Bell-UI)
+├── audit/                 # AuditLog + DSG-Datenexport
+├── backup/                # BackupService + Restore + Cloud-Upload
+├── ops/                   # Ops-Dashboard, Alerts, RecentErrors,
+│                          # DB/Bucket-Stats, SystemSnapshot
+├── admin/                 # Admin-UI: Backlog, Mail-Settings, Verifizierung
+└── home/                  # HomeController, InfoController (Impressum/DSG)
 
 src/main/resources/
 ├── application*.properties     # default + dev + prod
@@ -172,6 +194,11 @@ src/main/resources/
 specs/                          # technische Specs (aktiv gehalten)
 docs/                           # Konzept-Dokumente (Hintergrund)
 ```
+
+**Konvention:** Neue Klassen gehören in das fachlich passende Package.
+Querschnitts-Tools (Mail, PDF, Storage) bleiben in `shared/`. Wenn ein
+neues Aggregat entsteht, das in keinen bestehenden Kontext passt, lege
+ein eigenes Top-Level-Package an statt es in `shared/` abzuladen.
 
 ---
 
