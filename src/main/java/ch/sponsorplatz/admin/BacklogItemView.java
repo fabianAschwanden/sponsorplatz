@@ -1,8 +1,5 @@
-package ch.sponsorplatz.dto;
+package ch.sponsorplatz.admin;
 
-import ch.sponsorplatz.model.BacklogItem;
-import ch.sponsorplatz.model.BacklogPrioritaet;
-import ch.sponsorplatz.model.BacklogStatus;
 
 import java.time.Instant;
 import java.util.List;

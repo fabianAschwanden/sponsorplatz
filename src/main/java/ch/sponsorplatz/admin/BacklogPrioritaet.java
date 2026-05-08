@@ -1,4 +1,4 @@
-package ch.sponsorplatz.model;
+package ch.sponsorplatz.admin;
 
 /**
  * Priorität eines Backlog-Items. Reihenfolge HOCH → MITTEL → NIEDRIG

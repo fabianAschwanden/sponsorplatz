@@ -1,5 +1,4 @@
-package ch.sponsorplatz.model;
-import ch.sponsorplatz.service.BacklogService;
+package ch.sponsorplatz.admin;
 
 /**
  * Lebenszyklus eines Backlog-Items.

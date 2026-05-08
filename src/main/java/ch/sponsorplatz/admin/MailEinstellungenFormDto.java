@@ -1,4 +1,4 @@
-package ch.sponsorplatz.dto;
+package ch.sponsorplatz.admin;
 
 /**
  * Form-DTO für /admin/mail-einstellungen — alle Felder optional, leere Felder

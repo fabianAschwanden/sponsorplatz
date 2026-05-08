@@ -3,7 +3,6 @@ import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.AppUser;
 
 import ch.sponsorplatz.benutzer.AppUserFormDto;
-import ch.sponsorplatz.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

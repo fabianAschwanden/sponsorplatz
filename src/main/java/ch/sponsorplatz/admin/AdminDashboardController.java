@@ -1,8 +1,6 @@
-package ch.sponsorplatz.controller;
+package ch.sponsorplatz.admin;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.dto.AdminStatistiken;
-import ch.sponsorplatz.service.AdminService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

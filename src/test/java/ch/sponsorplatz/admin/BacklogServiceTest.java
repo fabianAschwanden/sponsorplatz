@@ -1,10 +1,6 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.admin;
 
 import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.model.BacklogItem;
-import ch.sponsorplatz.model.BacklogPrioritaet;
-import ch.sponsorplatz.model.BacklogStatus;
-import ch.sponsorplatz.repository.BacklogItemRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

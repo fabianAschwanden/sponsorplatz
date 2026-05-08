@@ -1,4 +1,4 @@
-package ch.sponsorplatz.dto;
+package ch.sponsorplatz.admin;
 import ch.sponsorplatz.shared.mail.MailService;
 
 import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungen;

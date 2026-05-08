@@ -1,10 +1,5 @@
-package ch.sponsorplatz.controller;
+package ch.sponsorplatz.admin;
 
-import ch.sponsorplatz.dto.BacklogFormDto;
-import ch.sponsorplatz.dto.BacklogItemView;
-import ch.sponsorplatz.model.BacklogPrioritaet;
-import ch.sponsorplatz.model.BacklogStatus;
-import ch.sponsorplatz.service.BacklogService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;

@@ -1,6 +1,5 @@
-package ch.sponsorplatz.dto;
+package ch.sponsorplatz.admin;
 
-import ch.sponsorplatz.model.BacklogPrioritaet;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 

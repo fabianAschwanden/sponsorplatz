@@ -1,4 +1,4 @@
-package ch.sponsorplatz.controller;
+package ch.sponsorplatz.admin;
 import ch.sponsorplatz.organisation.Rolle;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;

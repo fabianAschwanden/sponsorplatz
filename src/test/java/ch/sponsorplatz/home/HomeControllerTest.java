@@ -1,4 +1,4 @@
-package ch.sponsorplatz.controller;
+package ch.sponsorplatz.home;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import org.junit.jupiter.api.Test;

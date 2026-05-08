@@ -1,4 +1,4 @@
-package ch.sponsorplatz.dto;
+package ch.sponsorplatz.admin;
 
 /**
  * Statistiken für das Admin-Dashboard.

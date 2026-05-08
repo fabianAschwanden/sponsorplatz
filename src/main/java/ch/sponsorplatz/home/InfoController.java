@@ -1,4 +1,4 @@
-package ch.sponsorplatz.controller;
+package ch.sponsorplatz.home;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

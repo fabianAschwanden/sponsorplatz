@@ -1,7 +1,5 @@
-package ch.sponsorplatz.repository;
+package ch.sponsorplatz.admin;
 
-import ch.sponsorplatz.model.BacklogItem;
-import ch.sponsorplatz.model.BacklogStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

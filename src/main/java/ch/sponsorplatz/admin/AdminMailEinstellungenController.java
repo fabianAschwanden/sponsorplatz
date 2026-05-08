@@ -1,7 +1,5 @@
-package ch.sponsorplatz.controller;
+package ch.sponsorplatz.admin;
 
-import ch.sponsorplatz.dto.MailEinstellungenFormDto;
-import ch.sponsorplatz.dto.MailEinstellungenView;
 import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungen;
 import ch.sponsorplatz.shared.mail.MailService;
 import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungenService;

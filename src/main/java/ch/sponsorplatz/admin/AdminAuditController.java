@@ -1,4 +1,4 @@
-package ch.sponsorplatz.controller;
+package ch.sponsorplatz.admin;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.audit.AuditLogView;

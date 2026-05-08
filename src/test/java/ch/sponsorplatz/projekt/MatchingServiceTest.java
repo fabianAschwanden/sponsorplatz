@@ -2,7 +2,6 @@ package ch.sponsorplatz.projekt;
 import ch.sponsorplatz.organisation.Branche;
 import ch.sponsorplatz.organisation.Organisation;
 
-import ch.sponsorplatz.model.*;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import ch.sponsorplatz.organisation.OrganisationRepository;
 import org.junit.jupiter.api.BeforeEach;
