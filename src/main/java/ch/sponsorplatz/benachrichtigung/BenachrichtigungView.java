@@ -1,7 +1,5 @@
-package ch.sponsorplatz.dto;
+package ch.sponsorplatz.benachrichtigung;
 
-import ch.sponsorplatz.model.Benachrichtigung;
-import ch.sponsorplatz.model.BenachrichtigungTyp;
 
 import java.time.Instant;
 import java.util.List;

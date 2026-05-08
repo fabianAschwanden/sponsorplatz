@@ -1,5 +1,5 @@
 package ch.sponsorplatz.shared.exception;
-import ch.sponsorplatz.model.Einladung;
+import ch.sponsorplatz.einladung.Einladung;
 
 /**
  * Wird geworfen wenn eine Aktion auf einen User-Account angewiesen ist, der noch nicht

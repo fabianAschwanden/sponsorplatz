@@ -1,9 +1,8 @@
 package ch.sponsorplatz.anfrage;
-import ch.sponsorplatz.service.NotificationService;
-import ch.sponsorplatz.service.BenachrichtigungsService;
-import ch.sponsorplatz.model.Benachrichtigung;
+import ch.sponsorplatz.benachrichtigung.NotificationService;
+import ch.sponsorplatz.benachrichtigung.Benachrichtigung;
 
-import ch.sponsorplatz.model.BenachrichtigungTyp;
+import ch.sponsorplatz.benachrichtigung.BenachrichtigungTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.projekt.SponsoringPaket;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;

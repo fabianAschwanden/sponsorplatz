@@ -1,4 +1,4 @@
-package ch.sponsorplatz.model;
+package ch.sponsorplatz.benachrichtigung;
 import ch.sponsorplatz.benutzer.AppUser;
 
 import jakarta.persistence.*;

@@ -1,11 +1,8 @@
-package ch.sponsorplatz.controller;
+package ch.sponsorplatz.benachrichtigung;
 
-import ch.sponsorplatz.dto.BenachrichtigungView;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.model.Benachrichtigung;
 import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.service.NotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;

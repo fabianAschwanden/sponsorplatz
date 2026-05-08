@@ -1,8 +1,6 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.anfrage;
 import ch.sponsorplatz.shared.mail.MailService;
 
-import ch.sponsorplatz.anfrage.AnfrageStatus;
-import ch.sponsorplatz.anfrage.SponsoringAnfrage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

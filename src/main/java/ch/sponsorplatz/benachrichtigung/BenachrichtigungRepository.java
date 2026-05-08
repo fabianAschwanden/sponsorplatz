@@ -1,6 +1,5 @@
-package ch.sponsorplatz.repository;
+package ch.sponsorplatz.benachrichtigung;
 
-import ch.sponsorplatz.model.Benachrichtigung;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

@@ -1,12 +1,9 @@
-package ch.sponsorplatz.controller;
-import ch.sponsorplatz.model.Einladung;
+package ch.sponsorplatz.einladung;
 import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
-import ch.sponsorplatz.dto.EinladungVorschauView;
 import ch.sponsorplatz.shared.exception.BenutzerNichtRegistriertException;
 import ch.sponsorplatz.organisation.Rolle;
-import ch.sponsorplatz.service.EinladungsService;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,10 +1,7 @@
-package ch.sponsorplatz.service;
+package ch.sponsorplatz.benachrichtigung;
 
 import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.model.Benachrichtigung;
-import ch.sponsorplatz.model.BenachrichtigungTyp;
 import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.repository.BenachrichtigungRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

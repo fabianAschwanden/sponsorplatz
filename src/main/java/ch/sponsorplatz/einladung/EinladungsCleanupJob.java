@@ -1,7 +1,5 @@
-package ch.sponsorplatz.service;
-import ch.sponsorplatz.model.Einladung;
+package ch.sponsorplatz.einladung;
 
-import ch.sponsorplatz.repository.EinladungRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;

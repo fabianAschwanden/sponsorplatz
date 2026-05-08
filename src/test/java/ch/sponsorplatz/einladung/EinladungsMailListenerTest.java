@@ -1,8 +1,6 @@
-package ch.sponsorplatz.service;
-import ch.sponsorplatz.model.Einladung;
+package ch.sponsorplatz.einladung;
 import ch.sponsorplatz.shared.mail.MailService;
 
-import ch.sponsorplatz.event.EinladungErstelltEvent;
 import ch.sponsorplatz.organisation.Rolle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,9 +1,6 @@
-package ch.sponsorplatz.controller;
-import ch.sponsorplatz.model.Einladung;
+package ch.sponsorplatz.einladung;
 
-import ch.sponsorplatz.dto.EinladungVorschauView;
 import ch.sponsorplatz.shared.exception.BenutzerNichtRegistriertException;
-import ch.sponsorplatz.service.EinladungsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
