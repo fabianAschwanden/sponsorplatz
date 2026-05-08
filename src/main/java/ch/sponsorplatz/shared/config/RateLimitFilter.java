@@ -45,7 +45,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private static final Set<String> EXACT_PATHS = Set.of(
             "/registrieren",
             "/sponsor/registrieren",
-            "/login"
+            "/login",
+            "/passwort-vergessen",
+            "/passwort-reset"
     );
 
     private final long capacity;

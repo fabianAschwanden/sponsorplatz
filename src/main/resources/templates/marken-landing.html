@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="de-CH"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Für Marken — Sponsorplatz</title>
+    <meta name="description" content="Erreichen Sie Ihre Zielgruppe über Sponsoring im Sport- und Gesundheitsbereich — kuratiert, lokal, messbar.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Sponsorplatz — Für Marken">
+    <meta property="og:description" content="Sichtbarkeit ohne Streuverlust: Sponsoring-Partnerschaften im Schweizer Sport- und Gesundheitsbereich.">
+    <meta property="og:site_name" content="Sponsorplatz">
+    <meta property="og:locale" content="de_CH">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="public-body">
+
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
+            <span>Sponsorplatz</span>
+        </a>
+        <nav class="public-nav">
+            <a th:href="@{/marktplatz}">Marktplatz</a>
+            <a th:href="@{/fuer-marken}" class="aktiv">Für Marken</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/login}">Anmelden</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/sponsor/registrieren}" class="app-btn">Sponsor werden</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}" class="app-btn">Dashboard</a>
+        </nav>
+    </div>
+</header>
+
+<main class="public-main">
+
+    <!-- Hero -->
+    <section style="text-align:center; padding:3rem 0 2rem;">
+        <p class="public-hero-rubrik">Für Marken und Unternehmen</p>
+        <h1 style="font-family:var(--dash-font-head); font-size:2.5rem; margin:0.5rem 0;">
+            Sichtbarkeit ohne Streuverlust
+        </h1>
+        <p style="font-size:1.1rem; color:var(--farbe-text-muted); max-width:40rem; margin:0.5rem auto 2rem;">
+            Sponsorplatz verbindet Ihre Marke mit Vereinen im Schweizer Sport- und Gesundheitsbereich —
+            kuratiert, lokal und messbar.
+        </p>
+        <a th:href="@{/sponsor/registrieren}" class="app-btn" style="font-size:1.1rem; padding:0.75rem 2rem;">
+            Sponsor-Konto erstellen
+        </a>
+    </section>
+
+    <!-- Trust-Indikatoren -->
+    <section style="display:flex; gap:2rem; justify-content:center; flex-wrap:wrap; margin:1rem 0 3rem;">
+        <div style="text-align:center; max-width:14rem;">
+            <div style="font-size:2rem;">✅</div>
+            <strong>Kuratiert</strong>
+            <p class="app-muted" style="font-size:0.85rem;">Nur verifizierte Vereine im Sport- und Gesundheitsbereich.</p>
+        </div>
+        <div style="text-align:center; max-width:14rem;">
+            <div style="font-size:2rem;">📍</div>
+            <strong>Lokal</strong>
+            <p class="app-muted" style="font-size:0.85rem;">Schweizer Vereine aus Ihrer Region — kein Streuverlust.</p>
+        </div>
+        <div style="text-align:center; max-width:14rem;">
+            <div style="font-size:2rem;">📊</div>
+            <strong>Messbar</strong>
+            <p class="app-muted" style="font-size:0.85rem;">Transparente Sponsoring-Pakete mit klaren Gegenleistungen.</p>
+        </div>
+    </section>
+
+    <!-- Health-Use-Cases -->
+    <section style="margin-bottom:3rem;">
+        <h2 style="font-family:var(--dash-font-head); text-align:center; margin-bottom:1.5rem;">
+            Ideal für diese Branchen
+        </h2>
+        <div style="display:flex; flex-wrap:wrap; gap:1rem; justify-content:center;">
+            <div style="background:#fff; border:1px solid var(--farbe-rand); border-radius:0.5rem; padding:1.25rem; width:18rem;">
+                <strong>🏥 Krankenkassen</strong>
+                <p class="app-muted" style="font-size:0.85rem;">Präventions-Projekte und Bewegungsangebote sponsern — CSR mit Wirkung.</p>
+            </div>
+            <div style="background:#fff; border:1px solid var(--farbe-rand); border-radius:0.5rem; padding:1.25rem; width:18rem;">
+                <strong>💊 Apotheken & Pharma</strong>
+                <p class="app-muted" style="font-size:0.85rem;">Patientenorganisationen und Selbsthilfegruppen unterstützen.</p>
+            </div>
+            <div style="background:#fff; border:1px solid var(--farbe-rand); border-radius:0.5rem; padding:1.25rem; width:18rem;">
+                <strong>🥗 Lebensmittel-Marken</strong>
+                <p class="app-muted" style="font-size:0.85rem;">Ernährungs- und Wellness-Vereine als Partner für authentisches Branding.</p>
+            </div>
+            <div style="background:#fff; border:1px solid var(--farbe-rand); border-radius:0.5rem; padding:1.25rem; width:18rem;">
+                <strong>🏃 Sportartikel-Hersteller</strong>
+                <p class="app-muted" style="font-size:0.85rem;">Direkte Sichtbarkeit bei Sport-Events und Vereinsaktivitäten.</p>
+            </div>
+            <div style="background:#fff; border:1px solid var(--farbe-rand); border-radius:0.5rem; padding:1.25rem; width:18rem;">
+                <strong>🤝 Stiftungen</strong>
+                <p class="app-muted" style="font-size:0.85rem;">Wirkungsorientierte Förderung von Inklusion, Reha und Mental Health.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live-Statistik -->
+    <section style="background:#fff; border:1px solid var(--farbe-rand); border-radius:0.5rem; padding:2rem; margin-bottom:3rem;">
+        <h2 style="font-family:var(--dash-font-head); text-align:center; margin-bottom:1.5rem;">
+            Plattform in Zahlen
+        </h2>
+        <div style="display:flex; gap:2rem; justify-content:center; flex-wrap:wrap; margin-bottom:1.5rem;">
+            <div style="text-align:center;">
+                <div style="font-size:2.5rem; font-weight:700; color:var(--farbe-akzent);"
+                     th:text="${anzahlProjekte}">0</div>
+                <div class="app-muted">Aktive Projekte</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:2.5rem; font-weight:700; color:var(--farbe-primaer);"
+                     th:text="${vereineProBranche.size()}">0</div>
+                <div class="app-muted">Aktive Branchen</div>
+            </div>
+        </div>
+
+        <h3 style="text-align:center; margin-bottom:1rem; font-size:1rem; color:var(--farbe-text-muted);">
+            Vereine nach Branche
+        </h3>
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center;">
+            <span th:each="b : ${alleBranchen}" class="branche-chip" style="cursor:default;">
+                <span th:text="${b.anzeige}">Branche</span>
+                <span style="font-weight:700; margin-left:0.25rem;"
+                      th:text="${vereineProBranche.getOrDefault(b, 0)}">0</span>
+            </span>
+        </div>
+    </section>
+
+    <!-- CTA unten -->
+    <section style="text-align:center; padding:2rem 0 3rem;">
+        <h2 style="font-family:var(--dash-font-head); margin-bottom:0.75rem;">Bereit loszulegen?</h2>
+        <p style="color:var(--farbe-text-muted); margin-bottom:1.5rem;">
+            Erstellen Sie Ihr Sponsor-Konto und entdecken Sie passende Projekte.
+        </p>
+        <a th:href="@{/sponsor/registrieren}" class="app-btn" style="font-size:1.1rem; padding:0.75rem 2rem;">
+            Sponsor-Konto erstellen
+        </a>
+    </section>
+
+</main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
+    </div>
+</footer>
+
+</body>
+</html>
+

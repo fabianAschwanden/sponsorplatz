@@ -30,6 +30,26 @@ import java.time.Duration;
 public class SecurityConfig {
 
     @Bean
+    public LoginBruteForceSchutz loginBruteForceSchutz() {
+        return new LoginBruteForceSchutz();
+    }
+
+    @Bean
+    public LoginSperreFilter loginSperreFilter(LoginBruteForceSchutz bruteForceSchutz) {
+        return new LoginSperreFilter(bruteForceSchutz);
+    }
+
+    @Bean
+    public LoginFailureHandler loginFailureHandler(LoginBruteForceSchutz bruteForceSchutz) {
+        return new LoginFailureHandler(bruteForceSchutz);
+    }
+
+    @Bean
+    public LoginSuccessHandler loginSuccessHandler(LoginBruteForceSchutz bruteForceSchutz) {
+        return new LoginSuccessHandler(bruteForceSchutz);
+    }
+
+    @Bean
     public RateLimitFilter rateLimitFilter(
             @Value("${sponsorplatz.rate-limit.capacity:30}") long capacity,
             @Value("${sponsorplatz.rate-limit.window-seconds:60}") long windowSeconds) {
@@ -38,7 +58,11 @@ public class SecurityConfig {
 
     @Bean
     @Profile("dev")
-    public SecurityFilterChain devFilterChain(HttpSecurity http, RateLimitFilter rateLimitFilter) throws Exception {
+    public SecurityFilterChain devFilterChain(HttpSecurity http,
+                                              RateLimitFilter rateLimitFilter,
+                                              LoginSperreFilter loginSperreFilter,
+                                              LoginFailureHandler loginFailureHandler,
+                                              LoginSuccessHandler loginSuccessHandler) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
@@ -54,11 +78,15 @@ public class SecurityConfig {
                 .requestMatchers("/marktplatz/**").permitAll()
                 .requestMatchers("/medien/**").permitAll()
                 .requestMatchers("/vereine/**").permitAll()
+                .requestMatchers("/fuer-marken").permitAll()
+                .requestMatchers("/marken/*/engagements").permitAll()
+                .requestMatchers("/og/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/dashboard", true)
+                .successHandler(loginSuccessHandler)
+                .failureHandler(loginFailureHandler)
                 .permitAll()
             )
             .logout(logout -> logout
@@ -66,19 +94,21 @@ public class SecurityConfig {
                 .permitAll()
             )
             .csrf(csrf -> csrf
-                // /benachrichtigungen/**: interne State-Mutation per fetch ohne CSRF-
-                // Token. Owner-Check im Service schützt vor IDOR; Cross-Origin durch
-                // SameSite-Cookies blockiert.
                 .ignoringRequestMatchers("/h2-console/**", "/benachrichtigungen/**")
             )
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(loginSperreFilter, RateLimitFilter.class)
             .headers(h -> h.frameOptions(f -> f.disable()));
         return http.build();
     }
 
     @Bean
     @Profile("prod")
-    public SecurityFilterChain prodFilterChain(HttpSecurity http, RateLimitFilter rateLimitFilter) throws Exception {
+    public SecurityFilterChain prodFilterChain(HttpSecurity http,
+                                               RateLimitFilter rateLimitFilter,
+                                               LoginSperreFilter loginSperreFilter,
+                                               LoginFailureHandler loginFailureHandler,
+                                               LoginSuccessHandler loginSuccessHandler) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
@@ -93,18 +123,22 @@ public class SecurityConfig {
                 .requestMatchers("/marktplatz/**").permitAll()
                 .requestMatchers("/medien/**").permitAll()
                 .requestMatchers("/vereine/**").permitAll()
+                .requestMatchers("/fuer-marken").permitAll()
+                .requestMatchers("/marken/*/engagements").permitAll()
+                .requestMatchers("/og/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/dashboard", true)
+                .successHandler(loginSuccessHandler)
+                .failureHandler(loginFailureHandler)
                 .permitAll()
             )
             .csrf(csrf -> csrf
-                // siehe devFilterChain — gleiche Begründung
                 .ignoringRequestMatchers("/benachrichtigungen/**")
             )
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(loginSperreFilter, RateLimitFilter.class)
             .logout(Customizer.withDefaults());
         return http.build();
     }

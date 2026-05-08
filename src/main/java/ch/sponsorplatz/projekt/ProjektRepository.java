@@ -25,6 +25,12 @@ public interface ProjektRepository extends JpaRepository<Projekt, UUID> {
     long countByOrgIdInAndSichtbarkeit(Collection<UUID> orgIds, Sichtbarkeit sichtbarkeit);
 
     /**
+     * Zählt direkt auf DB-Ebene — Marken-Landing braucht nur die Anzahl, nicht
+     * die Liste. Spart das Laden + Mappen aller Projekte für eine Statistik.
+     */
+    long countBySichtbarkeit(Sichtbarkeit sichtbarkeit);
+
+    /**
      * Volltextsuche: durchsucht Name, Beschreibung, Kategorie, Ort und Org-Name.
      * Case-insensitive LIKE-Suche, funktioniert auf H2 und PostgreSQL.
      */

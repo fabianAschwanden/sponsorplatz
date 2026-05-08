@@ -114,6 +114,16 @@
             <version>8.14.0</version>
         </dependency>
 
+        <!-- Cache-Abstraktion + Caffeine als Provider für TTL/Size-Limits -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
         <!-- PDF-Generierung für Sponsoring-Verträge (HTML/CSS → PDF) -->
         <dependency>
             <groupId>com.openhtmltopdf</groupId>

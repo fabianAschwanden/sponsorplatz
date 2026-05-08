@@ -1,5 +1,6 @@
 package ch.sponsorplatz.projekt;
 
+import ch.sponsorplatz.organisation.Branche;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import org.springframework.stereotype.Controller;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/marktplatz")
@@ -27,6 +29,7 @@ public class MarktplatzController {
     public String liste(@RequestParam(required = false) String kategorie,
                         @RequestParam(required = false) String ort,
                         @RequestParam(required = false) String q,
+                        @RequestParam(required = false) Set<Branche> branche,
                         Model model) {
         List<Projekt> projekte;
 
@@ -46,6 +49,11 @@ public class MarktplatzController {
                     .filter(p -> ort.equalsIgnoreCase(p.getOrt()))
                     .toList();
         }
+        if (branche != null && !branche.isEmpty()) {
+            projekte = projekte.stream()
+                    .filter(p -> p.getOrg() != null && branche.contains(p.getOrg().getBranche()))
+                    .toList();
+        }
 
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "marktplatz");
         model.addAttribute("projekte", projekte.stream()
@@ -59,6 +67,8 @@ public class MarktplatzController {
         model.addAttribute("filterKategorie", kategorie);
         model.addAttribute("filterOrt", ort);
         model.addAttribute("suchbegriff", q);
+        model.addAttribute("alleBranchen", Branche.values());
+        model.addAttribute("filterBranchen", branche != null ? branche : Set.of());
         return "marktplatz";
     }
 

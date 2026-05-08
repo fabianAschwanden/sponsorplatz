@@ -3,6 +3,7 @@ package ch.sponsorplatz.shared.util;
 import org.springframework.stereotype.Component;
 
 import java.text.Normalizer;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 /**
@@ -44,6 +45,24 @@ public class SlugGenerator {
 
         if (slug.isEmpty()) {
             throw new IllegalArgumentException("Name ergibt keinen gültigen Slug: " + name);
+        }
+        return slug;
+    }
+
+    /**
+     * Findet einen freien Slug zum gegebenen Namen — wenn der Basis-Slug schon
+     * belegt ist, hängt {@code -1}, {@code -2}, … an, bis ein freier gefunden ist.
+     *
+     * @param name      Original-Name (für die Slug-Basis)
+     * @param istBelegt Predicate, das prüft ob ein Kandidat bereits existiert
+     *                  (typisch: {@code repository::existsBySlug})
+     */
+    public String findeFreienSlug(String name, Predicate<String> istBelegt) {
+        String basis = fromName(name);
+        String slug = basis;
+        int zaehler = 1;
+        while (istBelegt.test(slug)) {
+            slug = basis + "-" + zaehler++;
         }
         return slug;
     }

@@ -150,10 +150,26 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
     - Migration V20, `/passwort-vergessen` + `/passwort-reset?token=...`
     - Kein Information-Leak (immer Erfolg), Passwort-Bestätigung, Link auf Login-Seite
     - Tests: PWRESET-01..07, PWRCTRL-01..06 (305 Tests gesamt)
-- [ ] Mehrsprachigkeit FR/IT
-- [ ] Vertrags-Generator
-- [ ] Zahlungs-Integration
-- [ ] Volltextsuche mit Postgres `tsvector`
+- [x] Brute-Force-Schutz: `LoginBruteForceSchutz` (Account-basiert, 5 Versuche → 15 Min Sperre)
+    - `LoginSperreFilter` (Pre-Auth, spart BCrypt), `LoginFailureHandler` + `LoginSuccessHandler`
+    - RateLimitFilter erweitert um `/passwort-vergessen` + `/passwort-reset`
+    - Login-Seite: Sperr-Meldung mit Link zu Passwort-Reset
+    - Tests: BF-01..06 (311 Tests gesamt)
+- [x] Hierarchische Firmenstruktur: `uebergeordnete_org_id` Self-Referenz auf Organisation
+    - Migration V24, max 3 Stufen (Konzern → Tochter → Abteilung)
+    - `OrgHierarchieService` (erstelleUnterorganisation, findeElternkette, berechneTiefe)
+    - `AccessControl` erweitert: vererbte Berechtigung über Elternkette (Owner auf Eltern → kann Kind editieren)
+    - `OrganisationView` mit `uebergeordneteOrgId/Name/Slug`, `istUnterorganisation()`, Breadcrumbs
+    - Lösch-Schutz: Eltern mit Kindern kann nicht gelöscht werden
+    - Nur UNTERNEHMEN-Orgs dürfen Sub-Orgs haben
+    - Tests: HIER-01..05, AC-HIER-01..02, VIEW-03 (325 Tests gesamt)
+- [x] Vertrags-Generator: `Vertrag`-Entity, `VertragService`, `VertragController` mit PDF-Export
+    - Migration V16, `VertragsStatus`-Enum, Templates `vertrag-detail.html` + `vertrag-pdf.html`
+    - `Rechnung`-Entity + IBAN (V17), `RechnungService`, `RechnungController` mit PDF-Export
+    - Tests: `VertragServiceTest`, `RechnungServiceTest`
+- [x] Volltextsuche Postgres `tsvector`: Migration V22 (Postgres-only), GIN-Index, dialektabhängiger Branch im `VolltextSucheService` (Fallback auf LIKE in H2)
+- [ ] **Mehrsprachigkeit FR/IT** → siehe Phase 9.1
+- [ ] **Zahlungs-Provider-Anbindung** → siehe Phase 9.2
 
 ## Phase 6 — Einstellungen & Production-Readiness ✓
 
@@ -163,6 +179,151 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 - [x] Template `einstellungen.html`
 - [x] `AppUserService.aenderePasswort()` mit Validierung (min 8 Zeichen, altes PW prüfen)
 - [x] Tests: EINST-01..03, PW-01..03, SEO-01 (185 Tests gesamt)
+
+## Phase 7 — Health-Story sichtbar machen ✓
+
+> **Paket 1.** Die Branche-Enum-Schärfung aus V12 wird im Frontend erlebbar — Marken-, Vereins- und Versicherten-Sicht spüren den Health-Fokus an jeder Stelle. Direkter Hebel für die Kickbox-RedBox-Validierung.
+
+### 7.1 — Marktplatz-Branche-Filter
+
+- [x] `MarktplatzController` erweitern um Multi-Select-Parameter `branche=...` (URL-persistent für Bookmarks)
+- [x] Filter-Logik im Controller: `Set<Branche>` Parameter, Projekte nach `org.branche` filtern
+- [x] `marktplatz.html` Chip-Cloud aller elf Health-Branchen oben, Multi-Toggle, Default = alle aktiv
+- [x] Aktive Filter im Hero des Marktplatzes als entfernbare Chips anzeigen
+- [x] Tests: MKT-08 Filter wirkt, MKT-09 Default = alle aktiv, MKT-10 URL-Persistenz
+
+### 7.2 — Vereins-Profil mit Health-Hero
+
+- [x] `verein-profil.html` Branche-Chip im Hero (Coral-Background, prominent)
+- [x] `Branche.beschreibung()` als neue Methode am Enum für Subhead-Text
+- [x] Verlinkung des Chips auf `/marktplatz?branche=...` (führt direkt in den Branchen-Filter)
+- [ ] OG-Image-Slot mit Branche-Tag (siehe 8.3)
+- [x] Tests: VP-03 Chip rendert, VP-04 Subhead enthält Beschreibung
+
+### 7.3 — Marken-Landing-Page
+
+- [x] `MarkenLandingController` unter `/fuer-marken` (permitAll)
+- [x] `marken-landing.html` mit Health-Use-Cases (Krankenkassen, Apotheken, Lebensmittel-Marken, Sportartikel, Stiftungen)
+- [x] Live-Statistik: Vereine pro Branche, aktive Projekte (`StatistikService`)
+- [x] CTA "Sponsor-Konto erstellen" → `/sponsor/registrieren`
+- [x] Sub-Claim "Sichtbarkeit ohne Streuverlust" + drei Trust-Indikatoren (kuratiert, lokal, messbar)
+- [x] Tests: MARK-01 rendert, MARK-02 Stats korrekt, MARK-03 CTA-Link
+
+---
+
+## Phase 8 — MVP-Reife & Demo-Tauglichkeit ✓
+
+> **Paket 2.** Plattform ist live-demo-fähig für Stakeholder-Termine, Pilot-Verein-Gespräche und Kickbox-Validierungs-Interviews.
+> Iteration: ~3 Tage.
+
+### 8.1 — Pilot-Seed mit Beispiel-Daten
+
+- [x] `DemoSeedRunner` (Profil `demo` neben dev/prod, idempotent)
+- [x] 5 Beispiel-Vereine über alle elf Health-Branchen verteilt (Sport, Reha, Mental Health, Ernährung, Selbsthilfe…)
+- [x] 10 veröffentlichte Beispiel-Projekte mit realistischen Texten + Cover-Bildern
+- [x] 3 Sponsor-Orgs (Krankenkasse-Beispiel, Apotheke, Lebensmittel-Marke)
+- [x] Beispiel-Anfragen quer durchs Status-Lifecycle, einige ANGENOMMEN-Engagements
+- [x] „DEMO — Beispieldaten"-Header bei aktivem demo-Profil (nicht produktiv verwechselbar)
+- [x] Tests: SEED-01 Konsistenz aller FK, SEED-02 Disclaimer rendert
+
+### 8.2 — Engagement-Schaufenster (öffentlich)
+
+- [x] `EngagementService` — Engagements abgeleitet aus `SponsoringAnfrage` mit Status ANGENOMMEN
+- [x] `EngagementController` unter `/marken/{slug}/engagements` (permitAll)
+- [x] Template `engagement-schaufenster.html` mit Verein-Karten, Region, Branche, Projekt-Snippet
+- [x] Filter nach Region/Branche
+- [x] Auf Marken-Detailseite verlinkt — schliesst die "CSS unterstützt diese Vereine"-Brücke
+- [x] Tests: ENG-01 nur ANGENOMMEN, ENG-02 Slug-Filter, ENG-03 Region-Filter
+
+### 8.3 — OG-Card-Generator
+
+- [x] `OgImageController` für `/og/projekt/{slug}.png` und `/og/verein/{slug}.png` (1200×630)
+- [x] Server-side Java Graphics2D → PNG (keine externe Lib nötig)
+- [x] Branche-Tag + Slogan + Hero-Background im Sponsorplatz-Brand
+- [x] HTTP-Cache-Header `max-age=3600, public`
+- [x] In `<meta property="og:image">` von Vereinsprofil + Marktplatz-Detail eintragen
+- [x] Tests: OG-01 Verein-Card, OG-02 Projekt-Card, OG-03 Cache-Header
+
+---
+
+## Phase 9 — Roadmap-Lücken schliessen ⏳
+
+> **Paket 3.** Die offenen Punkte aus Phase 5+ formal abschliessen.
+> Iteration: 5–7 Tage über zwei Sub-Iterationen.
+
+### 9.1 — Mehrsprachigkeit FR/IT
+
+- [ ] `LocaleResolver` (Cookie-basiert + `Accept-Language`-Fallback)
+- [ ] `LocaleChangeInterceptor` mit `?lang=fr|it|de` URL-Override
+- [ ] `messages_fr_CH.properties` und `messages_it_CH.properties` (Erstübersetzung)
+- [ ] Sprach-Umschalter im Footer (DE/FR/IT)
+- [ ] V18-Feld `app_user.sprache` verkabeln (auto-set bei Login, editierbar in Profil)
+- [ ] `Branche.getAnzeige(Locale)` für lokalisierte Anzeige-Namen
+- [ ] Tests: I18N-01 Cookie-Persistenz, I18N-02 URL-Override, I18N-03 Branche-Anzeige FR
+
+### 9.2 — Zahlungs-Provider-Anbindung
+
+- [ ] `PaymentProvider`-Interface (`erstelleZahlung`, `bestaetigeZahlung`, `widerrufe`)
+- [ ] `LokalerStubProvider` für dev/test (auto-ANGENOMMEN nach 2 s)
+- [ ] `DatatransProvider` für prod (Datatrans-Sandbox-Konfiguration, Kryptograph. Webhook-Verifikation)
+- [ ] `PaymentWebhookController` für Provider-Callbacks (`/payment/webhook/{provider}`)
+- [ ] Migration V25 für `payment_transaction` (FK auf `rechnung`, idempotenter Status)
+- [ ] `Rechnung.bezahlt`-State setzt sich via Webhook
+- [ ] Tests: PAY-01..06 (Stub, Webhook-Idempotenz, Status-Übergänge, Signatur-Prüfung)
+
+### 9.3 — Event-Entity (Phase 0.3 Schluss)
+
+- [ ] Migration V26 für `event` (Verein, Datum, Ort, Beschreibung, Kapazität)
+- [ ] `Event`-Entity, Repository, Service
+- [ ] `EventController` unter `/organisationen/{slug}/events`
+- [ ] `DashboardService.naechsteEvents(...)` verkabeln (Backlog aus Phase 0.3 schliessen)
+- [ ] Marktplatz-Integration: Events bei Projekten anzeigen
+- [ ] Tests: EVT-01 CRUD, EVT-02 nur Vereins-Mitglieder editieren, EVT-03 Dashboard zeigt next-3
+
+---
+
+## Phase 10 — Production-Readiness & Pilot-Launch ⏳
+
+> **Paket 4.** Plattform ist produktiv betreibbar in OCI Cloud mit Monitoring, DSG-Compliance und Error-Tracking.
+> Iteration: ~4 Tage vor dem Pilot-Launch.
+
+### 10.1 — Monitoring & Observability
+
+- [ ] Spring Actuator: `/actuator/health/{liveness,readiness}` mit DB-Check
+- [ ] Spring Actuator: `/actuator/prometheus` für Prometheus-Scrape
+- [ ] `logback-spring.xml` mit JSON-Encoder (logstash-encoder ist im pom)
+- [ ] Strukturierte Logs mit Trace-ID via MDC (`X-Trace-ID`-Header)
+- [ ] OCI Cloud Logging-Forwarding via Sidecar oder Direct-Push
+- [ ] Tests: MON-01 Health-Endpoint, MON-02 JSON-Log-Format, MON-03 Prometheus-Scrape
+
+### 10.2 — Error-Tracking
+
+- [ ] Glitchtip self-hosted (DSG-konform) oder Sentry-EU-Cloud
+- [ ] Sentry-Java-SDK ins Backend, Release-Tagging via CI
+- [ ] Sentry-Browser-SDK ins Layout (nur Errors, kein Replay → DSG)
+- [ ] Konfiguration als ENV (`SENTRY_DSN`, `SENTRY_ENVIRONMENT`)
+
+### 10.3 — DSG-Compliance & Public-Pages
+
+- [ ] Cookie-Banner (nur technisch notwendige Cookies, kein Tracking)
+- [ ] `impressum.html` mit Adresse, Kontakt, MwSt-Nummer
+- [ ] `datenschutz.html` mit DSG-Text (Daten-Erhebung, Speicherdauer, Auskunfts-/Lösch-Rechte)
+- [ ] `agb.html` mit Sponsoring-Plattform-spezifischen Bedingungen
+- [ ] Footer-Links validiert, alle drei Pages aus jedem Layout erreichbar
+- [ ] Tests: PUB-01 Impressum, PUB-02 Datenschutz, PUB-03 AGB, PUB-04 Cookie-Banner-Default
+
+### 10.4 — Pilot-Launch-Checkliste
+
+- [ ] HTTPS via OCI Load Balancer + Zertifikat (Let's Encrypt oder OCI-Cert)
+- [ ] SMTP-Konfiguration prod (statt MailHog) — getrennter Mail-User
+- [ ] SPF / DKIM / DMARC für Mail-Domain einrichten und testen
+- [ ] Backups in OCI Object Storage spiegeln, Restore-Test einmal pro Quartal
+- [ ] DNS `sponsorplatz.ch` + `www`-Redirect, IPv6 enabled
+- [ ] Smoke-Test-Suite gegen prod-URL (Login, Marktplatz, Anfrage, Logout)
+- [ ] Onboarding 5 echter CH-Sport-/Health-Vereine (Pilot-Welle)
+- [ ] Public-Launch-Kommunikation: Blog-Post, LinkedIn, lokale Sport-Verbände
+
+---
 
 ## Definition: MVP fertig
 

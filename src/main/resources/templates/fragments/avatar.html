@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  Wiederverwendbarer User-Avatar.
+  Parameter:
+    name:    String — Anzeigename (für alt-Text und Initialen-Fallback)
+    bildUrl: String — URL zum Profilbild oder null
+    cssClass: String — CSS-Hook (z.B. "user-avatar-sm" oder "dash-avatar")
+-->
+<th:block th:fragment="avatar(name, bildUrl, cssClass)">
+    <span th:class="${cssClass != null ? cssClass : 'user-avatar'}"
+          th:title="${name}">
+        <img th:if="${bildUrl != null and !#strings.isEmpty(bildUrl)}"
+             th:src="${bildUrl}"
+             th:alt="${name}">
+        <span th:unless="${bildUrl != null and !#strings.isEmpty(bildUrl)}"
+              th:text="${name != null and !#strings.isEmpty(name) ? #strings.substring(#strings.toUpperCase(name), 0, 2) : '??'}">XX</span>
+    </span>
+</th:block>
+
+</body>
+</html>

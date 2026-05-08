@@ -1,4 +1,5 @@
 package ch.sponsorplatz.benutzer;
+import ch.sponsorplatz.shared.config.LoginBruteForceSchutz;
 import ch.sponsorplatz.shared.mail.MailService;
 import ch.sponsorplatz.shared.util.TokenGenerator;
 
@@ -31,15 +32,18 @@ public class PasswortResetService {
     private final AppUserRepository repository;
     private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
+    private final LoginBruteForceSchutz bruteForceSchutz;
     private final String basisUrl;
 
     public PasswortResetService(AppUserRepository repository,
                                  MailService mailService,
                                  PasswordEncoder passwordEncoder,
+                                 LoginBruteForceSchutz bruteForceSchutz,
                                  @Value("${sponsorplatz.basis-url:http://localhost:8080}") String basisUrl) {
         this.repository = repository;
         this.mailService = mailService;
         this.passwordEncoder = passwordEncoder;
+        this.bruteForceSchutz = bruteForceSchutz;
         this.basisUrl = basisUrl;
     }
 
@@ -93,6 +97,11 @@ public class PasswortResetService {
         user.setResetToken(null);
         user.setResetTokenGueltigBis(null);
         repository.save(user);
+
+        // Erfolgreicher Reset hebt eine evtl. aktive Brute-Force-Sperre auf:
+        // Der User hat E-Mail-Zugang nachgewiesen, ist also nicht der Angreifer.
+        // Sonst bliebe der Account 15 min gesperrt obwohl das Passwort schon neu ist.
+        bruteForceSchutz.erfolgreichenLoginRegistrieren(user.getEmail());
 
         log.info("Passwort zurückgesetzt für {}", user.getEmail());
     }

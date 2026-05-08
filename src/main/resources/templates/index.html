@@ -14,6 +14,10 @@
 </head>
 <body class="public-body">
 
+<div th:if="${demoModus}" class="demo-disclaimer">
+    ⚠️ DEMO — Beispieldaten. Keine echten Vereine oder Sponsoren.
+</div>
+
 <header class="public-topbar">
     <div class="public-topbar-inner">
         <a class="public-logo" th:href="@{/}">

@@ -42,7 +42,15 @@
             </thead>
             <tbody>
             <tr th:each="m : ${mitglieder}">
-                <td th:text="${m.userAnzeigename}">Max Muster</td>
+                <td>
+                    <div class="user-avatar-cell">
+                        <span th:replace="~{fragments/avatar :: avatar(
+                                name=${m.userAnzeigename},
+                                bildUrl=${m.userProfilbildUrl},
+                                cssClass='user-avatar')}"></span>
+                        <span th:text="${m.userAnzeigename}">Max Muster</span>
+                    </div>
+                </td>
                 <td th:text="${m.userEmail}">max@example.com</td>
                 <td><span class="app-chip" th:text="${m.rolle}">ORG_EDITOR</span></td>
                 <td th:text="${#temporals.format(m.beigetretenAm, 'dd.MM.yyyy')}">01.01.2026</td>

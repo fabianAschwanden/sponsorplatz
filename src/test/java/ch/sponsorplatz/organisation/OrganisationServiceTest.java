@@ -168,6 +168,19 @@ class OrganisationServiceTest {
         service.loesche(orgId); // kein Fehler
     }
 
+    /** ORG-12: loesche wirft wenn Unterorganisationen existieren (Hierarchie-Lösch-Schutz). */
+    @Test
+    void loescheWirftBeiUnterorganisationen() {
+        UUID orgId = UUID.randomUUID();
+        when(repository.existsById(orgId)).thenReturn(true);
+        when(mitgliedschaftRepository.existsByOrgId(orgId)).thenReturn(false);
+        when(repository.existsByUebergeordneteOrgId(orgId)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.loesche(orgId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Unterorganisation");
+    }
+
     /** ADM-05: verifiziere setzt Status VERIFIED + verifziertAm. */
     @Test
     void verifiziereSetzStatusUndZeitstempel() {

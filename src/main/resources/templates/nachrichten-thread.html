@@ -36,6 +36,10 @@
         <div th:each="n : ${nachrichten}" class="nachricht-bubble"
              th:classappend="${n.absenderId.toString() == T(org.springframework.security.core.context.SecurityContextHolder).context.authentication.name} ? 'nachricht-eigene' : 'nachricht-eingehend'">
             <div class="nachricht-meta">
+                <span th:replace="~{fragments/avatar :: avatar(
+                        name=${n.absenderName},
+                        bildUrl=${n.absenderProfilbildUrl},
+                        cssClass='user-avatar-sm')}"></span>
                 <strong th:text="${n.absenderName}">Name</strong>
                 <time th:text="${#temporals.format(n.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2026 12:00</time>
             </div>

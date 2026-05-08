@@ -427,6 +427,118 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **DEV-SEED-02** | `DevSeedRunnerTest` | Idempotent — bereits existierender User wird nicht überschrieben |
 | **DEV-SEED-03** | `DevSeedRunnerTest` | Default-Passwort `dev` wird verwendet, wenn keine Property gesetzt |
 
+### Phase 7.1 — Marktplatz-Branche-Filter (MKT)
+
+> **Ziel:** Sponsorplatz Health-Fokus (V12) wird im Marktplatz erlebbar. Versicherte
+> und Marken filtern Projekte nach Health-Branche; das Frontend bietet alle elf
+> `Branche`-Werte als Chip-Cloud zur Multi-Selection an.
+>
+> **Controller-Vertrag:**
+> - `@RequestParam(required = false) Set<Branche> branche` — Spring konvertiert via
+>   `Branche.valueOf(...)`. Default = `null` (keine Filterung, alle Projekte).
+> - Filter-Logik: leerer/`null`-Wert lässt Liste unverändert; sonst werden
+>   Projekte behalten, deren `org.branche` im Set ist.
+> - Model-Attribute:
+>   - `alleBranchen` — `Branche.values()` (für Chip-Cloud-Render in `marktplatz.html`)
+>   - `filterBranchen` — aktuelle Auswahl (leeres Set, wenn nicht gesetzt) für aktive Chips
+>
+> **Tests:**
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **MKT-08** | `MarktplatzControllerTest` | `?branche=SPORT` reduziert die Liste auf Projekte, deren `org.branche == SPORT` ist |
+| **MKT-09** | `MarktplatzControllerTest` | Ohne `branche`-Param → Liste unverändert; Model exposed `alleBranchen` (alle elf Werte) und `filterBranchen` (leeres Set) für die Chip-Cloud |
+| **MKT-10** | `MarktplatzControllerTest` | Multi-Select `?branche=SPORT&branche=REHA` — beide Branchen aktiv, Projekte beider Branchen erscheinen, `filterBranchen`-Model enthält `{SPORT, REHA}` für aktive Chip-Anzeige |
+
+### Phase 7.2 — Vereins-Profil Health-Hero (VP)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **VP-03** | `VereinProfilControllerTest` | Branche-Chip wird als Teil der `OrganisationView` im Model bereitgestellt |
+| **VP-04** | `VereinProfilControllerTest` | Branche-Beschreibung ist als Subhead-Text verfügbar (enthält Keyword) |
+
+### Phase 7.3 — Marken-Landing-Page (MARK)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **MARK-01** | `MarkenLandingControllerTest` | Marken-Landing `/fuer-marken` rendert ohne Login (200 + View `marken-landing`) |
+| **MARK-02** | `MarkenLandingControllerTest` | Model enthält `vereineProBranche` und `anzahlProjekte` mit korrekten Werten |
+| **MARK-03** | `MarkenLandingControllerTest` | Response enthält CTA-Link zu `/sponsor/registrieren` |
+| **MARK-02a** | `StatistikServiceTest` | `vereineProBranche` zählt korrekt pro Branche (nur VERIFIED/ACTIVE) |
+| **MARK-02b** | `StatistikServiceTest` | `anzahlAktiveProjekte` gibt Gesamtzahl öffentlicher Projekte zurück |
+| **MARK-02c** | `StatistikServiceTest` | PENDING-Orgs werden in `vereineProBranche` nicht mitgezählt |
+
+**Spätere Tests (Phase 7.1 fortgesetzt):**
+- **MKT-11** (TBD): Ungültiger Branche-Wert in URL → Spring `MethodArgumentTypeMismatchException` → 400 via `GlobalExceptionHandler`
+- **MKT-12** (TBD): Branche-Filter kombiniert mit `kategorie`/`ort`/`q` (Kompositions-Test, AND-Verknüpfung)
+
+### Phase 7.3 — Marken-Landing-Page (MARK)
+
+> **Ziel:** Öffentliche B2B-Landing für Health-Marken (Krankenkassen, Apotheken,
+> Lebensmittel, Fitness, Stiftungen). Spiegelt die Vereins-Erzählung mit
+> Marken-Use-Cases und Trust-Indikatoren ("kuratiert", "lokal", "messbar").
+>
+> **Controller-Vertrag (`MarkenLandingController`):**
+> - Route: `GET /fuer-marken` (permitAll in dev- und prod-Profil)
+> - View: `marken-landing`
+> - Model-Attribute:
+>   - `vereineProBranche` — `Map<Branche, Long>` aus `StatistikService.vereineProBranche()`
+>   - `anzahlProjekte` — `long` aus `StatistikService.anzahlAktiveProjekte()`
+>   - `alleBranchen` — `Branche.values()` für Branche-Übersicht im Template
+>   - `aktiveSeite` — `"fuer-marken"` (für Navigations-Hervorhebung)
+>
+> **Service-Vertrag (`StatistikService`, Paket `organisation`):**
+> - `vereineProBranche()` — zählt VEREIN-Orgs mit Status `VERIFIED` oder `ACTIVE`
+>   gruppiert nach `branche`. Liest aktuell alle Orgs in den Speicher und
+>   filtert in Java; Refactoring auf Aggregat-Query siehe MARK-04.
+> - `anzahlAktiveProjekte()` — Anzahl Projekte mit `Sichtbarkeit.OEFFENTLICH`.
+> - **Backlog:** `@Cacheable` mit TTL 5 Minuten (Marketing-Traffic), DB-seitige
+>   Aggregat-Queries für Skalierbarkeit, optional zentrales `StatistikDaten`-DTO.
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **MARK-01** | `MarkenLandingControllerTest` | `GET /fuer-marken` → 200, View `marken-landing`, Model enthält `vereineProBranche` und `anzahlProjekte` |
+| **MARK-02** | `MarkenLandingControllerTest` | Model-Werte stammen exakt aus `StatistikService` (gemockt: `vereineProBranche()` und `anzahlAktiveProjekte()` mit konkreten Werten) |
+| **MARK-03** | `MarkenLandingControllerTest` | Gerendertes HTML enthält den CTA-Link `/sponsor/registrieren` (Conversion-Pfad zur Sponsor-Org-Anmeldung) |
+
+**Phase 7.3 Performance-Iteration — Aggregat-Queries + Cache:**
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **MARK-04** | `OrganisationStatistikIT` | `@DataJpaTest`: `OrganisationRepository.zaehleVereineNachBranche(stati)` filtert auf `typ = VEREIN` + Status in `(VERIFIED, ACTIVE)` + `branche IS NOT NULL` und gruppiert korrekt; UNTERNEHMEN/STIFTUNG werden ausgeschlossen |
+| **MARK-05** | `OrganisationStatistikIT` | `@DataJpaTest`: `ProjektRepository.countBySichtbarkeit(OEFFENTLICH)` ignoriert ENTWURF und ARCHIVIERT |
+| **MARK-06** | `MarkenLandingControllerTest` | Render-Assertion: HTML enthält Trust-Indikatoren `Kuratiert`, `Lokal`, `Messbar` (regression-safe gegen Template-Kürzungen) |
+| **MARK-07a** | `StatistikServiceCacheIT` | `vereineProBranche` mit `@Cacheable` — zweiter Aufruf trifft Repository nicht (Verify-Counter `times(1)`) |
+| **MARK-07b** | `StatistikServiceCacheIT` | `anzahlAktiveProjekte` mit `@Cacheable` — analog Verify-Counter |
+| **MARK-07c** | `StatistikServiceCacheIT` | Cache-Regions `statistik-vereineProBranche` und `statistik-anzahlProjekte` sind explizit deklariert (fail-fast bei Tippfehler im `@Cacheable("...")`) |
+
+### Phase 8.1 — Demo-Seed (SEED)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **SEED-01** | `DemoSeedRunnerTest` | DemoSeed erstellt Vereine, Projekte und Anfragen mit konsistenten FKs |
+| **SEED-01b** | `DemoSeedRunnerTest` | Idempotent — überspringt wenn Org-Slug bereits existiert |
+| **SEED-02** | `DemoModusAdviceTest` | Demo-Disclaimer rendert bei `sponsorplatz.demo-modus=true` |
+
+### Phase 8.2 — Engagement-Schaufenster (ENG)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **ENG-01** | `EngagementServiceTest` | `findeNachSponsorSlug` liefert nur ANGENOMMEN-Anfragen |
+| **ENG-02** | `EngagementServiceTest` | `findeNachSponsorSlug` mit unbekanntem Slug → NotFoundException |
+| **ENG-03** | `EngagementServiceTest` | `findeNachSponsorSlugUndRegion` filtert nach Region |
+| **ENG-01-CTRL** | `EngagementControllerTest` | GET `/marken/{slug}/engagements` → 200 + engagement-schaufenster View |
+| **ENG-02-CTRL** | `EngagementControllerTest` | Region-Filter wird an Service delegiert |
+| **ENG-03-CTRL** | `EngagementControllerTest` | Branche-Filter wird an Service delegiert |
+
+### Phase 8.3 — OG-Card-Generator (OG) — Backlog
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **OG-01** | `OgImageControllerTest` | GET `/og/verein/{slug}.png` → 200 + content-type image/png |
+| **OG-02** | `OgImageControllerTest` | GET `/og/projekt/{slug}.png` → 200 + content-type image/png |
+| **OG-03** | `OgImageControllerTest` | Response enthält `Cache-Control: max-age=3600` |
+
 ## CI
 
 - Bei jedem Push und PR auf `main`: `mvn -B clean verify` + Docker-Build-Smoke

@@ -203,6 +203,67 @@ body.dashboard-body {
     font-weight: 700;
     font-size: 0.78rem;
     flex-shrink: 0;
+    overflow: hidden;
+}
+
+.dash-avatar img,
+.user-avatar img,
+.user-avatar-sm img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.user-avatar,
+.user-avatar-sm {
+    display: inline-grid;
+    place-items: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--dash-coral), var(--dash-violet-dark));
+    color: #fff;
+    font-weight: 700;
+    flex-shrink: 0;
+    overflow: hidden;
+    vertical-align: middle;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.72rem;
+}
+
+.user-avatar-sm {
+    width: 24px;
+    height: 24px;
+    font-size: 0.62rem;
+}
+
+.user-avatar-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.nachricht-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--app-muted, #6b7280);
+    margin-bottom: 0.4rem;
+}
+
+.nachricht-meta strong {
+    color: inherit;
+    font-weight: 600;
+}
+
+.nachricht-meta time {
+    margin-left: auto;
+    font-size: 0.78rem;
+    opacity: 0.75;
 }
 
 .dash-user-info {

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="de-CH"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engagements — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="public-body">
+
+<div th:if="${demoModus}" class="demo-disclaimer">
+    ⚠️ DEMO — Beispieldaten. Keine echten Vereine oder Sponsoren.
+</div>
+
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
+            <span>Sponsorplatz</span>
+        </a>
+        <nav class="public-nav">
+            <a th:href="@{/marktplatz}">Marktplatz</a>
+            <a th:href="@{/fuer-marken}">Für Marken</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container hauptbereich">
+    <div class="seitenkopf">
+        <h1>Unsere Engagements</h1>
+    </div>
+
+    <p th:if="${#lists.isEmpty(engagements)}" class="muted">
+        Noch keine öffentlichen Engagements vorhanden.
+    </p>
+
+    <div class="engagement-grid" th:unless="${#lists.isEmpty(engagements)}">
+        <div class="engagement-karte" th:each="e : ${engagements}">
+            <div class="engagement-header">
+                <a th:href="@{/vereine/{slug}(slug=${e.vereinSlug()})}" class="engagement-verein"
+                   th:text="${e.vereinName()}">Verein</a>
+                <span class="branche-chip branche-chip-aktiv" th:text="${e.vereinBranche()}">Branche</span>
+            </div>
+            <p class="engagement-projekt">
+                Projekt: <a th:href="@{/marktplatz/{slug}(slug=${e.projektSlug()})}"
+                            th:text="${e.projektName()}">Projekt</a>
+            </p>
+            <p class="muted" th:if="${e.region() != null}">
+                📍 <span th:text="${e.region()}">Region</span>
+            </p>
+            <p class="muted" th:text="${'Paket: ' + e.paketName()}">Paket</p>
+        </div>
+    </div>
+</main>
+
+<footer class="fusszeile">
+    <div class="container">
+        <span>&copy; 2026 Sponsorplatz</span>
+        <nav>
+            <a th:href="@{/impressum}">Impressum</a>
+            <a th:href="@{/datenschutz}">Datenschutz</a>
+        </nav>
+    </div>
+</footer>
+
+</body>
+</html>
+

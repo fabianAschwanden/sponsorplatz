@@ -16,10 +16,14 @@ public record AdminBenutzerView(
         PlatformRolle platformRolle,
         boolean aktiv,
         boolean emailVerifiziert,
-        Instant registriertAm
+        Instant registriertAm,
+        String profilbildUrl
 ) {
 
     public static AdminBenutzerView von(AppUser user) {
+        String bildUrl = user.getProfilbildId() != null
+                ? "/medien/" + user.getProfilbildId()
+                : null;
         return new AdminBenutzerView(
                 user.getId(),
                 user.getEmail(),
@@ -27,7 +31,8 @@ public record AdminBenutzerView(
                 user.getPlatformRolle(),
                 user.isAktiv(),
                 user.isEmailVerifiziert(),
-                user.getRegistriertAm()
+                user.getRegistriertAm(),
+                bildUrl
         );
     }
 

@@ -430,3 +430,82 @@ body {
 .fusszeile a:hover {
     opacity: 1;
 }
+
+/* Branche-Chips (Marktplatz-Filter) */
+.branche-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.branche-chip-label {
+    cursor: pointer;
+}
+
+.branche-chip {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: #fff;
+    color: var(--farbe-text);
+    border: 1px solid var(--farbe-rand);
+    transition: all 0.15s ease;
+}
+
+.branche-chip:hover {
+    border-color: var(--farbe-akzent);
+    color: var(--farbe-akzent);
+}
+
+.branche-chip-aktiv {
+    background: var(--farbe-akzent);
+    color: #fff;
+    border-color: var(--farbe-akzent);
+}
+
+.branche-chip-aktiv:hover {
+    background: var(--farbe-akzent-dunkel);
+    border-color: var(--farbe-akzent-dunkel);
+    color: #fff;
+}
+
+/* Health-Hero auf Vereinsprofil */
+.health-hero-chip {
+    display: inline-block;
+    padding: 0.35rem 1rem;
+    border-radius: 1rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    background: var(--farbe-akzent);
+    color: #fff;
+    text-decoration: none;
+    transition: background 0.15s ease;
+}
+
+.health-hero-chip:hover {
+    background: var(--farbe-akzent-dunkel);
+    color: #fff;
+}
+
+.health-subhead {
+    color: var(--farbe-text-muted);
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+}
+
+/* Demo-Disclaimer-Banner */
+.demo-disclaimer {
+    background: #fff3cd;
+    color: #664d03;
+    text-align: center;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-bottom: 2px solid #ffecb5;
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+}

@@ -1,4 +1,5 @@
 package ch.sponsorplatz.benutzer;
+import ch.sponsorplatz.shared.config.LoginBruteForceSchutz;
 import ch.sponsorplatz.shared.mail.MailService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,11 +34,13 @@ class PasswortResetServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    private LoginBruteForceSchutz bruteForceSchutz;
     private PasswortResetService service;
 
     @BeforeEach
     void setUp() {
-        service = new PasswortResetService(repository, mailService, passwordEncoder, "http://localhost:8080");
+        bruteForceSchutz = new LoginBruteForceSchutz();
+        service = new PasswortResetService(repository, mailService, passwordEncoder, bruteForceSchutz, "http://localhost:8080");
     }
 
     @Test
@@ -108,6 +111,7 @@ class PasswortResetServiceTest {
     @DisplayName("PWRESET-06: setzeNeuesPasswort setzt Hash und löscht Token")
     void setzePasswortErfolgreich() {
         AppUser user = new AppUser();
+        user.setEmail("test@sp.ch");
         user.setResetToken("valid");
         user.setResetTokenGueltigBis(Instant.now().plus(1, ChronoUnit.HOURS));
         when(repository.findByResetToken("valid")).thenReturn(Optional.of(user));
@@ -127,5 +131,31 @@ class PasswortResetServiceTest {
         assertThatThrownBy(() -> service.setzeNeuesPasswort("token", "kurz"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("8 Zeichen");
+    }
+
+    /**
+     * PWRESET-08: Erfolgreicher Reset hebt eine aktive Brute-Force-Sperre auf —
+     * sonst bliebe der Account 15 min gesperrt obwohl das Passwort schon neu ist.
+     */
+    @Test
+    @DisplayName("PWRESET-08: setzeNeuesPasswort entsperrt Brute-Force-Sperre")
+    void setzePasswortEntsperrtBruteForce() {
+        AppUser user = new AppUser();
+        user.setEmail("opfer@sp.ch");
+        user.setResetToken("valid");
+        user.setResetTokenGueltigBis(Instant.now().plus(1, ChronoUnit.HOURS));
+        when(repository.findByResetToken("valid")).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode("neues-pw-123")).thenReturn("$2a$hashed");
+        when(repository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        // Account war von Angreifer gesperrt — Fehlversuche bis Sperre greift:
+        while (bruteForceSchutz.istGesperrt("opfer@sp.ch") == 0) {
+            bruteForceSchutz.fehlversuchRegistrieren("opfer@sp.ch");
+        }
+        assertThat(bruteForceSchutz.istGesperrt("opfer@sp.ch")).isGreaterThan(0);
+
+        service.setzeNeuesPasswort("valid", "neues-pw-123");
+
+        assertThat(bruteForceSchutz.istGesperrt("opfer@sp.ch")).isEqualTo(0);
     }
 }

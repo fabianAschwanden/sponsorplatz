@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -62,6 +65,106 @@ class VereinProfilControllerTest {
 
         mockMvc.perform(get("/vereine/gibts-nicht"))
                 .andExpect(status().isNotFound());
+    }
+
+    /** VP-03: Branche-Chip wird im Model als Teil der OrganisationView gerendert. */
+    @Test
+    void brancheChipImProfil() throws Exception {
+        Organisation org = new Organisation();
+        org.setId(UUID.randomUUID());
+        org.setName("FC Sportverein");
+        org.setSlug("fc-sportverein");
+        org.setTyp(OrgTyp.VEREIN);
+        org.setBranche(Branche.SPORT);
+
+        when(orgService.findeNachSlug("fc-sportverein")).thenReturn(Optional.of(org));
+        when(projektService.findeNachOrg(org.getId())).thenReturn(List.of());
+
+        mockMvc.perform(get("/vereine/fc-sportverein"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("verein-profil"))
+                .andExpect(result -> {
+                    var mv = result.getModelAndView();
+                    assertThat(mv).isNotNull();
+                    OrganisationView view = (OrganisationView) mv.getModel().get("org");
+                    assertThat(view).isNotNull();
+                    assertThat(view.branche()).isEqualTo(Branche.SPORT);
+                    assertThat(view.branche().getAnzeige()).isEqualTo("Sport");
+                });
+    }
+
+    /** VP-04: Branche-Beschreibung ist als Subhead-Text verfügbar. */
+    @Test
+    void brancheBeschreibungAlsSubhead() throws Exception {
+        Organisation org = new Organisation();
+        org.setId(UUID.randomUUID());
+        org.setName("Reha Zentrum");
+        org.setSlug("reha-zentrum");
+        org.setTyp(OrgTyp.VEREIN);
+        org.setBranche(Branche.REHA);
+
+        when(orgService.findeNachSlug("reha-zentrum")).thenReturn(Optional.of(org));
+        when(projektService.findeNachOrg(org.getId())).thenReturn(List.of());
+
+        mockMvc.perform(get("/vereine/reha-zentrum"))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    var mv = result.getModelAndView();
+                    assertThat(mv).isNotNull();
+                    OrganisationView view = (OrganisationView) mv.getModel().get("org");
+                    assertThat(view.branche().getBeschreibung())
+                            .as("Subhead enthält Branche-Beschreibung")
+                            .contains("Rehabilitation");
+                });
+    }
+
+    /**
+     * VP-05: Render-Assertion — der Branche-Chip kommt mit der CSS-Klasse
+     * {@code health-hero-chip} im HTML an und verlinkt auf den Marktplatz-Filter.
+     * Defense gegen Template-Regression: das Model kann korrekt sein während
+     * das Template fehlerhaft Branche überhaupt nicht rendert.
+     */
+    @Test
+    void heroChipImGerendertenHtml() throws Exception {
+        Organisation org = new Organisation();
+        org.setId(UUID.randomUUID());
+        org.setName("FC Sportverein");
+        org.setSlug("fc-sportverein");
+        org.setTyp(OrgTyp.VEREIN);
+        org.setBranche(Branche.SPORT);
+
+        when(orgService.findeNachSlug("fc-sportverein")).thenReturn(Optional.of(org));
+        when(projektService.findeNachOrg(org.getId())).thenReturn(List.of());
+
+        mockMvc.perform(get("/vereine/fc-sportverein"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("health-hero-chip")))
+                .andExpect(content().string(containsString("/marktplatz?branche=SPORT")))
+                .andExpect(content().string(containsString(">Sport<")))
+                // health-subhead enthält die Branche-Beschreibung
+                .andExpect(content().string(containsString("class=\"health-subhead\"")));
+    }
+
+    /**
+     * VP-06: Render-Assertion — Branche erscheint NICHT mehr doppelt in der
+     * &lt;dl&gt;-Detail-Liste. Verhindert, dass jemand die alte
+     * {@code <dt>Branche</dt>}-Zeile versehentlich wieder einfügt.
+     */
+    @Test
+    void brancheNichtDoppeltImDetail() throws Exception {
+        Organisation org = new Organisation();
+        org.setId(UUID.randomUUID());
+        org.setName("FC Sportverein");
+        org.setSlug("fc-sportverein");
+        org.setTyp(OrgTyp.VEREIN);
+        org.setBranche(Branche.SPORT);
+
+        when(orgService.findeNachSlug("fc-sportverein")).thenReturn(Optional.of(org));
+        when(projektService.findeNachOrg(org.getId())).thenReturn(List.of());
+
+        mockMvc.perform(get("/vereine/fc-sportverein"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("<dt>Branche</dt>"))));
     }
 }
 

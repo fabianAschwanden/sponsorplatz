@@ -31,9 +31,28 @@ class NachrichtViewTest {
 
         assertThat(view.absenderName()).isEqualTo("Max Muster");
         assertThat(view.absenderId()).isEqualTo(absender.getId());
+        assertThat(view.absenderProfilbildUrl()).isNull();
         assertThat(view.text()).isEqualTo("Hallo zusammen!");
         // Kein Feld für passwortHash im Record
         assertThat(view.toString()).doesNotContain("$2a$10$geheim");
+    }
+
+    @Test
+    @DisplayName("MSG-09c: View liefert /medien/{id}-URL wenn Absender ein Profilbild hat")
+    void absenderMitProfilbildErzeugtUrl() {
+        UUID bildId = UUID.randomUUID();
+        AppUser absender = new AppUser();
+        absender.setId(UUID.randomUUID());
+        absender.setAnzeigename("Max");
+        absender.setProfilbildId(bildId);
+
+        Nachricht n = new Nachricht();
+        n.setId(UUID.randomUUID());
+        n.setAbsender(absender);
+        n.setText("Hi");
+
+        NachrichtView view = NachrichtView.von(n);
+        assertThat(view.absenderProfilbildUrl()).isEqualTo("/medien/" + bildId);
     }
 
     @Test

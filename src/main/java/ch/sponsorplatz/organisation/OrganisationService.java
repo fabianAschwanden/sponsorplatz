@@ -114,6 +114,11 @@ public class OrganisationService {
                     "Organisation kann nicht gelöscht werden — es existieren noch Mitgliedschaften. " +
                     "Bitte zuerst alle Mitglieder entfernen.");
         }
+        if (repository.existsByUebergeordneteOrgId(id)) {
+            throw new IllegalStateException(
+                    "Organisation kann nicht gelöscht werden — es existieren noch Unterorganisationen. " +
+                    "Bitte zuerst alle Unterorganisationen entfernen.");
+        }
         repository.deleteById(id);
     }
 

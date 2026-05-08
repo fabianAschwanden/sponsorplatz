@@ -32,4 +32,35 @@ public interface MitgliedschaftRepository extends JpaRepository<Mitgliedschaft, 
      */
     @Query("select m.org.id from Mitgliedschaft m where m.user.id = :userId")
     List<UUID> findOrgIdsByUserId(@Param("userId") UUID userId);
+
+    /**
+     * AccessControl-Vererbungs-Lookup in EINEM Query: prüft ob der User
+     * eine passende Mitgliedschaft auf der Ziel-Org ODER irgendeiner Eltern-Org
+     * in der Hierarchie-Kette hat. Ersetzt die N×2-Iteration (Mitglied-Check +
+     * findById pro Stufe) durch ein rekursives CTE.
+     *
+     * <p>Funktioniert auf Postgres und auf H2 (mit MODE=PostgreSQL).
+     * Rollen werden als Strings übergeben, weil das {@code rolle}-Spalte
+     * der DB ein VARCHAR mit Enum-Namen ist — Spring Data JPA serialisiert
+     * Enum-Collections in native Queries nicht zuverlässig.
+     */
+    @Query(value = """
+            WITH RECURSIVE elternkette AS (
+                SELECT id, uebergeordnete_org_id
+                  FROM organisation
+                 WHERE id = :startId
+                UNION ALL
+                SELECT o.id, o.uebergeordnete_org_id
+                  FROM organisation o
+                  JOIN elternkette e ON e.uebergeordnete_org_id = o.id
+            )
+            SELECT COUNT(*) FROM mitgliedschaft m
+             WHERE m.user_id = :userId
+               AND m.org_id IN (SELECT id FROM elternkette)
+               AND m.rolle IN (:rollen)
+            """, nativeQuery = true)
+    long zaehleMitgliedschaftenInHierarchie(
+            @Param("userId") UUID userId,
+            @Param("startId") UUID startId,
+            @Param("rollen") Collection<String> rollen);
 }

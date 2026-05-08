@@ -6,12 +6,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * AccessControl-Bean — prüft Berechtigungen auf Organisations-Ebene.
+ *
+ * <p>Unterstützt hierarchische Vererbung: Ein ORG_OWNER/ORG_EDITOR
+ * einer Eltern-Org hat implizit dieselben Rechte auf alle Kind-Orgs.</p>
  */
 @Component("accessControl")
 public class AccessControl {
@@ -32,29 +37,29 @@ public class AccessControl {
 
     /**
      * Prüft ob der authentifizierte User die Org bearbeiten darf.
-     * True für: ORG_EDITOR, ORG_OWNER, PLATFORM_ADMIN.
+     * True für: ORG_EDITOR/ORG_OWNER auf dieser oder einer Eltern-Org, PLATFORM_ADMIN.
      */
     public boolean kannOrgEditieren(UUID orgId, Authentication auth) {
         if (!istAuthentifiziert(auth)) return false;
         if (istPlattformAdmin(auth)) return true;
 
         return findeUserId(auth)
-                .map(userId -> mitgliedschaftRepository.existsByUserIdAndOrgIdAndRolleIn(
+                .map(userId -> hatBerechtigungMitVererbung(
                         userId, orgId, Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR)))
                 .orElse(false);
     }
 
     /**
      * Prüft ob der authentifizierte User die Org verwalten darf (Mitglieder-Verwaltung).
-     * True für: ORG_OWNER, PLATFORM_ADMIN.
+     * True für: ORG_OWNER auf dieser oder einer Eltern-Org, PLATFORM_ADMIN.
      */
     public boolean kannOrgVerwalten(UUID orgId, Authentication auth) {
         if (!istAuthentifiziert(auth)) return false;
         if (istPlattformAdmin(auth)) return true;
 
         return findeUserId(auth)
-                .map(userId -> mitgliedschaftRepository.existsByUserIdAndOrgIdAndRolle(
-                        userId, orgId, Rolle.ORG_OWNER))
+                .map(userId -> hatBerechtigungMitVererbung(
+                        userId, orgId, Set.of(Rolle.ORG_OWNER)))
                 .orElse(false);
     }
 
@@ -90,6 +95,20 @@ public class AccessControl {
     private Optional<UUID> findeUserId(Authentication auth) {
         return appUserRepository.findByEmail(auth.getName())
                 .map(AppUser::getId);
+    }
+
+    /**
+     * Prüft Berechtigung auf der Org selbst oder einer Eltern-Org in EINEM
+     * Query (rekursive CTE). Ersetzt die alte iterative Variante mit N×2
+     * Queries pro Auth-Check — bei tiefen Hierarchien spürbar schneller,
+     * bei flachen kein Mehraufwand.
+     */
+    private boolean hatBerechtigungMitVererbung(UUID userId, UUID orgId, Collection<Rolle> rollen) {
+        Collection<String> rollenAlsString = rollen.stream()
+                .map(Rolle::name)
+                .collect(Collectors.toSet());
+        return mitgliedschaftRepository
+                .zaehleMitgliedschaftenInHierarchie(userId, orgId, rollenAlsString) > 0;
     }
 }
 

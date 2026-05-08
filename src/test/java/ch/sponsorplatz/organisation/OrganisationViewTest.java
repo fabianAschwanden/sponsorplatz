@@ -43,6 +43,8 @@ class OrganisationViewTest {
         assertThat(view.websiteUrl()).isEqualTo("https://fc-test.ch");
         assertThat(view.registriertAm()).isEqualTo(registriert);
         assertThat(view.verifiziertAm()).isEqualTo(verifiziert);
+        assertThat(view.uebergeordneteOrgId()).isNull();
+        assertThat(view.istUnterorganisation()).isFalse();
     }
 
     /** VIEW-02: von(List) mappt jedes Element. */
@@ -56,6 +58,21 @@ class OrganisationViewTest {
         assertThat(views).hasSize(2);
         assertThat(views.get(0).slug()).isEqualTo("a");
         assertThat(views.get(1).slug()).isEqualTo("b");
+    }
+
+    /** VIEW-03: Hierarchie-Felder werden korrekt gemappt. */
+    @Test
+    void mappingMitElternOrg() {
+        Organisation eltern = neueOrg("Konzern AG", "konzern-ag");
+        Organisation kind = neueOrg("Abteilung", "abteilung");
+        kind.setUebergeordneteOrg(eltern);
+
+        OrganisationView view = OrganisationView.von(kind);
+
+        assertThat(view.uebergeordneteOrgId()).isEqualTo(eltern.getId());
+        assertThat(view.uebergeordneteOrgName()).isEqualTo("Konzern AG");
+        assertThat(view.uebergeordneteOrgSlug()).isEqualTo("konzern-ag");
+        assertThat(view.istUnterorganisation()).isTrue();
     }
 
     private Organisation neueOrg(String name, String slug) {

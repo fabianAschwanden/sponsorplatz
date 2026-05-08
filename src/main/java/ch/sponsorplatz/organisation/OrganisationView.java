@@ -19,10 +19,14 @@ public record OrganisationView(
         String beschreibung,
         String websiteUrl,
         Instant registriertAm,
-        Instant verifiziertAm
+        Instant verifiziertAm,
+        UUID uebergeordneteOrgId,
+        String uebergeordneteOrgName,
+        String uebergeordneteOrgSlug
 ) {
 
     public static OrganisationView von(Organisation org) {
+        Organisation eltern = org.getUebergeordneteOrg();
         return new OrganisationView(
                 org.getId(),
                 org.getName(),
@@ -34,12 +38,20 @@ public record OrganisationView(
                 org.getBeschreibung(),
                 org.getWebsiteUrl(),
                 org.getRegistriertAm(),
-                org.getVerifiziertAm()
+                org.getVerifiziertAm(),
+                eltern != null ? eltern.getId() : null,
+                eltern != null ? eltern.getName() : null,
+                eltern != null ? eltern.getSlug() : null
         );
     }
 
     public static List<OrganisationView> von(List<Organisation> orgs) {
         return orgs.stream().map(OrganisationView::von).toList();
+    }
+
+    /** Prüft ob diese Org eine Unterorganisation ist. */
+    public boolean istUnterorganisation() {
+        return uebergeordneteOrgId != null;
     }
 }
 

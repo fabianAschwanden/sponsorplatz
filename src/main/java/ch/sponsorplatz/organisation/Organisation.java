@@ -5,14 +5,20 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -84,6 +90,13 @@ public class Organisation {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "uebergeordnete_org_id")
+    private Organisation uebergeordneteOrg;
+
+    @OneToMany(mappedBy = "uebergeordneteOrg")
+    private List<Organisation> untergeordneteOrgs = new ArrayList<>();
 
     @PrePersist
     void onCreate() {
@@ -225,6 +238,12 @@ public class Organisation {
     public Instant getUpdatedAt() {
         return updatedAt;
     }
+
+    public Organisation getUebergeordneteOrg() { return uebergeordneteOrg; }
+    public void setUebergeordneteOrg(Organisation uebergeordneteOrg) { this.uebergeordneteOrg = uebergeordneteOrg; }
+
+    public List<Organisation> getUntergeordneteOrgs() { return untergeordneteOrgs; }
+    public void setUntergeordneteOrgs(List<Organisation> untergeordneteOrgs) { this.untergeordneteOrgs = untergeordneteOrgs; }
 
     @Override
     public boolean equals(Object o) {

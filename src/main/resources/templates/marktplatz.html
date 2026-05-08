@@ -13,6 +13,10 @@
 </head>
 <body class="public-body">
 
+<div th:if="${demoModus}" class="demo-disclaimer">
+    ⚠️ DEMO — Beispieldaten. Keine echten Vereine oder Sponsoren.
+</div>
+
 <header class="public-topbar">
     <div class="public-topbar-inner">
         <a class="public-logo" th:href="@{/}">
@@ -41,7 +45,33 @@
         <input type="text" name="ort" th:value="${filterOrt}" placeholder="Ort">
         <button type="submit" class="app-btn">Suchen</button>
         <a th:href="@{/marktplatz}" class="app-btn app-btn-secondary">Zurücksetzen</a>
+
+        <!-- Branche-Chip-Cloud: Multi-Toggle für Health-Branchen -->
+        <div class="branche-chips" style="width:100%; margin-top:0.75rem;">
+            <span style="font-size:0.85rem; color:var(--farbe-text-muted); margin-right:0.5rem;">Branche:</span>
+            <label th:each="b : ${alleBranchen}" class="branche-chip-label">
+                <input type="checkbox" name="branche" th:value="${b.name()}"
+                       th:checked="${filterBranchen.contains(b)}"
+                       onchange="this.form.submit();" style="display:none;">
+                <span class="branche-chip"
+                      th:classappend="${filterBranchen.contains(b)} ? 'branche-chip-aktiv' : ''"
+                      th:text="${b.anzeige}">Branche</span>
+            </label>
+        </div>
     </form>
+
+    <!-- Aktive Filter als entfernbare Chips -->
+    <div th:if="${!filterBranchen.isEmpty()}" class="aktive-filter" style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+        <span style="font-size:0.85rem; color:var(--farbe-text-muted);">Aktive Filter:</span>
+        <!-- Pro aktiven Filter: Link, der genau diese eine Branche entfernt, die anderen behält -->
+        <span th:each="b : ${filterBranchen}" class="branche-chip branche-chip-aktiv" style="position:relative; padding-right:1.5rem;">
+            <span th:text="${b.anzeige}">Branche</span>
+            <a th:with="restBranchen=${filterBranchen.?[#this != #vars.b].![name()]}"
+               th:href="@{/marktplatz(q=${suchbegriff}, kategorie=${filterKategorie}, ort=${filterOrt}, branche=${restBranchen})}"
+               th:title="|${b.anzeige}-Filter entfernen|"
+               style="position:absolute; right:0.4rem; top:50%; transform:translateY(-50%); text-decoration:none; color:inherit; font-weight:bold;">×</a>
+        </span>
+    </div>
 
     <section th:if="${!projekte.isEmpty()}" class="public-grid">
         <a th:each="p : ${projekte}"

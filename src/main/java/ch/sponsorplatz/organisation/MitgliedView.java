@@ -15,16 +15,22 @@ public record MitgliedView(
         Rolle rolle,
         Instant beigetretenAm,
         String userAnzeigename,
-        String userEmail
+        String userEmail,
+        String userProfilbildUrl
 ) {
 
     public static MitgliedView von(Mitgliedschaft m) {
+        var user = m.getUser();
+        String bildUrl = user.getProfilbildId() != null
+                ? "/medien/" + user.getProfilbildId()
+                : null;
         return new MitgliedView(
                 m.getId(),
                 m.getRolle(),
                 m.getBeigetretenAm(),
-                m.getUser().getAnzeigename(),
-                m.getUser().getEmail()
+                user.getAnzeigename(),
+                user.getEmail(),
+                bildUrl
         );
     }
 

@@ -30,6 +30,10 @@
         <div th:if="${param.error}" class="app-meldung fehler">
             E-Mail oder Passwort ist falsch.
         </div>
+        <div th:if="${param.gesperrt}" class="app-meldung fehler">
+            Zu viele Fehlversuche. Konto ist vorübergehend gesperrt. Bitte versuchen Sie es in einigen Minuten erneut
+            oder <a th:href="@{/passwort-vergessen}">setzen Sie Ihr Passwort zurück</a>.
+        </div>
         <div th:if="${param.logout}" class="app-meldung erfolg">
             Sie wurden erfolgreich abgemeldet.
         </div>

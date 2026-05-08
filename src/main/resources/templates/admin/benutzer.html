@@ -46,7 +46,15 @@
                 </thead>
                 <tbody>
                 <tr th:each="u : ${benutzer}">
-                    <td th:text="${u.anzeigename}">Name</td>
+                    <td>
+                        <div class="user-avatar-cell">
+                            <span th:replace="~{fragments/avatar :: avatar(
+                                    name=${u.anzeigename},
+                                    bildUrl=${u.profilbildUrl},
+                                    cssClass='user-avatar')}"></span>
+                            <span th:text="${u.anzeigename}">Name</span>
+                        </div>
+                    </td>
                     <td th:text="${u.email}">email@test.ch</td>
                     <td>
                         <span th:if="${u.aktiv}" class="app-chip" style="background:#dcfce7;color:#166534;">Aktiv</span>

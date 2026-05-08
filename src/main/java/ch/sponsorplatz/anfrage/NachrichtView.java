@@ -13,15 +13,21 @@ public record NachrichtView(
         UUID id,
         String absenderName,
         UUID absenderId,
+        String absenderProfilbildUrl,
         String text,
         Instant createdAt
 ) {
 
     public static NachrichtView von(Nachricht n) {
+        var absender = n.getAbsender();
+        String bildUrl = (absender != null && absender.getProfilbildId() != null)
+                ? "/medien/" + absender.getProfilbildId()
+                : null;
         return new NachrichtView(
                 n.getId(),
-                n.getAbsender() != null ? n.getAbsender().getAnzeigename() : "Unbekannt",
-                n.getAbsender() != null ? n.getAbsender().getId() : null,
+                absender != null ? absender.getAnzeigename() : "Unbekannt",
+                absender != null ? absender.getId() : null,
+                bildUrl,
                 n.getText(),
                 n.getCreatedAt()
         );

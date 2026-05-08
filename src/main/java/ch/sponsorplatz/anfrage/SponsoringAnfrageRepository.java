@@ -14,6 +14,8 @@ public interface SponsoringAnfrageRepository extends JpaRepository<SponsoringAnf
 
     List<SponsoringAnfrage> findByAnfragenderOrgIdOrderByCreatedAtDesc(UUID anfragenderOrgId);
 
+    List<SponsoringAnfrage> findByAnfragenderOrgIdAndStatusOrderByCreatedAtDesc(UUID anfragenderOrgId, AnfrageStatus status);
+
     List<SponsoringAnfrage> findByEmpfaengerOrgIdAndStatusOrderByCreatedAtDesc(UUID empfaengerOrgId, AnfrageStatus status);
 
     long countByEmpfaengerOrgIdAndStatus(UUID empfaengerOrgId, AnfrageStatus status);

@@ -11,8 +11,11 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -159,16 +162,19 @@ class AccessControlTest {
         AppUser user = new AppUser();
         user.setId(userId);
         when(appUserRepository.findByEmail(auth.getName())).thenReturn(Optional.of(user));
-        when(mitgliedschaftRepository.existsByUserIdAndOrgIdAndRolleIn(eq(userId), eq(orgId), eq(rollen)))
-                .thenReturn(existiert);
+        Set<String> rollenAlsString = rollen.stream().map(Rolle::name).collect(Collectors.toSet());
+        when(mitgliedschaftRepository.zaehleMitgliedschaftenInHierarchie(
+                eq(userId), eq(orgId), argThat(c -> c != null && c.containsAll(rollenAlsString))))
+                .thenReturn(existiert ? 1L : 0L);
     }
 
     private void mockUserMitRolle(Authentication auth, Rolle rolle, boolean existiert) {
         AppUser user = new AppUser();
         user.setId(userId);
         when(appUserRepository.findByEmail(auth.getName())).thenReturn(Optional.of(user));
-        when(mitgliedschaftRepository.existsByUserIdAndOrgIdAndRolle(eq(userId), eq(orgId), eq(rolle)))
-                .thenReturn(existiert);
+        when(mitgliedschaftRepository.zaehleMitgliedschaftenInHierarchie(
+                eq(userId), eq(orgId), argThat(c -> c != null && c.contains(rolle.name()))))
+                .thenReturn(existiert ? 1L : 0L);
     }
 
     private void mockOrgMitSlug(String slug, UUID id) {
@@ -178,6 +184,52 @@ class AccessControlTest {
         org.setName("Test-Org");
         org.setTyp(OrgTyp.VEREIN);
         when(organisationRepository.findBySlug(slug)).thenReturn(Optional.of(org));
+    }
+
+    // --- Vererbungs-Tests ---
+
+    /**
+     * AC-HIER-01: Owner auf Eltern-Org → kann Kind-Org editieren.
+     * Der rekursive CTE-Query findet die Mitgliedschaft auf der Eltern-Org
+     * obwohl der Auth-Check für die Kind-Org-ID läuft.
+     */
+    @Test
+    void elternOwnerKannKindEditieren() {
+        UUID kindOrgId = UUID.randomUUID();
+        Authentication auth = authMitRolle("ROLE_USER", "editor@sp.ch");
+        AppUser user = new AppUser();
+        user.setId(userId);
+        when(appUserRepository.findByEmail("editor@sp.ch")).thenReturn(Optional.of(user));
+
+        // CTE traversiert Kind→Eltern, findet Mitgliedschaft auf Eltern
+        when(mitgliedschaftRepository.zaehleMitgliedschaftenInHierarchie(
+                eq(userId), eq(kindOrgId), any()))
+                .thenReturn(1L);
+
+        assertThat(accessControl.kannOrgEditieren(kindOrgId, auth)).isTrue();
+    }
+
+    /**
+     * AC-HIER-02: Owner einer FREMDEN Hierarchie → kein Zugriff.
+     * Der CTE läuft die Eltern-Kette des Kindes hoch, findet aber keine
+     * Mitgliedschaft, weil der User in einem komplett separaten Konzern-Baum
+     * Mitglied ist. Negative Vererbungs-Grenze.
+     */
+    @Test
+    void ownerFremderHierarchieHatKeinenZugriff() {
+        UUID kindOrgId = UUID.randomUUID();
+        Authentication auth = authMitRolle("ROLE_USER", "fremder-owner@sp.ch");
+        AppUser user = new AppUser();
+        user.setId(userId);
+        when(appUserRepository.findByEmail("fremder-owner@sp.ch")).thenReturn(Optional.of(user));
+
+        // CTE traversiert die Eltern-Kette des Kindes, der User ist in keiner
+        // Org dieser Kette Mitglied (auch wenn er anderswo Owner ist)
+        when(mitgliedschaftRepository.zaehleMitgliedschaftenInHierarchie(
+                eq(userId), eq(kindOrgId), any()))
+                .thenReturn(0L);
+
+        assertThat(accessControl.kannOrgEditieren(kindOrgId, auth)).isFalse();
     }
 }
 

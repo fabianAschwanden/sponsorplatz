@@ -97,10 +97,13 @@
         <a th:href="@{/einstellungen}" class="dash-user-link"
            th:classappend="${aktiv == 'einstellungen'} ? 'aktiv'"
            title="Mein Profil &amp; Einstellungen">
-            <div class="dash-avatar"
-                 th:text="${#strings.substring(#strings.toUpperCase(#authentication.name), 0, 2)}">FA</div>
+            <span th:replace="~{fragments/avatar :: avatar(
+                    name=${aktuellerUser != null ? aktuellerUser.anzeigename : #authentication.name},
+                    bildUrl=${aktuellerUser != null ? aktuellerUser.profilbildUrl : null},
+                    cssClass='dash-avatar')}"></span>
             <div class="dash-user-info">
-                <span class="dash-user-name" sec:authentication="name">User</span>
+                <span class="dash-user-name"
+                      th:text="${aktuellerUser != null ? aktuellerUser.anzeigename : #authentication.name}">User</span>
                 <span class="dash-user-handle">Profil bearbeiten</span>
             </div>
         </a>

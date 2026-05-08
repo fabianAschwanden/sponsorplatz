@@ -11,6 +11,9 @@
           th:content="${org.beschreibung() != null ? #strings.abbreviate(org.beschreibung(), 200) : org.name() + ' auf Sponsorplatz'}">
     <meta property="og:site_name" content="Sponsorplatz">
     <meta property="og:locale" content="de_CH">
+    <meta property="og:image" th:content="@{/og/verein/{slug}.png(slug=${org.slug()})}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
@@ -22,13 +25,21 @@
     </nav>
 </header>
 <main>
-    <h1 th:text="${org.name()}">Vereinsname</h1>
+    <!-- Health-Hero mit Branche-Chip -->
+    <div class="verein-hero" style="margin-bottom:2rem;">
+        <h1 th:text="${org.name()}">Vereinsname</h1>
+        <div th:if="${org.branche()}" style="margin-top:0.5rem;">
+            <a class="health-hero-chip"
+               th:href="@{/marktplatz(branche=${org.branche().name()})}"
+               th:text="${org.branche().anzeige}">Branche</a>
+            <p class="health-subhead" th:text="${org.branche().beschreibung}">Beschreibung</p>
+        </div>
+    </div>
 
     <dl>
         <dt>Typ</dt>
         <dd th:text="${org.typ()}">VEREIN</dd>
-        <dt>Branche</dt>
-        <dd th:text="${org.branche() != null ? org.branche().anzeige : '-'}">-</dd>
+        <!-- Branche bewusst nicht doppelt: prominent oben im Hero-Chip + Subhead -->
         <dt>Rechtsform</dt>
         <dd th:text="${org.rechtsform() ?: '-'}">-</dd>
         <dt th:if="${org.websiteUrl()}">Website</dt>

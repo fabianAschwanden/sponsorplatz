@@ -15,42 +15,44 @@ package ch.sponsorplatz.organisation;
 public enum Branche {
 
     /** Klassischer Sportverein, Klub, Liga. */
-    SPORT("Sport"),
+    SPORT("Sport", "Vereine und Klubs im klassischen Vereinssport"),
 
     /** Bewegungsangebote ausserhalb des klassischen Vereinssports (Fitness, Outdoor, Tanz). */
-    BEWEGUNG("Bewegung & Fitness"),
+    BEWEGUNG("Bewegung & Fitness", "Bewegungsangebote ausserhalb des klassischen Vereinssports"),
 
     /** Rehabilitation, Physiotherapie-nahe Angebote, Bewegungstherapie. */
-    REHA("Rehabilitation"),
+    REHA("Rehabilitation", "Rehabilitation und Bewegungstherapie"),
 
     /** Behindertensport, inklusive Sportvereine, paralympische Disziplinen. */
-    BEHINDERTENSPORT("Behindertensport"),
+    BEHINDERTENSPORT("Behindertensport", "Inklusive Sportvereine und paralympische Disziplinen"),
 
     /** Sport- und Bewegungsangebote für Seniorinnen und Senioren. */
-    SENIORENSPORT("Seniorensport"),
+    SENIORENSPORT("Seniorensport", "Sport- und Bewegungsangebote für Seniorinnen und Senioren"),
 
     /** Gesundheits-Prävention, Aufklärung, Vorsorge. */
-    PRAEVENTION("Prävention"),
+    PRAEVENTION("Prävention", "Gesundheits-Prävention, Aufklärung und Vorsorge"),
 
     /** Mentale Gesundheit, Psychohygiene, Stressbewältigung. */
-    MENTAL_HEALTH("Mentale Gesundheit"),
+    MENTAL_HEALTH("Mentale Gesundheit", "Mentale Gesundheit, Psychohygiene und Stressbewältigung"),
 
     /** Ernährung, Esskultur, Foodliteracy. */
-    ERNAEHRUNG("Ernährung"),
+    ERNAEHRUNG("Ernährung", "Ernährung, Esskultur und Foodliteracy"),
 
     /** Wellness, Achtsamkeit, ganzheitliche Gesundheit. */
-    WELLNESS("Wellness & Achtsamkeit"),
+    WELLNESS("Wellness & Achtsamkeit", "Wellness, Achtsamkeit und ganzheitliche Gesundheit"),
 
     /** Selbsthilfegruppen rund um Gesundheitsthemen. */
-    SELBSTHILFE("Selbsthilfe"),
+    SELBSTHILFE("Selbsthilfe", "Selbsthilfegruppen rund um Gesundheitsthemen"),
 
     /** Patientenorganisationen, krankheitsspezifische Vereine. */
-    PATIENTENORGANISATION("Patientenorganisation");
+    PATIENTENORGANISATION("Patientenorganisation", "Patientenorganisationen und krankheitsspezifische Vereine");
 
     private final String anzeige;
+    private final String beschreibung;
 
-    Branche(String anzeige) {
+    Branche(String anzeige, String beschreibung) {
         this.anzeige = anzeige;
+        this.beschreibung = beschreibung;
     }
 
     /**
@@ -58,5 +60,12 @@ public enum Branche {
      */
     public String getAnzeige() {
         return anzeige;
+    }
+
+    /**
+     * Beschreibender Subhead-Text für das Vereinsprofil und Marken-Landing.
+     */
+    public String getBeschreibung() {
+        return beschreibung;
     }
 }
