@@ -36,6 +36,9 @@ class DashboardServiceTest {
     @Mock
     private SponsoringAnfrageService anfrageService;
 
+    @Mock
+    private EventService eventService;
+
     @InjectMocks
     private DashboardService dashboardService;
 

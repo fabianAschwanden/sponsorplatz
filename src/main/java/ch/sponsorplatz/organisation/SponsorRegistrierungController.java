@@ -27,7 +27,7 @@ public class SponsorRegistrierungController {
     @GetMapping
     public String formular(Model model) {
         model.addAttribute("sponsorForm", new SponsorRegistrierungFormDto());
-        model.addAttribute("branchen", Branche.values());
+        model.addAttribute("branchen", SponsorBranche.values());
         return "sponsor-registrieren";
     }
 
@@ -36,7 +36,7 @@ public class SponsorRegistrierungController {
                               BindingResult br,
                               Model model) {
         if (br.hasErrors()) {
-            model.addAttribute("branchen", Branche.values());
+            model.addAttribute("branchen", SponsorBranche.values());
             return "sponsor-registrieren";
         }
         try {
@@ -44,7 +44,7 @@ public class SponsorRegistrierungController {
             return "redirect:/login?registriert";
         } catch (IllegalArgumentException ex) {
             model.addAttribute(ModelAttributeNames.FEHLERMELDUNG, ex.getMessage());
-            model.addAttribute("branchen", Branche.values());
+            model.addAttribute("branchen", SponsorBranche.values());
             return "sponsor-registrieren";
         }
     }

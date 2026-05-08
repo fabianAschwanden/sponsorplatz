@@ -61,13 +61,13 @@
                 <p class="app-meldung fehler" th:if="${#fields.hasErrors('firmenname')}" th:errors="*{firmenname}"></p>
             </div>
             <div class="app-form-group">
-                <label for="branche">Engagement-Bereich</label>
-                <span class="hint">In welchem Bereich möchten Sie sponsern?</span>
-                <select id="branche" th:field="*{branche}" required>
+                <label for="sponsorBranche">Industrie</label>
+                <span class="hint">In welcher Industrie ist Ihr Unternehmen tätig?</span>
+                <select id="sponsorBranche" th:field="*{sponsorBranche}" required>
                     <option value="">— Bitte wählen —</option>
                     <option th:each="b : ${branchen}" th:value="${b}" th:text="${b.anzeige}"></option>
                 </select>
-                <p class="app-meldung fehler" th:if="${#fields.hasErrors('branche')}" th:errors="*{branche}"></p>
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('sponsorBranche')}" th:errors="*{sponsorBranche}"></p>
             </div>
             <div class="app-form-group">
                 <label for="rechtsform">Rechtsform</label>

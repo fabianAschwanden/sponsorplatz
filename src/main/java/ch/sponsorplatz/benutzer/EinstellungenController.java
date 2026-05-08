@@ -5,6 +5,8 @@ import ch.sponsorplatz.projekt.AssetTyp;
 import ch.sponsorplatz.projekt.EntityTyp;
 import ch.sponsorplatz.audit.DatenExportService;
 import ch.sponsorplatz.projekt.MedienAssetService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -61,6 +63,7 @@ public class EinstellungenController {
                                    BindingResult br,
                                    Authentication auth,
                                    Model model,
+                                   HttpServletResponse response,
                                    RedirectAttributes redirect) {
         if (br.hasErrors()) {
             AppUser user = ladeUser(auth);
@@ -73,6 +76,7 @@ public class EinstellungenController {
         AppUser user = ladeUser(auth);
         try {
             appUserService.aktualisiereProfil(user.getId(), dto);
+            synchronisiereSprache(dto.getSprache(), response);
             redirect.addFlashAttribute("erfolgsMeldung", "Profil gespeichert");
         } catch (IllegalArgumentException e) {
             redirect.addFlashAttribute("fehlermeldung", e.getMessage());
@@ -145,5 +149,19 @@ public class EinstellungenController {
             "it_CH", "Italiano (Svizzera)",
             "en", "English"
     );
+
+    /**
+     * Synchronisiert den lang-Cookie sofort nach Profil-Speichern,
+     * damit der naechste Seitenaufruf bereits in der neuen Sprache ist.
+     */
+    private void synchronisiereSprache(String sprache, HttpServletResponse response) {
+        if (sprache != null && !sprache.isBlank()) {
+            Cookie langCookie = new Cookie("lang", sprache.replace('_', '-'));
+            langCookie.setPath("/");
+            langCookie.setMaxAge(365 * 24 * 60 * 60);
+            langCookie.setHttpOnly(false);
+            response.addCookie(langCookie);
+        }
+    }
 }
 

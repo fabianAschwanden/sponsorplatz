@@ -80,7 +80,8 @@ class OrganisationStatistikTest {
     @Test
     @DisplayName("MARK-05: countBySichtbarkeit zählt nur OEFFENTLICH (nicht ENTWURF/ARCHIVIERT)")
     void countBySichtbarkeitNurOeffentlich() {
-        Organisation host = persistOrg("Host AG", "host-ag", OrgTyp.UNTERNEHMEN, OrgStatus.VERIFIED, Branche.SPORT);
+        // UNTERNEHMEN-Host braucht sponsor_branche statt branche (V25 chk_branche_pro_typ)
+        Organisation host = persistUnternehmen("Host AG", "host-ag", OrgStatus.VERIFIED, SponsorBranche.SPORTARTIKEL);
 
         persistProjekt("Marathon",   "marathon-26",   host, Sichtbarkeit.OEFFENTLICH);
         persistProjekt("Lauf-Camp",  "lauf-camp",     host, Sichtbarkeit.OEFFENTLICH);
@@ -100,7 +101,27 @@ class OrganisationStatistikTest {
         o.setSlug(slug);
         o.setTyp(typ);
         o.setStatus(status);
-        o.setBranche(branche);
+        // V25 chk_branche_pro_typ: VEREIN nutzt branche, UNTERNEHMEN/STIFTUNG müssen
+        // mindestens eine Achse setzen — wenn der Test eine VEREIN-Health-Branche
+        // mitgibt, mappen wir sie für UNTERNEHMEN intern auf SponsorBranche.ANDERE,
+        // damit die DB-Constraint nicht verletzt wird (die Tests testen Marken-
+        // Statistik primär über die VEREIN-Filter, der UNTERNEHMEN/STIFTUNG-Pfad
+        // ist hier nur Negativ-Fixture).
+        if (typ == OrgTyp.UNTERNEHMEN || typ == OrgTyp.STIFTUNG) {
+            o.setSponsorBranche(SponsorBranche.ANDERE);
+        } else {
+            o.setBranche(branche);
+        }
+        return em.persistAndFlush(o);
+    }
+
+    private Organisation persistUnternehmen(String name, String slug, OrgStatus status, SponsorBranche sponsorBranche) {
+        Organisation o = new Organisation();
+        o.setName(name);
+        o.setSlug(slug);
+        o.setTyp(OrgTyp.UNTERNEHMEN);
+        o.setStatus(status);
+        o.setSponsorBranche(sponsorBranche);
         return em.persistAndFlush(o);
     }
 

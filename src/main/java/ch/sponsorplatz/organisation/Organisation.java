@@ -50,9 +50,15 @@ public class Organisation {
     @Column(name = "rechtsform", length = 50)
     private String rechtsform;
 
+    /** Health/Sport-Fokus — Pflicht für VEREIN, optional für STIFTUNG, NULL für UNTERNEHMEN. */
     @Enumerated(EnumType.STRING)
-    @Column(name = "branche", nullable = false, length = 50)
+    @Column(name = "branche", length = 50)
     private Branche branche;
+
+    /** Industrie — Pflicht für UNTERNEHMEN, optional für STIFTUNG, NULL für VEREIN. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sponsor_branche", length = 50)
+    private SponsorBranche sponsorBranche;
 
     @Column(name = "beschreibung", columnDefinition = "TEXT")
     private String beschreibung;
@@ -164,6 +170,14 @@ public class Organisation {
 
     public void setBranche(Branche branche) {
         this.branche = branche;
+    }
+
+    public SponsorBranche getSponsorBranche() {
+        return sponsorBranche;
+    }
+
+    public void setSponsorBranche(SponsorBranche sponsorBranche) {
+        this.sponsorBranche = sponsorBranche;
     }
 
     public String getBeschreibung() {

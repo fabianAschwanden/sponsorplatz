@@ -100,6 +100,14 @@
 <footer class="public-footer">
     <div class="public-footer-inner">
         <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
+        <nav>
+            <span class="lang-switch">
+                <a th:href="@{/marktplatz(lang=de)}">DE</a>
+                <a th:href="@{/marktplatz(lang=fr)}">FR</a>
+                <a th:href="@{/marktplatz(lang=it)}">IT</a>
+                <a th:href="@{/marktplatz(lang=en)}">EN</a>
+            </span>
+        </nav>
     </div>
 </footer>
 

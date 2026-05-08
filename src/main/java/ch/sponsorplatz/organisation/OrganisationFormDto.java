@@ -25,8 +25,15 @@ public class OrganisationFormDto {
     @Size(max = 50)
     private String rechtsform;
 
-    @NotNull(message = "Branche ist Pflicht — Sponsorplatz ist auf Sport und Gesundheit fokussiert")
+    /**
+     * Verein-Branche (Health/Sport). Pflicht für VEREIN, NULL für UNTERNEHMEN —
+     * die XOR-Validierung steht im {@code OrganisationService.wendeFormDatenAn},
+     * nicht hier als {@code @NotNull}, weil das DTO beide Org-Typen abdeckt.
+     */
     private Branche branche;
+
+    /** Sponsor-Industrie. Pflicht für UNTERNEHMEN, NULL für VEREIN. */
+    private SponsorBranche sponsorBranche;
 
     private String beschreibung;
 
@@ -86,6 +93,14 @@ public class OrganisationFormDto {
 
     public void setBranche(Branche branche) {
         this.branche = branche;
+    }
+
+    public SponsorBranche getSponsorBranche() {
+        return sponsorBranche;
+    }
+
+    public void setSponsorBranche(SponsorBranche sponsorBranche) {
+        this.sponsorBranche = sponsorBranche;
     }
 
     public String getBeschreibung() {

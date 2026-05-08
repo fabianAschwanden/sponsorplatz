@@ -40,11 +40,12 @@ public class SponsorRegistrierungService {
         userForm.setPasswort(dto.getPasswort());
         AppUser user = appUserService.registriere(userForm);
 
-        // 2. Organisation als UNTERNEHMEN erstellen
+        // 2. Organisation als UNTERNEHMEN erstellen — sponsorBranche statt branche,
+        // denn die Sponsor-Self-Reg legt explizit eine Sponsor-Firma an.
         OrganisationFormDto orgForm = new OrganisationFormDto();
         orgForm.setTyp(OrgTyp.UNTERNEHMEN);
         orgForm.setName(dto.getFirmenname());
-        orgForm.setBranche(dto.getBranche());
+        orgForm.setSponsorBranche(dto.getSponsorBranche());
         orgForm.setRechtsform(dto.getRechtsform());
         orgForm.setWebsiteUrl(dto.getWebsiteUrl());
         orgForm.setBeschreibung(dto.getBeschreibung());

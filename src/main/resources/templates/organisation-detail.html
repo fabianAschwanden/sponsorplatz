@@ -50,6 +50,11 @@
                     <dd th:text="${org.branche.anzeige}"></dd>
                 </th:block>
 
+                <th:block th:if="${org.sponsorBranche}">
+                    <dt>Industrie</dt>
+                    <dd th:text="${org.sponsorBranche.anzeige}"></dd>
+                </th:block>
+
                 <th:block th:if="${org.websiteUrl}">
                     <dt>Website</dt>
                     <dd>

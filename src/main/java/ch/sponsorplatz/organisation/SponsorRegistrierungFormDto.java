@@ -1,5 +1,4 @@
 package ch.sponsorplatz.organisation;
-import ch.sponsorplatz.benutzer.AppUser;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -32,8 +31,8 @@ public class SponsorRegistrierungFormDto {
     @Size(min = 2, max = 255, message = "Firmenname muss zwischen 2 und 255 Zeichen sein")
     private String firmenname;
 
-    @NotNull(message = "Branche ist Pflicht — in welchem Bereich möchten Sie sponsern?")
-    private Branche branche;
+    @NotNull(message = "Industrie ist Pflicht — in welcher Industrie ist Ihr Unternehmen tätig?")
+    private SponsorBranche sponsorBranche;
 
     @Size(max = 50)
     private String rechtsform;
@@ -57,8 +56,8 @@ public class SponsorRegistrierungFormDto {
     public String getFirmenname() { return firmenname; }
     public void setFirmenname(String firmenname) { this.firmenname = firmenname; }
 
-    public Branche getBranche() { return branche; }
-    public void setBranche(Branche branche) { this.branche = branche; }
+    public SponsorBranche getSponsorBranche() { return sponsorBranche; }
+    public void setSponsorBranche(SponsorBranche sponsorBranche) { this.sponsorBranche = sponsorBranche; }
 
     public String getRechtsform() { return rechtsform; }
     public void setRechtsform(String rechtsform) { this.rechtsform = rechtsform; }

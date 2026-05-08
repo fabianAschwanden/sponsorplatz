@@ -539,6 +539,38 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **OG-02** | `OgImageControllerTest` | GET `/og/projekt/{slug}.png` → 200 + content-type image/png |
 | **OG-03** | `OgImageControllerTest` | Response enthält `Cache-Control: max-age=3600` |
 
+### Phase 9.1 — Mehrsprachigkeit FR/IT (I18N)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **I18N-01** | `LocaleConfigTest` | Cookie-basierter `LocaleResolver` — Sprache wird in Cookie `lang` persistiert; nächster Request liest korrekte Locale |
+| **I18N-02** | `LocaleConfigTest` | `?lang=fr` URL-Override setzt Locale auf `fr_CH`, Cookie wird aktualisiert |
+| **I18N-03** | `LocaleConfigTest` | `?lang=de` wechselt zurück zu `de_CH` |
+| **I18N-04** | `LocaleConfigTest` | Ungültiger `?lang=xx` → Fallback auf Default `de_CH` |
+| **I18N-05** | `BrancheI18nTest` | `Branche.SPORT` Anzeige-Name FR = `Sport` (aus `messages_fr_CH.properties`) |
+| **I18N-06** | `BrancheI18nTest` | `Branche.MENTAL_HEALTH` Anzeige-Name IT = `Salute mentale` (aus `messages_it_CH.properties`) |
+
+### Phase 9.2 — Zahlungs-Provider-Anbindung (PAY)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **PAY-01** | `LokalerStubProviderTest` | `erstelleZahlung` gibt sofort Status BEZAHLT zurück |
+| **PAY-02** | `LokalerStubProviderTest` | `bestaetigeZahlung` ist idempotent |
+| **PAY-03** | `PaymentWebhookControllerTest` | POST `/payment/webhook/stub` → 200 + Rechnung markiert als bezahlt |
+| **PAY-04** | `PaymentWebhookControllerTest` | POST `/payment/webhook/stub` mit unbekannter Referenz → 404 |
+| **PAY-05** | `PaymentWebhookControllerTest` | Doppelter Webhook (Idempotenz) → 200, keine doppelte Buchung |
+| **PAY-06** | `PaymentServiceTest` | `erstelleZahlung` delegiert korrekt an aktiven Provider |
+
+### Phase 9.3 — Event-Entity (EVT)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **EVT-01** | `EventServiceTest` | CRUD: `erstelle`, `aktualisiere`, `loesche` — Basis-Lifecycle |
+| **EVT-02** | `EventControllerTest` | POST `…/events/speichern` ohne Edit-Recht → 403 |
+| **EVT-03** | `DashboardServiceTest` | `naechsteEvents` gibt max. 3 kommende Events der eigenen Orgs zurück |
+| **EVT-04** | `EventServiceTest` | `findeKommendeNachOrgIds` sortiert nach Datum aufsteigend |
+| **EVT-05** | `EventViewTest` | View-Mapping korrekt (kein Org-Entity im View) |
+
 ## CI
 
 - Bei jedem Push und PR auf `main`: `mvn -B clean verify` + Docker-Build-Smoke

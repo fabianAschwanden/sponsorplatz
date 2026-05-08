@@ -68,7 +68,7 @@ class DashboardControllerTest {
     @WithMockUser
     void dashboardModelEnthaeltAttribute() throws Exception {
         when(dashboardService.ladeDashboardDaten(anyString()))
-            .thenReturn(DashboardDaten.von(3, 5, 12, 4));
+            .thenReturn(DashboardDaten.von(3, 5, 12, 4, java.util.List.of()));
         when(appUserService.findeNachEmail(anyString())).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/dashboard"))

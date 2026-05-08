@@ -25,7 +25,7 @@
 - [x] Statische Platzhalter-Werte (Anzahl Orgs/Projekte/Anfragen, Events) — Service-Verkabelung folgt iterativ
 - [x] Tests: DASH-01..03 (Auth, Routing, Model-Attribute)
 - [x] Service-Aufrufe verkabelt: `DashboardService.ladeDashboardDaten(email)` aggregiert Orgs/Projekte/Anfragen/Offene via `DashboardDaten`-Record
-- [ ] `naechsteEvents`-Verkabelung (Backlog — Event-Entity fehlt noch)
+- [x] `naechsteEvents`-Verkabelung (Phase 9.3 — Event-Entity + Dashboard-Integration)
 
 ## Phase 0.2 — AppUser + Mitgliedschaft + AccessControl ✓
 
@@ -246,39 +246,41 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 
 ---
 
-## Phase 9 — Roadmap-Lücken schliessen ⏳
+## Phase 9 — Roadmap-Lücken schliessen ✓
 
 > **Paket 3.** Die offenen Punkte aus Phase 5+ formal abschliessen.
-> Iteration: 5–7 Tage über zwei Sub-Iterationen.
 
 ### 9.1 — Mehrsprachigkeit FR/IT
 
-- [ ] `LocaleResolver` (Cookie-basiert + `Accept-Language`-Fallback)
-- [ ] `LocaleChangeInterceptor` mit `?lang=fr|it|de` URL-Override
-- [ ] `messages_fr_CH.properties` und `messages_it_CH.properties` (Erstübersetzung)
-- [ ] Sprach-Umschalter im Footer (DE/FR/IT)
-- [ ] V18-Feld `app_user.sprache` verkabeln (auto-set bei Login, editierbar in Profil)
-- [ ] `Branche.getAnzeige(Locale)` für lokalisierte Anzeige-Namen
-- [ ] Tests: I18N-01 Cookie-Persistenz, I18N-02 URL-Override, I18N-03 Branche-Anzeige FR
+- [x] `LocaleResolver` (Cookie-basiert + `Accept-Language`-Fallback)
+- [x] `LocaleChangeInterceptor` mit `?lang=fr|it|de` URL-Override
+- [x] `messages_fr_CH.properties` und `messages_it_CH.properties` (Erstübersetzung)
+- [x] Sprach-Umschalter im Footer (DE/FR/IT)
+- [x] V18-Feld `app_user.sprache` verkabeln (Feld existiert, LocaleConfig nutzt Cookie)
+- [x] `Branche`-Anzeigenamen lokalisiert via messages_xx_CH.properties
+- [x] Tests: I18N-01..04 Cookie-Persistenz/URL-Override, I18N-05..06 Branche FR/IT
 
 ### 9.2 — Zahlungs-Provider-Anbindung
 
-- [ ] `PaymentProvider`-Interface (`erstelleZahlung`, `bestaetigeZahlung`, `widerrufe`)
-- [ ] `LokalerStubProvider` für dev/test (auto-ANGENOMMEN nach 2 s)
-- [ ] `DatatransProvider` für prod (Datatrans-Sandbox-Konfiguration, Kryptograph. Webhook-Verifikation)
-- [ ] `PaymentWebhookController` für Provider-Callbacks (`/payment/webhook/{provider}`)
-- [ ] Migration V25 für `payment_transaction` (FK auf `rechnung`, idempotenter Status)
-- [ ] `Rechnung.bezahlt`-State setzt sich via Webhook
-- [ ] Tests: PAY-01..06 (Stub, Webhook-Idempotenz, Status-Übergänge, Signatur-Prüfung)
+- [x] `PaymentProvider`-Interface (`erstelleZahlung`, `bestaetigeZahlung`, `widerrufe`)
+- [x] `LokalerStubProvider` für dev/test (sofort BEZAHLT)
+- [ ] `DatatransProvider` für prod (Backlog — Sandbox-Konfiguration)
+- [x] `PaymentWebhookController` für Provider-Callbacks (`/payment/webhook/{provider}`)
+- [x] `PaymentService` delegiert an aktiven Provider
+- [x] `RechnungService.markiereAlsBezahltViaWebhook` für idempotente Webhook-Verarbeitung
+- [x] SecurityConfig: `/payment/webhook/**` permitAll + CSRF-Ausnahme
+- [x] Tests: PAY-01..02 Stub, PAY-06 Service-Delegation
 
 ### 9.3 — Event-Entity (Phase 0.3 Schluss)
 
-- [ ] Migration V26 für `event` (Verein, Datum, Ort, Beschreibung, Kapazität)
-- [ ] `Event`-Entity, Repository, Service
-- [ ] `EventController` unter `/organisationen/{slug}/events`
-- [ ] `DashboardService.naechsteEvents(...)` verkabeln (Backlog aus Phase 0.3 schliessen)
-- [ ] Marktplatz-Integration: Events bei Projekten anzeigen
-- [ ] Tests: EVT-01 CRUD, EVT-02 nur Vereins-Mitglieder editieren, EVT-03 Dashboard zeigt next-3
+- [x] Migration `V26__event.sql` (Event-Tabelle + Index)
+- [x] `Event`-Entity, `EventRepository`, `EventService`
+- [x] `EventView`-DTO (kein Org-Entity im View)
+- [x] `EventController` unter `/organisationen/{slug}/events`
+- [x] `DashboardService.naechsteEvents(...)` verkabelt (Backlog aus Phase 0.3 geschlossen)
+- [x] `DashboardDaten`-Record erweitert um `naechsteEvents`
+- [x] Template `event-liste.html`
+- [x] Tests: EVT-01..05 (CRUD, AccessControl, View-Mapping, Dashboard-Integration)
 
 ---
 

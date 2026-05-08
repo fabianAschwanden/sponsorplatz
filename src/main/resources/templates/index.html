@@ -5,9 +5,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sponsorplatz — Sponsoring für Sport und Gesundheit in der Schweiz</title>
-    <meta name="description" content="Sponsorplatz verbindet Schweizer Vereine aus Sport und Gesundheit mit Marken, die echte Wirkung suchen. Bewegung, Reha, Mental Health, Ernährung — alles, was die Schweiz gesund hält.">
-    <meta name="keywords" content="Sponsoring Schweiz, Sportverein Sponsoring, Gesundheits-Sponsoring, Mental Health, Bewegung, Reha, Ernährung, Wellness">
+    <title>Sponsorplatz — Wo Vereine und die CSS zueinander finden</title>
+    <meta name="description" content="Sponsorplatz ist die kuratierte Plattform für Schweizer Sport- und Health-Vereine und das CSS Sponsoring-Team. Bewegung, Reha, Mental Health, Ernährung — alles, was die Schweiz gesund hält.">
+    <meta name="keywords" content="CSS Sponsoring, Sportverein Sponsoring, Gesundheits-Sponsoring Schweiz, Mental Health, Bewegung, Reha, Ernährung">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -35,11 +35,12 @@
 
 <main class="public-main">
     <section class="public-hero">
-        <p class="public-hero-rubrik">Sponsoring für Sport &amp; Gesundheit · Schweiz</p>
-        <h1>Wo Vereine und Marken<br>zueinander finden.</h1>
+        <p class="public-hero-rubrik">CSS Sponsoring-Hub · Sport und Gesundheit · Schweiz</p>
+        <h1>Wo Vereine und die CSS<br>zueinander finden.</h1>
         <p class="public-hero-claim">
-            Sponsorplatz ist die kuratierte Plattform für Vereine aus Sport, Bewegung und Gesundheit —
-            und für Marken, die echte Wirkung statt Streuverlust wollen.
+            Eine Plattform. Vier Akteure. Eine Mission. Die kuratierte Anlaufstelle für
+            Schweizer Sport- und Health-Vereine und das CSS Sponsoring-Team — strikt fokussiert,
+            breit gefasst.
         </p>
 
         <div class="public-hero-cta">
@@ -47,16 +48,28 @@
             <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn app-btn-secondary">Verein registrieren</a>
         </div>
 
+        <!-- Vier Akteure aus dem Zielbild — 2×2-Layout über die bestehende Subclaim-Grid -->
         <div class="public-hero-subclaims">
             <div class="public-hero-subclaim">
-                <strong>Für Vereine im Health-Bereich.</strong>
-                Sport, Bewegung, Reha, Mental Health, Ernährung, Selbsthilfe — pflege deine Sponsoren-Daten,
-                veröffentliche Projekte, werd' von den richtigen Marken gefunden.
+                <strong>Verein.</strong>
+                Schweizer Sport- und Health-Vereine bewerben sich mit strukturiertem
+                Profil und werden von der CSS gefunden — strikt fokussiert auf Sport
+                und Gesundheit.
             </div>
             <div class="public-hero-subclaim">
-                <strong>Für Firmen mit Health-Bezug.</strong>
-                Krankenkassen, Apotheken, Lebensmittel, Fitness-Marken: Finde Schweizer Vereine, die
-                wirklich zu deiner Botschaft passen. Lokal. Messbar. Ehrlich.
+                <strong>CSS.</strong>
+                Das zentrale Sponsoring-Team kuratiert die Plattform, prüft Anfragen
+                einheitlich und macht das CSS-Engagement sichtbar.
+            </div>
+            <div class="public-hero-subclaim">
+                <strong>Agentur.</strong>
+                Regionale CSS-Vertretungen arbeiten im gemeinsamen Workflow mit dem
+                Zentrum — keine Doppelspuren, keine Datenverluste.
+            </div>
+            <div class="public-hero-subclaim">
+                <strong>Versicherte.</strong>
+                CSS-Versicherte sehen, welche Vereine in ihrer Region durch die CSS
+                unterstützt werden — Engagement landet, statt zu verpuffen.
             </div>
         </div>
 
@@ -74,10 +87,11 @@
 
     <section class="app-card" style="max-width: 720px; margin: 2rem auto;">
         <p style="margin: 0 0 0.5rem;"><strong>Phase 0 — In Aufbau.</strong></p>
-        <p style="margin: 0 0 0.5rem;">Sponsorplatz ist die kuratierte Sponsoring-Plattform für Schweizer Sport- und Health-Vereine.
-            Wir nehmen ausschliesslich Vereine auf, deren Mission klar im Sport- oder Gesundheitsbereich
-            verortet ist — Bewegung, Reha, Mental Health, Ernährung, Selbsthilfe. So wird der Marktplatz
-            für Sponsoren ein verlässlicher Ort statt einer Streuwiese.</p>
+        <p style="margin: 0 0 0.5rem;">Der CSS Sponsoring-Hub ist die kuratierte Plattform für
+            Sport- und Health-Sponsoring der CSS. Wir nehmen ausschliesslich Vereine auf,
+            deren Mission klar im Sport- oder Gesundheitsbereich verortet ist — Bewegung, Reha,
+            Mental Health, Ernährung, Selbsthilfe. So wird das CSS-Sponsoring zum verlässlichen
+            Treffpunkt für Vereine, das Sponsoring-Team, die regionalen Agenturen und die Versicherten.</p>
         <p style="margin: 0;">Du willst Pilot-Verein werden? <a href="mailto:hallo@sponsorplatz.ch" style="color: var(--dash-violet-dark); font-weight: 600;">hallo@sponsorplatz.ch</a></p>
     </section>
 </main>
@@ -88,6 +102,12 @@
         <nav>
             <a th:href="@{/impressum}">Impressum</a>
             <a th:href="@{/datenschutz}">Datenschutz</a>
+            <span class="lang-switch">
+                <a th:href="@{/(lang=de)}">DE</a>
+                <a th:href="@{/(lang=fr)}">FR</a>
+                <a th:href="@{/(lang=it)}">IT</a>
+                <a th:href="@{/(lang=en)}">EN</a>
+            </span>
         </nav>
     </div>
 </footer>

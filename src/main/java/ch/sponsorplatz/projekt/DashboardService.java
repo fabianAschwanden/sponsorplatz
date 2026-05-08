@@ -31,15 +31,18 @@ public class DashboardService {
     private final MitgliedschaftRepository mitgliedschaftRepository;
     private final ProjektService projektService;
     private final SponsoringAnfrageService anfrageService;
+    private final EventService eventService;
 
     public DashboardService(AppUserRepository appUserRepository,
                             MitgliedschaftRepository mitgliedschaftRepository,
                             ProjektService projektService,
-                            SponsoringAnfrageService anfrageService) {
+                            SponsoringAnfrageService anfrageService,
+                            EventService eventService) {
         this.appUserRepository = appUserRepository;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
         this.projektService = projektService;
         this.anfrageService = anfrageService;
+        this.eventService = eventService;
     }
 
     /**
@@ -54,11 +57,14 @@ public class DashboardService {
                     if (orgIds.isEmpty()) {
                         return DashboardDaten.leer();
                     }
+                    List<EventView> events = EventView.von(
+                            eventService.findeKommendeNachOrgIds(orgIds, 3));
                     return DashboardDaten.von(
                             orgIds.size(),
                             projektService.zaehleOeffentlicheNachOrgIds(orgIds),
                             anfrageService.zaehleEingehende(orgIds),
-                            anfrageService.zaehleNeue(orgIds)
+                            anfrageService.zaehleNeue(orgIds),
+                            events
                     );
                 })
                 .orElse(DashboardDaten.leer());

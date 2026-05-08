@@ -120,14 +120,26 @@ class OrganisationControllerTest {
             .andExpect(status().isNotFound());
     }
 
+    /** ORG-08a: GET /organisationen/neu ohne typ → Wizard-Schritt 1 (Typ-Auswahl). */
     @Test
     @WithMockUser
-    void neuesFormularWirdAngezeigt() throws Exception {
+    void neuOhneTypZeigtTypAuswahl() throws Exception {
         mockMvc.perform(get("/organisationen/neu"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("organisation-typ-waehlen"))
+            .andExpect(model().attributeExists("typen"));
+    }
+
+    /** ORG-08b: GET /organisationen/neu?typ=VEREIN → Wizard-Schritt 2 (Form). */
+    @Test
+    @WithMockUser
+    void neuMitTypZeigtFormular() throws Exception {
+        mockMvc.perform(get("/organisationen/neu").param("typ", "VEREIN"))
             .andExpect(status().isOk())
             .andExpect(view().name("organisation-form"))
             .andExpect(model().attributeExists("orgForm"))
-            .andExpect(model().attributeExists("typen"));
+            .andExpect(model().attributeExists("typen"))
+            .andExpect(model().attributeExists("sponsorBranchen"));
     }
 
     @Test

@@ -117,17 +117,50 @@ class OrganisationServiceTest {
         assertThat(gespeichert.getBeschreibung()).isEqualTo("echte Beschreibung");
     }
 
-    /** ORG-22: Branche ist Pflicht — null wirft IllegalArgumentException (Health-Fokus). */
+    /** ORG-22: VEREIN ohne Branche → IllegalArgumentException (Health-Fokus). */
     @Test
-    void erstelleOhneBrancheSchlaegtFehl() {
+    void erstelleVereinOhneBrancheSchlaegtFehl() {
         when(repository.findBySlug(any())).thenReturn(Optional.empty());
 
         OrganisationFormDto dto = neuesDto("Ohne Branche", null);
+        dto.setTyp(OrgTyp.VEREIN);
         dto.setBranche(null);
 
         assertThatThrownBy(() -> service.erstelle(dto))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Branche");
+    }
+
+    /** ORG-22b: UNTERNEHMEN ohne SponsorBranche → IllegalArgumentException. */
+    @Test
+    void erstelleUnternehmenOhneSponsorBrancheSchlaegtFehl() {
+        when(repository.findBySlug(any())).thenReturn(Optional.empty());
+
+        OrganisationFormDto dto = neuesDto("Versicherung XY", null);
+        dto.setTyp(OrgTyp.UNTERNEHMEN);
+        dto.setBranche(null);
+        dto.setSponsorBranche(null);
+
+        assertThatThrownBy(() -> service.erstelle(dto))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Industrie");
+    }
+
+    /** ORG-22c: UNTERNEHMEN mit SponsorBranche → branche wird auf null gesetzt (Achsen-Trennung). */
+    @Test
+    void erstelleUnternehmenSetztNurSponsorBranche() {
+        when(repository.findBySlug(any())).thenReturn(Optional.empty());
+        when(repository.save(any(Organisation.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        OrganisationFormDto dto = neuesDto("CSS Versicherung", "css");
+        dto.setTyp(OrgTyp.UNTERNEHMEN);
+        dto.setBranche(Branche.SPORT); // sollte ignoriert werden für UNTERNEHMEN
+        dto.setSponsorBranche(SponsorBranche.VERSICHERUNG);
+
+        Organisation org = service.erstelle(dto);
+
+        assertThat(org.getSponsorBranche()).isEqualTo(SponsorBranche.VERSICHERUNG);
+        assertThat(org.getBranche()).isNull();
     }
 
     /** ORG-23: Health-Branchen werden akzeptiert — alle Enum-Werte. */

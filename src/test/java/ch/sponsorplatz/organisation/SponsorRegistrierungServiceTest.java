@@ -48,7 +48,7 @@ class SponsorRegistrierungServiceTest {
         dto.setAnzeigename("Max Muster");
         dto.setPasswort("sicheres-passwort");
         dto.setFirmenname("Muster AG");
-        dto.setBranche(Branche.SPORT);
+        dto.setSponsorBranche(SponsorBranche.SPORTARTIKEL);
         dto.setRechtsform("AG");
         dto.setWebsiteUrl("https://muster.ch");
         dto.setBeschreibung("Sportartikel-Hersteller");
@@ -88,7 +88,8 @@ class SponsorRegistrierungServiceTest {
         verify(organisationService).erstelle(orgCaptor.capture());
         assertThat(orgCaptor.getValue().getTyp()).isEqualTo(OrgTyp.UNTERNEHMEN);
         assertThat(orgCaptor.getValue().getName()).isEqualTo("Muster AG");
-        assertThat(orgCaptor.getValue().getBranche()).isEqualTo(Branche.SPORT);
+        assertThat(orgCaptor.getValue().getSponsorBranche()).isEqualTo(SponsorBranche.SPORTARTIKEL);
+        assertThat(orgCaptor.getValue().getBranche()).isNull();
 
         // Mitgliedschaft als ORG_OWNER
         verify(mitgliedschaftService).fuegeHinzu(eq(org.getId()), eq(user.getId()), eq(Rolle.ORG_OWNER), eq(null));

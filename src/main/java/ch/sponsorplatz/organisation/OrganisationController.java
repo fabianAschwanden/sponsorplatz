@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -34,12 +35,23 @@ public class OrganisationController {
         return "organisationen";
     }
 
+    /**
+     * Wizard-Schritt 1: ohne Typ-Param zeigen wir die Typ-Auswahl-Seite.
+     * Mit {@code ?typ=VEREIN|UNTERNEHMEN|...} gehen wir direkt zum
+     * typ-spezifischen Formular — das hält die UX konsistent (Verein-Form
+     * fragt anders als Sponsor-Form).
+     */
     @GetMapping("/neu")
-    public String neuesFormular(Model model) {
+    public String neuesFormular(@RequestParam(required = false) OrgTyp typ, Model model) {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
-        model.addAttribute("orgForm", new OrganisationFormDto());
-        model.addAttribute("typen", OrgTyp.values());
-        model.addAttribute("branchen", Branche.values());
+        if (typ == null) {
+            model.addAttribute("typen", OrgTyp.values());
+            return "organisation-typ-waehlen";
+        }
+        OrganisationFormDto dto = new OrganisationFormDto();
+        dto.setTyp(typ);
+        model.addAttribute("orgForm", dto);
+        zeigeFormularModelDaten(model);
         return "organisation-form";
     }
 
@@ -89,10 +101,16 @@ public class OrganisationController {
     }
 
     private String zeigeFormular(Model model) {
+        zeigeFormularModelDaten(model);
+        return "organisation-form";
+    }
+
+    /** Pure Model-Befüllung — von zeigeFormular und vom Pre-Fill-GET genutzt. */
+    private void zeigeFormularModelDaten(Model model) {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("typen", OrgTyp.values());
         model.addAttribute("branchen", Branche.values());
-        return "organisation-form";
+        model.addAttribute("sponsorBranchen", SponsorBranche.values());
     }
 
     @GetMapping("/{slug}")
@@ -112,11 +130,9 @@ public class OrganisationController {
         }
         Organisation org = service.findeNachSlug(slug)
             .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
-        model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("orgForm", inFormDto(org));
-        model.addAttribute("typen", OrgTyp.values());
-        model.addAttribute("branchen", Branche.values());
         model.addAttribute("bearbeitenSlug", slug);
+        zeigeFormularModelDaten(model);
         return "organisation-form";
     }
 
@@ -141,6 +157,7 @@ public class OrganisationController {
         dto.setSlug(org.getSlug());
         dto.setRechtsform(org.getRechtsform());
         dto.setBranche(org.getBranche());
+        dto.setSponsorBranche(org.getSponsorBranche());
         dto.setBeschreibung(org.getBeschreibung());
         dto.setWebsiteUrl(org.getWebsiteUrl());
         dto.setIban(org.getIban());

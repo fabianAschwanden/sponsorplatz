@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${orgName + ' — Events'}">Events</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="dash-body">
+
+<main class="container hauptbereich">
+    <div class="seitenkopf">
+        <h1 th:text="${'Events — ' + orgName}">Events</h1>
+    </div>
+
+    <p th:if="${#lists.isEmpty(events)}" class="muted">Noch keine Events vorhanden.</p>
+
+    <table class="tabelle" th:unless="${#lists.isEmpty(events)}">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Datum</th>
+                <th>Ort</th>
+                <th>Kapazitaet</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="e : ${events}">
+                <td th:text="${e.name()}">Event</td>
+                <td th:text="${#temporals.format(e.datum(), 'dd.MM.yyyy')}">01.01.2026</td>
+                <td th:text="${e.ort() ?: '—'}">—</td>
+                <td th:text="${e.kapazitaet() ?: '—'}">—</td>
+            </tr>
+        </tbody>
+    </table>
+</main>
+
+</body>
+</html>
+

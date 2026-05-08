@@ -28,13 +28,18 @@
             <form th:action="${bearbeitenSlug != null} ? @{/organisationen/{slug}(slug=${bearbeitenSlug})} : @{/organisationen}"
                   method="post" th:object="${orgForm}" class="app-form" novalidate>
 
+                <!--
+                  Typ wird im Wizard-Schritt 1 oder beim Edit fest gewählt und ist
+                  hier nicht mehr editierbar — verhindert Inkonsistenz mit den
+                  weiter unten konditional gerenderten Branche-Feldern.
+                -->
+                <input type="hidden" th:field="*{typ}">
                 <div class="app-form-group">
-                    <label for="typ">Typ *</label>
-                    <select id="typ" th:field="*{typ}">
-                        <option value="">— wählen —</option>
-                        <option th:each="t : ${typen}" th:value="${t}" th:text="${t}"></option>
-                    </select>
-                    <p class="app-meldung fehler" th:if="${#fields.hasErrors('typ')}" th:errors="*{typ}"></p>
+                    <label>Typ</label>
+                    <p style="margin:0; font-weight:600;" th:text="*{typ}">VEREIN</p>
+                    <small class="app-muted" th:if="${bearbeitenSlug == null}">
+                        Falsch gewählt? <a th:href="@{/organisationen/neu}">Zurück zur Auswahl</a>.
+                    </small>
                 </div>
 
                 <div class="app-form-group">
@@ -55,14 +60,32 @@
                     <input id="rechtsform" type="text" th:field="*{rechtsform}" placeholder="z. B. Verein, AG, GmbH">
                 </div>
 
-                <div class="app-form-group">
-                    <label for="branche">Branche *</label>
-                    <span class="hint">Sponsorplatz nimmt nur Vereine aus dem Sport- und Gesundheitsbereich auf.</span>
+                <!-- Verein-Branche (Health/Sport) — nur für VEREIN sowie optional für STIFTUNG/ANDERE -->
+                <div class="app-form-group" th:if="*{typ} == 'VEREIN' or *{typ} == 'STIFTUNG' or *{typ} == 'ANDERE'">
+                    <label for="branche">
+                        <span th:if="*{typ} == 'VEREIN'">Branche *</span>
+                        <span th:unless="*{typ} == 'VEREIN'">Branche (optional)</span>
+                    </label>
+                    <span class="hint">In welchem Health/Sport-Bereich seid ihr tätig?</span>
                     <select id="branche" th:field="*{branche}">
                         <option value="">— wählen —</option>
                         <option th:each="b : ${branchen}" th:value="${b}" th:text="${b.anzeige}"></option>
                     </select>
                     <p class="app-meldung fehler" th:if="${#fields.hasErrors('branche')}" th:errors="*{branche}"></p>
+                </div>
+
+                <!-- Sponsor-Industrie — für UNTERNEHMEN sowie optional für STIFTUNG/ANDERE -->
+                <div class="app-form-group" th:if="*{typ} == 'UNTERNEHMEN' or *{typ} == 'STIFTUNG' or *{typ} == 'ANDERE'">
+                    <label for="sponsorBranche">
+                        <span th:if="*{typ} == 'UNTERNEHMEN'">Industrie *</span>
+                        <span th:unless="*{typ} == 'UNTERNEHMEN'">Industrie (optional)</span>
+                    </label>
+                    <span class="hint">In welcher Industrie ist die Firma aktiv?</span>
+                    <select id="sponsorBranche" th:field="*{sponsorBranche}">
+                        <option value="">— wählen —</option>
+                        <option th:each="s : ${sponsorBranchen}" th:value="${s}" th:text="${s.anzeige}"></option>
+                    </select>
+                    <p class="app-meldung fehler" th:if="${#fields.hasErrors('sponsorBranche')}" th:errors="*{sponsorBranche}"></p>
                 </div>
 
                 <div class="app-form-group">

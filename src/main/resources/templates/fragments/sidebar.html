@@ -115,6 +115,22 @@
             </button>
         </form>
     </footer>
+
+    <!--
+      Sprachumschalter — bewusst auf der Sidebar, damit auch eingeloggte
+      Dashboard-/App-Seiten zwischen DE/FR/IT wechseln können (nicht nur die
+      Public-Pages). Pfad-relative Query-Param-URLs sind robust gegen
+      unterschiedliche Test-/Produktiv-Setups (kein {@code #httpServletRequest}-
+      Lookup nötig); der Browser appended an den aktuellen Pfad und der
+      LocaleChangeInterceptor schreibt das lang-Cookie.
+    -->
+    <div class="dash-sidebar-lang" sec:authorize="isAuthenticated()">
+        <a href="?lang=de">DE</a>
+        <span aria-hidden="true">·</span>
+        <a href="?lang=fr">FR</a>
+        <span aria-hidden="true">·</span>
+        <a href="?lang=it">IT</a>
+    </div>
 </aside>
 
 <!-- Notification Badge Polling -->

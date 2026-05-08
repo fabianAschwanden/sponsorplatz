@@ -127,6 +127,27 @@ public class RechnungService {
         return repository.save(r);
     }
 
+    /**
+     * Webhook-Variante: Markiert Rechnung als bezahlt via String-ID.
+     * Wirft NotFoundException bei unbekannter ID, IllegalStateException wenn schon bezahlt (Idempotenz).
+     */
+    public void markiereAlsBezahltViaWebhook(String rechnungIdStr) {
+        UUID id;
+        try {
+            id = UUID.fromString(rechnungIdStr);
+        } catch (IllegalArgumentException e) {
+            throw new NotFoundException("Ungueltige Rechnungs-ID: " + rechnungIdStr);
+        }
+        Rechnung r = findeNachId(id);
+        if (r.getStatus() == RechnungsStatus.BEZAHLT) {
+            throw new IllegalStateException("Rechnung bereits bezahlt (idempotent)");
+        }
+        r.setStatus(RechnungsStatus.BEZAHLT);
+        r.setBezahltAm(Instant.now());
+        r.setBezahltVon("webhook");
+        repository.save(r);
+    }
+
     public Rechnung stornieren(UUID id) {
         Rechnung r = findeNachId(id);
         if (r.getStatus() == RechnungsStatus.BEZAHLT) {

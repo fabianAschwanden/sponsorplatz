@@ -86,16 +86,28 @@ public class OrganisationService {
             throw new IllegalArgumentException("Slug bereits vergeben: " + gewuenschterSlug);
         }
 
-        if (dto.getBranche() == null) {
-            throw new IllegalArgumentException(
-                "Branche ist Pflicht — Sponsorplatz nimmt nur Vereine aus dem Sport- und Gesundheitsbereich auf.");
-        }
+        // Typ-spezifische Branche-XOR-Validierung. Konsistent zur DB-CHECK
+        // chk_branche_pro_typ — Service-Layer wirft mit klarer Meldung, DB ist
+        // Defense-in-Depth.
+        validiereBrancheProTyp(dto);
 
         org.setTyp(dto.getTyp());
         org.setName(dto.getName().trim());
         org.setSlug(gewuenschterSlug);
         org.setRechtsform(leereAlsNull(dto.getRechtsform()));
-        org.setBranche(dto.getBranche());
+        // Pro Typ wird genau die passende Branche-Achse gesetzt; die andere
+        // wird auf null geräumt, damit Edits zwischen Org-Typen sauber bleiben.
+        if (dto.getTyp() == OrgTyp.VEREIN) {
+            org.setBranche(dto.getBranche());
+            org.setSponsorBranche(null);
+        } else if (dto.getTyp() == OrgTyp.UNTERNEHMEN) {
+            org.setBranche(null);
+            org.setSponsorBranche(dto.getSponsorBranche());
+        } else {
+            // STIFTUNG / ANDERE: beides darf gesetzt werden, was vom Form kommt
+            org.setBranche(dto.getBranche());
+            org.setSponsorBranche(dto.getSponsorBranche());
+        }
         org.setBeschreibung(leereAlsNull(dto.getBeschreibung()));
         org.setWebsiteUrl(leereAlsNull(dto.getWebsiteUrl()));
         String iban = leereAlsNull(dto.getIban());
@@ -120,6 +132,29 @@ public class OrganisationService {
                     "Bitte zuerst alle Unterorganisationen entfernen.");
         }
         repository.deleteById(id);
+    }
+
+    /**
+     * Typ-spezifische Branche-Pflicht: VEREIN braucht {@code branche}
+     * (Health/Sport), UNTERNEHMEN braucht {@code sponsorBranche} (Industrie),
+     * STIFTUNG braucht eines von beiden.
+     */
+    private void validiereBrancheProTyp(OrganisationFormDto dto) {
+        OrgTyp typ = dto.getTyp();
+        if (typ == OrgTyp.VEREIN && dto.getBranche() == null) {
+            throw new IllegalArgumentException(
+                    "Branche ist Pflicht für Vereine — Sponsorplatz ist auf Sport und Gesundheit fokussiert.");
+        }
+        if (typ == OrgTyp.UNTERNEHMEN && dto.getSponsorBranche() == null) {
+            throw new IllegalArgumentException(
+                    "Industrie ist Pflicht für Sponsor-Unternehmen.");
+        }
+        if (typ == OrgTyp.STIFTUNG
+                && dto.getBranche() == null
+                && dto.getSponsorBranche() == null) {
+            throw new IllegalArgumentException(
+                    "Stiftungen müssen entweder eine Health/Sport-Branche oder eine Industrie wählen.");
+        }
     }
 
     private boolean slugBereitsBelegt(String slug, UUID eigeneId) {

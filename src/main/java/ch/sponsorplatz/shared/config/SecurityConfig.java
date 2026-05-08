@@ -1,5 +1,7 @@
 package ch.sponsorplatz.shared.config;
 
+import ch.sponsorplatz.benutzer.AppUserRepository;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,8 +47,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public LoginSuccessHandler loginSuccessHandler(LoginBruteForceSchutz bruteForceSchutz) {
-        return new LoginSuccessHandler(bruteForceSchutz);
+    public LoginSuccessHandler loginSuccessHandler(LoginBruteForceSchutz bruteForceSchutz,
+                                                   ObjectProvider<AppUserRepository> appUserRepositoryProvider) {
+        return new LoginSuccessHandler(bruteForceSchutz, appUserRepositoryProvider);
     }
 
     @Bean
@@ -81,6 +84,7 @@ public class SecurityConfig {
                 .requestMatchers("/fuer-marken").permitAll()
                 .requestMatchers("/marken/*/engagements").permitAll()
                 .requestMatchers("/og/**").permitAll()
+                .requestMatchers("/payment/webhook/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -94,7 +98,7 @@ public class SecurityConfig {
                 .permitAll()
             )
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**", "/benachrichtigungen/**")
+                .ignoringRequestMatchers("/h2-console/**", "/benachrichtigungen/**", "/payment/webhook/**")
             )
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(loginSperreFilter, RateLimitFilter.class)
@@ -126,6 +130,7 @@ public class SecurityConfig {
                 .requestMatchers("/fuer-marken").permitAll()
                 .requestMatchers("/marken/*/engagements").permitAll()
                 .requestMatchers("/og/**").permitAll()
+                .requestMatchers("/payment/webhook/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -135,7 +140,7 @@ public class SecurityConfig {
                 .permitAll()
             )
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/benachrichtigungen/**")
+                .ignoringRequestMatchers("/benachrichtigungen/**", "/payment/webhook/**")
             )
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(loginSperreFilter, RateLimitFilter.class)
