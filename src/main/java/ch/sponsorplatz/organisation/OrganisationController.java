@@ -125,6 +125,10 @@ public class OrganisationController {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("org", OrganisationView.von(org));
         model.addAttribute("statusOk", org.getStatus() == OrgStatus.ACTIVE || org.getStatus() == OrgStatus.VERIFIED);
+        // Untergeordnete Orgs separat laden — der OneToMany ist LAZY und das
+        // Sammeln über die Eltern-Beziehung wäre N+1. Eigene Repo-Query reicht.
+        model.addAttribute("untergeordneteOrgs",
+                OrganisationView.von(service.findeUntergeordnete(org.getId())));
         return "organisation-detail";
     }
 

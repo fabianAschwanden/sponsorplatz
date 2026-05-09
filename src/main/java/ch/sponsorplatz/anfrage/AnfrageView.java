@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Read-only View-DTO für Sponsoring-Anfragen. Flacht den Paket-Namen ein,
- * damit Templates nicht über Lazy-Relationen navigieren müssen.
+ * Read-only View-DTO für Sponsoring-Anfragen. Flacht den Paket-Namen und
+ * Org-Informationen ein, damit Templates nicht über Lazy-Relationen navigieren müssen.
  */
 public record AnfrageView(
         UUID id,
@@ -18,7 +18,10 @@ public record AnfrageView(
         String kontaktEmail,
         Instant createdAt,
         Instant beantwortetAm,
-        String paketName
+        String paketName,
+        String empfaengerOrgSlug,
+        String empfaengerOrgName,
+        String anfragenderOrgName
 ) {
 
     public static AnfrageView von(SponsoringAnfrage a) {
@@ -31,7 +34,10 @@ public record AnfrageView(
                 a.getKontaktEmail(),
                 a.getCreatedAt(),
                 a.getBeantwortetAm(),
-                a.getPaket() != null ? a.getPaket().getName() : null
+                a.getPaket() != null ? a.getPaket().getName() : null,
+                a.getEmpfaengerOrg() != null ? a.getEmpfaengerOrg().getSlug() : null,
+                a.getEmpfaengerOrg() != null ? a.getEmpfaengerOrg().getName() : null,
+                a.getAnfragenderOrg() != null ? a.getAnfragenderOrg().getName() : null
         );
     }
 

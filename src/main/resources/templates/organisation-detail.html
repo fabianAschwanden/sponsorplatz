@@ -67,6 +67,27 @@
                     <dd th:text="${org.beschreibung}"></dd>
                 </th:block>
 
+                <th:block th:if="${org.uebergeordneteOrgId != null}">
+                    <dt>Übergeordnete Organisation</dt>
+                    <dd>
+                        <a th:href="@{/organisationen/{slug}(slug=${org.uebergeordneteOrgSlug})}"
+                           th:text="${org.uebergeordneteOrgName}">Konzern AG</a>
+                    </dd>
+                </th:block>
+
+                <th:block th:if="${untergeordneteOrgs != null and !untergeordneteOrgs.isEmpty()}">
+                    <dt>Untergeordnete Organisationen</dt>
+                    <dd>
+                        <ul style="margin:0; padding-left:1rem;">
+                            <li th:each="sub : ${untergeordneteOrgs}">
+                                <a th:href="@{/organisationen/{slug}(slug=${sub.slug})}"
+                                   th:text="${sub.name}">Tochter GmbH</a>
+                                <span class="app-muted" th:text="|(${sub.typ.name()})|">(UNTERNEHMEN)</span>
+                            </li>
+                        </ul>
+                    </dd>
+                </th:block>
+
                 <dt>Registriert am</dt>
                 <dd th:text="${#temporals.format(org.registriertAm, 'dd.MM.yyyy HH:mm')}">01.01.2026</dd>
 

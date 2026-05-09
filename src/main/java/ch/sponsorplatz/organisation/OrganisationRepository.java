@@ -11,7 +11,16 @@ import java.util.UUID;
 
 public interface OrganisationRepository extends JpaRepository<Organisation, UUID> {
 
-    Optional<Organisation> findBySlug(String slug);
+    /**
+     * LEFT JOIN FETCH uebergeordneteOrg — verhindert
+     * {@code LazyInitializationException} im Template, weil
+     * {@code OrganisationView.von} auf {@code eltern.getName()} und
+     * {@code eltern.getSlug()} zugreift, nachdem die Service-Transaktion
+     * bereits geschlossen ist (open-in-view=false). LEFT damit Root-Orgs
+     * (kein Parent) nicht rausgefiltert werden.
+     */
+    @Query("SELECT o FROM Organisation o LEFT JOIN FETCH o.uebergeordneteOrg WHERE o.slug = :slug")
+    Optional<Organisation> findBySlug(@Param("slug") String slug);
 
     boolean existsBySlug(String slug);
 

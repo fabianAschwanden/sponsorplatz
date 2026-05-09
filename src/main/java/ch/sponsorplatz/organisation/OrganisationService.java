@@ -52,6 +52,14 @@ public class OrganisationService {
     }
 
     /**
+     * Direkte Untergeordnete einer Org — für Detail-Anzeige + Hierarchie-Navigation.
+     */
+    @Transactional(readOnly = true)
+    public List<Organisation> findeUntergeordnete(UUID elternId) {
+        return repository.findByUebergeordneteOrgIdOrderByNameAsc(elternId);
+    }
+
+    /**
      * Legt eine neue Organisation an. Slug wird aus dem Namen generiert,
      * falls keiner mitgegeben wurde.
      *

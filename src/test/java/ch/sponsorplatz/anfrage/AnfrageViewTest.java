@@ -21,8 +21,11 @@ class AnfrageViewTest {
 
         Organisation anfragender = new Organisation();
         anfragender.setId(UUID.randomUUID());
+        anfragender.setName("Sponsor AG");
         Organisation empfaenger = new Organisation();
         empfaenger.setId(UUID.randomUUID());
+        empfaenger.setName("Sportverein Zürich");
+        empfaenger.setSlug("sportverein-zuerich");
 
         SponsoringAnfrage a = new SponsoringAnfrage();
         a.setId(anfrageId);
@@ -42,5 +45,8 @@ class AnfrageViewTest {
         assertThat(view.kontaktName()).isEqualTo("Max Müller");
         assertThat(view.kontaktEmail()).isEqualTo("max@firma.ch");
         assertThat(view.paketName()).isEqualTo("Gold-Paket");
+        assertThat(view.empfaengerOrgSlug()).isEqualTo("sportverein-zuerich");
+        assertThat(view.empfaengerOrgName()).isEqualTo("Sportverein Zürich");
+        assertThat(view.anfragenderOrgName()).isEqualTo("Sponsor AG");
     }
 }

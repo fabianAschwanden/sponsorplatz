@@ -70,6 +70,15 @@ public class SponsoringAnfrageService {
         return repository.countByEmpfaengerOrgIdInAndStatus(empfaengerOrgIds, AnfrageStatus.NEU);
     }
 
+    /** Alle eingehenden Anfragen über alle Orgs eines Users — für die persönliche Übersicht. */
+    @Transactional(readOnly = true)
+    public List<SponsoringAnfrage> findeAlleEingehenden(Collection<UUID> empfaengerOrgIds) {
+        if (empfaengerOrgIds == null || empfaengerOrgIds.isEmpty()) {
+            return List.of();
+        }
+        return repository.findByEmpfaengerOrgIdInOrderByCreatedAtDesc(empfaengerOrgIds);
+    }
+
     public SponsoringAnfrage erstelle(SponsoringPaket paket,
             Organisation anfragenderOrg,
             Organisation empfaengerOrg,
