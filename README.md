@@ -24,12 +24,32 @@ Die Plattform vereint:
 - **Kuratierter Health-Marktplatz** — strikt auf Sport und Gesundheit fokussiert (elf Branchen)
 - **Kollaboratives CRM** für Sponsoren-Daten (geteilte Stammdaten, Edit-Rechte pro Verein)
 - **Marktplatz** mit öffentlichen Projekt-Profilen, Sponsoring-Paketen und Anfrage-Workflow
-- **Werkzeuge** für Vereine: Excel-Im/Export, Word-Serienbrief, Datenbereinigung gegen Zefix
-- **Schweizer Fokus**: CHF, DE/FR/IT, Hosting in CH, DSG-konform
+- **Engagement-Schaufenster** — öffentliche Darstellung aktiver Sponsoring-Partnerschaften
+- **Mehrsprachigkeit** — DE, FR, IT und EN (Cookie-basiert, User-Profil-gesteuert)
+- **Werkzeuge** für Vereine: Medien-Upload, Vertrags-/Rechnungs-PDF, QR-Bill, Event-Kalender
+- **Schweizer Fokus**: CHF, DE/FR/IT/EN, Hosting in CH, DSG-konform
 
 ## Phase
 
-Aktuell: **Phase 0 — Fundament**. Skelett-App lauffähig, Multi-Org-Modell und Marktplatz folgen.
+Aktuell: **Phase 9 — Roadmap-Lücken geschlossen** ✓ — Mehrsprachigkeit, Zahlungs-Provider, Event-Entity.
+Nächste Phase: **Phase 10 — Production-Readiness & Pilot-Launch**.
+
+### Umgesetzte Features
+
+| Phase | Inhalt | Status |
+|---|---|---|
+| 0 | Skelett, Organisation-Entity, AppUser, Mitgliedschaft, AccessControl, Dashboard | ✓ |
+| 1 | Self-Reg, Form-Login, E-Mail-Verifizierung, Admin-Verifizierung, Einladungen | ✓ |
+| 2 | Projekte, Sponsoring-Pakete, Medien-Assets (Upload/Galerie/Cover) | ✓ |
+| 3 | Öffentlicher Marktplatz, Volltextsuche, SEO/Sitemap, Vereinsprofile | ✓ |
+| 4 | Sponsoring-Anfragen, Nachrichten-Thread, E-Mail-Notifications, Sponsor-Self-Reg | ✓ |
+| 5 | Watchlist, Matching-Empfehlungen, Audit-Log, Backups, In-App-Notifications | ✓ |
+| 5+ | Passwort-Reset, Brute-Force-Schutz, Hierarchische Firmenstruktur, Verträge/Rechnungen, Postgres-Volltext | ✓ |
+| 6 | Einstellungen, DSG-Datenexport, Passwort-Änderung | ✓ |
+| 7 | Health-Story: Branche-Filter, Vereins-Health-Hero, Marken-Landing-Page | ✓ |
+| 8 | MVP-Reife: Demo-Seed, Engagement-Schaufenster, OG-Card-Generator | ✓ |
+| 9 | Mehrsprachigkeit DE/FR/IT/EN, Zahlungs-Provider, Event-Entity | ✓ |
+| 10 | Production-Readiness & Pilot-Launch | ⏳ |
 
 ## Tech-Stack
 
@@ -38,12 +58,13 @@ Aktuell: **Phase 0 — Fundament**. Skelett-App lauffähig, Multi-Org-Modell und
 | Sprache | Java 21 LTS |
 | Framework | Spring Boot 3.4 |
 | Frontend | Thymeleaf + Bootstrap-light |
-| DB (dev) | H2 (file-based) |
+| DB (dev) | H2 (file-based, `MODE=PostgreSQL`) |
 | DB (prod) | PostgreSQL 17 |
-| Migrationen | Flyway |
+| Migrationen | Flyway (26 Versionen) |
 | Build | Maven 3.9+ |
 | Container | Docker Multi-Stage |
 | CI | GitHub Actions |
+| i18n | Spring MessageSource (DE/FR/IT/EN) |
 
 ## Schnellstart
 
@@ -64,11 +85,23 @@ mvn spring-boot:run
 
 → App läuft auf http://localhost:8080
 → H2-Konsole auf http://localhost:8080/h2-console (User `sa`, Passwort leer)
+→ Dev-Login: `dev@sponsorplatz.ch` (Passwort siehe `sponsorplatz.dev.passwort` in application-dev.properties)
+
+### Demo-Modus (mit Beispieldaten)
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=demo
+```
+
+→ Lädt 5 Vereine, 10 Projekte, 3 Sponsor-Orgs mit realistischen Daten
+→ Gelber „DEMO"-Banner im Header
 
 ### Tests laufen lassen
 
 ```bash
-mvn test
+mvn test                                    # alle (~350+ Tests)
+mvn test -Dtest=OrganisationServiceTest     # einzeln
+mvn clean verify                            # inkl. JaCoCo-Coverage
 ```
 
 ### Mit PostgreSQL + MailHog (Docker)
@@ -87,6 +120,12 @@ mvn spring-boot:run -Dspring-boot.run.profiles=prod \
 
 ```bash
 docker compose --profile app up --build
+```
+
+### H2-DB-Reset bei Migration-Konflikten
+
+```bash
+rm -rf data/
 ```
 
 ## VS Code Setup
@@ -130,38 +169,70 @@ code ~/git/sponsorplatz
 
 ## Projekt-Struktur
 
+Bounded-Context-orientiert — jedes fachliche Package hält seine eigenen Entities, Repositories, Services, Controller und DTOs zusammen.
+
 ```
 sponsorplatz/
 ├── src/main/java/ch/sponsorplatz/
 │   ├── PlatformApplication.java
-│   ├── config/        # SecurityConfig, ModelAttributeNames
-│   ├── controller/    # HomeController, GlobalExceptionHandler
-│   ├── service/       # (wird gefüllt ab Phase 0.1)
-│   └── repository/    # (wird gefüllt ab Phase 0.1)
+│   ├── shared/                 # Querschnitts-Infrastruktur
+│   │   ├── config/             # SecurityConfig, LocaleConfig, RateLimitFilter, LoginSuccessHandler
+│   │   ├── exception/          # NotFoundException, GlobalExceptionHandler
+│   │   ├── util/               # SlugGenerator, TokenGenerator
+│   │   ├── pdf/                # PdfGeneratorService
+│   │   ├── storage/            # StorageService + Lokal-Implementierung
+│   │   └── mail/               # MailService (SMTP-Abstraktion)
+│   │
+│   ├── benutzer/               # AppUser, Auth, Profil, Verifizierung, PasswortReset, Einstellungen
+│   ├── organisation/           # Organisation, Mitgliedschaft, AccessControl, Branche, Sponsor-Self-Reg
+│   ├── projekt/                # Projekt, SponsoringPakete, Watchlist, MedienAssets, Marktplatz,
+│   │                           # Suche, Matching, Dashboard, Sitemap, Events, OG-Images
+│   ├── anfrage/                # SponsoringAnfrage, Vertrag, Rechnung, QR-Bill, Nachrichten,
+│   │                           # Engagement-Schaufenster, PaymentProvider
+│   ├── einladung/              # Einladung + Token-basierte Annahme
+│   ├── benachrichtigung/       # In-App-Glocke (NotificationService + Badge-Polling)
+│   ├── audit/                  # AuditLog + DSG-Datenexport
+│   ├── admin/                  # Admin-UI: Verifizierungs-Queue, Audit, Backups
+│   └── home/                   # HomeController, InfoController (Impressum/DSG)
+│
 ├── src/main/resources/
-│   ├── application*.properties
-│   ├── db/migration/  # Flyway V1+
-│   ├── templates/     # Thymeleaf
-│   ├── static/        # CSS, Bilder
-│   └── messages*.properties
-├── src/test/...
-├── specs/             # Architektur, Datenmodell, Tests, Roadmap
+│   ├── application*.properties           # default + dev + prod + demo + cloud-free
+│   ├── db/migration/V1..V26*.sql         # Flyway (26 Migrationen)
+│   ├── templates/                        # Thymeleaf
+│   ├── static/css/                       # main.css
+│   ├── messages_de_CH.properties         # Deutsch (Schweiz) — Default
+│   ├── messages_fr_CH.properties         # Französisch (Schweiz)
+│   ├── messages_it_CH.properties         # Italienisch (Schweiz)
+│   └── messages_en.properties            # Englisch
+│
+├── src/test/...                          # ~350+ Tests (Unit, Web, Repo, Integration)
+├── specs/                                # Architektur, Datenmodell, Tests, Roadmap
+├── docs/                                 # Konzept, Marketing, Naming, Pitch
+├── infra/                                # OCI-Infrastruktur, Terraform, Docker-Compose (Staging)
 ├── Dockerfile
 ├── docker-compose.yml
 ├── .github/workflows/
 └── pom.xml
 ```
 
+## Mehrsprachigkeit
+
+Die Plattform unterstützt vier Sprachen: **Deutsch**, **Französisch**, **Italienisch** und **Englisch**.
+
+- **Cookie-basiert**: Sprache wird per `lang`-Cookie gespeichert (365 Tage)
+- **URL-Override**: `?lang=de|fr|it|en` wechselt sofort die Sprache
+- **User-Profil**: Eingeloggte Benutzer können ihre bevorzugte Sprache in den Einstellungen hinterlegen — wird beim Login automatisch synchronisiert
+- **Footer-Switcher**: DE / FR / IT / EN auf jeder öffentlichen Seite
+
 ## Roadmap (kurz)
 
-| Phase | Inhalt | Dauer |
+| Phase | Inhalt | Status |
 |---|---|---|
-| 0 | Org-Profil + Mitgliedschaft + AccessControl | 2 W |
-| 1 | Self-Reg + Verifizierung | 2 W |
-| 2 | Sponsoring-Pakete + Sichtbarkeit + Medien | 3 W |
-| 3 | Marktplatz Public + SEO | 3-4 W |
-| 4 | Anfragen + Konversation | 3 W |
-| 5+ | Wachstum: Watchlist, Matching, Mehrsprachigkeit, Verträge, Payments |
+| 0–6 | Fundament bis Einstellungen | ✓ |
+| 7 | Health-Story (Branche-Filter, Vereins-Hero, Marken-Landing) | ✓ |
+| 8 | MVP-Reife (Demo-Seed, Engagement-Schaufenster, OG-Cards) | ✓ |
+| 9 | Roadmap-Lücken (i18n DE/FR/IT/EN, Payment-Provider, Events) | ✓ |
+| 10 | Production-Readiness & Pilot-Launch | ⏳ |
 
 Vollständig dokumentiert in [`specs/ROADMAP.md`](specs/ROADMAP.md).
 
@@ -176,6 +247,9 @@ Vollständig dokumentiert in [`specs/ROADMAP.md`](specs/ROADMAP.md).
 | [`specs/TESTSTRATEGIE.md`](specs/TESTSTRATEGIE.md) | Test-Ebenen, Testfälle, Smoke-Checkliste |
 | [`specs/ROADMAP.md`](specs/ROADMAP.md) | Phasen, Iterationen, MVP-Definition |
 | [`.instructions.md`](.instructions.md) | Clean Code, TDD-Workflow, Conventions |
+| [`docs/konzept.md`](docs/konzept.md) | Vollständiges Konzept-Dokument |
+| [`docs/roadmap-detailliert.md`](docs/roadmap-detailliert.md) | Ausführliche Roadmap |
+| [`infra/README.md`](infra/README.md) | Infrastruktur-Übersicht (OCI) |
 
 ## Mitmachen
 

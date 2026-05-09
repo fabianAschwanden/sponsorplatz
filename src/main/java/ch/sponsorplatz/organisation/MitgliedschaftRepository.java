@@ -45,7 +45,7 @@ public interface MitgliedschaftRepository extends JpaRepository<Mitgliedschaft, 
      * Enum-Collections in native Queries nicht zuverlässig.
      */
     @Query(value = """
-            WITH RECURSIVE elternkette AS (
+            WITH RECURSIVE elternkette(id, uebergeordnete_org_id) AS (
                 SELECT id, uebergeordnete_org_id
                   FROM organisation
                  WHERE id = :startId
