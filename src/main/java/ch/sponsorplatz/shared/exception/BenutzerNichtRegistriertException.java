@@ -1,8 +1,8 @@
 package ch.sponsorplatz.shared.exception;
-import ch.sponsorplatz.einladung.Einladung;
 
 /**
- * Wird geworfen wenn eine Aktion auf einen User-Account angewiesen ist, der noch nicht
+ * Wird geworfen wenn eine Aktion auf einen User-Account angewiesen ist, der
+ * noch nicht
  * existiert (z.B. Annahme einer Einladung, der Eingeladene ist aber noch nicht
  * registriert). Der Controller fängt diese und leitet zur Registrierung weiter
  * (M3-Fix: bessere UX als 409).

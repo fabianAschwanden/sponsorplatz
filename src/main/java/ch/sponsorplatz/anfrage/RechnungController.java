@@ -1,9 +1,10 @@
 package ch.sponsorplatz.anfrage;
-import ch.sponsorplatz.organisation.Organisation;
 
-import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.organisation.AccessControl;
-import ch.sponsorplatz.shared.pdf.PdfGeneratorService;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -18,21 +19,23 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import ch.sponsorplatz.organisation.AccessControl;
+import ch.sponsorplatz.shared.exception.NotFoundException;
+import ch.sponsorplatz.shared.pdf.PdfGeneratorService;
 
 /**
  * Sponsoring-Rechnungen pro Organisation.
  *
- * <p>Routen:
+ * <p>
+ * Routen:
  * <ul>
- *   <li>{@code POST /organisationen/{slug}/vertraege/{vertragId}/rechnung/erstellen}</li>
- *   <li>{@code GET  /organisationen/{slug}/rechnungen/{id}} — Detail</li>
- *   <li>{@code POST /organisationen/{slug}/rechnungen/{id}/bezahlt} — Status-Wechsel</li>
- *   <li>{@code POST /organisationen/{slug}/rechnungen/{id}/stornieren}</li>
- *   <li>{@code GET  /organisationen/{slug}/rechnungen/{id}/pdf} — PDF mit QR-Bill</li>
+ * <li>{@code POST /organisationen/{slug}/vertraege/{vertragId}/rechnung/erstellen}</li>
+ * <li>{@code GET  /organisationen/{slug}/rechnungen/{id}} — Detail</li>
+ * <li>{@code POST /organisationen/{slug}/rechnungen/{id}/bezahlt} —
+ * Status-Wechsel</li>
+ * <li>{@code POST /organisationen/{slug}/rechnungen/{id}/stornieren}</li>
+ * <li>{@code GET  /organisationen/{slug}/rechnungen/{id}/pdf} — PDF mit
+ * QR-Bill</li>
  * </ul>
  */
 @Controller
@@ -45,9 +48,9 @@ public class RechnungController {
     private final AccessControl accessControl;
 
     public RechnungController(RechnungService rechnungService,
-                              QrBillService qrBillService,
-                              PdfGeneratorService pdfGenerator,
-                              AccessControl accessControl) {
+            QrBillService qrBillService,
+            PdfGeneratorService pdfGenerator,
+            AccessControl accessControl) {
         this.rechnungService = rechnungService;
         this.qrBillService = qrBillService;
         this.pdfGenerator = pdfGenerator;
@@ -56,9 +59,9 @@ public class RechnungController {
 
     @PostMapping("/vertraege/{vertragId}/rechnung/erstellen")
     public String erstellen(@PathVariable String slug,
-                            @PathVariable UUID vertragId,
-                            Authentication auth,
-                            RedirectAttributes redirect) {
+            @PathVariable UUID vertragId,
+            Authentication auth,
+            RedirectAttributes redirect) {
         if (!accessControl.kannOrgEditierenNachSlug(slug, auth)) {
             throw new AccessDeniedException("Keine Edit-Berechtigung für Org: " + slug);
         }
@@ -76,9 +79,9 @@ public class RechnungController {
 
     @GetMapping("/rechnungen/{id}")
     public String detail(@PathVariable String slug,
-                         @PathVariable UUID id,
-                         Authentication auth,
-                         Model model) {
+            @PathVariable UUID id,
+            Authentication auth,
+            Model model) {
         Rechnung r = rechnungService.findeNachId(id);
         pruefeAccess(slug, r, auth);
 
@@ -89,9 +92,9 @@ public class RechnungController {
 
     @PostMapping("/rechnungen/{id}/bezahlt")
     public String markiereBezahlt(@PathVariable String slug,
-                                  @PathVariable UUID id,
-                                  Authentication auth,
-                                  RedirectAttributes redirect) {
+            @PathVariable UUID id,
+            Authentication auth,
+            RedirectAttributes redirect) {
         Rechnung r = rechnungService.findeNachId(id);
         pruefeAccess(slug, r, auth);
         try {
@@ -105,9 +108,9 @@ public class RechnungController {
 
     @PostMapping("/rechnungen/{id}/stornieren")
     public String stornieren(@PathVariable String slug,
-                             @PathVariable UUID id,
-                             Authentication auth,
-                             RedirectAttributes redirect) {
+            @PathVariable UUID id,
+            Authentication auth,
+            RedirectAttributes redirect) {
         Rechnung r = rechnungService.findeNachId(id);
         pruefeAccess(slug, r, auth);
         try {
@@ -121,8 +124,8 @@ public class RechnungController {
 
     @GetMapping("/rechnungen/{id}/pdf")
     public ResponseEntity<ByteArrayResource> pdf(@PathVariable String slug,
-                                                 @PathVariable UUID id,
-                                                 Authentication auth) {
+            @PathVariable UUID id,
+            Authentication auth) {
         Rechnung r = rechnungService.findeNachId(id);
         pruefeAccess(slug, r, auth);
 

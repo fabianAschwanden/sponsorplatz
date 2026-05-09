@@ -1,31 +1,35 @@
 package ch.sponsorplatz.einladung;
-import ch.sponsorplatz.organisation.MitgliedschaftService;
-import ch.sponsorplatz.organisation.Mitgliedschaft;
-import ch.sponsorplatz.shared.util.TokenGenerator;
-
-import ch.sponsorplatz.shared.exception.BenutzerNichtRegistriertException;
-import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.organisation.Rolle;
-import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.organisation.OrganisationRepository;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import ch.sponsorplatz.benutzer.AppUser;
+import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.organisation.MitgliedschaftService;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.OrganisationRepository;
+import ch.sponsorplatz.organisation.Rolle;
+import ch.sponsorplatz.shared.exception.BenutzerNichtRegistriertException;
+import ch.sponsorplatz.shared.util.TokenGenerator;
+
 /**
  * Service für den Mitglieder-Einladungs-Flow.
  *
- * <p>Der Mail-Versand selbst läuft NICHT mehr in dieser Service-Methode, sondern
- * im {@link EinladungsMailListener} via {@code @TransactionalEventListener(AFTER_COMMIT)}.
+ * <p>
+ * Der Mail-Versand selbst läuft NICHT mehr in dieser Service-Methode, sondern
+ * im {@link EinladungsMailListener} via
+ * {@code @TransactionalEventListener(AFTER_COMMIT)}.
  * Damit kann eine Mail-Failure nicht den DB-State korrumpieren (H4-Fix):
- * der Service publiziert {@link EinladungErstelltEvent}, Spring stellt das Event
- * erst nach erfolgreichem Tx-Commit zu.</p>
+ * der Service publiziert {@link EinladungErstelltEvent}, Spring stellt das
+ * Event
+ * erst nach erfolgreichem Tx-Commit zu.
+ * </p>
  */
 @Service
 @Transactional
@@ -34,13 +38,15 @@ public class EinladungsService {
     private static final long TOKEN_GUELTIG_TAGE = 7;
 
     /**
-     * Vereinfachter RFC-5322-Check. Akzeptiert die meisten gültigen E-Mails und blockt
-     * offensichtlichen Müll (kein „@", fehlende TLD, Leerzeichen, doppelte „@" usw.).
-     * Bewusst nicht der Hibernate-{@code @Email}-Validator, weil EinladungsService keinen
+     * Vereinfachter RFC-5322-Check. Akzeptiert die meisten gültigen E-Mails und
+     * blockt
+     * offensichtlichen Müll (kein „@", fehlende TLD, Leerzeichen, doppelte „@"
+     * usw.).
+     * Bewusst nicht der Hibernate-{@code @Email}-Validator, weil EinladungsService
+     * keinen
      * Form-DTO-Wrapper hat — Defense in depth direkt am Service-Eingang.
      */
-    private static final Pattern EMAIL_PATTERN =
-            Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
     private final EinladungRepository einladungRepository;
     private final AppUserRepository appUserRepository;
@@ -49,10 +55,10 @@ public class EinladungsService {
     private final ApplicationEventPublisher eventPublisher;
 
     public EinladungsService(EinladungRepository einladungRepository,
-                             AppUserRepository appUserRepository,
-                             OrganisationRepository organisationRepository,
-                             MitgliedschaftService mitgliedschaftService,
-                             ApplicationEventPublisher eventPublisher) {
+            AppUserRepository appUserRepository,
+            OrganisationRepository organisationRepository,
+            MitgliedschaftService mitgliedschaftService,
+            ApplicationEventPublisher eventPublisher) {
         this.einladungRepository = einladungRepository;
         this.appUserRepository = appUserRepository;
         this.organisationRepository = organisationRepository;
@@ -64,7 +70,8 @@ public class EinladungsService {
      * Erstellt eine Einladung und publiziert ein {@link EinladungErstelltEvent}.
      * Die Mail wird vom Listener nach AFTER_COMMIT versendet.
      *
-     * @throws IllegalArgumentException bei ungültiger E-Mail oder wenn bereits eingeladen
+     * @throws IllegalArgumentException bei ungültiger E-Mail oder wenn bereits
+     *                                  eingeladen
      */
     public Einladung erstelleEinladung(UUID orgId, String email, Rolle rolle, UUID eingeladenVonId) {
         if (email == null || email.isBlank()) {
@@ -80,8 +87,10 @@ public class EinladungsService {
         AppUser eingeladenVon = appUserRepository.findById(eingeladenVonId)
                 .orElseThrow(() -> new IllegalArgumentException("Einladender User nicht gefunden"));
 
-        // M2: existierende Einladung berücksichtigen — abgelaufene löschen + neu erlauben,
-        // gültige weiterhin blocken (sonst könnte ein Editor unbegrenzt Mails triggern).
+        // M2: existierende Einladung berücksichtigen — abgelaufene löschen + neu
+        // erlauben,
+        // gültige weiterhin blocken (sonst könnte ein Editor unbegrenzt Mails
+        // triggern).
         einladungRepository.findByOrgIdAndEmail(orgId, normalisiert).ifPresent(existing -> {
             if (Instant.now().isAfter(existing.getGueltigBis())) {
                 einladungRepository.delete(existing);
@@ -123,13 +132,15 @@ public class EinladungsService {
     }
 
     /**
-     * Nimmt eine Einladung an. Erstellt die Mitgliedschaft und markiert die Einladung
+     * Nimmt eine Einladung an. Erstellt die Mitgliedschaft und markiert die
+     * Einladung
      * als angenommen (M4-Fix: idempotent — wiederholte Klicks auf denselben Token
      * geben kein 400, sondern werden stillschweigend akzeptiert, solange der Token
      * noch nicht durch den Cleanup-Job entfernt wurde).
      *
      * @throws IllegalArgumentException bei unbekanntem Token
-     * @throws IllegalStateException bei abgelaufenem Token oder wenn der User noch nicht registriert ist
+     * @throws IllegalStateException    bei abgelaufenem Token oder wenn der User
+     *                                  noch nicht registriert ist
      */
     public void nimmAn(String token) {
         Einladung einladung = pruefeUndLade(token);
@@ -147,8 +158,7 @@ public class EinladungsService {
                 einladung.getOrg().getId(),
                 user.getId(),
                 einladung.getRolle(),
-                einladung.getEingeladenVon().getId()
-        );
+                einladung.getEingeladenVon().getId());
 
         einladung.setAngenommenAm(Instant.now());
         einladungRepository.save(einladung);

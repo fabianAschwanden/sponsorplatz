@@ -1,5 +1,9 @@
 package ch.sponsorplatz.anfrage;
-import ch.sponsorplatz.organisation.Organisation;
+
+import java.io.IOException;
+import java.util.Base64;
+
+import org.springframework.stereotype.Service;
 
 import net.codecrete.qrbill.canvas.PNGCanvas;
 import net.codecrete.qrbill.generator.Address;
@@ -10,19 +14,18 @@ import net.codecrete.qrbill.generator.OutputSize;
 import net.codecrete.qrbill.generator.Payments;
 import net.codecrete.qrbill.generator.QRBill;
 
-import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.util.Base64;
-
 /**
- * Generiert den Swiss-QR-Bill als PNG-Bild für die Einbettung ins Rechnungs-PDF.
+ * Generiert den Swiss-QR-Bill als PNG-Bild für die Einbettung ins
+ * Rechnungs-PDF.
  *
- * <p>Verwendet {@code net.codecrete.qrbill}. Output ist {@link OutputSize#QR_BILL_ONLY}
+ * <p>
+ * Verwendet {@code net.codecrete.qrbill}. Output ist
+ * {@link OutputSize#QR_BILL_ONLY}
  * (105 mm × 210 mm) als PNG mit 200 dpi — passt unter die letzten 105 mm einer
  * A4-Seite, wie von Six Group spezifiziert.
  *
- * <p>QR-IBAN-Detection: bei IBANs in der Reichweite des Schweizer QR-IBAN-
+ * <p>
+ * QR-IBAN-Detection: bei IBANs in der Reichweite des Schweizer QR-IBAN-
  * Bereichs (Institut-ID 30000–31999) wird automatisch eine QR-Referenz
  * verwendet, sonst Creditor-Reference (ISO 11649). Wenn der Verein keinen
  * QR-IBAN hat, wird {@code referenceNumber} leer gelassen → Sponsor zahlt mit

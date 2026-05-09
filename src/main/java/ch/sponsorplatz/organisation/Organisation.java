@@ -1,5 +1,10 @@
 package ch.sponsorplatz.organisation;
-import ch.sponsorplatz.projekt.Sichtbarkeit;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,16 +21,11 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-
 /**
  * Organisation — Wurzel-Entität für Vereine, Unternehmen, Stiftungen.
  *
- * Wird im kollaborativen Modell als Edit-Marker für nachgelagerte Daten verwendet
+ * Wird im kollaborativen Modell als Edit-Marker für nachgelagerte Daten
+ * verwendet
  * (siehe ROLLENKONZEPT.md). Lese-Sichtbarkeit ist offen.
  */
 @Entity
@@ -50,12 +50,17 @@ public class Organisation {
     @Column(name = "rechtsform", length = 50)
     private String rechtsform;
 
-    /** Health/Sport-Fokus — Pflicht für VEREIN, optional für STIFTUNG, NULL für UNTERNEHMEN. */
+    /**
+     * Health/Sport-Fokus — Pflicht für VEREIN, optional für STIFTUNG, NULL für
+     * UNTERNEHMEN.
+     */
     @Enumerated(EnumType.STRING)
     @Column(name = "branche", length = 50)
     private Branche branche;
 
-    /** Industrie — Pflicht für UNTERNEHMEN, optional für STIFTUNG, NULL für VEREIN. */
+    /**
+     * Industrie — Pflicht für UNTERNEHMEN, optional für STIFTUNG, NULL für VEREIN.
+     */
     @Enumerated(EnumType.STRING)
     @Column(name = "sponsor_branche", length = 50)
     private SponsorBranche sponsorBranche;
@@ -228,14 +233,29 @@ public class Organisation {
         this.iban = iban;
     }
 
-    public String getStrasse() { return strasse; }
-    public void setStrasse(String strasse) { this.strasse = strasse; }
+    public String getStrasse() {
+        return strasse;
+    }
 
-    public String getPostleitzahl() { return postleitzahl; }
-    public void setPostleitzahl(String postleitzahl) { this.postleitzahl = postleitzahl; }
+    public void setStrasse(String strasse) {
+        this.strasse = strasse;
+    }
 
-    public String getOrt() { return ort; }
-    public void setOrt(String ort) { this.ort = ort; }
+    public String getPostleitzahl() {
+        return postleitzahl;
+    }
+
+    public void setPostleitzahl(String postleitzahl) {
+        this.postleitzahl = postleitzahl;
+    }
+
+    public String getOrt() {
+        return ort;
+    }
+
+    public void setOrt(String ort) {
+        this.ort = ort;
+    }
 
     public Instant getRegistriertAm() {
         return registriertAm;
@@ -253,16 +273,28 @@ public class Organisation {
         return updatedAt;
     }
 
-    public Organisation getUebergeordneteOrg() { return uebergeordneteOrg; }
-    public void setUebergeordneteOrg(Organisation uebergeordneteOrg) { this.uebergeordneteOrg = uebergeordneteOrg; }
+    public Organisation getUebergeordneteOrg() {
+        return uebergeordneteOrg;
+    }
 
-    public List<Organisation> getUntergeordneteOrgs() { return untergeordneteOrgs; }
-    public void setUntergeordneteOrgs(List<Organisation> untergeordneteOrgs) { this.untergeordneteOrgs = untergeordneteOrgs; }
+    public void setUebergeordneteOrg(Organisation uebergeordneteOrg) {
+        this.uebergeordneteOrg = uebergeordneteOrg;
+    }
+
+    public List<Organisation> getUntergeordneteOrgs() {
+        return untergeordneteOrgs;
+    }
+
+    public void setUntergeordneteOrgs(List<Organisation> untergeordneteOrgs) {
+        this.untergeordneteOrgs = untergeordneteOrgs;
+    }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Organisation that)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Organisation that))
+            return false;
         return Objects.equals(id, that.id);
     }
 

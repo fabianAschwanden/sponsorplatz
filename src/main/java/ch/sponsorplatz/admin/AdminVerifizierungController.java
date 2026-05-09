@@ -1,12 +1,8 @@
 package ch.sponsorplatz.admin;
-import ch.sponsorplatz.organisation.Rolle;
-import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
-import ch.sponsorplatz.benutzer.AppUser;
 
-import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.organisation.OrganisationView;
-import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.organisation.OrganisationService;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,14 +11,18 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.List;
-import java.util.UUID;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.OrganisationService;
+import ch.sponsorplatz.organisation.OrganisationView;
+import ch.sponsorplatz.shared.config.ModelAttributeNames;
 
 /**
  * Admin-Bereich: Verifizierungs-Queue für PENDING-Organisationen.
  * Schutz deklarativ via {@code @PreAuthorize("hasRole('PLATFORM_ADMIN')")} —
- * die Rolle wird vom {@code SponsorplatzUserDetailsService} aus {@code AppUser.platformRolle}
- * als {@code ROLE_PLATFORM_ADMIN}-GrantedAuthority gesetzt; kein DB-Roundtrip pro Request.
+ * die Rolle wird vom {@code SponsorplatzUserDetailsService} aus
+ * {@code AppUser.platformRolle}
+ * als {@code ROLE_PLATFORM_ADMIN}-GrantedAuthority gesetzt; kein DB-Roundtrip
+ * pro Request.
  */
 @Controller
 @RequestMapping("/admin/verifizierungen")

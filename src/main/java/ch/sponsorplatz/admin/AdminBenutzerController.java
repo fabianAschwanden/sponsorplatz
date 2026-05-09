@@ -1,25 +1,29 @@
 package ch.sponsorplatz.admin;
-import ch.sponsorplatz.organisation.Rolle;
-
-import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.benutzer.AdminBenutzerView;
-import ch.sponsorplatz.organisation.OrganisationView;
-import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.audit.AuditAktion;
-import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.benutzer.PlatformRolle;
-import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.audit.AuditService;
-import ch.sponsorplatz.organisation.OrganisationService;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import ch.sponsorplatz.audit.AuditAktion;
+import ch.sponsorplatz.audit.AuditService;
+import ch.sponsorplatz.benutzer.AdminBenutzerView;
+import ch.sponsorplatz.benutzer.AppUser;
+import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.PlatformRolle;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.OrganisationService;
+import ch.sponsorplatz.organisation.OrganisationView;
+import ch.sponsorplatz.shared.config.ModelAttributeNames;
+import ch.sponsorplatz.shared.exception.NotFoundException;
 
 /**
  * Admin-Bereich: Benutzer- und Organisations-Verwaltung.
@@ -34,8 +38,8 @@ public class AdminBenutzerController {
     private final AuditService auditService;
 
     public AdminBenutzerController(AppUserRepository userRepository,
-                                    OrganisationService organisationService,
-                                    AuditService auditService) {
+            OrganisationService organisationService,
+            AuditService auditService) {
         this.userRepository = userRepository;
         this.organisationService = organisationService;
         this.auditService = auditService;
@@ -76,8 +80,8 @@ public class AdminBenutzerController {
 
     @PostMapping("/benutzer/{id}/rolle")
     public String rolleAendern(@PathVariable UUID id,
-                               @RequestParam(required = false) String rolle,
-                               RedirectAttributes redirect) {
+            @RequestParam(required = false) String rolle,
+            RedirectAttributes redirect) {
         AppUser user = findeUser(id);
         String alteRolle = user.getPlatformRolle() != null ? user.getPlatformRolle().name() : "KEINE";
         if (rolle == null || rolle.isBlank()) {
@@ -126,4 +130,3 @@ public class AdminBenutzerController {
                 .orElseThrow(() -> new NotFoundException("Benutzer nicht gefunden: " + id));
     }
 }
-

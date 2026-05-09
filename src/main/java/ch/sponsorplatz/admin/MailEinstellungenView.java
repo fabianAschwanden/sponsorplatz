@@ -1,12 +1,12 @@
 package ch.sponsorplatz.admin;
-import ch.sponsorplatz.shared.mail.MailService;
 
 import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungen;
 
 /**
  * View-DTO für die Mail-Einstellungs-Seite.
  *
- * <p>Stellt sowohl die DB-Werte (zum Editieren) als auch effektive Werte
+ * <p>
+ * Stellt sowohl die DB-Werte (zum Editieren) als auch effektive Werte
  * (DB &gt; ENV) dar, plus den Live-Modus-Status (read-only via ENV).
  */
 public record MailEinstellungenView(
@@ -22,18 +22,18 @@ public record MailEinstellungenView(
         String effektiverAbsender,
         String effektiverTestEmpfaenger,
         boolean liveModus,
-        boolean konfiguriert
-) {
+        boolean konfiguriert) {
     /**
      * Baut die View aus DB-Entity + den effektiven Werten aus dem MailService.
-     * Passwort wird nur als Boolean (gesetzt/leer) exponiert — Klartext bleibt in der DB.
+     * Passwort wird nur als Boolean (gesetzt/leer) exponiert — Klartext bleibt in
+     * der DB.
      */
     public static MailEinstellungenView von(PlattformEinstellungen e,
-                                            String effektiverHost,
-                                            String effektiverAbsender,
-                                            String effektiverTestEmpfaenger,
-                                            boolean liveModus,
-                                            boolean konfiguriert) {
+            String effektiverHost,
+            String effektiverAbsender,
+            String effektiverTestEmpfaenger,
+            boolean liveModus,
+            boolean konfiguriert) {
         return new MailEinstellungenView(
                 e.getSmtpHost(),
                 e.getSmtpPort(),

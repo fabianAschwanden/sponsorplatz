@@ -1,5 +1,7 @@
 package ch.sponsorplatz.shared.einstellungen;
-import ch.sponsorplatz.shared.mail.MailService;
+
+import java.time.Instant;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,13 +10,11 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
-import java.time.Instant;
-import java.util.UUID;
-
 /**
  * Singleton-Row mit Plattform-weiten Einstellungen — aktuell nur SMTP.
  *
- * <p>Wird via Admin-UI ({@code /admin/mail-einstellungen}) editiert. Werte
+ * <p>
+ * Wird via Admin-UI ({@code /admin/mail-einstellungen}) editiert. Werte
  * überschreiben ENV-Properties zur Laufzeit (siehe {@code MailService}).
  */
 @Entity
@@ -64,36 +64,91 @@ public class PlattformEinstellungen {
         this.aktualisiertAm = Instant.now();
     }
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
+    public UUID getId() {
+        return id;
+    }
 
-    public String getSmtpHost() { return smtpHost; }
-    public void setSmtpHost(String smtpHost) { this.smtpHost = smtpHost; }
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
-    public Integer getSmtpPort() { return smtpPort; }
-    public void setSmtpPort(Integer smtpPort) { this.smtpPort = smtpPort; }
+    public String getSmtpHost() {
+        return smtpHost;
+    }
 
-    public String getSmtpUser() { return smtpUser; }
-    public void setSmtpUser(String smtpUser) { this.smtpUser = smtpUser; }
+    public void setSmtpHost(String smtpHost) {
+        this.smtpHost = smtpHost;
+    }
 
-    public String getSmtpPassword() { return smtpPassword; }
-    public void setSmtpPassword(String smtpPassword) { this.smtpPassword = smtpPassword; }
+    public Integer getSmtpPort() {
+        return smtpPort;
+    }
 
-    public boolean isSmtpAuth() { return smtpAuth; }
-    public void setSmtpAuth(boolean smtpAuth) { this.smtpAuth = smtpAuth; }
+    public void setSmtpPort(Integer smtpPort) {
+        this.smtpPort = smtpPort;
+    }
 
-    public boolean isSmtpStarttls() { return smtpStarttls; }
-    public void setSmtpStarttls(boolean smtpStarttls) { this.smtpStarttls = smtpStarttls; }
+    public String getSmtpUser() {
+        return smtpUser;
+    }
 
-    public String getMailAbsender() { return mailAbsender; }
-    public void setMailAbsender(String mailAbsender) { this.mailAbsender = mailAbsender; }
+    public void setSmtpUser(String smtpUser) {
+        this.smtpUser = smtpUser;
+    }
 
-    public String getMailTestEmpfaenger() { return mailTestEmpfaenger; }
-    public void setMailTestEmpfaenger(String mailTestEmpfaenger) { this.mailTestEmpfaenger = mailTestEmpfaenger; }
+    public String getSmtpPassword() {
+        return smtpPassword;
+    }
 
-    public Instant getAktualisiertAm() { return aktualisiertAm; }
-    public void setAktualisiertAm(Instant aktualisiertAm) { this.aktualisiertAm = aktualisiertAm; }
+    public void setSmtpPassword(String smtpPassword) {
+        this.smtpPassword = smtpPassword;
+    }
 
-    public String getAktualisiertVon() { return aktualisiertVon; }
-    public void setAktualisiertVon(String aktualisiertVon) { this.aktualisiertVon = aktualisiertVon; }
+    public boolean isSmtpAuth() {
+        return smtpAuth;
+    }
+
+    public void setSmtpAuth(boolean smtpAuth) {
+        this.smtpAuth = smtpAuth;
+    }
+
+    public boolean isSmtpStarttls() {
+        return smtpStarttls;
+    }
+
+    public void setSmtpStarttls(boolean smtpStarttls) {
+        this.smtpStarttls = smtpStarttls;
+    }
+
+    public String getMailAbsender() {
+        return mailAbsender;
+    }
+
+    public void setMailAbsender(String mailAbsender) {
+        this.mailAbsender = mailAbsender;
+    }
+
+    public String getMailTestEmpfaenger() {
+        return mailTestEmpfaenger;
+    }
+
+    public void setMailTestEmpfaenger(String mailTestEmpfaenger) {
+        this.mailTestEmpfaenger = mailTestEmpfaenger;
+    }
+
+    public Instant getAktualisiertAm() {
+        return aktualisiertAm;
+    }
+
+    public void setAktualisiertAm(Instant aktualisiertAm) {
+        this.aktualisiertAm = aktualisiertAm;
+    }
+
+    public String getAktualisiertVon() {
+        return aktualisiertVon;
+    }
+
+    public void setAktualisiertVon(String aktualisiertVon) {
+        this.aktualisiertVon = aktualisiertVon;
+    }
 }

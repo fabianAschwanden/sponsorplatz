@@ -1,10 +1,13 @@
 package ch.sponsorplatz.anfrage;
-import ch.sponsorplatz.organisation.Organisation;
 
-import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.organisation.AccessControl;
-import ch.sponsorplatz.shared.pdf.PdfGeneratorService;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import jakarta.validation.Valid;
+
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -21,25 +24,29 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import ch.sponsorplatz.organisation.AccessControl;
+import ch.sponsorplatz.shared.exception.NotFoundException;
+import ch.sponsorplatz.shared.pdf.PdfGeneratorService;
 
 /**
  * Sponsoring-Vertrags-Verwaltung pro Organisation.
  *
- * <p>Routen:
+ * <p>
+ * Routen:
  * <ul>
- *   <li>{@code POST /organisationen/{slug}/anfragen/{id}/vertrag/erstellen} — neu</li>
- *   <li>{@code GET  /organisationen/{slug}/vertraege/{id}} — Detail/Edit-Form</li>
- *   <li>{@code POST /organisationen/{slug}/vertraege/{id}} — Speichern</li>
- *   <li>{@code POST /organisationen/{slug}/vertraege/{id}/unterzeichnen} — Status-Wechsel</li>
- *   <li>{@code GET  /organisationen/{slug}/vertraege/{id}/pdf} — PDF-Download</li>
+ * <li>{@code POST /organisationen/{slug}/anfragen/{id}/vertrag/erstellen} —
+ * neu</li>
+ * <li>{@code GET  /organisationen/{slug}/vertraege/{id}} —
+ * Detail/Edit-Form</li>
+ * <li>{@code POST /organisationen/{slug}/vertraege/{id}} — Speichern</li>
+ * <li>{@code POST /organisationen/{slug}/vertraege/{id}/unterzeichnen} —
+ * Status-Wechsel</li>
+ * <li>{@code GET  /organisationen/{slug}/vertraege/{id}/pdf} —
+ * PDF-Download</li>
  * </ul>
  *
- * <p>Edit + Status-Wechsel: nur ORG_EDITOR/OWNER der Verein-Org.
+ * <p>
+ * Edit + Status-Wechsel: nur ORG_EDITOR/OWNER der Verein-Org.
  * PDF-Download: gleiche AccessControl (Vertrag enthält Sponsor-Kontaktdaten).
  */
 @Controller
@@ -53,8 +60,8 @@ public class VertragController {
     private final AccessControl accessControl;
 
     public VertragController(VertragService vertragService,
-                             PdfGeneratorService pdfGenerator,
-                             AccessControl accessControl) {
+            PdfGeneratorService pdfGenerator,
+            AccessControl accessControl) {
         this.vertragService = vertragService;
         this.pdfGenerator = pdfGenerator;
         this.accessControl = accessControl;
@@ -62,9 +69,9 @@ public class VertragController {
 
     @PostMapping("/anfragen/{anfrageId}/vertrag/erstellen")
     public String erstellen(@PathVariable String slug,
-                            @PathVariable UUID anfrageId,
-                            Authentication auth,
-                            RedirectAttributes redirect) {
+            @PathVariable UUID anfrageId,
+            Authentication auth,
+            RedirectAttributes redirect) {
         if (!accessControl.kannOrgEditierenNachSlug(slug, auth)) {
             throw new AccessDeniedException("Keine Edit-Berechtigung für Org: " + slug);
         }
@@ -76,9 +83,9 @@ public class VertragController {
 
     @GetMapping("/vertraege/{id}")
     public String detail(@PathVariable String slug,
-                         @PathVariable UUID id,
-                         Authentication auth,
-                         Model model) {
+            @PathVariable UUID id,
+            Authentication auth,
+            Model model) {
         Vertrag v = vertragService.findeNachId(id);
         pruefeAccess(slug, v, auth);
 
@@ -91,11 +98,11 @@ public class VertragController {
 
     @PostMapping("/vertraege/{id}")
     public String speichern(@PathVariable String slug,
-                            @PathVariable UUID id,
-                            @Valid @ModelAttribute("form") VertragFormDto form,
-                            BindingResult bindingResult,
-                            Authentication auth,
-                            RedirectAttributes redirect) {
+            @PathVariable UUID id,
+            @Valid @ModelAttribute("form") VertragFormDto form,
+            BindingResult bindingResult,
+            Authentication auth,
+            RedirectAttributes redirect) {
         if (!accessControl.kannOrgEditierenNachSlug(slug, auth)) {
             throw new AccessDeniedException("Keine Edit-Berechtigung für Org: " + slug);
         }
@@ -117,9 +124,9 @@ public class VertragController {
 
     @PostMapping("/vertraege/{id}/unterzeichnen")
     public String unterzeichnen(@PathVariable String slug,
-                                @PathVariable UUID id,
-                                Authentication auth,
-                                RedirectAttributes redirect) {
+            @PathVariable UUID id,
+            Authentication auth,
+            RedirectAttributes redirect) {
         if (!accessControl.kannOrgVerwaltenNachSlug(slug, auth)) {
             throw new AccessDeniedException("Nur ORG_OWNER kann Verträge unterzeichnen.");
         }
@@ -130,8 +137,8 @@ public class VertragController {
 
     @GetMapping("/vertraege/{id}/pdf")
     public ResponseEntity<ByteArrayResource> pdf(@PathVariable String slug,
-                                                 @PathVariable UUID id,
-                                                 Authentication auth) {
+            @PathVariable UUID id,
+            Authentication auth) {
         Vertrag v = vertragService.findeNachId(id);
         pruefeAccess(slug, v, auth);
 
@@ -150,7 +157,9 @@ public class VertragController {
                 .body(new ByteArrayResource(pdf));
     }
 
-    /** Vertrag muss zur URL-Slug-Org gehören + User muss Editor der Verein-Org sein. */
+    /**
+     * Vertrag muss zur URL-Slug-Org gehören + User muss Editor der Verein-Org sein.
+     */
     private void pruefeAccess(String slug, Vertrag v, Authentication auth) {
         if (v.getOrg() == null || !slug.equals(v.getOrg().getSlug())) {
             throw new NotFoundException("Vertrag nicht gefunden.");

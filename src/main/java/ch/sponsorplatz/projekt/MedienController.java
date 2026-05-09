@@ -1,10 +1,7 @@
 package ch.sponsorplatz.projekt;
-import ch.sponsorplatz.organisation.Organisation;
 
-import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.organisation.OrganisationService;
-import ch.sponsorplatz.shared.storage.StorageService;
-import ch.sponsorplatz.organisation.AccessControl;
+import java.util.UUID;
+
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +15,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.UUID;
+import ch.sponsorplatz.organisation.AccessControl;
+import ch.sponsorplatz.organisation.OrganisationService;
+import ch.sponsorplatz.shared.exception.NotFoundException;
+import ch.sponsorplatz.shared.storage.StorageService;
 
 /**
  * Medien-Auslieferung und Upload-Endpunkte.
@@ -33,10 +33,10 @@ public class MedienController {
     private final AccessControl accessControl;
 
     public MedienController(MedienAssetService medienAssetService,
-                            StorageService storageService,
-                            ProjektService projektService,
-                            OrganisationService organisationService,
-                            AccessControl accessControl) {
+            StorageService storageService,
+            ProjektService projektService,
+            OrganisationService organisationService,
+            AccessControl accessControl) {
         this.medienAssetService = medienAssetService;
         this.storageService = storageService;
         this.projektService = projektService;
@@ -61,11 +61,11 @@ public class MedienController {
     /** Upload eines Cover-Bildes für ein Projekt. */
     @PostMapping("/organisationen/{orgSlug}/projekte/{projektSlug}/medien")
     public String uploadProjektMedien(@PathVariable String orgSlug,
-                                       @PathVariable String projektSlug,
-                                       @RequestParam("datei") MultipartFile datei,
-                                       @RequestParam(value = "assetTyp", defaultValue = "COVER") String assetTypStr,
-                                       Authentication auth,
-                                       RedirectAttributes redirectAttributes) {
+            @PathVariable String projektSlug,
+            @RequestParam("datei") MultipartFile datei,
+            @RequestParam(value = "assetTyp", defaultValue = "COVER") String assetTypStr,
+            Authentication auth,
+            RedirectAttributes redirectAttributes) {
         if (!accessControl.kannOrgEditierenNachSlug(orgSlug, auth)) {
             throw new AccessDeniedException("Keine Berechtigung");
         }
@@ -83,10 +83,10 @@ public class MedienController {
     /** Upload eines Logos/Covers für eine Organisation. */
     @PostMapping("/organisationen/{slug}/medien")
     public String uploadOrgMedien(@PathVariable String slug,
-                                   @RequestParam("datei") MultipartFile datei,
-                                   @RequestParam(value = "assetTyp", defaultValue = "LOGO") String assetTypStr,
-                                   Authentication auth,
-                                   RedirectAttributes redirectAttributes) {
+            @RequestParam("datei") MultipartFile datei,
+            @RequestParam(value = "assetTyp", defaultValue = "LOGO") String assetTypStr,
+            Authentication auth,
+            RedirectAttributes redirectAttributes) {
         if (!accessControl.kannOrgEditierenNachSlug(slug, auth)) {
             throw new AccessDeniedException("Keine Berechtigung");
         }
@@ -104,8 +104,8 @@ public class MedienController {
     /** Löscht ein Medien-Asset. */
     @PostMapping("/medien/{id}/loeschen")
     public String loeschen(@PathVariable UUID id,
-                           Authentication auth,
-                           @RequestParam(value = "redirect", defaultValue = "/dashboard") String redirect) {
+            Authentication auth,
+            @RequestParam(value = "redirect", defaultValue = "/dashboard") String redirect) {
         MedienAsset asset = medienAssetService.findeNachId(id)
                 .orElseThrow(() -> new NotFoundException("Asset nicht gefunden"));
 
@@ -115,11 +115,11 @@ public class MedienController {
             boolean erlaubt = organisationService.findeNachId(asset.getEntityId())
                     .map(org -> accessControl.kannOrgEditierenNachSlug(org.getSlug(), auth))
                     .orElse(false);
-            if (!erlaubt) throw new AccessDeniedException("Keine Berechtigung");
+            if (!erlaubt)
+                throw new AccessDeniedException("Keine Berechtigung");
         }
 
         medienAssetService.loesche(id);
         return "redirect:" + redirect;
     }
 }
-

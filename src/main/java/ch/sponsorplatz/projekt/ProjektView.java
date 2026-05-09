@@ -1,6 +1,4 @@
 package ch.sponsorplatz.projekt;
-import ch.sponsorplatz.organisation.Organisation;
-
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -21,8 +19,7 @@ public record ProjektView(
         String beschreibung,
         Instant veroeffentlichtAm,
         OrganisationKurzView org,
-        String coverUrl
-) {
+        String coverUrl) {
 
     public static ProjektView von(Projekt projekt) {
         return von(projekt, null);
@@ -41,8 +38,7 @@ public record ProjektView(
                 projekt.getBeschreibung(),
                 projekt.getVeroeffentlichtAm(),
                 OrganisationKurzView.von(projekt.getOrg()),
-                coverUrl
-        );
+                coverUrl);
     }
 
     /**
@@ -54,4 +50,3 @@ public record ProjektView(
         }
     }
 }
-

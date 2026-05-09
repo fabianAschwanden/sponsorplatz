@@ -1,5 +1,4 @@
 package ch.sponsorplatz.benutzer;
-import ch.sponsorplatz.organisation.Rolle;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,11 +13,12 @@ import org.springframework.stereotype.Component;
  * sofern noch keiner existiert und die Umgebungsvariablen gesetzt sind.
  *
  * Konfiguration via ENV:
- *   SPONSORPLATZ_ADMIN_EMAIL    (Pflicht)
- *   SPONSORPLATZ_ADMIN_PASSWORD (Pflicht, min. 12 Zeichen empfohlen)
- *   SPONSORPLATZ_ADMIN_NAME     (Optional, Default: "Plattform-Admin")
+ * SPONSORPLATZ_ADMIN_EMAIL (Pflicht)
+ * SPONSORPLATZ_ADMIN_PASSWORD (Pflicht, min. 12 Zeichen empfohlen)
+ * SPONSORPLATZ_ADMIN_NAME (Optional, Default: "Plattform-Admin")
  *
- * Idempotent: wird nur ausgeführt wenn kein User mit PLATFORM_ADMIN-Rolle existiert.
+ * Idempotent: wird nur ausgeführt wenn kein User mit PLATFORM_ADMIN-Rolle
+ * existiert.
  */
 @Component
 @Profile("prod")
@@ -73,4 +73,3 @@ public class ProdAdminSeedRunner implements CommandLineRunner {
         log.info("PROD-Seed: PLATFORM_ADMIN angelegt für E-Mail: {}", adminEmail);
     }
 }
-

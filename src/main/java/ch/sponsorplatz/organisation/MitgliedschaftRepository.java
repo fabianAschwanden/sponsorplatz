@@ -1,14 +1,13 @@
 package ch.sponsorplatz.organisation;
-import ch.sponsorplatz.projekt.DashboardService;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
 
 @Repository
 public interface MitgliedschaftRepository extends JpaRepository<Mitgliedschaft, UUID> {
@@ -19,7 +18,14 @@ public interface MitgliedschaftRepository extends JpaRepository<Mitgliedschaft, 
 
     boolean existsByUserIdAndOrgIdAndRolle(UUID userId, UUID orgId, Rolle rolle);
 
-    List<Mitgliedschaft> findByOrgId(UUID orgId);
+    /**
+     * JOIN FETCH user — verhindert {@code LazyInitializationException} im
+     * Template, da {@code spring.jpa.open-in-view=false} und {@code MitgliedView.von}
+     * auf {@code user.getAnzeigename()} / {@code user.getProfilbildId()} zugreift,
+     * nachdem die Service-Transaktion bereits geschlossen ist.
+     */
+    @Query("SELECT m FROM Mitgliedschaft m JOIN FETCH m.user WHERE m.org.id = :orgId")
+    List<Mitgliedschaft> findByOrgId(@Param("orgId") UUID orgId);
 
     List<Mitgliedschaft> findByUserId(UUID userId);
 
@@ -39,7 +45,8 @@ public interface MitgliedschaftRepository extends JpaRepository<Mitgliedschaft, 
      * in der Hierarchie-Kette hat. Ersetzt die N×2-Iteration (Mitglied-Check +
      * findById pro Stufe) durch ein rekursives CTE.
      *
-     * <p>Funktioniert auf Postgres und auf H2 (mit MODE=PostgreSQL).
+     * <p>
+     * Funktioniert auf Postgres und auf H2 (mit MODE=PostgreSQL).
      * Rollen werden als Strings übergeben, weil das {@code rolle}-Spalte
      * der DB ein VARCHAR mit Enum-Namen ist — Spring Data JPA serialisiert
      * Enum-Collections in native Queries nicht zuverlässig.

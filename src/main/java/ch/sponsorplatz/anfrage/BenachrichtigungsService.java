@@ -1,16 +1,17 @@
 package ch.sponsorplatz.anfrage;
-import ch.sponsorplatz.benachrichtigung.Benachrichtigung;
-import ch.sponsorplatz.shared.mail.MailService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import ch.sponsorplatz.shared.mail.MailService;
+
 /**
  * E-Mail-Benachrichtigungen für Sponsoring-Anfragen.
  *
- * <p>Sendet via {@link MailService} — die Live-/Test-Modus-Logik und
+ * <p>
+ * Sendet via {@link MailService} — die Live-/Test-Modus-Logik und
  * SMTP-Settings (DB &gt; ENV) liegen dort zentral.
  */
 @Service
@@ -37,8 +38,7 @@ public class BenachrichtigungsService {
                         "Loggen Sie sich auf Sponsorplatz ein, um die Anfrage zu beantworten.%n%n" +
                         "Freundliche Grüsse%nSponsorplatz",
                 anfrage.getKontaktName() != null ? anfrage.getKontaktName() : "Unbekannt",
-                anfrage.getNachricht()
-        );
+                anfrage.getNachricht());
 
         try {
             mailService.sendePlain(empfaengerEmail, "Neue Sponsoring-Anfrage auf Sponsorplatz", body);
@@ -59,8 +59,7 @@ public class BenachrichtigungsService {
                         "Status: %s%nAntwort: %s%n%n" +
                         "Freundliche Grüsse%nSponsorplatz",
                 anfrage.getStatus().name(),
-                anfrage.getAntwort() != null ? anfrage.getAntwort() : "—"
-        );
+                anfrage.getAntwort() != null ? anfrage.getAntwort() : "—");
 
         try {
             mailService.sendePlain(empfaengerEmail, "Antwort auf Ihre Sponsoring-Anfrage — Sponsorplatz", body);

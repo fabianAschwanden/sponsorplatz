@@ -1,23 +1,4 @@
 package ch.sponsorplatz.admin;
-import ch.sponsorplatz.organisation.Rolle;
-
-import ch.sponsorplatz.shared.config.SecurityConfig;
-import ch.sponsorplatz.organisation.OrgStatus;
-import ch.sponsorplatz.organisation.OrgTyp;
-import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.organisation.OrganisationService;
-import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
-import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,6 +9,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.organisation.OrgStatus;
+import ch.sponsorplatz.organisation.OrgTyp;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.OrganisationService;
+import ch.sponsorplatz.shared.config.SecurityConfig;
 
 @WebMvcTest(controllers = AdminVerifizierungController.class)
 @Import(SecurityConfig.class)

@@ -1,19 +1,19 @@
 package ch.sponsorplatz.anfrage;
-import ch.sponsorplatz.benachrichtigung.NotificationService;
-import ch.sponsorplatz.benachrichtigung.Benachrichtigung;
-
-import ch.sponsorplatz.benachrichtigung.BenachrichtigungTyp;
-import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.projekt.SponsoringPaket;
-import ch.sponsorplatz.organisation.MitgliedschaftRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import ch.sponsorplatz.benachrichtigung.BenachrichtigungTyp;
+import ch.sponsorplatz.benachrichtigung.NotificationService;
+import ch.sponsorplatz.organisation.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.projekt.SponsoringPaket;
 
 @Service
 @Transactional
@@ -28,9 +28,9 @@ public class SponsoringAnfrageService {
     private final MitgliedschaftRepository mitgliedschaftRepository;
 
     public SponsoringAnfrageService(SponsoringAnfrageRepository repository,
-                                     BenachrichtigungsService benachrichtigungsService,
-                                     NotificationService notificationService,
-                                     MitgliedschaftRepository mitgliedschaftRepository) {
+            BenachrichtigungsService benachrichtigungsService,
+            NotificationService notificationService,
+            MitgliedschaftRepository mitgliedschaftRepository) {
         this.repository = repository;
         this.benachrichtigungsService = benachrichtigungsService;
         this.notificationService = notificationService;
@@ -71,11 +71,11 @@ public class SponsoringAnfrageService {
     }
 
     public SponsoringAnfrage erstelle(SponsoringPaket paket,
-                                       Organisation anfragenderOrg,
-                                       Organisation empfaengerOrg,
-                                       String nachricht,
-                                       String kontaktName,
-                                       String kontaktEmail) {
+            Organisation anfragenderOrg,
+            Organisation empfaengerOrg,
+            String nachricht,
+            String kontaktName,
+            String kontaktEmail) {
         if (nachricht == null || nachricht.isBlank()) {
             throw new IllegalArgumentException("Nachricht darf nicht leer sein");
         }
@@ -143,10 +143,9 @@ public class SponsoringAnfrageService {
     }
 
     private void benachrichtigeMitglieder(UUID orgId, BenachrichtigungTyp typ,
-                                           String titel, String text, String link) {
-        mitgliedschaftRepository.findByOrgId(orgId).forEach(m ->
-                notificationService.benachrichtige(m.getUser().getId(), typ, titel, text, link)
-        );
+            String titel, String text, String link) {
+        mitgliedschaftRepository.findByOrgId(orgId)
+                .forEach(m -> notificationService.benachrichtige(m.getUser().getId(), typ, titel, text, link));
     }
 
     private SponsoringAnfrage laden(UUID id) {
@@ -160,4 +159,3 @@ public class SponsoringAnfrageService {
         }
     }
 }
-
