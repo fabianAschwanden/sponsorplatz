@@ -6,7 +6,7 @@ import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -33,13 +33,13 @@ class OrganisationControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private OrganisationService service;
 
-    @MockBean
+    @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
 
-    @MockBean
+    @MockitoBean
     private AccessControl accessControl;
 
     /** ORG-08: GET /organisationen → 200 + Liste. */
@@ -172,6 +172,63 @@ class OrganisationControllerTest {
         mockMvc.perform(get("/organisationen/fc-test/bearbeiten"))
             .andExpect(status().isOk())
             .andExpect(view().name("organisation-form"));
+    }
+
+    /**
+     * ORG-24: Render-Assert — VEREIN-Bearbeiten zeigt das Branche-Select sichtbar im HTML.
+     * Defense gegen den SpEL-Enum-Vergleich-Bug (*{typ} == 'VEREIN' liefert false,
+     * weil typ ein Enum ist; muss *{typ?.name()} == 'VEREIN' sein).
+     */
+    @Test
+    @WithMockUser
+    void editFormZeigtBrancheSelectFuerVerein() throws Exception {
+        when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
+        Organisation verein = testOrg();
+        verein.setTyp(OrgTyp.VEREIN);
+        verein.setBranche(Branche.SPORT);
+        when(service.findeNachSlug("fc-test")).thenReturn(Optional.of(verein));
+
+        mockMvc.perform(get("/organisationen/fc-test/bearbeiten"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("id=\"branche\"")));
+    }
+
+    /**
+     * ORG-24b: Render-Assert — UNTERNEHMEN-Bearbeiten zeigt das Industrie-Select.
+     * War vor dem typ?.name()-Fix komplett unsichtbar.
+     */
+    @Test
+    @WithMockUser
+    void editFormZeigtIndustrieSelectFuerUnternehmen() throws Exception {
+        when(accessControl.kannOrgEditierenNachSlug(eq("css"), any())).thenReturn(true);
+        Organisation sponsor = new Organisation();
+        sponsor.setId(UUID.randomUUID());
+        sponsor.setName("CSS Versicherung");
+        sponsor.setSlug("css");
+        sponsor.setTyp(OrgTyp.UNTERNEHMEN);
+        sponsor.setSponsorBranche(SponsorBranche.VERSICHERUNG);
+        sponsor.setStatus(OrgStatus.VERIFIED);
+        sponsor.setRegistriertAm(Instant.now());
+        when(service.findeNachSlug("css")).thenReturn(Optional.of(sponsor));
+
+        mockMvc.perform(get("/organisationen/css/bearbeiten"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("id=\"sponsorBranche\"")));
+    }
+
+    /**
+     * ORG-25: Render-Assert — Hierarchie-Select ist im Edit-Form sichtbar.
+     * Vor dem Fix gab es gar kein Form-Field für die Eltern-Org.
+     */
+    @Test
+    @WithMockUser
+    void editFormZeigtHierarchieSelect() throws Exception {
+        when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
+        when(service.findeNachSlug("fc-test")).thenReturn(Optional.of(testOrg()));
+
+        mockMvc.perform(get("/organisationen/fc-test/bearbeiten"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("id=\"uebergeordneteOrgId\"")));
     }
 
     /** ORG-14: POST /organisationen/{slug}/loeschen ohne Verwalten-Recht → 403. */

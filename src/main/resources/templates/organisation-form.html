@@ -61,10 +61,10 @@
                 </div>
 
                 <!-- Verein-Branche (Health/Sport) — nur für VEREIN sowie optional für STIFTUNG/ANDERE -->
-                <div class="app-form-group" th:if="*{typ} == 'VEREIN' or *{typ} == 'STIFTUNG' or *{typ} == 'ANDERE'">
+                <div class="app-form-group" th:if="*{typ?.name()} == 'VEREIN' or *{typ?.name()} == 'STIFTUNG' or *{typ?.name()} == 'ANDERE'">
                     <label for="branche">
-                        <span th:if="*{typ} == 'VEREIN'">Branche *</span>
-                        <span th:unless="*{typ} == 'VEREIN'">Branche (optional)</span>
+                        <span th:if="*{typ?.name()} == 'VEREIN'">Branche *</span>
+                        <span th:unless="*{typ?.name()} == 'VEREIN'">Branche (optional)</span>
                     </label>
                     <span class="hint">In welchem Health/Sport-Bereich seid ihr tätig?</span>
                     <select id="branche" th:field="*{branche}">
@@ -75,10 +75,10 @@
                 </div>
 
                 <!-- Sponsor-Industrie — für UNTERNEHMEN sowie optional für STIFTUNG/ANDERE -->
-                <div class="app-form-group" th:if="*{typ} == 'UNTERNEHMEN' or *{typ} == 'STIFTUNG' or *{typ} == 'ANDERE'">
+                <div class="app-form-group" th:if="*{typ?.name()} == 'UNTERNEHMEN' or *{typ?.name()} == 'STIFTUNG' or *{typ?.name()} == 'ANDERE'">
                     <label for="sponsorBranche">
-                        <span th:if="*{typ} == 'UNTERNEHMEN'">Industrie *</span>
-                        <span th:unless="*{typ} == 'UNTERNEHMEN'">Industrie (optional)</span>
+                        <span th:if="*{typ?.name()} == 'UNTERNEHMEN'">Industrie *</span>
+                        <span th:unless="*{typ?.name()} == 'UNTERNEHMEN'">Industrie (optional)</span>
                     </label>
                     <span class="hint">In welcher Industrie ist die Firma aktiv?</span>
                     <select id="sponsorBranche" th:field="*{sponsorBranche}">
@@ -124,6 +124,24 @@
                         <label for="ort">Ort</label>
                         <input id="ort" type="text" th:field="*{ort}" placeholder="Zürich">
                     </div>
+                </div>
+
+                <!--
+                  Hierarchie: optionale Eltern-Org (Konzern → Tochter → Abteilung).
+                  Service-Validierung verhindert Self-Reference, Cycles, Max-Tiefe (3).
+                  Eigene Org wird beim Edit aus der Auswahl ausgeblendet.
+                -->
+                <div class="app-form-group">
+                    <label for="uebergeordneteOrgId">Übergeordnete Organisation</label>
+                    <span class="hint">Optional — für Konzern-Strukturen (z.B. Tochtergesellschaft eines Sponsors).</span>
+                    <select id="uebergeordneteOrgId" th:field="*{uebergeordneteOrgId}">
+                        <option value="">— keine (Root) —</option>
+                        <option th:each="o : ${verfuegbareElternOrgs}"
+                                th:if="${bearbeitenSlug == null or o.slug() != bearbeitenSlug}"
+                                th:value="${o.id()}"
+                                th:text="|${o.name()} (${o.typ().name()})|"></option>
+                    </select>
+                    <p class="app-meldung fehler" th:if="${#fields.hasErrors('uebergeordneteOrgId')}" th:errors="*{uebergeordneteOrgId}"></p>
                 </div>
 
                 <div class="app-form-actions">

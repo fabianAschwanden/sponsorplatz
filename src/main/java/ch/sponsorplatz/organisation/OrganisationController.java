@@ -111,6 +111,11 @@ public class OrganisationController {
         model.addAttribute("typen", OrgTyp.values());
         model.addAttribute("branchen", Branche.values());
         model.addAttribute("sponsorBranchen", SponsorBranche.values());
+        // Mögliche Eltern-Orgs für die Hierarchie-Auswahl. Konzeptionell sind das
+        // alle Orgs (UNTERNEHMEN sowie STIFTUNG), nicht VEREINE — Vereine haben
+        // keine Sub-Strukturen. Service-Validierung greift zusätzlich.
+        model.addAttribute("verfuegbareElternOrgs",
+                OrganisationView.von(service.alle()));
     }
 
     @GetMapping("/{slug}")
@@ -164,6 +169,9 @@ public class OrganisationController {
         dto.setStrasse(org.getStrasse());
         dto.setPostleitzahl(org.getPostleitzahl());
         dto.setOrt(org.getOrt());
+        if (org.getUebergeordneteOrg() != null) {
+            dto.setUebergeordneteOrgId(org.getUebergeordneteOrg().getId());
+        }
         return dto;
     }
 }

@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.util.UUID;
+
 /**
  * Form-DTO für Anlage / Bearbeitung einer Organisation.
  *
@@ -34,6 +36,13 @@ public class OrganisationFormDto {
 
     /** Sponsor-Industrie. Pflicht für UNTERNEHMEN, NULL für VEREIN. */
     private SponsorBranche sponsorBranche;
+
+    /**
+     * Optionale Eltern-Org für hierarchische Konzern-Strukturen
+     * (Konzern → Tochter → Abteilung). NULL = Root-Org.
+     * Validierung im Service: nicht selbst, kein Cycle, max. Tiefe.
+     */
+    private UUID uebergeordneteOrgId;
 
     private String beschreibung;
 
@@ -101,6 +110,14 @@ public class OrganisationFormDto {
 
     public void setSponsorBranche(SponsorBranche sponsorBranche) {
         this.sponsorBranche = sponsorBranche;
+    }
+
+    public UUID getUebergeordneteOrgId() {
+        return uebergeordneteOrgId;
+    }
+
+    public void setUebergeordneteOrgId(UUID uebergeordneteOrgId) {
+        this.uebergeordneteOrgId = uebergeordneteOrgId;
     }
 
     public String getBeschreibung() {

@@ -8,7 +8,7 @@ import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -33,16 +33,16 @@ class WatchlistControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private WatchlistService watchlistService;
 
-    @MockBean
+    @MockitoBean
     private ProjektService projektService;
 
-    @MockBean
+    @MockitoBean
     private AppUserRepository appUserRepository;
 
-    @MockBean
+    @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
 
     private AppUser testUser() {

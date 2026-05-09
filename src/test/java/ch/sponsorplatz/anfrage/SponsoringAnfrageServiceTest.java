@@ -1,6 +1,5 @@
 package ch.sponsorplatz.anfrage;
 import ch.sponsorplatz.benachrichtigung.NotificationService;
-import ch.sponsorplatz.benachrichtigung.Benachrichtigung;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

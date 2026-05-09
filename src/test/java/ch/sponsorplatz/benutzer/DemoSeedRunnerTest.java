@@ -1,6 +1,5 @@
 package ch.sponsorplatz.benutzer;
 
-import ch.sponsorplatz.anfrage.AnfrageStatus;
 import ch.sponsorplatz.anfrage.SponsoringAnfrage;
 import ch.sponsorplatz.anfrage.SponsoringAnfrageRepository;
 import ch.sponsorplatz.organisation.*;

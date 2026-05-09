@@ -115,6 +115,55 @@ public class OrganisationService {
         org.setStrasse(leereAlsNull(dto.getStrasse()));
         org.setPostleitzahl(leereAlsNull(dto.getPostleitzahl()));
         org.setOrt(leereAlsNull(dto.getOrt()));
+        wendeHierarchieAn(org, dto.getUebergeordneteOrgId());
+    }
+
+    /**
+     * Setzt die Eltern-Org. Validiert: Eltern existiert, ist nicht die Org
+     * selbst, und der Cycle-Schutz greift (Eltern darf nicht in der eigenen
+     * Untergeordneten-Kette stehen). Max-Tiefe = 3 (Konzern → Tochter →
+     * Abteilung) wird ebenfalls erzwungen.
+     */
+    private void wendeHierarchieAn(Organisation org, UUID elternId) {
+        if (elternId == null) {
+            org.setUebergeordneteOrg(null);
+            return;
+        }
+        if (org.getId() != null && elternId.equals(org.getId())) {
+            throw new IllegalArgumentException(
+                    "Eine Organisation kann nicht ihre eigene übergeordnete Organisation sein.");
+        }
+        Organisation eltern = repository.findById(elternId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Übergeordnete Organisation nicht gefunden: " + elternId));
+
+        // Cycle-Check: die neue Eltern-Org darf nicht selbst ein Nachfahre dieser Org sein.
+        Organisation aktuell = eltern;
+        int sicherheit = 0;
+        while (aktuell != null && sicherheit < 10) {
+            if (org.getId() != null && org.getId().equals(aktuell.getId())) {
+                throw new IllegalArgumentException(
+                        "Zyklische Hierarchie nicht erlaubt — die gewählte Eltern-Organisation "
+                                + "ist bereits eine Untergeordnete dieser Organisation.");
+            }
+            aktuell = aktuell.getUebergeordneteOrg();
+            sicherheit++;
+        }
+
+        // Max-Tiefe: Eltern auf Stufe N → diese Org wird Stufe N+1, max. 3.
+        int elternTiefe = 1;
+        Organisation t = eltern;
+        while (t.getUebergeordneteOrg() != null && elternTiefe < 10) {
+            elternTiefe++;
+            t = t.getUebergeordneteOrg();
+        }
+        if (elternTiefe >= 3) {
+            throw new IllegalArgumentException(
+                    "Maximale Hierarchie-Tiefe (3 Stufen) erreicht — diese Org kann nicht "
+                            + "noch tiefer eingehängt werden.");
+        }
+
+        org.setUebergeordneteOrg(eltern);
     }
 
     public void loesche(UUID id) {

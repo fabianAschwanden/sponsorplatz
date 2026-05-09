@@ -9,7 +9,7 @@ import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -35,22 +35,22 @@ class ProjektControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private ProjektService projektService;
 
-    @MockBean
+    @MockitoBean
     private SponsoringPaketService paketService;
 
-    @MockBean
+    @MockitoBean
     private OrganisationService orgService;
 
-    @MockBean
+    @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
 
-    @MockBean
+    @MockitoBean
     private AccessControl accessControl;
 
-    @MockBean
+    @MockitoBean
     private MedienAssetService medienAssetService;
 
     private Organisation testOrg() {

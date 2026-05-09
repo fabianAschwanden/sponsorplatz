@@ -1,6 +1,5 @@
 package ch.sponsorplatz.einladung;
 import ch.sponsorplatz.organisation.MitgliedschaftService;
-import ch.sponsorplatz.organisation.Mitgliedschaft;
 
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.organisation.Organisation;

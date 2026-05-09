@@ -1,5 +1,4 @@
 package ch.sponsorplatz.audit;
-import ch.sponsorplatz.organisation.Organisation;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

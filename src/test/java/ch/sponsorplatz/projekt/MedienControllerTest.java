@@ -11,7 +11,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.test.context.ActiveProfiles;
@@ -31,17 +31,17 @@ class MedienControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private MedienAssetService medienAssetService;
-    @MockBean
+    @MockitoBean
     private StorageService storageService;
-    @MockBean
+    @MockitoBean
     private ProjektService projektService;
-    @MockBean
+    @MockitoBean
     private OrganisationService organisationService;
-    @MockBean
+    @MockitoBean
     private AccessControl accessControl;
-    @MockBean
+    @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
 
     /** MA-07: GET /medien/{id} liefert Bild mit korrektem Content-Type. */

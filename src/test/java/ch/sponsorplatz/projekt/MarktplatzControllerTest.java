@@ -1,29 +1,31 @@
 package ch.sponsorplatz.projekt;
 
-import ch.sponsorplatz.shared.config.SecurityConfig;
-import ch.sponsorplatz.organisation.Branche;
-import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.organisation.OrgTyp;
-import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.servlet.ModelAndView;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.servlet.ModelAndView;
+
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.organisation.Branche;
+import ch.sponsorplatz.organisation.OrgTyp;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.shared.config.SecurityConfig;
 
 @WebMvcTest(controllers = MarktplatzController.class)
 @Import(SecurityConfig.class)
@@ -33,13 +35,13 @@ class MarktplatzControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private ProjektService projektService;
 
-    @MockBean
+    @MockitoBean
     private MedienAssetService medienAssetService;
 
-    @MockBean
+    @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
 
     private Projekt testProjekt() {
@@ -124,7 +126,9 @@ class MarktplatzControllerTest {
                 .andExpect(model().attributeExists("projekt"));
     }
 
-    /** MKT-06: Volltextsuche mit Parameter q delegiert an ProjektService.suche(). */
+    /**
+     * MKT-06: Volltextsuche mit Parameter q delegiert an ProjektService.suche().
+     */
     @Test
     void volltextSucheMitParameterQ() throws Exception {
         Projekt p = testProjekt();
@@ -151,17 +155,20 @@ class MarktplatzControllerTest {
     //
     // TDD-First: Diese Tests sind initial ROT, bis die Controller-Erweiterung
     // implementiert ist. Erwartete API:
-    //   - @RequestParam(required=false) Set<Branche> branche
-    //   - Filter-Logik: behält nur Projekte mit org.branche IN branche-Set
-    //   - Model-Attribute: "alleBranchen" (= Branche.values()), "filterBranchen"
-    //                      (= aktive Auswahl als Set, nie null)
+    // - @RequestParam(required=false) Set<Branche> branche
+    // - Filter-Logik: behält nur Projekte mit org.branche IN branche-Set
+    // - Model-Attribute: "alleBranchen" (= Branche.values()), "filterBranchen"
+    // (= aktive Auswahl als Set, nie null)
     // -----------------------------------------------------------------
 
-    /** MKT-08: ?branche=SPORT reduziert die Liste auf Projekte mit org.branche=SPORT. */
+    /**
+     * MKT-08: ?branche=SPORT reduziert die Liste auf Projekte mit
+     * org.branche=SPORT.
+     */
     @Test
     void filterNachBranche() throws Exception {
         Projekt sport = testProjektMitBranche(Branche.SPORT, "Sportverein", "sport-sommerfest");
-        Projekt reha  = testProjektMitBranche(Branche.REHA,  "Reha-Zentrum", "reha-bewegungstag");
+        Projekt reha = testProjektMitBranche(Branche.REHA, "Reha-Zentrum", "reha-bewegungstag");
         when(projektService.findeOeffentliche()).thenReturn(List.of(sport, reha));
 
         mockMvc.perform(get("/marktplatz").param("branche", "SPORT"))
@@ -186,11 +193,14 @@ class MarktplatzControllerTest {
                 });
     }
 
-    /** MKT-09: Ohne branche-Param → Liste unverändert; Model exposed alleBranchen + leeres filterBranchen. */
+    /**
+     * MKT-09: Ohne branche-Param → Liste unverändert; Model exposed alleBranchen +
+     * leeres filterBranchen.
+     */
     @Test
     void ohneBrancheZeigtAlleBranchen() throws Exception {
         Projekt sport = testProjektMitBranche(Branche.SPORT, "Sportverein", "sport");
-        Projekt reha  = testProjektMitBranche(Branche.REHA,  "Reha", "reha");
+        Projekt reha = testProjektMitBranche(Branche.REHA, "Reha", "reha");
         when(projektService.findeOeffentliche()).thenReturn(List.of(sport, reha));
 
         mockMvc.perform(get("/marktplatz"))
@@ -221,17 +231,20 @@ class MarktplatzControllerTest {
                 });
     }
 
-    /** MKT-10: Multi-Select branche=SPORT&branche=REHA — beide aktiv, beide Projekte erscheinen, State im Modell. */
+    /**
+     * MKT-10: Multi-Select branche=SPORT&branche=REHA — beide aktiv, beide Projekte
+     * erscheinen, State im Modell.
+     */
     @Test
     void multiSelectFilterUndStatePersistenz() throws Exception {
-        Projekt sport  = testProjektMitBranche(Branche.SPORT,         "Sportverein",   "sport");
-        Projekt reha   = testProjektMitBranche(Branche.REHA,          "Reha-Zentrum",  "reha");
+        Projekt sport = testProjektMitBranche(Branche.SPORT, "Sportverein", "sport");
+        Projekt reha = testProjektMitBranche(Branche.REHA, "Reha-Zentrum", "reha");
         Projekt mental = testProjektMitBranche(Branche.MENTAL_HEALTH, "Mental Health", "mental");
         when(projektService.findeOeffentliche()).thenReturn(List.of(sport, reha, mental));
 
         mockMvc.perform(get("/marktplatz")
-                        .param("branche", "SPORT")
-                        .param("branche", "REHA"))
+                .param("branche", "SPORT")
+                .param("branche", "REHA"))
                 .andExpect(status().isOk())
                 .andExpect(result -> {
                     ModelAndView mv = result.getModelAndView();
@@ -274,4 +287,3 @@ class MarktplatzControllerTest {
         return p;
     }
 }
-

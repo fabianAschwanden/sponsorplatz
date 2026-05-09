@@ -6,7 +6,7 @@ import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -31,16 +31,16 @@ class DashboardControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
 
-    @MockBean
+    @MockitoBean
     private DashboardService dashboardService;
 
-    @MockBean
+    @MockitoBean
     private MatchingService matchingService;
 
-    @MockBean
+    @MockitoBean
     private AppUserService appUserService;
 
     /** DASH-01: GET /dashboard anonym → Redirect zu /login. */

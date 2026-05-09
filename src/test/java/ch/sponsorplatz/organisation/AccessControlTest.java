@@ -139,7 +139,6 @@ class AccessControlTest {
 
     // --- Hilfs-Methoden ---
 
-    @SuppressWarnings("unchecked")
     private Authentication authMitRolle(String rolle, String email) {
         Authentication auth = mock(Authentication.class);
         when(auth.isAuthenticated()).thenReturn(true);
@@ -149,7 +148,6 @@ class AccessControlTest {
         return auth;
     }
 
-    @SuppressWarnings("unchecked")
     private Authentication authOhneRolle(String email) {
         Authentication auth = mock(Authentication.class);
         when(auth.isAuthenticated()).thenReturn(true);

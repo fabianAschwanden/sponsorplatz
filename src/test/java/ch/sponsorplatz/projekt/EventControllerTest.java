@@ -8,13 +8,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,9 +29,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class EventControllerTest {
 
     @Autowired private MockMvc mockMvc;
-    @MockBean private EventService eventService;
-    @MockBean private OrganisationRepository orgRepository;
-    @MockBean private AccessControl accessControl;
+    @MockitoBean private EventService eventService;
+    @MockitoBean private OrganisationRepository orgRepository;
+    @MockitoBean private AccessControl accessControl;
 
     @Test
     @DisplayName("EVT-02: POST .../events/speichern ohne Edit-Recht -> 403")
