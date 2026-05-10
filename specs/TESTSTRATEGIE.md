@@ -623,6 +623,34 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **MANF-06** | `MeineAnfragenControllerTest` | `POST /anfragen/erstellen` mit `anfragenderOrgId == empfaengerOrg.id` → Form mit Binding-Error, kein Service-Call (Self-Anfrage-Schutz) |
 | **MANF-07** | `MeineAnfragenControllerTest` | `POST /anfragen/{id}/annehmen` ohne Edit-Recht auf Empfänger-Org → 403 (IDOR-Schutz; analoge Deckung für `/ablehnen`) |
 
+### Onboarding-Wizard (ONB) — Phase 11.1
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **ONB-01** | `OnboardingControllerTest` | `/onboarding` ohne Auth → Redirect auf Login |
+| **ONB-02** | `OnboardingControllerTest` | `/onboarding` ohne Mitgliedschaften → zeigt Onboarding-Seite |
+| **ONB-03** | `OnboardingControllerTest` | `/onboarding` mit Mitgliedschaft → Redirect auf Dashboard (Re-Entry-Schutz) |
+| **ONB-04** | `OnboardingControllerTest` | `POST /onboarding/verein-erstellen` ruft `OrganisationService.erstelleMitEigentuemer` und redirected auf Dashboard |
+| **ONB-05** | `OnboardingControllerTest` | `POST /onboarding/verein-erstellen` ohne Name → Validierungs-Fehler |
+
+### Support-Formular (SUP) — Phase 11.2
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **SUP-01** | `SupportControllerTest` | `/support` ohne Auth → Redirect auf Login |
+| **SUP-02** | `SupportControllerTest` | `/support` mit Auth → 200 + Form |
+| **SUP-03** | `SupportControllerTest` | `POST /support` ruft `MailService.sendePlain` und redirected mit Erfolgs-Meldung |
+| **SUP-04** | `SupportControllerTest` | `POST /support` mit leerem Betreff → Validierungs-Fehler, Form bleibt offen |
+
+### Datei-Anhänge — MedienAssetView (Phase 11.3)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **VIEW-10** | `MedienAssetViewTest` | `MedienAssetView.von` mappt alle Felder inkl. `groesseBytes` |
+| **VIEW-11** | `MedienAssetViewTest` | `istBild()` → true für Bilder, false für Dokumente |
+| **VIEW-12** | `MedienAssetViewTest` | `groesseFormatiert()` zeigt B/KB/MB korrekt |
+| **VIEW-12b** | `MedienAssetViewTest` | `endung()` extrahiert Datei-Endung lowercase, leer wenn kein Punkt im Namen |
+
 ## CI
 
 - Bei jedem Push und PR auf `main`: `mvn -B clean verify` + Docker-Build-Smoke

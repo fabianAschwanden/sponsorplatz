@@ -55,17 +55,32 @@ public void aktualisiere(UUID orgId, ...) { ... }
 
 ## Permission-Matrix (Auszug)
 
+`*` = nur in Orgs der Person; `(V)` = Org-Typ VEREIN; `(U)` = Org-Typ UNTERNEHMEN.
+
 | Aktion | anonym | eingeloggt | ORG_VIEWER | ORG_EDITOR | ORG_OWNER | PLATFORM_ADMIN |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
 | Public-Projekt ansehen | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| CRM-Daten ansehen | – | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Sponsor anlegen | – | – | – | ✓ | ✓ | ✓ |
-| Sponsor bearbeiten (eigener) | – | – | – | ✓ | ✓ | ✓ |
+| Marktplatz / Verein-Profil ansehen | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `/organisationen`-Liste sehen | ✓ alle | ✓ nur eigene | ✓ nur eigene | ✓ nur eigene | ✓ nur eigene | ✓ alle |
+| Sponsor-Anfrage stellen (Paket-Bezug) | – | – | – | ✓\* | ✓\* | ✓ |
+| Kontakt-Anfrage Verein → Sponsor | – | – | – | ✓\*(V) | ✓\*(V) | – |
+| Eingehende Anfragen ansehen | – | ✓ | ✓\* | ✓\* | ✓\* | ✓ |
+| Ausgehende Anfragen ansehen | – | – | – | ✓\*(V) | ✓\*(V) | ✓ |
+| Anfrage annehmen / ablehnen | – | – | – | ✓\* | ✓\* | ✓ |
+| Sponsor anlegen | – | – | – | ✓\* | ✓\* | ✓ |
+| Sponsor bearbeiten (eigener) | – | – | – | ✓\* | ✓\* | ✓ |
 | Sponsor bearbeiten (fremder) | – | – | – | – | – | ✓ |
-| Mitglieder verwalten | – | – | – | – | ✓ | ✓ |
-| Org verifizieren | – | – | – | – | – | ✓ |
+| Mitglieder verwalten | – | – | – | – | ✓\* | ✓ |
+| Org verifizieren / suspendieren | – | – | – | – | – | ✓ |
+| User sperren / entsperren | – | – | – | – | – | ✓ |
+| Datei-Anhänge hochladen | – | – | – | ✓\* | ✓\* | ✓ |
+| Datei-Anhänge / Bilder löschen | – | – | – | ✓\* | ✓\* | ✓ |
+| Profilbild eigenes Konto | – | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Onboarding-Wizard sehen | – | ✓ wenn ohne Org | – | – | – | – |
+| Support-Anfrage stellen | – | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Audit-Log lesen | – | – | – | – | – | ✓ |
 
-Vollständige Matrix in `Sponsoring Plattform/05_Rollenkonzept.md`.
+Vollständige Konzept-Matrix in `Sponsoring Plattform/05_Rollenkonzept.md`.
 
 ## Endpoint-Schutz: Welcher Endpunkt ruft welche AccessControl-Methode?
 
@@ -75,10 +90,10 @@ Alle mutierenden Endpunkte rufen am Anfang der Controller-Methode `accessControl
 
 | HTTP | Pfad | Schutz | Begründung |
 |---|---|---|---|
-| GET | `/organisationen` | public | Liste lesbar |
+| GET | `/organisationen` | public, **ergebnis-gefiltert** | Anonyme: alle Orgs; Eingeloggte (nicht-Admin): nur Orgs mit eigener Mitgliedschaft (jede Rolle); Plattform-Admins: alle Orgs. Implementierung in `OrganisationController.liste(Authentication)`. |
 | GET | `/organisationen/{slug}` | public | Profil lesbar |
 | GET | `/organisationen/neu` | `isAuthenticated()` | nur eingeloggt anlegen |
-| POST | `/organisationen` (Create) | `isAuthenticated()` | Anlegender wird automatisch ORG_OWNER |
+| POST | `/organisationen` (Create) | `isAuthenticated()` | Anlegender wird automatisch ORG_OWNER (Owner-on-Create-Pfad in `OrganisationService.erstelleMitEigentuemer`) |
 | POST | `/organisationen/{slug}` (Update) | `kannOrgEditierenNachSlug(#slug)` | Edit-Recht; Slug aus URL, kein `id` im Body (K3-Fix) |
 | GET | `/organisationen/{slug}/bearbeiten` | `kannOrgEditierenNachSlug(#slug)` | Edit-Form sichtbar nur für Editor+ |
 | POST | `/organisationen/{slug}/loeschen` | `kannOrgVerwaltenNachSlug(#slug)` | nur Owner / Admin |
@@ -91,8 +106,22 @@ Alle mutierenden Endpunkte rufen am Anfang der Controller-Methode `accessControl
 | GET | `/organisationen/{orgSlug}/projekte/{projektSlug}` | `kannOrgEditierenNachSlug(#orgSlug)` | interner Detail-View |
 | POST | `/organisationen/{orgSlug}/projekte/{projektSlug}/veroeffentlichen` | `kannOrgEditierenNachSlug(#orgSlug)` | Editor+ |
 | POST | `/organisationen/{orgSlug}/projekte/{projektSlug}/pakete/speichern` | `kannOrgEditierenNachSlug(#orgSlug)` | Editor+ |
+| GET | `/anfragen` | `isAuthenticated()`, **ergebnis-rollenabhängig** | Eingehende für alle eigenen Orgs. Vereins-Mitglieder (mind. eine `OrgTyp.VEREIN`-Mitgliedschaft mit Edit-Recht) sehen zusätzlich ausgehende + bekommen den "Sponsor anfragen"-Button. Sponsoren-only-User (`OrgTyp.UNTERNEHMEN`) sehen nur eingehende. |
+| POST | `/anfragen/{id}/annehmen|ablehnen` | `kannOrgEditieren(empfaengerOrg)` | IDOR-Schutz auf Empfänger-Org der Anfrage |
+| GET | `/anfragen/neu?paketId=…` | `isAuthenticated()` | Sponsor-Form für Paket-Anfrage (Marktplatz-Detail-Flow); `kannOrgEditieren(anfragenderOrg)` beim POST |
+| POST | `/anfragen/erstellen` | `kannOrgEditieren(anfragenderOrgId)` | Anfragender muss Edit-Recht haben; Empfänger wird vom Paket abgeleitet (kein Client-Trust) |
+| GET | `/anfragen/neu-kontakt` | Verein-Mitglied mit Edit-Recht | Sponsor-Picker für Verein→Sponsor-Kontaktanfrage. `OrgTyp.VEREIN`-Whitelist im Controller |
+| POST | `/anfragen/kontakt-erstellen` | Verein-Mitglied mit Edit-Recht; Empfänger muss `OrgTyp.UNTERNEHMEN` sein | Verbietet Sponsor→Sponsor sowie Self-Anfrage |
+| GET, POST | `/medien/{id}` (Auslieferung) | public | Inline-Bild oder Attachment-Download (RFC-5987-encoded Filename) |
+| POST | `/medien/{id}/loeschen` | typabhängig | ORGANISATION-Asset → `kannOrgEditieren` der Org; PROJEKT-Asset → `kannOrgEditieren(p.org)`; USER-Asset → nur der User selbst |
+| GET, POST | `/onboarding/**` | `isAuthenticated()`, redirected wenn keine Mitgliedschaft | Verein-Quick-Create + Einladungs-Token-Eingabe; DashboardController leitet User ohne Mitgliedschaft hierhin |
+| GET, POST | `/support` | `isAuthenticated()` | Support-Mail-Form an `sponsorplatz.support.empfaenger` |
+| GET, POST | `/sponsor/registrieren` | public | Self-Reg für Sponsor-Org + ORG_OWNER-Mitgliedschaft |
 | GET | `/marktplatz/**` | public | Public-Marktplatz |
 | GET, POST | `/login`, `/registrieren`, `/verifizieren` | public | Auth-Flows |
+| GET, POST | `/passwort-vergessen`, `/passwort-reset` | public | Passwort-Reset-Flow (Token, 1h gültig) |
+| GET, POST | `/einladung/annehmen` | public (GET = Vorschau, POST = Annahme — K3-Fix) | Token in URL akzeptiert, weil Mail-Link auch GET ist |
+| GET | `/admin/**` | `hasRole('PLATFORM_ADMIN')` | Plattform-Admin-Tools (Verifizierung, Audit, Backups, Backlog, System) |
 
 **Anti-Pattern vermieden:** Keine `@Secured`-Annotationen mit Hardcoded-Rollen — Org-Rollen sind kontextabhängig (pro Org), das geht nur über die `AccessControl`-Bean (programmatisch oder SpEL).
 

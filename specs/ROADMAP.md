@@ -284,6 +284,92 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 
 ---
 
+## Phase 11 — Pilot-Hardening (Anfrage-Flow + UX-Verbesserungen) ✓
+
+> **Paket 5.** Erweitert den Anfrage-Flow um die Verein→Sponsor-Richtung,
+> schärft UX rund um Onboarding/Support/Datei-Anhänge, schliesst die
+> rollenabhängige Sicht der Anfragen-Übersicht. Iteration: kontinuierlich
+> seit Phase 9.
+
+### 11.1 — Onboarding-Wizard nach erstem Login
+
+- [x] `OnboardingController` unter `/onboarding` — User ohne Mitgliedschaft wird vom `DashboardController` hierhin redirected
+- [x] Schnell-Verein-Form (Name + Branche + Ort) → `OrganisationService.erstelleMitEigentuemer` macht User automatisch ORG_OWNER
+- [x] Einladungs-Token-Pfad mit Whitelist-Validierung (Regex `[A-Za-z0-9_-]{16,128}`) + `RedirectAttributes.addAttribute` (RFC-konformes URL-Encoding)
+- [x] Re-Entry-Schutz (User mit Org wird zum Dashboard weitergeleitet)
+- [x] Tests: ONB-01..05
+
+### 11.2 — Support-Formular
+
+- [x] `SupportController` unter `/support` — eingeloggte User schicken Mail an Plattform-Admin
+- [x] Property `sponsorplatz.support.empfaenger` (ENV `SPONSORPLATZ_ADMIN_EMAIL`, Default `support@sponsorplatz.ch`); Fallback auf `MailService.effektiverAbsender()`
+- [x] Bei Mail-Fehler: Form bleibt offen, Fehlermeldung mit Empfänger-Adresse — KEINE falsche Erfolgs-Meldung
+- [x] Logging ohne User-PII (DSG-Hygiene)
+- [x] Tests: SUP-01..04
+
+### 11.3 — Datei-Anhänge an Projekten
+
+- [x] `AssetTyp.ANHANG` neu (PDF/PPTX/DOCX/XLSX/PPT/DOC/XLS) — getrennt von Bild-Validation
+- [x] `MedienAssetService` validiert separat: Bilder max 5 MB, Dokumente max 20 MB, 10 pro Entity
+- [x] `MedienAssetView` mit `groesseBytes`, `istBild()`, `groesseFormatiert()` (B/KB/MB), `endung()` für Icon-Zuordnung
+- [x] `MedienController` liefert Bilder inline, Dokumente als Attachment-Download (`ContentDisposition.builder()` mit RFC-5987-Encoding)
+- [x] `loeschen`-Endpoint typabhängig (ORGANISATION/PROJEKT/USER) — IDOR-Fix für PROJEKT-Anhänge
+- [x] `projekt-detail.html` zeigt Anhänge mit Icon + Grösse, Upload-Form für Dokumente
+- [x] `marktplatz-detail.html` zeigt öffentliche „Projekt-Unterlagen"-Sektion mit Download-Links
+- [x] Tests: VIEW-10..12 (Mapping, istBild, groesseFormatiert, endung)
+
+### 11.4 — Marktplatz „Neueste Projekte"-Preview
+
+- [x] `MarktplatzController.detail` zeigt 3-Karten-Preview oberhalb der regulären Liste — nur auf der ungefilterten Startansicht
+- [x] `ProjektService.findeNeuesteOeffentliche(limit)` sortiert nach `veroeffentlichtAm DESC`
+- [x] Cover aus `MedienAssetService.findeCover` oder SVG-Platzhalter
+
+### 11.5 — Anfrage-Flow Erweiterungen
+
+- [x] Status-Cleanup V29: `IN_PRUEFUNG`, `ZURUECKGEZOGEN` entfernt — Workflow strikt `NEU → ANGENOMMEN | ABGELEHNT`
+- [x] Anfrage-Erstellungs-Form `/anfragen/neu?paketId=…` (Sponsor → Verein, Marktplatz-Detail-Klick)
+- [x] IDOR-Schutz beim Annehmen/Ablehnen: `kannOrgEditieren(empfaengerOrg)`-Check
+- [x] LEFT JOIN FETCH durchgängig in `SponsoringAnfrageRepository` (Lazy-Init-Fix)
+- [x] **Verein → Sponsor — Kontakt-Anfrage (V30)**:
+   - `paket_id` nullable, neue Spalte `betreff`
+   - `SponsoringAnfrageService.erstelleKontaktAnfrage(anfrager, empfaenger, betreff, nachricht, …)`
+   - `MeineAnfragenController` rollenabhängig: Vereins-Mitglieder sehen ausgehende + bekommen „+ Sponsor anfragen"-Button; Sponsoren-only-User sehen nur eingehende
+   - Picker `/anfragen/neu-kontakt` listet aktive Sponsor-Orgs (`OrgTyp.UNTERNEHMEN`, `Status.VERIFIED|ACTIVE`)
+   - `AnfrageView.istPaketAnfrage()` unterscheidet die beiden Typen — Vertrag-/Konversations-Aktionen nur bei Paket-Anfragen
+- [x] Tests: MANF-01..07
+
+### 11.6 — Sicht-Filter `/organisationen`
+
+- [x] Liste zeigt für eingeloggte Nicht-Admins nur Orgs mit eigener Mitgliedschaft (jede Rolle inkl. `ORG_VIEWER`)
+- [x] Anonyme: alle (öffentliche Übersicht); PLATFORM_ADMIN: alle (für Verifizierungs-Queue)
+
+### 11.7 — Owner-on-Create
+
+- [x] `OrganisationService.erstelleMitEigentuemer(dto, userId)` legt Org an + `Mitgliedschaft` mit `ORG_OWNER` automatisch
+- [x] Onboarding-Pfad und reguläre `POST /organisationen` nutzen die Methode
+
+### 11.8 — i18n vollständige Konvertierung (DE/FR/IT/EN)
+
+- [x] `LocaleConfig` mit Country-Suffix-Mapping (`de_CH`/`fr_CH`/`it_CH`/`en`) — fixt fehlerhafte Sprach-Auflösung
+- [x] ~50 Templates konvertiert auf `#{key}`-Resolution
+- [x] ~600 Keys über alle vier Bundles
+- [x] Marketing-Copy: erster Wurf, Native-Speaker-Review noch offen vor Pilot-Launch
+
+### 11.9 — JOIN-FETCH-Konvention für Projekt-Queries
+
+- [x] Alle Repository-Methoden, die `Projekt`-Entitäten zurückgeben, hängen `JOIN FETCH p.org` dran (`findBySlug`, `findByOrgIdOrderByCreatedAtDesc`, `findBySichtbarkeitOrderByVeroeffentlichtAmDesc`, `sucheOeffentliche`, `findePassende`)
+- [x] Konvention im Repo-JavaDoc dokumentiert
+- [x] Behebt LazyInit-500 in `ProjektView.von` → `OrganisationKurzView.von(p.getOrg())` unter `open-in-view=false`
+
+### 11.10 — Findings-Fixes Sicherheits-Review
+
+- [x] **F1** Filename-Header-Sanitization: `ContentDisposition.builder("attachment").filename(name).build()` (RFC 5987)
+- [x] **F2** PROJEKT/USER-IDOR beim `/medien/{id}/loeschen` — Switch-Total über alle EntityTyps
+- [x] **F3** `ProjektController.detail()` lädt Medien einmalig + Stream-split bilder/anhaenge
+- [x] **MeineAnfragenController IDOR**: annehmen/ablehnen prüfen `kannOrgEditieren(empfaengerOrg)`
+
+---
+
 ## Phase 10 — Production-Readiness & Pilot-Launch ⏳
 
 > **Paket 4.** Plattform ist produktiv betreibbar in OCI Cloud mit Monitoring, DSG-Compliance und Error-Tracking.

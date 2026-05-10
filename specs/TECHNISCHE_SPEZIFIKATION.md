@@ -129,43 +129,118 @@ Wenn ein optionaler `BackupCloudUploader` im Context registriert ist (z.B. `OciB
 | POST | `/logout` | authenticated | Logout |
 | GET | `/registrieren` | public | Registrierungs-Formular |
 | POST | `/registrieren` | public | Neuen User anlegen |
+| GET, POST | `/passwort-vergessen` | public | Reset-Mail anfordern (kein Info-Leak) |
+| GET, POST | `/passwort-reset` | public | Token-Validation + Passwort setzen |
+| GET | `/verifizieren` | public | E-Mail-Verifizierung via Token |
 
-#### Zugriffs-Regeln ab Phase 1.1
+#### Zugriffs-Regeln (gesamt — Stand Phase 11)
 
 | Pfad-Pattern | Zugriff |
 |---|---|
-| `/`, `/login`, `/registrieren`, `/css/**`, `/images/**` | `permitAll` |
+| `/`, `/login`, `/registrieren`, `/passwort-vergessen`, `/passwort-reset`, `/verifizieren` | `permitAll` |
+| `/css/**`, `/images/**`, `/favicon.ico`, `/sitemap.xml` | `permitAll` |
 | `/actuator/health`, `/actuator/info` | `permitAll` |
 | `/h2-console/**` (nur dev) | `permitAll` |
-| `/organisationen` (GET), `/organisationen/{slug}` (GET) | `permitAll` |
-| `/organisationen/neu`, `/organisationen/speichern` | `authenticated` |
-| `/organisationen/{slug}/bearbeiten`, `/organisationen/{slug}/loeschen` | `@accessControl.kannOrgEditieren` |
-| `/organisationen/{slug}/mitglieder/**` | `@accessControl.kannOrgVerwalten` |
+| `/impressum`, `/datenschutz` | `permitAll` |
+| `/oauth2/**`, `/login/oauth2/**` | `permitAll` (OIDC-Flow) |
+| `/sponsor/**` | `permitAll` (Sponsor-Self-Reg) |
+| `/einladung/**` | `permitAll` (Token-Auth via URL) |
+| `/marktplatz/**`, `/medien/**`, `/vereine/**`, `/og/**`, `/fuer-marken`, `/marken/*/engagements` | `permitAll` |
+| `/payment/webhook/**` | `permitAll` + CSRF-Ausnahme |
+| `/organisationen` (GET) | `permitAll`, ergebnis-gefiltert auf Mitgliedschaften (Plattform-Admin sieht alle) |
+| `/organisationen/{slug}` (GET) | `permitAll` |
+| `/organisationen/neu`, `POST /organisationen` | `authenticated` |
+| `/organisationen/{slug}/bearbeiten`, `/organisationen/{slug}/loeschen` | `accessControl.kannOrgEditierenNachSlug(slug)` (programmatisch) |
+| `/organisationen/{slug}/mitglieder/**` | `accessControl.kannOrgVerwaltenNachSlug(slug)` |
+| `/organisationen/{slug}/projekte/**` | `accessControl.kannOrgEditierenNachSlug(slug)` |
+| `/organisationen/{slug}/anfragen/**` | `accessControl.kannOrgEditierenNachSlug(slug)` |
+| `/admin/**` | `hasRole('PLATFORM_ADMIN')` |
+| `/anfragen` | `authenticated`, ergebnis-rollenabhängig |
+| `/anfragen/neu`, `/anfragen/erstellen` | `authenticated` + `kannOrgEditieren(anfragenderOrg)` |
+| `/anfragen/neu-kontakt`, `/anfragen/kontakt-erstellen` | `authenticated` + `OrgTyp.VEREIN`-Whitelist |
+| `/onboarding/**`, `/support`, `/dashboard`, `/einstellungen`, `/watchlist`, `/benachrichtigungen` | `authenticated` |
 | alle anderen | `authenticated` |
+
+### Anfrage-Flow (Phase 4 + Phase 11)
+
+| Methode | Pfad | Zugriff | Beschreibung |
+|---|---|---|---|
+| GET | `/anfragen` | authenticated, gefiltert | Eingehende für alle eigenen Orgs; ausgehende-Sektion + Outbound-Button nur für Vereins-Mitglieder mit Edit-Recht |
+| POST | `/anfragen/{id}/annehmen|ablehnen` | `kannOrgEditieren(empfaengerOrg)` | IDOR-Schutz |
+| GET | `/anfragen/neu?paketId=…` | authenticated | Paket-Anfrage Sponsor → Verein (vom Marktplatz-Detail-Klick) |
+| POST | `/anfragen/erstellen` | `kannOrgEditieren(anfragenderOrg)` | Empfänger immer vom Paket abgeleitet |
+| GET | `/anfragen/neu-kontakt` | Vereins-Edit-Recht | Sponsor-Picker für Kontakt-Anfrage |
+| POST | `/anfragen/kontakt-erstellen` | Vereins-Edit-Recht; `empfaenger.typ == UNTERNEHMEN` | Kontakt-Anfrage ohne Paket (V30) |
+
+### Onboarding & Support (Phase 11)
+
+| Methode | Pfad | Zugriff | Beschreibung |
+|---|---|---|---|
+| GET | `/onboarding` | authenticated; redirected wenn Mitgliedschaft existiert | Wizard nach erstem Login; DashboardController redirectet User ohne Mitgliedschaft hierhin |
+| POST | `/onboarding/verein-erstellen` | authenticated | Schnell-Org anlegen + ORG_OWNER-Mitgliedschaft (`OrganisationService.erstelleMitEigentuemer`) |
+| POST | `/onboarding/einladung-annehmen` | authenticated | Token-Whitelist-Validierung + Forward auf `/einladung/annehmen` |
+| GET, POST | `/support` | authenticated | Mail-Form an `sponsorplatz.support.empfaenger` (ENV `SPONSORPLATZ_ADMIN_EMAIL`, Default `support@sponsorplatz.ch`); bei Mail-Fehler bleibt Form mit Fehlermeldung offen |
+
+### Medien & Datei-Anhänge (Phase 11)
+
+| Methode | Pfad | Zugriff | Beschreibung |
+|---|---|---|---|
+| GET | `/medien/{id}` | public | Bilder inline, Dokumente als Attachment-Download (`ContentDisposition.builder()`, RFC-5987-encoded Filename) |
+| POST | `/organisationen/{orgSlug}/projekte/{projektSlug}/medien` | `kannOrgEditierenNachSlug` | Upload Bild oder Anhang. Bilder JPEG/PNG/WebP max 5 MB ODER Dokumente PDF/PPTX/DOCX/XLSX/PPT/DOC/XLS max 20 MB, max 10 Assets pro Entity |
+| POST | `/organisationen/{slug}/medien` | `kannOrgEditierenNachSlug` | Org-Logo/Cover-Upload |
+| POST | `/medien/{id}/loeschen` | typabhängig | ORGANISATION → Org-Edit; PROJEKT → `kannOrgEditieren(p.org)`; USER → `entityId == eigene UserId` |
+
+### Volltextsuche
+
+`VolltextSucheService` routet je nach DB-Dialekt:
+- **PostgreSQL** (prod): `tsvector` + GIN-Index (V22, Postgres-only) für Stemming auf Deutsch
+- **H2** (dev/test): JPQL-LIKE-Fallback in `ProjektRepository.sucheOeffentliche` (alle Spalten lower-case)
+
+Alle Projekt-Listen-Queries (`findBySlug`, `findByOrgIdOrderByCreatedAtDesc`, `findBySichtbarkeitOrderByVeroeffentlichtAmDesc`, `sucheOeffentliche`, `findePassende`) hängen `JOIN FETCH p.org` dran — `ProjektView.von(p)` greift auf `p.getOrg().getName/getSlug` zu, sonst LazyInit unter `spring.jpa.open-in-view=false`.
 
 ## Verzeichnisstruktur
 
+Bounded-Context-orientiert (jeder fachliche Bereich enthält Entity + Repository + Service + Controller + DTOs):
+
 ```
-sponsorplatz/
-├── src/main/java/ch/sponsorplatz/
-│   ├── PlatformApplication.java
-│   ├── config/        # SecurityConfig, ModelAttributeNames
-│   ├── controller/    # HomeController, OrganisationController, GlobalExceptionHandler
-│   ├── dto/           # OrganisationFormDto
-│   ├── model/         # Organisation, OrgTyp, OrgStatus
-│   ├── repository/    # OrganisationRepository
-│   ├── service/       # OrganisationService, SlugGenerator
-│   └── startup/
-├── src/main/resources/
-│   ├── application.properties
-│   ├── application-dev.properties
-│   ├── application-prod.properties
-│   ├── db/migration/V*.sql
-│   ├── templates/     # layout, index, error, organisationen, organisation-form, organisation-detail
-│   ├── static/        # CSS, Bilder
-│   └── messages_de_CH.properties
-├── src/test/...
-└── specs/
+src/main/java/ch/sponsorplatz/
+├── PlatformApplication.java
+├── shared/                # Querschnitts-Infrastruktur, kein Domänen-State
+│   ├── config/            # SecurityConfig, LocaleConfig, RateLimitFilter, ModelAttributeNames
+│   ├── exception/         # NotFoundException, GlobalExceptionHandler
+│   ├── util/              # SlugGenerator, TokenGenerator
+│   ├── pdf/               # PdfGeneratorService
+│   ├── storage/           # StorageService + Lokal/OCI-Implementierung
+│   ├── mail/              # MailService (zentrale SMTP-Abstraktion)
+│   └── einstellungen/     # PlattformEinstellungen (DB-Settings)
+│
+├── benutzer/              # AppUser, OnboardingController, SupportController, Auth, Profil,
+│                          # Verifizierung, PasswortReset, Einstellungen, OIDC-Mapping (FederierteIdentitaet),
+│                          # SeedRunner (Dev/Demo/Prod-Admin)
+├── organisation/          # Organisation, Mitgliedschaft, AccessControl,
+│                          # Branche, SponsorBranche, OrgHierarchieService, Zefix,
+│                          # Sponsor-Self-Service-Reg
+├── projekt/               # Projekt, SponsoringPaket, Watchlist, MedienAsset (inkl. ANHANG-Typ),
+│                          # Marktplatz, Suche, Matching, Dashboard, Sitemap, Event
+├── anfrage/               # SponsoringAnfrage (Paket + Kontakt-Anfrage ab V30),
+│                          # Vertrag, Rechnung, Nachricht, BenachrichtigungsService,
+│                          # PaymentProvider (Webhook + StubProvider)
+├── einladung/             # Einladung + Mail-Listener + Cleanup-Job
+├── benachrichtigung/      # In-App-Glocke (NotificationService + Bell-UI)
+├── audit/                 # AuditLog + DSG-Datenexport
+├── backup/                # BackupService + Restore + Cloud-Upload
+├── ops/                   # Ops-Dashboard, Alerts, RecentErrors, DB/Bucket-Stats
+├── admin/                 # Admin-UI: Backlog, Mail-Settings, Verifizierung
+└── home/                  # HomeController, InfoController (Impressum/DSG)
+
+src/main/resources/
+├── application*.properties               # default + dev + prod + demo
+├── db/migration/V*.sql                   # Flyway (V1..V30)
+├── templates/                            # ~50 Thymeleaf-Templates (DE/FR/IT/EN i18n)
+├── static/                               # CSS, Bilder
+└── messages_{de_CH,fr_CH,it_CH,en}.properties   # i18n-Bundles, ~600 Keys
+
+specs/                                    # technische Specs (aktiv gehalten)
 ```
 
 ## Build & Run
@@ -189,11 +264,13 @@ docker compose --profile app up --build
 ## Lokalisierung
 
 - Default-Locale `de_CH`
-- `messages_de_CH.properties` als Quelle
+- Bundles: `messages_de_CH.properties` (Quelle), `messages_fr_CH.properties`, `messages_it_CH.properties`, `messages_en.properties` (~600 Keys)
 - CHF-Format `1'234.50`
 - Datum `dd.MM.yyyy`
 - Zeitzone `Europe/Zurich`
-- FR/IT vorbereitet (Phase 5)
+- `LocaleConfig` mappt URL-Param `?lang=de|fr|it|en` auf konkrete Locales (`de_CH`/`fr_CH`/`it_CH`/`en`) — Whitelist + Country-Suffix sind beide notwendig, sonst löst Spring auf das (unvollständige) Default-Bundle auf. Werte ausserhalb der Whitelist → Cookie zurückgesetzt → Default-Locale.
+- Cookie-Name `lang`, 365 Tage gültig.
+- Templates verwenden `#{key}`-Resolution; ~50 Templates konvertiert. Marketing-Copy-Translations sind ein erster Wurf — sollten von Native-Speakern reviewt werden vor Pilot-Launch.
 
 ## Cloud-Deployment
 
