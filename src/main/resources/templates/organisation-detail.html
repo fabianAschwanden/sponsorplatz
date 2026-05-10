@@ -67,24 +67,39 @@
                     <dd th:text="${org.beschreibung}"></dd>
                 </th:block>
 
-                <th:block th:if="${org.uebergeordneteOrgId != null}">
-                    <dt>Übergeordnete Organisation</dt>
+                <!-- Hierarchie-Übersicht: Eltern-Kette + Sub-Orgs nur rendern,
+                     wenn überhaupt Hierarchie da ist (Eltern ODER Kinder). -->
+                <th:block th:if="${(elternkette != null and elternkette.size() > 1) or
+                                  (untergeordneteOrgs != null and !untergeordneteOrgs.isEmpty())}">
+                    <dt>Hierarchie</dt>
                     <dd>
-                        <a th:href="@{/organisationen/{slug}(slug=${org.uebergeordneteOrgSlug})}"
-                           th:text="${org.uebergeordneteOrgName}">Konzern AG</a>
-                    </dd>
-                </th:block>
+                        <div class="hierarchie-tree">
+                            <!-- Elternkette von Wurzel bis aktuelle Org.
+                                 Letzter Eintrag = aktuelle Org → h-aktiv. -->
+                            <div th:each="eintrag, stat : ${elternkette}"
+                                 class="h-knoten"
+                                 th:classappend="${stat.last} ? ' h-aktiv' : ''"
+                                 th:style="|--h-tiefe: ${stat.index};|">
+                                <span class="h-zweig" th:if="${stat.index > 0}" aria-hidden="true">└─</span>
+                                <a th:unless="${stat.last}"
+                                   th:href="@{/organisationen/{slug}(slug=${eintrag.slug})}"
+                                   th:text="${eintrag.name}">Konzern AG</a>
+                                <span th:if="${stat.last}"
+                                      class="h-aktuell"
+                                      th:text="${eintrag.name}">FC Beispiel</span>
+                                <span th:if="${stat.last}" class="h-marker app-muted">(diese Org)</span>
+                            </div>
 
-                <th:block th:if="${untergeordneteOrgs != null and !untergeordneteOrgs.isEmpty()}">
-                    <dt>Untergeordnete Organisationen</dt>
-                    <dd>
-                        <ul style="margin:0; padding-left:1rem;">
-                            <li th:each="sub : ${untergeordneteOrgs}">
+                            <!-- Untergeordnete Orgs eine Stufe tiefer als die aktuelle -->
+                            <div th:each="sub : ${untergeordneteOrgs}"
+                                 class="h-knoten h-kind"
+                                 th:style="|--h-tiefe: ${elternkette.size()};|">
+                                <span class="h-zweig" aria-hidden="true">└─</span>
                                 <a th:href="@{/organisationen/{slug}(slug=${sub.slug})}"
                                    th:text="${sub.name}">Tochter GmbH</a>
                                 <span class="app-muted" th:text="|(${sub.typ.name()})|">(UNTERNEHMEN)</span>
-                            </li>
-                        </ul>
+                            </div>
+                        </div>
                     </dd>
                 </th:block>
 

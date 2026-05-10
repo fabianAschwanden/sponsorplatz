@@ -44,6 +44,9 @@ class SecurityConfigTest {
     @MockitoBean
     private AccessControl accessControl;
 
+    @MockitoBean
+    private ch.sponsorplatz.organisation.OrgHierarchieService hierarchieService;
+
     /** SEC-01: GET /login → 200. */
     @Test
     void loginSeiteErreichbar() throws Exception {

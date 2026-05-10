@@ -963,6 +963,56 @@ body.dashboard-body {
 .dash-sidebar-lang a:hover { color: #fff; opacity: 1; }
 .dash-sidebar-lang span { opacity: 0.4; }
 
+/* =========================== Hierarchie-Tree (Org-Detail) =========================== */
+/* Visuelle Darstellung der Konzern-Struktur:
+ *   Konzern AG
+ *     └─ Tochter GmbH
+ *          └─ FC Beispiel  (diese Org)        ← hervorgehoben
+ *               └─ Sub-Verein 1
+ *               └─ Sub-Verein 2
+ *
+ * Einrückung pro Stufe via CSS-Variable --h-tiefe (vom Template gesetzt). */
+.hierarchie-tree {
+    margin: 0.25rem 0;
+    font-size: 0.95rem;
+    line-height: 1.9;
+}
+.h-knoten {
+    padding-left: calc(var(--h-tiefe, 0) * 1.5rem);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.h-zweig {
+    color: var(--dash-violet-dark);
+    opacity: 0.6;
+    font-family: ui-monospace, monospace;
+}
+.h-knoten a {
+    color: var(--dash-violet-dark);
+    text-decoration: none;
+    border-bottom: 1px dotted transparent;
+    transition: border-color 0.15s;
+}
+.h-knoten a:hover { border-bottom-color: var(--dash-violet-dark); }
+.h-aktiv {
+    background: var(--dash-coral-light);
+    border-radius: 0.4rem;
+    padding: 0.15rem 0.6rem;
+    margin: 0.15rem 0;
+}
+.h-aktiv .h-aktuell {
+    font-weight: 600;
+    color: var(--dash-coral);
+}
+.h-aktiv .h-marker {
+    font-size: 0.78rem;
+    margin-left: 0.25rem;
+}
+.h-kind {
+    color: #555;
+}
+
 /* =========================== App-Layout (Sidebar + Main, ohne Rail) =========================== */
 /* Für CRUD-/Listen-Seiten: gleiche Sidebar wie Dashboard, aber Main scrollt regulär. */
 

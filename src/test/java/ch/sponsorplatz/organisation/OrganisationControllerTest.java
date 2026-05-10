@@ -42,6 +42,9 @@ class OrganisationControllerTest {
     @MockitoBean
     private AccessControl accessControl;
 
+    @MockitoBean
+    private OrgHierarchieService hierarchieService;
+
     /** ORG-08: GET /organisationen → 200 + Liste. */
     @Test
     void listeWirdAngezeigt() throws Exception {
@@ -239,6 +242,45 @@ class OrganisationControllerTest {
 
         mockMvc.perform(post("/organisationen/fc-test/loeschen").with(csrf()))
             .andExpect(status().isForbidden());
+    }
+
+    /**
+     * ORG-26: Render-Assert — Org mit Eltern + Sub-Orgs zeigt die Hierarchie-Sektion
+     * mit "diese Org"-Marker und allen Sub-Org-Links im HTML. Der Tree wird durch
+     * elternkette + untergeordneteOrgs aus dem Model gespeist; CSS-Klassen
+     * h-knoten / h-aktiv sind sichtbar im DOM.
+     */
+    @Test
+    void hierarchieTreeRendert() throws Exception {
+        Organisation tochter = testOrg();
+        tochter.setName("Tochter GmbH");
+        tochter.setSlug("tochter");
+        tochter.setTyp(OrgTyp.UNTERNEHMEN);
+        tochter.setSponsorBranche(SponsorBranche.VERSICHERUNG);
+
+        Organisation sub = new Organisation();
+        sub.setId(UUID.randomUUID());
+        sub.setName("Sub-Verein");
+        sub.setSlug("sub-verein");
+        sub.setTyp(OrgTyp.VEREIN);
+        sub.setBranche(Branche.SPORT);
+        sub.setStatus(OrgStatus.VERIFIED);
+        sub.setRegistriertAm(Instant.now());
+
+        when(service.findeNachSlug("tochter")).thenReturn(Optional.of(tochter));
+        when(service.findeUntergeordnete(tochter.getId())).thenReturn(List.of(sub));
+        when(hierarchieService.findeElternkette(tochter)).thenReturn(List.of(
+                new OrgHierarchieService.BrotkrumenEintrag("Konzern AG", "konzern-ag"),
+                new OrgHierarchieService.BrotkrumenEintrag("Tochter GmbH", "tochter")
+        ));
+
+        mockMvc.perform(get("/organisationen/tochter"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("hierarchie-tree")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("h-aktiv")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("Konzern AG")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("(diese Org)")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("/organisationen/sub-verein")));
     }
 
     /** ORG-15: POST /organisationen/{slug}/loeschen mit Verwalten-Recht → 302 Redirect. */

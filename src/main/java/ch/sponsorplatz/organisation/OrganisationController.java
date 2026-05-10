@@ -22,10 +22,13 @@ public class OrganisationController {
 
     private final OrganisationService service;
     private final AccessControl accessControl;
+    private final OrgHierarchieService hierarchieService;
 
-    public OrganisationController(OrganisationService service, AccessControl accessControl) {
+    public OrganisationController(OrganisationService service, AccessControl accessControl,
+                                  OrgHierarchieService hierarchieService) {
         this.service = service;
         this.accessControl = accessControl;
+        this.hierarchieService = hierarchieService;
     }
 
     @GetMapping
@@ -129,6 +132,9 @@ public class OrganisationController {
         // Sammeln über die Eltern-Beziehung wäre N+1. Eigene Repo-Query reicht.
         model.addAttribute("untergeordneteOrgs",
                 OrganisationView.von(service.findeUntergeordnete(org.getId())));
+        // Eltern-Kette von Wurzel bis zur aktuellen Org (inkl. sich selbst) —
+        // für die visuelle Hierarchie-Darstellung im Template.
+        model.addAttribute("elternkette", hierarchieService.findeElternkette(org));
         return "organisation-detail";
     }
 
