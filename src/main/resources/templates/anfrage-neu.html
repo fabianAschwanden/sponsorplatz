@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Anfrage stellen — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+<div class="app-layout">
+
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('anfragen', ${anzahlOffeneAnfragen})}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">
+                    <a th:href="@{/marktplatz/{slug}(slug=${projektSlug})}" style="color:inherit;">← Zurück zum Projekt</a>
+                </p>
+                <h1>Anfrage stellen</h1>
+            </div>
+        </header>
+
+        <section class="app-card" style="max-width: 720px;">
+            <h2 style="font-family:var(--dash-font-head); font-size:1.05rem; margin:0 0 0.5rem;">Sie fragen an für</h2>
+            <dl class="app-datenliste">
+                <dt>Empfänger</dt>
+                <dd th:text="${empfaengerOrg.name}">Verein</dd>
+
+                <dt>Projekt</dt>
+                <dd th:text="${projektName}">Projekt</dd>
+
+                <dt>Paket</dt>
+                <dd>
+                    <strong th:text="${paketName}">Gold</strong>
+                    <span th:if="${paketPreisChf != null}"
+                          th:text="' · CHF ' + ${#numbers.formatDecimal(paketPreisChf, 0, 'POINT', 2, 'POINT')}"
+                          class="app-muted"></span>
+                </dd>
+            </dl>
+        </section>
+
+        <form th:action="@{/anfragen/erstellen}" method="post"
+              th:object="${anfrageForm}" class="app-form" style="max-width: 720px;">
+            <input type="hidden" th:field="*{paketId}">
+
+            <div class="app-form-group">
+                <label for="anfragenderOrgId">Anfrage stellen als *</label>
+                <select id="anfragenderOrgId" name="anfragenderOrgId" required class="app-input">
+                    <option value="" disabled selected>— Bitte wählen —</option>
+                    <option th:each="o : ${meineOrgs}"
+                            th:value="${o.id}"
+                            th:text="${o.name}">Org-Name</option>
+                </select>
+                <p class="app-muted" style="font-size:0.85rem; margin:0.25rem 0 0;">
+                    Sie können nur Orgs auswählen, in denen Sie Editor oder Owner sind.
+                </p>
+            </div>
+
+            <div class="app-form-group">
+                <label for="nachricht">Nachricht *</label>
+                <textarea id="nachricht" th:field="*{nachricht}" rows="6" required
+                          minlength="10" maxlength="2000"
+                          placeholder="Beschreiben Sie kurz, warum Sie sich für dieses Sponsoring-Paket interessieren."></textarea>
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('nachricht')}" th:errors="*{nachricht}"></p>
+            </div>
+
+            <div class="app-form-group">
+                <label for="kontaktName">Kontaktname</label>
+                <input type="text" id="kontaktName" th:field="*{kontaktName}" maxlength="255">
+            </div>
+
+            <div class="app-form-group">
+                <label for="kontaktEmail">Kontakt-E-Mail</label>
+                <input type="email" id="kontaktEmail" th:field="*{kontaktEmail}" maxlength="255">
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('kontaktEmail')}" th:errors="*{kontaktEmail}"></p>
+            </div>
+
+            <p class="app-meldung fehler" th:if="${#fields.hasGlobalErrors()}" th:errors="*{global}"></p>
+
+            <div class="app-form-actions">
+                <a th:href="@{/marktplatz/{slug}(slug=${projektSlug})}" class="app-btn-secondary app-btn">Abbrechen</a>
+                <button type="submit" class="app-btn">Anfrage senden</button>
+            </div>
+        </form>
+    </main>
+</div>
+</body>
+</html>

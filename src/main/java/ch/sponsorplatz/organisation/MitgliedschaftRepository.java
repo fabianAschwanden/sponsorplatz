@@ -29,6 +29,20 @@ public interface MitgliedschaftRepository extends JpaRepository<Mitgliedschaft, 
 
     List<Mitgliedschaft> findByUserId(UUID userId);
 
+    /**
+     * Mitgliedschaften eines Users gefiltert nach Rolle, mit eager geladener
+     * Org — für UI-Listen, die Org-Namen ausserhalb der Service-Tx brauchen
+     * (z.B. Anfrage-Erstellungs-Form, die den anfragenderOrg-Select aufbaut).
+     */
+    @Query("""
+            select m from Mitgliedschaft m
+              join fetch m.org
+             where m.user.id = :userId
+               and m.rolle in :rollen
+            """)
+    List<Mitgliedschaft> findByUserIdAndRolleInMitOrg(@Param("userId") UUID userId,
+                                                     @Param("rollen") Collection<Rolle> rollen);
+
     boolean existsByOrgId(UUID orgId);
 
     /**

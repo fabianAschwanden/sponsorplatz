@@ -147,7 +147,7 @@ public class DemoSeedRunner implements CommandLineRunner {
                 "Achtsamkeit ist uns als Apotheke wichtig.", null);
         erstelleAnfrage(pakete.get(6), sponsoren.get(2), vereine.get(3), AnfrageStatus.ANGENOMMEN,
                 "Ernährung und Bio — perfekte Synergie!", "Super, wird ein tolles Projekt!");
-        erstelleAnfrage(pakete.get(8), sponsoren.get(1), vereine.get(4), AnfrageStatus.IN_PRUEFUNG,
+        erstelleAnfrage(pakete.get(8), sponsoren.get(1), vereine.get(4), AnfrageStatus.NEU,
                 "Selbsthilfe liegt uns am Herzen.", null);
 
         log.info("DEMO-Seed: {} Vereine, {} Sponsor-Orgs, {} Projekte, {} Anfragen erstellt.",

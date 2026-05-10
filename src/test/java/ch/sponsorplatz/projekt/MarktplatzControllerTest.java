@@ -42,6 +42,9 @@ class MarktplatzControllerTest {
     private MedienAssetService medienAssetService;
 
     @MockitoBean
+    private SponsoringPaketService paketService;
+
+    @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
 
     private Projekt testProjekt() {

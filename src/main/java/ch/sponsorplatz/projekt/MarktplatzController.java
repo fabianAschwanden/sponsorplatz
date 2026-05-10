@@ -19,10 +19,14 @@ public class MarktplatzController {
 
     private final ProjektService projektService;
     private final MedienAssetService medienAssetService;
+    private final SponsoringPaketService paketService;
 
-    public MarktplatzController(ProjektService projektService, MedienAssetService medienAssetService) {
+    public MarktplatzController(ProjektService projektService,
+                                MedienAssetService medienAssetService,
+                                SponsoringPaketService paketService) {
         this.projektService = projektService;
         this.medienAssetService = medienAssetService;
+        this.paketService = paketService;
     }
 
     @GetMapping
@@ -76,8 +80,11 @@ public class MarktplatzController {
     public String detail(@PathVariable String slug, Model model) {
         Projekt projekt = projektService.findeNachSlug(slug)
                 .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + slug));
+        List<SponsoringPaketView> pakete = SponsoringPaketView.von(
+                paketService.findeAktiveNachProjekt(projekt.getId()));
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "marktplatz");
         model.addAttribute("projekt", ProjektView.von(projekt));
+        model.addAttribute("pakete", pakete);
         return "marktplatz-detail";
     }
 }

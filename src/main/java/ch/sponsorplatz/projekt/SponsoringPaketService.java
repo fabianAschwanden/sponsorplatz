@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -16,6 +17,20 @@ public class SponsoringPaketService {
 
     public SponsoringPaketService(SponsoringPaketRepository repository) {
         this.repository = repository;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<SponsoringPaket> findeNachId(UUID paketId) {
+        return repository.findById(paketId);
+    }
+
+    /**
+     * Lädt Paket inkl. Projekt und Empfänger-Org — für Anfrage-Erstellungs-Form,
+     * damit Template Org-Name/Projekt-Name ohne LazyInit anzeigen kann.
+     */
+    @Transactional(readOnly = true)
+    public Optional<SponsoringPaket> findeNachIdMitProjektUndOrg(UUID paketId) {
+        return repository.findByIdMitProjektUndOrg(paketId);
     }
 
     @Transactional(readOnly = true)

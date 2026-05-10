@@ -74,7 +74,30 @@
         <p style="margin:0; line-height:1.6;" th:text="${projekt.beschreibung}">Beschreibung</p>
     </section>
 
-    <section class="app-card" style="max-width: 800px; background: var(--dash-violet-light); border-color: var(--dash-violet);">
+    <section class="app-card" style="max-width: 800px;" th:if="${pakete != null and !pakete.isEmpty()}">
+        <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 1rem;">Sponsoring-Pakete</h2>
+        <div th:each="p : ${pakete}" class="paket-zeile"
+             style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; padding:0.75rem 0; border-top:1px solid #e5e7eb;">
+            <div>
+                <strong th:text="${p.name}">Gold</strong>
+                <p th:if="${p.beschreibung}" class="app-muted" style="margin:0.25rem 0 0; font-size:0.9rem;"
+                   th:text="${p.beschreibung}">Beschreibung</p>
+                <p th:if="${p.preisChf != null}" style="margin:0.25rem 0 0; font-size:0.9rem;"
+                   th:text="'CHF ' + ${#numbers.formatDecimal(p.preisChf, 0, 'POINT', 2, 'POINT')}">CHF 5'000</p>
+            </div>
+            <div>
+                <a sec:authorize="isAuthenticated()"
+                   th:href="@{/anfragen/neu(paketId=${p.id})}"
+                   class="app-btn">Anfrage stellen</a>
+                <a sec:authorize="!isAuthenticated()"
+                   th:href="@{/login(redirect=/anfragen/neu?paketId={id}(id=${p.id}))}"
+                   class="app-btn-secondary app-btn">Anmelden für Anfrage</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="app-card" style="max-width: 800px; background: var(--dash-violet-light); border-color: var(--dash-violet);"
+             th:if="${pakete == null or pakete.isEmpty()}">
         <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 0.5rem;">Interesse?</h2>
         <p style="margin:0;">Melden Sie sich bei <strong th:text="${projekt.org.name}">Verein</strong>, um Sponsor zu werden.</p>
     </section>

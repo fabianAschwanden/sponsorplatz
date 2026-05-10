@@ -607,6 +607,22 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 - **SSO-14** (TBD): User-UI für manuelle Verknüpfung/Trennung der Entra-Identität in `/einstellungen`
 - **SSO-15** (TBD): Multi-Provider — Erweiterung um Google/Apple, Provider-Auswahl auf `/login`
 
+### Persönliche Anfragen-Übersicht + Anfrage-Erstellung (MANF)
+
+> Tests für `MeineAnfragenController` — sowohl die User-zentrierte
+> Anfragen-Übersicht (`/anfragen`) als auch der Erstellungs-Flow vom
+> Marktplatz aus (`/anfragen/neu` + `/anfragen/erstellen`).
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **MANF-01** | `MeineAnfragenControllerTest` | `/anfragen` ohne Auth → Redirect auf Login |
+| **MANF-02** | `MeineAnfragenControllerTest` | `/anfragen` mit Auth → 200 + Template `meine-anfragen` |
+| **MANF-03** | `MeineAnfragenControllerTest` | `/anfragen` zeigt offene Zählung im Modell |
+| **MANF-04** | `MeineAnfragenControllerTest` | `GET /anfragen/neu?paketId=…` zeigt Form mit Paket-Kontext und User-Orgs (Edit-Recht) |
+| **MANF-05** | `MeineAnfragenControllerTest` | `POST /anfragen/erstellen` Happy Path → ruft `service.erstelle` mit Empfänger (vom Paket abgeleitet, kein Client-Trust) und redirected auf `/anfragen` |
+| **MANF-06** | `MeineAnfragenControllerTest` | `POST /anfragen/erstellen` mit `anfragenderOrgId == empfaengerOrg.id` → Form mit Binding-Error, kein Service-Call (Self-Anfrage-Schutz) |
+| **MANF-07** | `MeineAnfragenControllerTest` | `POST /anfragen/{id}/annehmen` ohne Edit-Recht auf Empfänger-Org → 403 (IDOR-Schutz; analoge Deckung für `/ablehnen`) |
+
 ## CI
 
 - Bei jedem Push und PR auf `main`: `mvn -B clean verify` + Docker-Build-Smoke

@@ -157,6 +157,18 @@ public class SponsoringAnfrageService {
                 .forEach(m -> notificationService.benachrichtige(m.getUser().getId(), typ, titel, text, link));
     }
 
+    /**
+     * Liefert die Empfänger-Org-ID einer Anfrage — wird vom MeineAnfragenController
+     * für den Authorization-Check benutzt, ohne dass der Controller die ganze
+     * Anfrage laden muss.
+     */
+    @Transactional(readOnly = true)
+    public UUID findeEmpfaengerOrgId(UUID anfrageId) {
+        return repository.findById(anfrageId)
+                .map(a -> a.getEmpfaengerOrg().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Anfrage nicht gefunden: " + anfrageId));
+    }
+
     private SponsoringAnfrage laden(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Anfrage nicht gefunden: " + id));
