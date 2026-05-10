@@ -19,7 +19,7 @@
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M15 18l-6-6 6-6"/>
             </svg>
-            Zurück
+            <span th:text="#{sidebar.zurueck}">Zurück</span>
         </a>
     </div>
 
@@ -27,14 +27,14 @@
         <a th:href="@{/dashboard}" class="dash-nav-item"
            th:classappend="${aktiv == 'dashboard'} ? 'aktiv'">
             <span class="dash-nav-dot"></span>
-            Dashboard
+            <span th:text="#{sidebar.dashboard}">Dashboard</span>
         </a>
         <a th:href="@{/organisationen}" class="dash-nav-item"
            th:classappend="${aktiv == 'organisationen'} ? 'aktiv'">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 21h18M5 21V7l8-4 8 4v14M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/>
             </svg>
-            Organisationen
+            <span th:text="#{sidebar.organisationen}">Organisationen</span>
         </a>
         <a th:href="@{/marktplatz}" class="dash-nav-item"
            th:classappend="${aktiv == 'marktplatz'} ? 'aktiv'">
@@ -42,14 +42,14 @@
                 <circle cx="11" cy="11" r="8"/>
                 <path d="M21 21l-4.35-4.35"/>
             </svg>
-            Marktplatz
+            <span th:text="#{sidebar.marktplatz}">Marktplatz</span>
         </a>
         <a th:href="@{/anfragen}" class="dash-nav-item"
            th:classappend="${aktiv == 'anfragen'} ? 'aktiv'">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
             </svg>
-            Anfragen
+            <span th:text="#{sidebar.anfragen}">Anfragen</span>
             <span class="dash-nav-badge"
                   th:if="${badgeAnfragen != null and badgeAnfragen > 0}"
                   th:text="${badgeAnfragen}">3</span>
@@ -57,14 +57,15 @@
 
         <!-- Admin-Bereich (nur für PLATFORM_ADMIN) -->
         <div sec:authorize="hasRole('PLATFORM_ADMIN')" style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1);">
-            <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; opacity:0.5; padding:0 0.75rem;">Admin</span>
+            <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; opacity:0.5; padding:0 0.75rem;"
+                  th:text="#{sidebar.admin}">Admin</span>
             <a th:href="@{/admin}" class="dash-nav-item"
                th:classappend="${aktiv == 'admin'} ? 'aktiv'">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
                     <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15 1.65 1.65 0 003 14.08V14a2 2 0 014 0v.09"/>
                 </svg>
-                Admin
+                <span th:text="#{sidebar.admin}">Admin</span>
             </a>
             <a th:href="@{/admin/system}" class="dash-nav-item"
                th:classappend="${aktiv == 'admin-system'} ? 'aktiv'">
@@ -73,7 +74,7 @@
                     <line x1="8" y1="21" x2="16" y2="21"/>
                     <line x1="12" y1="17" x2="12" y2="21"/>
                 </svg>
-                System
+                <span th:text="#{sidebar.adminSystem}">System</span>
             </a>
             <a th:href="@{/admin/backlog}" class="dash-nav-item"
                th:classappend="${aktiv == 'admin-backlog'} ? 'aktiv'">
@@ -81,7 +82,7 @@
                     <path d="M9 11l3 3L22 4"/>
                     <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
                 </svg>
-                Backlog
+                <span th:text="#{sidebar.adminBacklog}">Backlog</span>
             </a>
         </div>
     </nav>
@@ -96,7 +97,7 @@
         </div>
         <a th:href="@{/einstellungen}" class="dash-user-link"
            th:classappend="${aktiv == 'einstellungen'} ? 'aktiv'"
-           title="Mein Profil &amp; Einstellungen">
+           th:title="#{sidebar.profilTooltip}">
             <span th:replace="~{fragments/avatar :: avatar(
                     name=${aktuellerUser != null ? aktuellerUser.anzeigename : #authentication.name},
                     bildUrl=${aktuellerUser != null ? aktuellerUser.profilbildUrl : null},
@@ -104,11 +105,11 @@
             <div class="dash-user-info">
                 <span class="dash-user-name"
                       th:text="${aktuellerUser != null ? aktuellerUser.anzeigename : #authentication.name}">User</span>
-                <span class="dash-user-handle">Profil bearbeiten</span>
+                <span class="dash-user-handle" th:text="#{sidebar.profilBearbeiten}">Profil bearbeiten</span>
             </div>
         </a>
         <form th:action="@{/logout}" method="post" class="dash-logout-form">
-            <button type="submit" class="dash-logout-btn" title="Abmelden" aria-label="Abmelden">
+            <button type="submit" class="dash-logout-btn" th:title="#{sidebar.abmelden}" th:aria-label="#{sidebar.abmelden}">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
                 </svg>

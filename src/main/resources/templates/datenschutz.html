@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Datenschutzerklärung — Sponsorplatz</title>
+    <title th:text="#{info.datenschutz.titel} + ' — Sponsorplatz'">Datenschutzerklärung — Sponsorplatz</title>
     <meta name="description" content="Datenschutzerklärung von Sponsorplatz nach Schweizer DSG: welche Daten wir wofür verarbeiten und wie du deine Rechte wahrnimmst.">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -17,15 +17,15 @@
             <span>Sponsorplatz</span>
         </a>
         <nav class="public-nav">
-            <a th:href="@{/marktplatz}">Marktplatz</a>
-            <a th:href="@{/login}">Anmelden</a>
+            <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
         </nav>
     </div>
 </header>
 
 <main class="public-main">
     <article class="app-card" style="max-width: 760px; margin: 2rem auto;">
-        <h1>Datenschutzerklärung</h1>
+        <h1 th:text="#{info.datenschutz.titel}">Datenschutzerklärung</h1>
         <p style="color: var(--dash-grau);">
             Stand: <span th:text="${#dates.format(#dates.createNow(), 'dd.MM.yyyy')}">01.01.2026</span>
         </p>
@@ -110,8 +110,8 @@
         </p>
 
         <p style="margin-top: 2rem; color: var(--dash-grau);">
-            <a th:href="@{/impressum}">Impressum</a> ·
-            <a th:href="@{/}">Zurück zur Startseite</a>
+            <a th:href="@{/impressum}" th:text="#{footer.impressum}">Impressum</a> ·
+            <a th:href="@{/}" th:text="#{error.zurueckLink}">Zurück zur Startseite</a>
         </p>
     </article>
 </main>
@@ -120,8 +120,8 @@
     <div class="public-footer-inner">
         <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz · Schweiz</p>
         <nav>
-            <a th:href="@{/impressum}">Impressum</a>
-            <a th:href="@{/datenschutz}">Datenschutz</a>
+            <a th:href="@{/impressum}" th:text="#{footer.impressum}">Impressum</a>
+            <a th:href="@{/datenschutz}" th:text="#{footer.datenschutz}">Datenschutz</a>
         </nav>
     </div>
 </footer>

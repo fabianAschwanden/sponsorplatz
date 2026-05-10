@@ -25,10 +25,12 @@
             <span>Sponsorplatz</span>
         </a>
         <nav class="public-nav">
-            <a th:href="@{/marktplatz}">Marktplatz</a>
-            <a sec:authorize="!isAuthenticated()" th:href="@{/login}">Anmelden</a>
-            <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn">Registrieren</a>
-            <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}" class="app-btn">Zum Dashboard</a>
+            <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn"
+               th:text="#{navigation.registrieren}">Registrieren</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}" class="app-btn"
+               th:text="#{topbar.zumDashboard}">Zum Dashboard</a>
         </nav>
     </div>
 </header>
@@ -100,8 +102,8 @@
     <div class="public-footer-inner">
         <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz · Schweiz</p>
         <nav>
-            <a th:href="@{/impressum}">Impressum</a>
-            <a th:href="@{/datenschutz}">Datenschutz</a>
+            <a th:href="@{/impressum}" th:text="#{footer.impressum}">Impressum</a>
+            <a th:href="@{/datenschutz}" th:text="#{footer.datenschutz}">Datenschutz</a>
             <span class="lang-switch">
                 <a th:href="@{/(lang=de)}">DE</a>
                 <a th:href="@{/(lang=fr)}">FR</a>

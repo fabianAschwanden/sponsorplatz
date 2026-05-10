@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fehler — Sponsorplatz</title>
+    <title th:text="#{error.titel} + ' — Sponsorplatz'">Fehler — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -21,12 +21,13 @@
 
 <main class="public-main">
     <section class="public-auth-card" style="max-width: 540px;">
-        <p class="public-hero-rubrik" style="text-align:center;">Fehler</p>
-        <h1 style="text-align:center;" th:text="${status} ?: 'Etwas ist schiefgelaufen'">Etwas ist schiefgelaufen</h1>
+        <p class="public-hero-rubrik" style="text-align:center;" th:text="#{error.titel}">Fehler</p>
+        <h1 style="text-align:center;" th:text="${status} ?: #{error.titel}">Etwas ist schiefgelaufen</h1>
         <p class="app-muted" style="text-align:center;" th:text="${error}"></p>
         <p class="app-muted" style="text-align:center;" th:if="${message}" th:text="${message}"></p>
         <div class="app-form-actions" style="margin-top: 1.5rem;">
-            <a th:href="@{/}" class="app-btn" style="width: 100%; justify-content: center;">Zur Startseite</a>
+            <a th:href="@{/}" class="app-btn" style="width: 100%; justify-content: center;"
+               th:text="#{error.zurueckLink}">Zur Startseite</a>
         </div>
     </section>
 </main>

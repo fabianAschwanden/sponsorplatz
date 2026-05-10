@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anmelden — Sponsorplatz</title>
+    <title th:text="#{login.titel} + ' — Sponsorplatz'">Anmelden — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -17,62 +17,64 @@
             <span>Sponsorplatz</span>
         </a>
         <nav class="public-nav">
-            <a th:href="@{/marktplatz}">Marktplatz</a>
-            <a th:href="@{/registrieren}">Registrieren</a>
+            <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a th:href="@{/registrieren}" th:text="#{navigation.registrieren}">Registrieren</a>
         </nav>
     </div>
 </header>
 
 <main class="public-main">
     <section class="public-auth-card">
-        <h1>Anmelden</h1>
+        <h1 th:text="#{login.titel}">Anmelden</h1>
 
-        <div th:if="${param.error}" class="app-meldung fehler">
+        <div th:if="${param.error}" class="app-meldung fehler" th:text="#{login.fehlerCredentials}">
             E-Mail oder Passwort ist falsch.
         </div>
         <div th:if="${param.gesperrt}" class="app-meldung fehler">
-            Zu viele Fehlversuche. Konto ist vorübergehend gesperrt. Bitte versuchen Sie es in einigen Minuten erneut
-            oder <a th:href="@{/passwort-vergessen}">setzen Sie Ihr Passwort zurück</a>.
+            <span th:text="#{login.fehlerGesperrtBeginn}">Zu viele Fehlversuche…</span>
+            <a th:href="@{/passwort-vergessen}" th:text="#{login.fehlerGesperrtLink}">setzen Sie Ihr Passwort zurück</a>.
         </div>
-        <div th:if="${param.logout}" class="app-meldung erfolg">
+        <div th:if="${param.logout}" class="app-meldung erfolg" th:text="#{login.erfolgAbgemeldet}">
             Sie wurden erfolgreich abgemeldet.
         </div>
-        <div th:if="${param.registriert}" class="app-meldung info">
+        <div th:if="${param.registriert}" class="app-meldung info" th:text="#{login.infoRegistriert}">
             Registrierung erfolgreich! Bitte E-Mail bestätigen und dann anmelden.
         </div>
         <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
         <form th:action="@{/login}" method="post" class="app-form">
             <div class="app-form-group">
-                <label for="username">E-Mail</label>
+                <label for="username" th:text="#{login.email}">E-Mail</label>
                 <input type="email" id="username" name="username" required autofocus>
             </div>
             <div class="app-form-group">
-                <label for="password">Passwort</label>
+                <label for="password" th:text="#{login.passwort}">Passwort</label>
                 <input type="password" id="password" name="password" required>
             </div>
             <div class="app-form-actions">
-                <button type="submit" class="app-btn" style="width: 100%; justify-content: center;">Anmelden</button>
+                <button type="submit" class="app-btn" style="width: 100%; justify-content: center;"
+                        th:text="#{login.anmeldenBtn}">Anmelden</button>
             </div>
         </form>
 
         <!-- OIDC-SSO-Buttons (nur wenn Identity-Provider konfiguriert sind, Spec §3.2) -->
         <div th:if="${oauth2Anbieter != null and !oauth2Anbieter.isEmpty()}"
              class="oidc-anbieter" style="margin-top:1.5rem;">
-            <div style="text-align:center; margin:1rem 0; color:var(--farbe-text-muted); font-size:0.85rem;">
-                — oder —
-            </div>
+            <div style="text-align:center; margin:1rem 0; color:var(--farbe-text-muted); font-size:0.85rem;"
+                 th:text="#{login.oder}">— oder —</div>
             <a th:each="anbieter : ${oauth2Anbieter}"
                th:href="@{'/oauth2/authorization/' + ${anbieter.registrationId}}"
                class="app-btn app-btn-secondary"
-               style="display:flex; width:100%; justify-content:center; margin-bottom:0.5rem;">
-                Mit <span th:text="${anbieter.clientName}" style="margin:0 0.25rem;">CSS-Konto</span> anmelden
+               style="display:flex; width:100%; justify-content:center; margin-bottom:0.5rem;"
+               th:text="#{login.mitProvider(${anbieter.clientName})}">
+                Mit CSS-Konto anmelden
             </a>
         </div>
 
         <p class="public-auth-foot">
-            Noch kein Konto? <a th:href="@{/registrieren}">Jetzt registrieren</a><br>
-            <a th:href="@{/passwort-vergessen}">Passwort vergessen?</a>
+            <span th:text="#{login.kontoLosFrage}">Noch kein Konto?</span>
+            <a th:href="@{/registrieren}" th:text="#{login.jetztRegistrieren}">Jetzt registrieren</a><br>
+            <a th:href="@{/passwort-vergessen}" th:text="#{login.passwortVergessen}">Passwort vergessen?</a>
         </p>
     </section>
 </main>
