@@ -34,6 +34,15 @@ public interface OrganisationRepository extends JpaRepository<Organisation, UUID
     List<Organisation> findByStatusOrderByCreatedAtAsc(OrgStatus status);
 
     /**
+     * Aktive Orgs eines bestimmten Typs (z.B. UNTERNEHMEN für Sponsor-Picker).
+     * LEFT JOIN FETCH wegen OrganisationView.von Lazy-Issue auf Eltern-Org.
+     */
+    @Query("SELECT o FROM Organisation o LEFT JOIN FETCH o.uebergeordneteOrg "
+            + "WHERE o.typ = :typ AND o.status IN :stati ORDER BY o.name ASC")
+    List<Organisation> findByTypAndStatusInOrderByNameAsc(
+            @Param("typ") OrgTyp typ, @Param("stati") Collection<OrgStatus> stati);
+
+    /**
      * JOIN FETCH uebergeordneteOrg — verhindert {@code LazyInitializationException}
      * im Template, weil {@code OrganisationView.von} auf {@code eltern.getName()}
      * zugreift, nachdem die Service-Transaktion schon zu ist (open-in-view=false).

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Sponsor anfragen — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+<div class="app-layout">
+
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('anfragen', ${anzahlOffeneAnfragen})}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">
+                    <a th:href="@{/anfragen}" style="color:inherit;">← Anfragen</a>
+                </p>
+                <h1>Sponsor anfragen</h1>
+            </div>
+        </header>
+
+        <section class="app-card" style="max-width: 720px; background: #f0f9ff; border-color: #bae6fd;">
+            <p style="margin:0; font-size:0.9rem;">
+                Du sendest eine <strong>Kontakt-Anfrage</strong> direkt an einen Sponsor.
+                Anders als beim Marktplatz (Sponsor klickt auf dein Paket) ist hier
+                <strong>kein Paket gebunden</strong> — beschreibe einfach dein Anliegen.
+            </p>
+        </section>
+
+        <form th:action="@{/anfragen/kontakt-erstellen}" method="post"
+              th:object="${kontaktForm}" class="app-form" style="max-width: 720px; margin-top: 1rem;">
+
+            <div class="app-form-group">
+                <label for="anfragenderOrgId">Anfrage stellen als (Verein) *</label>
+                <select id="anfragenderOrgId" th:field="*{anfragenderOrgId}" required class="app-input">
+                    <option value="" disabled selected>— Bitte wählen —</option>
+                    <option th:each="o : ${meineOrgs}"
+                            th:value="${o.id}"
+                            th:text="${o.name}">Vereinsname</option>
+                </select>
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('anfragenderOrgId')}" th:errors="*{anfragenderOrgId}"></p>
+                <p class="app-muted" style="font-size:0.85rem; margin:0.25rem 0 0;">
+                    Nur Vereins-Orgs (Typ VEREIN) können hier wählen — Sponsoren-Orgs sind ausgeblendet.
+                </p>
+            </div>
+
+            <div class="app-form-group">
+                <label for="empfaengerOrgId">Sponsor *</label>
+                <select id="empfaengerOrgId" th:field="*{empfaengerOrgId}" required class="app-input">
+                    <option value="" disabled selected>— Sponsor wählen —</option>
+                    <option th:each="s : ${sponsoren}"
+                            th:value="${s.id}"
+                            th:text="${s.name + (s.sponsorBranche != null ? ' (' + s.sponsorBranche.anzeige + ')' : '')}">Sponsor</option>
+                </select>
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('empfaengerOrgId')}" th:errors="*{empfaengerOrgId}"></p>
+                <p class="app-muted" style="font-size:0.85rem; margin:0.25rem 0 0;"
+                   th:if="${sponsoren.isEmpty()}">
+                    Noch keine verifizierten Sponsoren auf der Plattform.
+                </p>
+            </div>
+
+            <div class="app-form-group">
+                <label for="betreff">Betreff *</label>
+                <input type="text" id="betreff" th:field="*{betreff}" required
+                       minlength="3" maxlength="255"
+                       placeholder="z.B. Anfrage Sponsoring Sommerfest 2026">
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('betreff')}" th:errors="*{betreff}"></p>
+            </div>
+
+            <div class="app-form-group">
+                <label for="nachricht">Nachricht *</label>
+                <textarea id="nachricht" th:field="*{nachricht}" rows="6" required
+                          minlength="10" maxlength="2000"
+                          placeholder="Beschreibe euer Projekt, was ihr sucht und warum dieser Sponsor passen könnte."></textarea>
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('nachricht')}" th:errors="*{nachricht}"></p>
+            </div>
+
+            <div class="app-form-group">
+                <label for="kontaktName">Kontaktname</label>
+                <input type="text" id="kontaktName" th:field="*{kontaktName}" maxlength="255">
+            </div>
+
+            <div class="app-form-group">
+                <label for="kontaktEmail">Kontakt-E-Mail</label>
+                <input type="email" id="kontaktEmail" th:field="*{kontaktEmail}" maxlength="255">
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('kontaktEmail')}" th:errors="*{kontaktEmail}"></p>
+            </div>
+
+            <p class="app-meldung fehler" th:if="${#fields.hasGlobalErrors()}" th:errors="*{global}"></p>
+
+            <div class="app-form-actions">
+                <a th:href="@{/anfragen}" class="app-btn-secondary app-btn">Abbrechen</a>
+                <button type="submit" class="app-btn">Anfrage senden</button>
+            </div>
+        </form>
+    </main>
+</div>
+</body>
+</html>

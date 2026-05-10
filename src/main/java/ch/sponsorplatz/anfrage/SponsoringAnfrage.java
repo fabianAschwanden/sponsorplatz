@@ -29,8 +29,14 @@ public class SponsoringAnfrage {
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "paket_id", nullable = false)
+    /**
+     * Paket-Referenz. Bei klassischer Sponsoring-Anfrage (Sponsor → Verein
+     * via Marktplatz-Detail) immer gesetzt. Bei Kontakt-Anfrage (Verein →
+     * Sponsor via /anfragen-Bereich) {@code null}, weil keine Paket-Bindung
+     * existiert — dann muss {@link #betreff} gesetzt sein.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "paket_id")
     private SponsoringPaket paket;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -44,6 +50,13 @@ public class SponsoringAnfrage {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private AnfrageStatus status = AnfrageStatus.NEU;
+
+    /**
+     * Betreff — nur bei Kontakt-Anfrage gesetzt (paket == null). Bei
+     * klassischer Paket-Anfrage NULL, der Paket-Name dient als Betreff.
+     */
+    @Column(name = "betreff", length = 255)
+    private String betreff;
 
     @Column(name = "nachricht", columnDefinition = "TEXT")
     private String nachricht;
@@ -94,6 +107,9 @@ public class SponsoringAnfrage {
 
     public AnfrageStatus getStatus() { return status; }
     public void setStatus(AnfrageStatus status) { this.status = status; }
+
+    public String getBetreff() { return betreff; }
+    public void setBetreff(String betreff) { this.betreff = betreff; }
 
     public String getNachricht() { return nachricht; }
     public void setNachricht(String nachricht) { this.nachricht = nachricht; }

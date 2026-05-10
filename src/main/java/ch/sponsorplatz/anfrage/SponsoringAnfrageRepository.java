@@ -86,4 +86,16 @@ public interface SponsoringAnfrageRepository extends JpaRepository<SponsoringAnf
             """)
     List<SponsoringAnfrage> findByEmpfaengerOrgIdInOrderByCreatedAtDesc(
             @Param("empfaengerOrgIds") Collection<UUID> empfaengerOrgIds);
+
+    /** Alle ausgehenden Anfragen über mehrere Orgs — für die Verein→Sponsor-Sicht. */
+    @Query("""
+            select a from SponsoringAnfrage a
+              left join fetch a.paket
+              left join fetch a.anfragenderOrg
+              left join fetch a.empfaengerOrg
+             where a.anfragenderOrg.id in :anfragenderOrgIds
+             order by a.createdAt desc
+            """)
+    List<SponsoringAnfrage> findByAnfragenderOrgIdInOrderByCreatedAtDesc(
+            @Param("anfragenderOrgIds") Collection<UUID> anfragenderOrgIds);
 }

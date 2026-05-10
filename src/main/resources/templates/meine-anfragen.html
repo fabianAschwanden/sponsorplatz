@@ -13,85 +13,146 @@
     <aside th:replace="~{fragments/sidebar :: app-sidebar('anfragen', ${anzahlOffene})}"></aside>
 
     <main class="dash-main">
-        <header class="dash-topbar">
-            <h1 style="font-size:1.3rem; margin:0;" th:text="#{meineAnfragen.titel}">Eingehende Anfragen</h1>
-            <span class="dash-period-text" th:if="${anzahlOffene > 0}"
-                  th:text="#{meineAnfragen.offenSuffix(${anzahlOffene})}"
-                  style="color:var(--dash-coral, #ef4444); font-weight:600;"></span>
+        <header class="dash-topbar" style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:1rem;">
+                <h1 style="font-size:1.3rem; margin:0;">Anfragen</h1>
+                <span class="dash-period-text" th:if="${anzahlOffene > 0}"
+                      th:text="#{meineAnfragen.offenSuffix(${anzahlOffene})}"
+                      style="color:var(--dash-coral, #ef4444); font-weight:600;"></span>
+            </div>
+            <a th:if="${kannKontaktanfrageStellen}"
+               th:href="@{/anfragen/neu-kontakt}"
+               class="app-btn"
+               style="font-size:0.85rem; padding:0.5rem 1rem;">+ Sponsor anfragen</a>
         </header>
 
-        <div th:if="${erfolgsMeldung}" class="alert success" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${erfolgsMeldung}" class="alert success" th:text="${erfolgsMeldung}"
+             style="margin-top:1rem;"></div>
 
-        <div th:if="${anfragen.isEmpty()}" class="empty-state" style="text-align:center; padding:3rem 1rem;">
-            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.3; margin-bottom:1rem;">
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-            </svg>
-            <p style="color:#6b7280;" th:text="#{meineAnfragen.empty}">Noch keine Anfragen erhalten…</p>
-        </div>
+        <!-- ===================== EINGEHENDE ===================== -->
+        <section style="margin-top:1.5rem;">
+            <h2 style="font-size:1rem; font-weight:600; color:#374151; margin:0 0 0.75rem;">
+                <span th:text="#{meineAnfragen.titel}">Eingehende Anfragen</span>
+            </h2>
 
-        <div class="anfragen-liste" style="display:flex; flex-direction:column; gap:1rem; margin-top:1rem;">
-            <div th:each="a : ${anfragen}" class="card" style="padding:1.25rem; border-radius:0.75rem;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                    <div>
-                        <strong th:text="${a.kontaktName ?: #messages.msg('meineAnfragen.unbekannt')}">Name</strong>
-                        <span th:if="${a.anfragenderOrgName}" style="color:#6b7280; font-size:0.85rem;">
-                            · <span th:text="${a.anfragenderOrgName}">Org</span>
-                        </span>
+            <div th:if="${anfragen.isEmpty()}" class="empty-state" style="text-align:center; padding:2rem 1rem; background:#f9fafb; border-radius:0.5rem;">
+                <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.3; margin-bottom:0.75rem;">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                </svg>
+                <p style="color:#6b7280; margin:0;" th:text="#{meineAnfragen.empty}">Noch keine Anfragen erhalten…</p>
+            </div>
+
+            <div th:unless="${anfragen.isEmpty()}" class="anfragen-liste" style="display:flex; flex-direction:column; gap:1rem;">
+                <div th:each="a : ${anfragen}" class="card" style="padding:1.25rem; border-radius:0.75rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                        <div>
+                            <strong th:text="${a.kontaktName ?: #messages.msg('meineAnfragen.unbekannt')}">Name</strong>
+                            <span th:if="${a.anfragenderOrgName}" style="color:#6b7280; font-size:0.85rem;">
+                                · <span th:text="${a.anfragenderOrgName}">Org</span>
+                            </span>
+                        </div>
+                        <span class="badge"
+                              th:classappend="'badge-' + ${a.status.name().toLowerCase()}"
+                              th:text="#{'status.anfrage.' + ${a.status.name()}}">NEU</span>
                     </div>
-                    <span class="badge"
-                          th:classappend="'badge-' + ${a.status.name().toLowerCase()}"
-                          th:text="#{'status.anfrage.' + ${a.status.name()}}">NEU</span>
-                </div>
 
-                <p style="font-size:0.85rem; color:#6b7280; margin:0.25rem 0;">
-                    <span th:if="${a.empfaengerOrgName}">
-                        <span th:text="#{meineAnfragen.anLabel}">An:</span>
-                        <a th:href="@{'/organisationen/' + ${a.empfaengerOrgSlug} + '/anfragen'}"
-                           th:text="${a.empfaengerOrgName}" style="color:var(--dash-violet, #7c3aed);">Org</a> ·
-                    </span>
-                    <span th:text="#{meineAnfragen.paketLabel}">Paket:</span>
-                    <span th:text="${a.paketName ?: '–'}">Gold</span>
-                    <span th:if="${a.kontaktEmail}"> · <span th:text="${a.kontaktEmail}">email</span></span>
-                </p>
+                    <p style="font-size:0.85rem; color:#6b7280; margin:0.25rem 0;">
+                        <span th:if="${a.empfaengerOrgName}">
+                            <span th:text="#{meineAnfragen.anLabel}">An:</span>
+                            <a th:href="@{'/organisationen/' + ${a.empfaengerOrgSlug} + '/anfragen'}"
+                               th:text="${a.empfaengerOrgName}" style="color:var(--dash-violet, #7c3aed);">Org</a> ·
+                        </span>
+                        <span th:if="${a.istPaketAnfrage()}">
+                            <span th:text="#{meineAnfragen.paketLabel}">Paket:</span>
+                            <span th:text="${a.paketName}">Gold</span>
+                        </span>
+                        <span th:unless="${a.istPaketAnfrage()}" style="font-style:italic;">
+                            Kontakt-Anfrage: <strong th:text="${a.betreff ?: '–'}">Betreff</strong>
+                        </span>
+                        <span th:if="${a.kontaktEmail}"> · <span th:text="${a.kontaktEmail}">email</span></span>
+                    </p>
 
-                <p th:text="${a.nachricht}" style="margin:0.5rem 0;">Nachricht</p>
+                    <p th:text="${a.nachricht}" style="margin:0.5rem 0;">Nachricht</p>
 
-                <div th:if="${a.antwort}" style="background:#f9fafb; padding:0.75rem; border-radius:0.5rem; margin-top:0.5rem;">
-                    <strong style="font-size:0.85rem;" th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
-                    <span th:text="${a.antwort}">Antwort</span>
-                </div>
+                    <div th:if="${a.antwort}" style="background:#f9fafb; padding:0.75rem; border-radius:0.5rem; margin-top:0.5rem;">
+                        <strong style="font-size:0.85rem;" th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
+                        <span th:text="${a.antwort}">Antwort</span>
+                    </div>
 
-                <!-- Aktionen bei ANGENOMMEN -->
-                <div th:if="${a.status.name() == 'ANGENOMMEN'}" style="margin-top:0.75rem; display:flex; gap:0.5rem;">
-                    <a th:href="@{'/organisationen/' + ${a.empfaengerOrgSlug} + '/anfragen/' + ${a.id} + '/nachrichten'}"
-                       class="btn btn-primary" style="font-size:0.85rem;"
-                       th:text="#{meineAnfragen.konversation}">Konversation öffnen</a>
-                    <form th:action="@{'/organisationen/' + ${a.empfaengerOrgSlug} + '/anfragen/' + ${a.id} + '/vertrag/erstellen'}"
-                          method="post" style="display:inline;">
-                        <button type="submit" class="btn" style="font-size:0.85rem;"
-                                th:text="#{meineAnfragen.vertragErstellen}">Vertrag erstellen</button>
-                    </form>
-                </div>
+                    <!-- Aktionen bei ANGENOMMEN (nur Paket-Anfragen → Vertrag) -->
+                    <div th:if="${a.status.name() == 'ANGENOMMEN' and a.istPaketAnfrage()}"
+                         style="margin-top:0.75rem; display:flex; gap:0.5rem;">
+                        <a th:href="@{'/organisationen/' + ${a.empfaengerOrgSlug} + '/anfragen/' + ${a.id} + '/nachrichten'}"
+                           class="btn btn-primary" style="font-size:0.85rem;"
+                           th:text="#{meineAnfragen.konversation}">Konversation öffnen</a>
+                        <form th:action="@{'/organisationen/' + ${a.empfaengerOrgSlug} + '/anfragen/' + ${a.id} + '/vertrag/erstellen'}"
+                              method="post" style="display:inline;">
+                            <button type="submit" class="btn" style="font-size:0.85rem;"
+                                    th:text="#{meineAnfragen.vertragErstellen}">Vertrag erstellen</button>
+                        </form>
+                    </div>
 
-                <!-- Aktionen bei NEU -->
-                <div th:if="${a.status.name() == 'NEU'}" style="margin-top:0.75rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
-                    <form th:action="@{'/anfragen/' + ${a.id} + '/annehmen'}" method="post" style="display:flex; gap:0.25rem;">
-                        <input type="text" name="antwort" th:placeholder="#{meineAnfragen.antwortPlaceholder}"
-                               placeholder="Antwort (optional)"
-                               style="font-size:0.85rem; padding:0.4rem 0.5rem; border:1px solid #d1d5db; border-radius:0.375rem;">
-                        <button type="submit" class="btn btn-success" style="font-size:0.85rem;"
-                                th:text="#{meineAnfragen.annehmen}">Annehmen</button>
-                    </form>
-                    <form th:action="@{'/anfragen/' + ${a.id} + '/ablehnen'}" method="post" style="display:flex; gap:0.25rem;">
-                        <input type="text" name="antwort" th:placeholder="#{meineAnfragen.begruendungPlaceholder}"
-                               placeholder="Begründung (optional)"
-                               style="font-size:0.85rem; padding:0.4rem 0.5rem; border:1px solid #d1d5db; border-radius:0.375rem;">
-                        <button type="submit" class="btn btn-danger" style="font-size:0.85rem;"
-                                th:text="#{meineAnfragen.ablehnen}">Ablehnen</button>
-                    </form>
+                    <!-- Aktionen bei NEU -->
+                    <div th:if="${a.status.name() == 'NEU'}" style="margin-top:0.75rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                        <form th:action="@{'/anfragen/' + ${a.id} + '/annehmen'}" method="post" style="display:flex; gap:0.25rem;">
+                            <input type="text" name="antwort" th:placeholder="#{meineAnfragen.antwortPlaceholder}"
+                                   placeholder="Antwort (optional)"
+                                   style="font-size:0.85rem; padding:0.4rem 0.5rem; border:1px solid #d1d5db; border-radius:0.375rem;">
+                            <button type="submit" class="btn btn-success" style="font-size:0.85rem;"
+                                    th:text="#{meineAnfragen.annehmen}">Annehmen</button>
+                        </form>
+                        <form th:action="@{'/anfragen/' + ${a.id} + '/ablehnen'}" method="post" style="display:flex; gap:0.25rem;">
+                            <input type="text" name="antwort" th:placeholder="#{meineAnfragen.begruendungPlaceholder}"
+                                   placeholder="Begründung (optional)"
+                                   style="font-size:0.85rem; padding:0.4rem 0.5rem; border:1px solid #d1d5db; border-radius:0.375rem;">
+                            <button type="submit" class="btn btn-danger" style="font-size:0.85rem;"
+                                    th:text="#{meineAnfragen.ablehnen}">Ablehnen</button>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
+
+        <!-- ===================== AUSGEHENDE (nur Vereins-Mitglieder) ===================== -->
+        <section th:if="${kannKontaktanfrageStellen}" style="margin-top:2rem;">
+            <h2 style="font-size:1rem; font-weight:600; color:#374151; margin:0 0 0.75rem;">
+                Meine ausgehenden Anfragen
+            </h2>
+
+            <div th:if="${ausgehendeAnfragen.isEmpty()}" class="empty-state"
+                 style="text-align:center; padding:1.5rem 1rem; background:#f9fafb; border-radius:0.5rem;">
+                <p style="color:#6b7280; margin:0; font-size:0.9rem;">
+                    Noch keine ausgehenden Anfragen. Klicke auf <strong>„+ Sponsor anfragen"</strong>,
+                    um einen Sponsor proaktiv anzuschreiben.
+                </p>
+            </div>
+
+            <div th:unless="${ausgehendeAnfragen.isEmpty()}" style="display:flex; flex-direction:column; gap:0.75rem;">
+                <div th:each="a : ${ausgehendeAnfragen}" class="card"
+                     style="padding:1rem 1.25rem; border-radius:0.75rem; border-left:3px solid var(--dash-violet, #7c3aed);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                        <div style="font-size:0.9rem;">
+                            <span style="color:#6b7280;">An:</span>
+                            <strong th:text="${a.empfaengerOrgName}">Sponsor</strong>
+                            <span th:if="${a.anfragenderOrgName}" style="color:#6b7280; font-size:0.85rem;">
+                                · von <span th:text="${a.anfragenderOrgName}">Verein</span>
+                            </span>
+                        </div>
+                        <span class="badge"
+                              th:classappend="'badge-' + ${a.status.name().toLowerCase()}"
+                              th:text="#{'status.anfrage.' + ${a.status.name()}}">NEU</span>
+                    </div>
+                    <div style="font-size:0.85rem; color:#374151; margin-bottom:0.3rem;">
+                        <strong th:text="${a.anzeigeTitel()}">Betreff</strong>
+                    </div>
+                    <p th:text="${a.nachricht}" style="margin:0.25rem 0; font-size:0.9rem; color:#4b5563;">Nachricht</p>
+                    <div th:if="${a.antwort}" style="background:#f9fafb; padding:0.6rem 0.75rem; border-radius:0.5rem; margin-top:0.5rem; font-size:0.85rem;">
+                        <strong th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
+                        <span th:text="${a.antwort}">Antwort</span>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 </div>
 </body>

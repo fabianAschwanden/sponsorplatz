@@ -42,6 +42,19 @@ public class OrganisationService {
         return repository.findAllByOrderByNameAsc();
     }
 
+    /**
+     * Aktive Sponsor-Orgs (Typ UNTERNEHMEN, Status VERIFIED oder ACTIVE) —
+     * für den Sponsor-Picker im Verein→Sponsor-Anfrage-Flow. PENDING und
+     * SUSPENDED bleiben ausgeblendet, damit nicht-verifizierte Sponsoren
+     * nicht angefragt werden können.
+     */
+    @Transactional(readOnly = true)
+    public List<Organisation> findeAktiveSponsoren() {
+        return repository.findByTypAndStatusInOrderByNameAsc(
+                OrgTyp.UNTERNEHMEN,
+                List.of(OrgStatus.VERIFIED, OrgStatus.ACTIVE));
+    }
+
     @Transactional(readOnly = true)
     public Optional<Organisation> findeNachId(UUID id) {
         return repository.findById(id);

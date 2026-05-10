@@ -79,6 +79,15 @@ public class SponsoringAnfrageService {
         return repository.findByEmpfaengerOrgIdInOrderByCreatedAtDesc(empfaengerOrgIds);
     }
 
+    /** Alle ausgehenden Anfragen über alle Orgs eines Users — für Verein→Sponsor-Übersicht. */
+    @Transactional(readOnly = true)
+    public List<SponsoringAnfrage> findeAlleAusgehenden(Collection<UUID> anfragenderOrgIds) {
+        if (anfragenderOrgIds == null || anfragenderOrgIds.isEmpty()) {
+            return List.of();
+        }
+        return repository.findByAnfragenderOrgIdInOrderByCreatedAtDesc(anfragenderOrgIds);
+    }
+
     public SponsoringAnfrage erstelle(SponsoringPaket paket,
             Organisation anfragenderOrg,
             Organisation empfaengerOrg,
@@ -107,6 +116,47 @@ public class SponsoringAnfrageService {
                 "Neue Sponsoring-Anfrage",
                 "Von " + (kontaktName != null ? kontaktName : "Unbekannt"),
                 "/organisationen/" + empfaengerOrg.getSlug() + "/anfragen");
+
+        return gespeichert;
+    }
+
+    /**
+     * Erstellt eine Kontakt-Anfrage (Verein → Sponsor) ohne Paket-Bindung.
+     * Betreff + Nachricht sind Pflicht; das Paket bleibt {@code null}.
+     */
+    public SponsoringAnfrage erstelleKontaktAnfrage(Organisation anfragenderOrg,
+            Organisation empfaengerOrg,
+            String betreff,
+            String nachricht,
+            String kontaktName,
+            String kontaktEmail) {
+        if (betreff == null || betreff.isBlank()) {
+            throw new IllegalArgumentException("Betreff darf nicht leer sein");
+        }
+        if (nachricht == null || nachricht.isBlank()) {
+            throw new IllegalArgumentException("Nachricht darf nicht leer sein");
+        }
+        if (anfragenderOrg.getId().equals(empfaengerOrg.getId())) {
+            throw new IllegalArgumentException("Eigene Org kann nicht angefragt werden");
+        }
+
+        SponsoringAnfrage anfrage = new SponsoringAnfrage();
+        anfrage.setAnfragenderOrg(anfragenderOrg);
+        anfrage.setEmpfaengerOrg(empfaengerOrg);
+        anfrage.setBetreff(betreff.trim());
+        anfrage.setNachricht(nachricht.trim());
+        anfrage.setKontaktName(kontaktName);
+        anfrage.setKontaktEmail(kontaktEmail);
+        anfrage.setStatus(AnfrageStatus.NEU);
+        SponsoringAnfrage gespeichert = repository.save(anfrage);
+
+        // Benachrichtigung an Empfänger-Org
+        benachrichtigungsService.benachrichtigeUeberNeueAnfrage(gespeichert, kontaktEmail);
+
+        benachrichtigeMitglieder(empfaengerOrg.getId(), BenachrichtigungTyp.NEUE_ANFRAGE,
+                "Neue Kontakt-Anfrage",
+                "Von " + anfragenderOrg.getName() + ": " + betreff.trim(),
+                "/anfragen");
 
         return gespeichert;
     }

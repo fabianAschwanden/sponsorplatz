@@ -5,6 +5,7 @@ import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.organisation.Mitgliedschaft;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.organisation.OrganisationView;
@@ -78,15 +79,107 @@ public class MeineAnfragenController {
 
     @GetMapping("/anfragen")
     public String meineAnfragen(Authentication auth, Model model) {
-        List<UUID> orgIds = ladeOrgIds(auth);
-        List<AnfrageView> anfragen = AnfrageView.von(anfrageService.findeAlleEingehenden(orgIds));
+        List<Mitgliedschaft> mitgliedschaften = ladeMitgliedschaften(auth);
+        List<UUID> alleOrgIds = mitgliedschaften.stream()
+                .map(m -> m.getOrg().getId())
+                .toList();
 
-        long offene = anfrageService.zaehleNeue(orgIds);
+        // Eingehende Anfragen (alle User sehen die für ihre Orgs)
+        List<AnfrageView> eingehend = AnfrageView.von(anfrageService.findeAlleEingehenden(alleOrgIds));
+        long offene = anfrageService.zaehleNeue(alleOrgIds);
+
+        // Vereins-Mitglieder sehen zusätzlich ihre ausgehenden (Verein → Sponsor)
+        // und bekommen den "Neue Kontakt-Anfrage"-Button. Sponsoren-only-User
+        // sehen NUR eingehende — laut Anforderung der UNTERNEHMEN-Sicht.
+        List<UUID> vereinsOrgIds = mitgliedschaften.stream()
+                .filter(m -> EDIT_ROLLEN.contains(m.getRolle()))
+                .map(Mitgliedschaft::getOrg)
+                .filter(o -> o.getTyp() == OrgTyp.VEREIN)
+                .map(Organisation::getId)
+                .toList();
+        boolean istVereinsMitglied = !vereinsOrgIds.isEmpty();
+        List<AnfrageView> ausgehend = istVereinsMitglied
+                ? AnfrageView.von(anfrageService.findeAlleAusgehenden(vereinsOrgIds))
+                : List.of();
 
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "anfragen");
-        model.addAttribute("anfragen", anfragen);
+        model.addAttribute("anfragen", eingehend);
+        model.addAttribute("ausgehendeAnfragen", ausgehend);
         model.addAttribute("anzahlOffene", offene);
+        model.addAttribute("kannKontaktanfrageStellen", istVereinsMitglied);
         return "meine-anfragen";
+    }
+
+    /**
+     * Sponsor-Picker für die Kontakt-Anfrage. Sichtbar nur für User mit
+     * mindestens einer VEREIN-Mitgliedschaft (Edit-Rolle). Zeigt aktive
+     * Sponsor-Orgs (UNTERNEHMEN, VERIFIED/ACTIVE).
+     */
+    @GetMapping("/anfragen/neu-kontakt")
+    public String kontaktFormular(Authentication auth, Model model) {
+        List<OrganisationView> meineVereinsOrgs = ladeVereinsOrgs(auth);
+        if (meineVereinsOrgs.isEmpty()) {
+            throw new AccessDeniedException(
+                    "Kontakt-Anfragen können nur Vereins-Mitglieder mit Edit-Recht stellen.");
+        }
+
+        List<OrganisationView> sponsoren = OrganisationView.von(
+                organisationService.findeAktiveSponsoren());
+        AppUser user = appUserRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
+
+        KontaktAnfrageFormDto form = new KontaktAnfrageFormDto();
+        form.setKontaktName(user.getAnzeigename());
+        form.setKontaktEmail(user.getEmail());
+
+        model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "anfragen");
+        model.addAttribute("kontaktForm", form);
+        model.addAttribute("meineOrgs", meineVereinsOrgs);
+        model.addAttribute("sponsoren", sponsoren);
+        return "anfrage-kontakt-neu";
+    }
+
+    @PostMapping("/anfragen/kontakt-erstellen")
+    public String kontaktErstellen(@Valid @ModelAttribute("kontaktForm") KontaktAnfrageFormDto form,
+                                   BindingResult binding,
+                                   Authentication auth,
+                                   Model model,
+                                   RedirectAttributes redirect) {
+        // Berechtigung: User muss Edit-Recht auf der gewählten anfragenderOrg haben
+        // UND die anfragenderOrg muss VEREIN sein (Sponsoren dürfen nicht selber
+        // Kontakt-Anfragen stellen — siehe Anforderung).
+        Organisation anfragenderOrg = organisationService.findeNachId(form.getAnfragenderOrgId())
+                .orElseThrow(() -> new NotFoundException("Eigene Org nicht gefunden"));
+        if (anfragenderOrg.getTyp() != OrgTyp.VEREIN) {
+            throw new AccessDeniedException("Kontakt-Anfragen sind nur für Vereins-Orgs.");
+        }
+        if (!accessControl.kannOrgEditieren(anfragenderOrg.getId(), auth)) {
+            throw new AccessDeniedException("Keine Berechtigung für die gewählte Org.");
+        }
+
+        Organisation empfaengerOrg = organisationService.findeNachId(form.getEmpfaengerOrgId())
+                .orElseThrow(() -> new NotFoundException("Sponsor nicht gefunden"));
+        if (empfaengerOrg.getTyp() != OrgTyp.UNTERNEHMEN) {
+            binding.reject("empfaengerOrg.typ", "Empfänger muss ein Unternehmen sein.");
+        }
+        if (anfragenderOrg.getId().equals(empfaengerOrg.getId())) {
+            binding.reject("empfaengerOrg.self", "Eigene Org kann nicht angefragt werden.");
+        }
+
+        if (binding.hasErrors()) {
+            model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "anfragen");
+            model.addAttribute("meineOrgs", ladeVereinsOrgs(auth));
+            model.addAttribute("sponsoren", OrganisationView.von(organisationService.findeAktiveSponsoren()));
+            return "anfrage-kontakt-neu";
+        }
+
+        anfrageService.erstelleKontaktAnfrage(anfragenderOrg, empfaengerOrg,
+                form.getBetreff(), form.getNachricht(),
+                form.getKontaktName(), form.getKontaktEmail());
+
+        redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
+                "Kontakt-Anfrage an " + empfaengerOrg.getName() + " wurde gesendet.");
+        return "redirect:/anfragen";
     }
 
     @PostMapping("/anfragen/{anfrageId}/annehmen")
@@ -200,10 +293,34 @@ public class MeineAnfragenController {
         }
     }
 
-    private List<UUID> ladeOrgIds(Authentication auth) {
-        return appUserRepository.findByEmail(auth.getName())
-                .map(user -> mitgliedschaftRepository.findOrgIdsByUserId(user.getId()))
+    /**
+     * Lädt alle Mitgliedschaften des Users (mit Org per JOIN FETCH —
+     * Org-Typ/Name werden ausserhalb der Service-Tx gelesen). Wird vom
+     * meineAnfragen()-Handler benutzt um Org-Typ-abhängig zu trennen
+     * (Verein → ausgehende sehen, Unternehmen → nur eingehende).
+     */
+    private List<Mitgliedschaft> ladeMitgliedschaften(Authentication auth) {
+        AppUser user = appUserRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
+        // Alle Rollen — auch VIEWER, da auch Viewer eingehende Anfragen sehen sollen.
+        return mitgliedschaftRepository.findByUserIdAndRolleInMitOrg(
+                user.getId(), Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR, Rolle.ORG_VIEWER));
+    }
+
+    /**
+     * Lädt die Vereins-Orgs des Users mit Edit-Recht — für den Sponsor-
+     * Picker und die Berechtigungs-Logik.
+     */
+    private List<OrganisationView> ladeVereinsOrgs(Authentication auth) {
+        AppUser user = appUserRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
+        return mitgliedschaftRepository
+                .findByUserIdAndRolleInMitOrg(user.getId(), EDIT_ROLLEN)
+                .stream()
+                .map(Mitgliedschaft::getOrg)
+                .filter(o -> o.getTyp() == OrgTyp.VEREIN)
+                .map(OrganisationView::von)
+                .toList();
     }
 
     /**
