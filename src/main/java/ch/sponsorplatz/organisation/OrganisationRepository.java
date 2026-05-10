@@ -24,11 +24,27 @@ public interface OrganisationRepository extends JpaRepository<Organisation, UUID
 
     boolean existsBySlug(String slug);
 
+    /**
+     * Liste aller Orgs (für /organisationen + Hierarchie-Edit-Dropdown).
+     * JOIN FETCH wegen {@code OrganisationView.von} → siehe findBySlug.
+     */
+    @Query("SELECT o FROM Organisation o LEFT JOIN FETCH o.uebergeordneteOrg ORDER BY o.name ASC")
     List<Organisation> findAllByOrderByNameAsc();
 
     List<Organisation> findByStatusOrderByCreatedAtAsc(OrgStatus status);
 
-    List<Organisation> findByUebergeordneteOrgIdOrderByNameAsc(UUID uebergeordneteOrgId);
+    /**
+     * JOIN FETCH uebergeordneteOrg — verhindert {@code LazyInitializationException}
+     * im Template, weil {@code OrganisationView.von} auf {@code eltern.getName()}
+     * zugreift, nachdem die Service-Transaktion schon zu ist (open-in-view=false).
+     * Diese Query lädt typischerweise die direkten Sub-Orgs einer Eltern-Org —
+     * deren Eltern-Referenz IST die ganze Zeit dieselbe (= die anfragende Org),
+     * aber Hibernate hängt trotzdem einen LAZY-Proxy pro Row dran.
+     */
+    @Query("SELECT o FROM Organisation o LEFT JOIN FETCH o.uebergeordneteOrg "
+            + "WHERE o.uebergeordneteOrg.id = :uebergeordneteOrgId ORDER BY o.name ASC")
+    List<Organisation> findByUebergeordneteOrgIdOrderByNameAsc(
+            @Param("uebergeordneteOrgId") UUID uebergeordneteOrgId);
 
     boolean existsByUebergeordneteOrgId(UUID uebergeordneteOrgId);
 
