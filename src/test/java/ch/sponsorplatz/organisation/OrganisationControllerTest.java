@@ -48,6 +48,9 @@ class OrganisationControllerTest {
     @MockitoBean
     private ch.sponsorplatz.benutzer.AppUserRepository appUserRepository;
 
+    @MockitoBean
+    private MitgliedschaftRepository mitgliedschaftRepository;
+
     /** ORG-08: GET /organisationen → 200 + Liste. */
     @Test
     void listeWirdAngezeigt() throws Exception {

@@ -21,25 +21,69 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/organisationen")
 public class OrganisationController {
 
+    private static final String ROLE_PLATFORM_ADMIN = "ROLE_PLATFORM_ADMIN";
+
     private final OrganisationService service;
     private final AccessControl accessControl;
     private final OrgHierarchieService hierarchieService;
     private final AppUserRepository appUserRepository;
+    private final MitgliedschaftRepository mitgliedschaftRepository;
 
     public OrganisationController(OrganisationService service, AccessControl accessControl,
                                   OrgHierarchieService hierarchieService,
-                                  AppUserRepository appUserRepository) {
+                                  AppUserRepository appUserRepository,
+                                  MitgliedschaftRepository mitgliedschaftRepository) {
         this.service = service;
         this.accessControl = accessControl;
         this.hierarchieService = hierarchieService;
         this.appUserRepository = appUserRepository;
+        this.mitgliedschaftRepository = mitgliedschaftRepository;
     }
 
+    /**
+     * Org-Liste — gefiltert nach Berechtigung.
+     *
+     * <ul>
+     *   <li><b>Anonyme User:</b> alle Orgs (öffentliche Übersicht).</li>
+     *   <li><b>Eingeloggte User:</b> nur Orgs, in denen sie Mitglied sind
+     *       (jede Rolle, also auch ORG_VIEWER zählt).</li>
+     *   <li><b>Plattform-Admins:</b> alle Orgs (für Admin-Zwecke wie
+     *       Verifizierungs-Queue).</li>
+     * </ul>
+     */
     @GetMapping
-    public String liste(Model model) {
+    public String liste(Authentication auth, Model model) {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
-        model.addAttribute("organisationen", OrganisationView.von(service.alle()));
+        model.addAttribute("organisationen", OrganisationView.von(ladeListe(auth)));
         return "organisationen";
+    }
+
+    private java.util.List<Organisation> ladeListe(Authentication auth) {
+        boolean eingeloggt = auth != null && auth.isAuthenticated()
+                && !"anonymousUser".equals(auth.getPrincipal());
+        if (!eingeloggt || istPlattformAdmin(auth)) {
+            return service.alle();
+        }
+        return appUserRepository.findByEmail(auth.getName())
+                .map(user -> mitgliedschaftRepository
+                        .findByUserIdAndRolleInMitOrg(
+                                user.getId(),
+                                java.util.Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR, Rolle.ORG_VIEWER))
+                        .stream()
+                        .map(Mitgliedschaft::getOrg)
+                        // de-duplizieren falls jemand mehrere Mitgliedschaften
+                        // (z.B. via Hierarchie) auf derselben Org hätte
+                        .distinct()
+                        // alphabetisch sortieren wie service.alle()
+                        .sorted(java.util.Comparator.comparing(Organisation::getName, String.CASE_INSENSITIVE_ORDER))
+                        .toList())
+                .orElseGet(java.util.List::of);
+    }
+
+    private boolean istPlattformAdmin(Authentication auth) {
+        return auth.getAuthorities().stream()
+                .map(org.springframework.security.core.GrantedAuthority::getAuthority)
+                .anyMatch(ROLE_PLATFORM_ADMIN::equals);
     }
 
     /**
