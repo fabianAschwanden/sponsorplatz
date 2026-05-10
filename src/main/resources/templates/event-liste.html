@@ -2,7 +2,7 @@
 <html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${orgName + ' — Events'}">Events</title>
+    <title th:text="${orgName} + ' — ' + #{eventListe.titel}">Events</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -11,18 +11,21 @@
 
 <main class="container hauptbereich">
     <div class="seitenkopf">
-        <h1 th:text="${'Events — ' + orgName}">Events</h1>
+        <h1>
+            <span th:text="#{eventListe.titel}">Events</span> —
+            <span th:text="${orgName}">Org</span>
+        </h1>
     </div>
 
-    <p th:if="${#lists.isEmpty(events)}" class="muted">Noch keine Events vorhanden.</p>
+    <p th:if="${#lists.isEmpty(events)}" class="muted" th:text="#{eventListe.empty}">Noch keine Events vorhanden.</p>
 
     <table class="tabelle" th:unless="${#lists.isEmpty(events)}">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Datum</th>
-                <th>Ort</th>
-                <th>Kapazitaet</th>
+                <th th:text="#{eventListe.feld.name}">Name</th>
+                <th th:text="#{eventListe.feld.datum}">Datum</th>
+                <th th:text="#{eventListe.feld.ort}">Ort</th>
+                <th th:text="#{eventListe.feld.kapazitaet}">Kapazität</th>
             </tr>
         </thead>
         <tbody>

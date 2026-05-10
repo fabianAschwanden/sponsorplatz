@@ -4,15 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Engagements — Sponsorplatz</title>
+    <title th:text="#{engagement.titel} + ' — Sponsorplatz'">Engagements — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
 <body class="public-body">
 
-<div th:if="${demoModus}" class="demo-disclaimer">
-    ⚠️ DEMO — Beispieldaten. Keine echten Vereine oder Sponsoren.
+<div th:if="${demoModus}" class="demo-disclaimer" th:text="#{demo.disclaimer}">
+    ⚠️ DEMO — Beispieldaten.
 </div>
 
 <header class="public-topbar">
@@ -22,18 +22,18 @@
             <span>Sponsorplatz</span>
         </a>
         <nav class="public-nav">
-            <a th:href="@{/marktplatz}">Marktplatz</a>
-            <a th:href="@{/fuer-marken}">Für Marken</a>
+            <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a th:href="@{/fuer-marken}" th:text="#{markenLanding.nav.aktiv}">Für Marken</a>
         </nav>
     </div>
 </header>
 
 <main class="container hauptbereich">
     <div class="seitenkopf">
-        <h1>Unsere Engagements</h1>
+        <h1 th:text="#{engagement.titel}">Unsere Engagements</h1>
     </div>
 
-    <p th:if="${#lists.isEmpty(engagements)}" class="muted">
+    <p th:if="${#lists.isEmpty(engagements)}" class="muted" th:text="#{engagement.empty}">
         Noch keine öffentlichen Engagements vorhanden.
     </p>
 
@@ -45,13 +45,17 @@
                 <span class="branche-chip branche-chip-aktiv" th:text="${e.vereinBranche()}">Branche</span>
             </div>
             <p class="engagement-projekt">
-                Projekt: <a th:href="@{/marktplatz/{slug}(slug=${e.projektSlug()})}"
-                            th:text="${e.projektName()}">Projekt</a>
+                <span th:text="#{engagement.projektLabel}">Projekt:</span>
+                <a th:href="@{/marktplatz/{slug}(slug=${e.projektSlug()})}"
+                   th:text="${e.projektName()}">Projekt</a>
             </p>
             <p class="muted" th:if="${e.region() != null}">
                 📍 <span th:text="${e.region()}">Region</span>
             </p>
-            <p class="muted" th:text="${'Paket: ' + e.paketName()}">Paket</p>
+            <p class="muted">
+                <span th:text="#{engagement.paketLabel}">Paket:</span>
+                <span th:text="${e.paketName()}">Paket</span>
+            </p>
         </div>
     </div>
 </main>
@@ -60,8 +64,8 @@
     <div class="container">
         <span>&copy; 2026 Sponsorplatz</span>
         <nav>
-            <a th:href="@{/impressum}">Impressum</a>
-            <a th:href="@{/datenschutz}">Datenschutz</a>
+            <a th:href="@{/impressum}" th:text="#{footer.impressum}">Impressum</a>
+            <a th:href="@{/datenschutz}" th:text="#{footer.datenschutz}">Datenschutz</a>
         </nav>
     </div>
 </footer>

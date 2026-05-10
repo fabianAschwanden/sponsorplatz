@@ -18,14 +18,15 @@
         <header class="app-page-head">
             <div>
                 <p class="app-page-rubrik">
-                    <a th:href="@{/organisationen/{slug}/projekte(slug=${org.slug})}" style="color:inherit;">Projekte</a>
+                    <a th:href="@{/organisationen/{slug}/projekte(slug=${org.slug})}" style="color:inherit;"
+                       th:text="#{projektDetail.zurueck}">Projekte</a>
                 </p>
                 <h1 th:text="${projekt.name}">Projektname</h1>
             </div>
             <form th:if="${projekt.sichtbarkeit.name() == 'ENTWURF'}"
                   th:action="@{/organisationen/{orgSlug}/projekte/{projektSlug}/veroeffentlichen(orgSlug=${org.slug}, projektSlug=${projekt.slug})}"
                   method="post" style="margin:0;">
-                <button type="submit" class="app-btn">Veröffentlichen</button>
+                <button type="submit" class="app-btn" th:text="#{projektDetail.veroeffentlichen}">Veröffentlichen</button>
             </form>
         </header>
 
@@ -33,23 +34,23 @@
 
         <section class="app-card">
             <dl class="app-datenliste">
-                <dt>Sichtbarkeit</dt>
+                <dt th:text="#{projektDetail.feld.sichtbarkeit}">Sichtbarkeit</dt>
                 <dd><span class="app-chip" th:text="${projekt.sichtbarkeit}">ENTWURF</span></dd>
 
-                <dt>Kategorie</dt>
+                <dt th:text="#{projektDetail.feld.kategorie}">Kategorie</dt>
                 <dd th:text="${projekt.kategorie} ?: '—'">—</dd>
 
-                <dt>Ort</dt>
+                <dt th:text="#{projektDetail.feld.ort}">Ort</dt>
                 <dd th:text="${projekt.ort} ?: '—'">—</dd>
 
-                <dt>Startdatum</dt>
+                <dt th:text="#{projektDetail.feld.startDatum}">Startdatum</dt>
                 <dd th:text="${projekt.startDatum != null ? #temporals.format(projekt.startDatum, 'dd.MM.yyyy') : '—'}">—</dd>
 
-                <dt>Enddatum</dt>
+                <dt th:text="#{projektDetail.feld.endDatum}">Enddatum</dt>
                 <dd th:text="${projekt.endDatum != null ? #temporals.format(projekt.endDatum, 'dd.MM.yyyy') : '—'}">—</dd>
 
                 <th:block th:if="${projekt.beschreibung}">
-                    <dt>Beschreibung</dt>
+                    <dt th:text="#{projektDetail.feld.beschreibung}">Beschreibung</dt>
                     <dd th:text="${projekt.beschreibung}"></dd>
                 </th:block>
             </dl>
@@ -57,12 +58,14 @@
 
         <section class="app-card">
             <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0;">Bilder</h2>
+                <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0;"
+                    th:text="#{projektDetail.bilder.titel}">Bilder</h2>
             </header>
 
             <div th:if="${medien != null and !medien.isEmpty()}" style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
                 <div th:each="m : ${medien}" style="position:relative;">
-                    <img th:src="@{/medien/{id}(id=${m.id()})}" alt="Bild" style="width:120px; height:80px; object-fit:cover; border-radius:8px;">
+                    <img th:src="@{/medien/{id}(id=${m.id()})}" th:alt="#{projektDetail.bilder.titel}" alt="Bild"
+                         style="width:120px; height:80px; object-fit:cover; border-radius:8px;">
                     <form th:action="@{/medien/{id}/loeschen(id=${m.id()})}" method="post" style="position:absolute; top:2px; right:2px;">
                         <input type="hidden" name="redirect"
                                th:value="@{/organisationen/{orgSlug}/projekte/{projektSlug}(orgSlug=${org.slug()}, projektSlug=${projekt.slug})}">
@@ -70,33 +73,35 @@
                     </form>
                 </div>
             </div>
-            <p th:if="${medien == null or medien.isEmpty()}" class="app-muted">Noch keine Bilder hochgeladen.</p>
+            <p th:if="${medien == null or medien.isEmpty()}" class="app-muted"
+               th:text="#{projektDetail.bilder.empty}">Noch keine Bilder hochgeladen.</p>
 
             <form th:action="@{/organisationen/{orgSlug}/projekte/{projektSlug}/medien(orgSlug=${org.slug()}, projektSlug=${projekt.slug})}"
                   method="post" enctype="multipart/form-data" class="app-form" style="margin-top:1rem;">
                 <div class="app-form-group">
-                    <label for="datei">Bild hochladen (JPEG, PNG, WebP, max 5 MB)</label>
+                    <label for="datei" th:text="#{projektDetail.bilder.uploadLabel}">Bild hochladen (JPEG, PNG, WebP, max 5 MB)</label>
                     <input type="file" id="datei" name="datei" accept="image/jpeg,image/png,image/webp" required>
                 </div>
                 <select name="assetTyp" class="app-input" style="width:auto; margin-bottom:0.5rem;">
-                    <option value="COVER">Cover-Bild</option>
-                    <option value="GALERIE">Galerie</option>
+                    <option value="COVER" th:text="#{projektDetail.bilder.cover}">Cover-Bild</option>
+                    <option value="GALERIE" th:text="#{projektDetail.bilder.galerie}">Galerie</option>
                 </select>
-                <button type="submit" class="app-btn">Hochladen</button>
+                <button type="submit" class="app-btn" th:text="#{projektDetail.bilder.upload}">Hochladen</button>
             </form>
         </section>
 
         <section class="app-card">
             <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0;">Sponsoring-Pakete</h2>
+                <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0;"
+                    th:text="#{projektDetail.pakete.titel}">Sponsoring-Pakete</h2>
             </header>
 
             <table th:if="${!pakete.isEmpty()}" class="app-table">
                 <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Preis (CHF)</th>
-                    <th>Aktiv</th>
+                    <th th:text="#{projektDetail.pakete.feld.name}">Name</th>
+                    <th th:text="#{projektDetail.pakete.feld.preis}">Preis (CHF)</th>
+                    <th th:text="#{projektDetail.pakete.feld.aktiv}">Aktiv</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -105,32 +110,35 @@
                     <td th:text="${p.preisChf != null ? p.preisChf : '—'}">5000</td>
                     <td>
                         <span class="app-status" th:classappend="${p.aktiv} ? 'status-active' : 'status-pending'"
-                              th:text="${p.aktiv} ? 'Aktiv' : 'Inaktiv'">Aktiv</span>
+                              th:text="${p.aktiv} ? #{projektDetail.pakete.statusAktiv} : #{projektDetail.pakete.statusInaktiv}">Aktiv</span>
                     </td>
                 </tr>
                 </tbody>
             </table>
 
-            <p th:if="${pakete.isEmpty()}" class="app-muted" style="margin:0 0 1.5rem;">Noch keine Pakete definiert.</p>
+            <p th:if="${pakete.isEmpty()}" class="app-muted" style="margin:0 0 1.5rem;"
+               th:text="#{projektDetail.pakete.empty}">Noch keine Pakete definiert.</p>
 
-            <h3 style="font-family:var(--dash-font-head); font-size:1rem; margin:1.5rem 0 1rem;">Neues Paket</h3>
+            <h3 style="font-family:var(--dash-font-head); font-size:1rem; margin:1.5rem 0 1rem;"
+                th:text="#{projektDetail.pakete.neu}">Neues Paket</h3>
             <form th:action="@{/organisationen/{orgSlug}/projekte/{projektSlug}/pakete/speichern(orgSlug=${org.slug}, projektSlug=${projekt.slug})}"
                   method="post" th:object="${paketForm}" class="app-form">
                 <div class="app-form-group">
-                    <label for="paketName">Name *</label>
+                    <label for="paketName" th:text="#{projektDetail.pakete.feld.namePlatz}">Name *</label>
                     <input type="text" id="paketName" th:field="*{name}" required>
                     <p class="app-meldung fehler" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
                 </div>
                 <div class="app-form-group">
-                    <label for="paketBeschreibung">Beschreibung</label>
+                    <label for="paketBeschreibung" th:text="#{projektDetail.pakete.feld.beschreibung}">Beschreibung</label>
                     <textarea id="paketBeschreibung" th:field="*{beschreibung}" rows="3"></textarea>
                 </div>
                 <div class="app-form-group">
-                    <label for="paketPreis">Preis (CHF)</label>
+                    <label for="paketPreis" th:text="#{projektDetail.pakete.feld.preis}">Preis (CHF)</label>
                     <input type="number" id="paketPreis" th:field="*{preisChf}" step="0.01" min="0">
                 </div>
                 <div class="app-form-actions">
-                    <button type="submit" class="app-btn">Paket hinzufügen</button>
+                    <button type="submit" class="app-btn"
+                            th:text="#{projektDetail.pakete.btnHinzufuegen}">Paket hinzufügen</button>
                 </div>
             </form>
         </section>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Mail-Verifizierung — Sponsorplatz</title>
+    <title th:text="#{verifizierung.title} + ' — Sponsorplatz'">E-Mail-Verifizierung — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -22,18 +22,20 @@
 <main class="public-main">
     <section class="public-auth-card">
         <div th:if="${erfolg}">
-            <h1 style="color: var(--dash-success);">✓ E-Mail bestätigt</h1>
-            <p class="app-muted" style="text-align:center;">Ihre E-Mail-Adresse wurde erfolgreich verifiziert.</p>
-            <p class="app-muted" style="text-align:center;">Sie können sich jetzt anmelden.</p>
+            <h1 style="color: var(--dash-success);" th:text="#{verifizierung.erfolgTitel}">✓ E-Mail bestätigt</h1>
+            <p class="app-muted" style="text-align:center;" th:text="#{verifizierung.erfolgText1}">Ihre E-Mail-Adresse wurde erfolgreich verifiziert.</p>
+            <p class="app-muted" style="text-align:center;" th:text="#{verifizierung.erfolgText2}">Sie können sich jetzt anmelden.</p>
             <div class="app-form-actions" style="margin-top: 1.5rem;">
-                <a th:href="@{/login}" class="app-btn" style="width: 100%; justify-content: center;">Zur Anmeldung</a>
+                <a th:href="@{/login}" class="app-btn" style="width: 100%; justify-content: center;"
+                   th:text="#{verifizierung.zurAnmeldung}">Zur Anmeldung</a>
             </div>
         </div>
         <div th:unless="${erfolg}">
-            <h1 style="color: var(--dash-coral);">Verifizierung fehlgeschlagen</h1>
+            <h1 style="color: var(--dash-coral);" th:text="#{verifizierung.fehlerTitel}">Verifizierung fehlgeschlagen</h1>
             <p class="app-meldung fehler" th:text="${fehlermeldung}">Fehler</p>
             <div class="app-form-actions" style="margin-top: 1.5rem;">
-                <a th:href="@{/login}" class="app-btn app-btn-secondary" style="width: 100%; justify-content: center;">Zur Anmeldung</a>
+                <a th:href="@{/login}" class="app-btn app-btn-secondary" style="width: 100%; justify-content: center;"
+                   th:text="#{verifizierung.zurAnmeldung}">Zur Anmeldung</a>
             </div>
         </div>
     </section>

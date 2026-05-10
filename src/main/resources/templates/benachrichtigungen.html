@@ -2,7 +2,7 @@
 <html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Benachrichtigungen — Sponsorplatz</title>
+    <title th:text="#{benachrichtigungen.title} + ' — Sponsorplatz'">Benachrichtigungen — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -36,20 +36,16 @@
     <main class="app-main">
         <header class="app-page-head">
             <div>
-                <p class="app-page-rubrik">Mein Konto</p>
-                <h1>Benachrichtigungen</h1>
-                <p class="app-muted">
-                    Letzte 20 In-App-Nachrichten. Beim Öffnen werden alle automatisch
-                    als gelesen markiert.
-                </p>
+                <p class="app-page-rubrik" th:text="#{benachrichtigungen.rubrik}">Mein Konto</p>
+                <h1 th:text="#{benachrichtigungen.title}">Benachrichtigungen</h1>
+                <p class="app-muted" th:text="#{benachrichtigungen.intro}">Letzte 20 In-App-Nachrichten…</p>
             </div>
         </header>
 
         <section class="app-card" style="padding:0;">
             <p class="app-muted" style="padding:2rem; text-align:center;"
-               th:if="${#lists.isEmpty(benachrichtigungen)}">
-                Keine Benachrichtigungen vorhanden.
-            </p>
+               th:if="${#lists.isEmpty(benachrichtigungen)}"
+               th:text="#{benachrichtigungen.empty}">Keine Benachrichtigungen vorhanden.</p>
 
             <div th:each="b : ${benachrichtigungen}" class="b-item">
                 <div th:class="${'b-icon b-icon-' + b.typ.name()}">

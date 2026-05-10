@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neues Passwort — Sponsorplatz</title>
+    <title th:text="#{passwortReset.titel} + ' — Sponsorplatz'">Neues Passwort — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -17,36 +17,37 @@
             <span>Sponsorplatz</span>
         </a>
         <nav class="public-nav">
-            <a th:href="@{/marktplatz}">Marktplatz</a>
-            <a th:href="@{/login}">Anmelden</a>
+            <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
         </nav>
     </div>
 </header>
 
 <main class="public-main">
     <section class="public-auth-card">
-        <h1>Neues Passwort setzen</h1>
+        <h1 th:text="#{passwortReset.titel}">Neues Passwort setzen</h1>
 
         <div th:if="${fehlermeldung}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
 
         <form th:action="@{/passwort-reset}" method="post" class="app-form">
             <input type="hidden" name="token" th:value="${token}">
             <div class="app-form-group">
-                <label for="neuesPasswort">Neues Passwort</label>
-                <span class="hint">Mindestens 8 Zeichen</span>
+                <label for="neuesPasswort" th:text="#{passwortReset.neu}">Neues Passwort</label>
+                <span class="hint" th:text="#{register.passwortHinweis}">Mindestens 8 Zeichen</span>
                 <input type="password" id="neuesPasswort" name="neuesPasswort" required minlength="8" autofocus>
             </div>
             <div class="app-form-group">
-                <label for="passwortBestaetigung">Passwort bestätigen</label>
+                <label for="passwortBestaetigung" th:text="#{passwortReset.bestaetigung}">Passwort bestätigen</label>
                 <input type="password" id="passwortBestaetigung" name="passwortBestaetigung" required minlength="8">
             </div>
             <div class="app-form-actions">
-                <button type="submit" class="app-btn" style="width: 100%; justify-content: center;">Passwort setzen</button>
+                <button type="submit" class="app-btn" style="width: 100%; justify-content: center;"
+                        th:text="#{passwortReset.btn}">Passwort setzen</button>
             </div>
         </form>
 
         <p class="public-auth-foot">
-            <a th:href="@{/login}">Zurück zur Anmeldung</a>
+            <a th:href="@{/login}" th:text="#{passwortVergessen.zurueck}">Zurück zur Anmeldung</a>
         </p>
     </section>
 </main>

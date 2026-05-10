@@ -4,7 +4,7 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Neues Projekt — Sponsorplatz</title>
+    <title th:text="#{projektForm.titel} + ' — Sponsorplatz'">Neues Projekt — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -18,9 +18,10 @@
         <header class="app-page-head">
             <div>
                 <p class="app-page-rubrik">
-                    <a th:href="@{/organisationen/{slug}/projekte(slug=${org.slug})}" style="color:inherit;">Projekte</a>
+                    <a th:href="@{/organisationen/{slug}/projekte(slug=${org.slug})}" style="color:inherit;"
+                       th:text="#{projektListe.titel}">Projekte</a>
                 </p>
-                <h1>Neues Projekt</h1>
+                <h1 th:text="#{projektForm.titel}">Neues Projekt</h1>
             </div>
         </header>
 
@@ -28,33 +29,36 @@
             <form th:action="@{/organisationen/{slug}/projekte/speichern(slug=${org.slug})}" method="post"
                   th:object="${projektForm}" class="app-form">
                 <div class="app-form-group">
-                    <label for="name">Name *</label>
+                    <label for="name" th:text="#{projektForm.feld.name}">Name *</label>
                     <input type="text" id="name" th:field="*{name}" required>
                     <p class="app-meldung fehler" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
                 </div>
                 <div class="app-form-group">
-                    <label for="beschreibung">Beschreibung</label>
+                    <label for="beschreibung" th:text="#{projektForm.feld.beschreibung}">Beschreibung</label>
                     <textarea id="beschreibung" th:field="*{beschreibung}" rows="5"></textarea>
                 </div>
                 <div class="app-form-group">
-                    <label for="kategorie">Kategorie</label>
-                    <input type="text" id="kategorie" th:field="*{kategorie}" placeholder="z. B. SPORT, KULTUR">
+                    <label for="kategorie" th:text="#{projektForm.feld.kategorie}">Kategorie</label>
+                    <input type="text" id="kategorie" th:field="*{kategorie}"
+                           th:placeholder="#{projektForm.feld.kategoriePlaceholder}" placeholder="z. B. SPORT, KULTUR">
                 </div>
                 <div class="app-form-group">
-                    <label for="ort">Ort</label>
-                    <input type="text" id="ort" th:field="*{ort}" placeholder="z. B. Zürich">
+                    <label for="ort" th:text="#{projektForm.feld.ort}">Ort</label>
+                    <input type="text" id="ort" th:field="*{ort}"
+                           th:placeholder="#{projektForm.feld.ortPlaceholder}" placeholder="z. B. Zürich">
                 </div>
                 <div class="app-form-group">
-                    <label for="startDatum">Startdatum</label>
+                    <label for="startDatum" th:text="#{projektForm.feld.startDatum}">Startdatum</label>
                     <input type="date" id="startDatum" th:field="*{startDatum}">
                 </div>
                 <div class="app-form-group">
-                    <label for="endDatum">Enddatum</label>
+                    <label for="endDatum" th:text="#{projektForm.feld.endDatum}">Enddatum</label>
                     <input type="date" id="endDatum" th:field="*{endDatum}">
                 </div>
                 <div class="app-form-actions">
-                    <button type="submit" class="app-btn">Projekt erstellen</button>
-                    <a th:href="@{/organisationen/{slug}/projekte(slug=${org.slug})}" class="app-btn app-btn-secondary">Abbrechen</a>
+                    <button type="submit" class="app-btn" th:text="#{projektForm.btn}">Projekt erstellen</button>
+                    <a th:href="@{/organisationen/{slug}/projekte(slug=${org.slug})}" class="app-btn app-btn-secondary"
+                       th:text="#{allgemein.abbrechen}">Abbrechen</a>
                 </div>
             </form>
         </section>

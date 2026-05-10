@@ -4,7 +4,7 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${org.name + ' — Projekte — Sponsorplatz'}">Projekte</title>
+    <title th:text="${org.name} + ' — ' + #{projektListe.titel} + ' — Sponsorplatz'">Projekte</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -18,13 +18,14 @@
         <header class="app-page-head">
             <div>
                 <p class="app-page-rubrik">
-                    <a th:href="@{/organisationen}" style="color:inherit;">Organisationen</a>
+                    <a th:href="@{/organisationen}" style="color:inherit;" th:text="#{orgListe.titel}">Organisationen</a>
                     /
                     <a th:href="@{/organisationen/{slug}(slug=${org.slug})}" style="color:inherit;" th:text="${org.name}">Org</a>
                 </p>
-                <h1>Projekte</h1>
+                <h1 th:text="#{projektListe.titel}">Projekte</h1>
             </div>
-            <a th:href="@{/organisationen/{slug}/projekte/neu(slug=${org.slug})}" class="app-btn">+ Neues Projekt</a>
+            <a th:href="@{/organisationen/{slug}/projekte/neu(slug=${org.slug})}" class="app-btn"
+               th:text="#{projektListe.neu}">+ Neues Projekt</a>
         </header>
 
         <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
@@ -32,10 +33,10 @@
         <table th:if="${!projekte.isEmpty()}" class="app-table">
             <thead>
             <tr>
-                <th>Name</th>
-                <th>Sichtbarkeit</th>
-                <th>Kategorie</th>
-                <th>Ort</th>
+                <th th:text="#{projektListe.feld.name}">Name</th>
+                <th th:text="#{projektListe.feld.sichtbarkeit}">Sichtbarkeit</th>
+                <th th:text="#{projektListe.feld.kategorie}">Kategorie</th>
+                <th th:text="#{projektListe.feld.ort}">Ort</th>
             </tr>
             </thead>
             <tbody>
@@ -51,8 +52,8 @@
         </table>
 
         <div th:if="${projekte.isEmpty()}" class="app-empty">
-            <strong>Noch keine Projekte.</strong>
-            Lege das erste Sponsoring-Projekt für diese Organisation an.
+            <strong th:text="#{projektListe.empty.titel}">Noch keine Projekte.</strong>
+            <span th:text="#{projektListe.empty.text}">Lege das erste Sponsoring-Projekt für diese Organisation an.</span>
         </div>
     </main>
 </div>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Passwort vergessen — Sponsorplatz</title>
+    <title th:text="#{passwortVergessen.titel} + ' — Sponsorplatz'">Passwort vergessen — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -17,45 +17,41 @@
             <span>Sponsorplatz</span>
         </a>
         <nav class="public-nav">
-            <a th:href="@{/marktplatz}">Marktplatz</a>
-            <a th:href="@{/login}">Anmelden</a>
+            <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
         </nav>
     </div>
 </header>
 
 <main class="public-main">
     <section class="public-auth-card">
-        <h1>Passwort vergessen</h1>
+        <h1 th:text="#{passwortVergessen.titel}">Passwort vergessen</h1>
 
         <div th:if="${fehlermeldung}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
 
         <div th:if="${gesendet}">
-            <div class="app-meldung erfolg">
-                Falls ein Konto mit dieser E-Mail-Adresse existiert, haben wir Ihnen einen Link zum Zurücksetzen gesendet.
-                Bitte prüfen Sie Ihren Posteingang.
-            </div>
+            <div class="app-meldung erfolg" th:text="#{passwortVergessen.gesendet}">Falls ein Konto mit dieser E-Mail-Adresse existiert…</div>
             <p class="public-auth-foot">
-                <a th:href="@{/login}">Zurück zur Anmeldung</a>
+                <a th:href="@{/login}" th:text="#{passwortVergessen.zurueck}">Zurück zur Anmeldung</a>
             </p>
         </div>
 
         <div th:unless="${gesendet}">
-            <p style="margin-bottom:1.5rem; color:var(--dash-muted, #6b7280);">
-                Geben Sie Ihre E-Mail-Adresse ein. Wir senden Ihnen einen Link zum Zurücksetzen des Passworts.
-            </p>
+            <p style="margin-bottom:1.5rem; color:var(--dash-muted, #6b7280);" th:text="#{passwortVergessen.intro}">Geben Sie Ihre E-Mail-Adresse ein…</p>
 
             <form th:action="@{/passwort-vergessen}" method="post" class="app-form">
                 <div class="app-form-group">
-                    <label for="email">E-Mail</label>
+                    <label for="email" th:text="#{login.email}">E-Mail</label>
                     <input type="email" id="email" name="email" required autofocus>
                 </div>
                 <div class="app-form-actions">
-                    <button type="submit" class="app-btn" style="width: 100%; justify-content: center;">Link senden</button>
+                    <button type="submit" class="app-btn" style="width: 100%; justify-content: center;"
+                            th:text="#{passwortVergessen.btn}">Link senden</button>
                 </div>
             </form>
 
             <p class="public-auth-foot">
-                <a th:href="@{/login}">Zurück zur Anmeldung</a>
+                <a th:href="@{/login}" th:text="#{passwortVergessen.zurueck}">Zurück zur Anmeldung</a>
             </p>
         </div>
     </section>

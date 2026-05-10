@@ -14,9 +14,10 @@
         <div class="container">
             <a class="logo" th:href="@{/}">Sponsorplatz</a>
             <nav class="navigation">
-                <a th:href="@{/}" th:classappend="${aktiveSeite == 'home'} ? 'aktiv'">Start</a>
-                <a th:href="@{/marktplatz}" th:classappend="${aktiveSeite == 'marktplatz'} ? 'aktiv'">Marktplatz</a>
-                <a th:href="@{/login}" class="cta">Anmelden</a>
+                <a th:href="@{/}" th:classappend="${aktiveSeite == 'home'} ? 'aktiv'" th:text="#{navigation.start}">Start</a>
+                <a th:href="@{/marktplatz}" th:classappend="${aktiveSeite == 'marktplatz'} ? 'aktiv'"
+                   th:text="#{navigation.marktplatz}">Marktplatz</a>
+                <a th:href="@{/login}" class="cta" th:text="#{navigation.anmelden}">Anmelden</a>
             </nav>
         </div>
     </header>
@@ -31,9 +32,9 @@
         <div class="container">
             <p>&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz · Schweiz</p>
             <nav>
-                <a th:href="@{/impressum}">Impressum</a>
-                <a th:href="@{/datenschutz}">Datenschutz</a>
-                <a th:href="@{/agb}">AGB</a>
+                <a th:href="@{/impressum}" th:text="#{footer.impressum}">Impressum</a>
+                <a th:href="@{/datenschutz}" th:text="#{footer.datenschutz}">Datenschutz</a>
+                <a th:href="@{/agb}" th:text="#{layout.agb}">AGB</a>
             </nav>
         </div>
     </footer>

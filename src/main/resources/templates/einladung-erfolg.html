@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Einladung angenommen — Sponsorplatz</title>
+    <title th:text="#{einladung.erfolg.titel} + ' — Sponsorplatz'">Einladung angenommen — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -21,13 +21,12 @@
 
 <main class="public-main">
     <section class="public-auth-card">
-        <h1 style="color: var(--dash-success);">✓ Einladung angenommen</h1>
+        <h1 style="color: var(--dash-success);" th:text="#{einladung.erfolg.titel}">✓ Einladung angenommen</h1>
         <p class="app-muted" style="text-align:center;"
-           th:text="${erfolgsMeldung} ?: 'Sie sind jetzt Mitglied der Organisation.'">
-            Sie sind jetzt Mitglied.
-        </p>
+           th:text="${erfolgsMeldung} ?: #{einladung.erfolg.fallback}">Sie sind jetzt Mitglied.</p>
         <div class="app-form-actions" style="margin-top: 1.5rem;">
-            <a th:href="@{/dashboard}" class="app-btn" style="width: 100%; justify-content: center;">Zum Dashboard</a>
+            <a th:href="@{/dashboard}" class="app-btn" style="width: 100%; justify-content: center;"
+               th:text="#{einladung.erfolg.zumDashboard}">Zum Dashboard</a>
         </div>
     </section>
 </main>
