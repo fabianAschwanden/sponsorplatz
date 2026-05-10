@@ -20,7 +20,7 @@
 <header>
     <nav>
         <a th:href="@{/}">Sponsorplatz</a> &gt;
-        <a th:href="@{/marktplatz}">Marktplatz</a> &gt;
+        <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a> &gt;
         <span th:text="${org.name()}">Verein</span>
     </nav>
 </header>
@@ -37,30 +37,36 @@
     </div>
 
     <dl>
-        <dt>Typ</dt>
+        <dt th:text="#{vereinProfil.feld.typ}">Typ</dt>
         <dd th:text="${org.typ()}">VEREIN</dd>
         <!-- Branche bewusst nicht doppelt: prominent oben im Hero-Chip + Subhead -->
-        <dt>Rechtsform</dt>
+        <dt th:text="#{vereinProfil.feld.rechtsform}">Rechtsform</dt>
         <dd th:text="${org.rechtsform() ?: '-'}">-</dd>
-        <dt th:if="${org.websiteUrl()}">Website</dt>
+        <dt th:if="${org.websiteUrl()}" th:text="#{vereinProfil.feld.website}">Website</dt>
         <dd th:if="${org.websiteUrl()}"><a th:href="${org.websiteUrl()}" th:text="${org.websiteUrl()}" target="_blank">URL</a></dd>
     </dl>
 
     <div th:if="${org.beschreibung()}">
-        <h2>Über uns</h2>
+        <h2 th:text="#{vereinProfil.ueberUns}">Über uns</h2>
         <p th:text="${org.beschreibung()}">Beschreibung</p>
     </div>
 
     <section th:if="${!projekte.isEmpty()}">
-        <h2>Aktuelle Projekte</h2>
+        <h2 th:text="#{vereinProfil.aktuelleProjekte}">Aktuelle Projekte</h2>
         <div th:each="p : ${projekte}" class="card">
             <h3><a th:href="@{'/marktplatz/' + ${p.slug}}" th:text="${p.name}">Projekt</a></h3>
-            <p th:if="${p.kategorie}" th:text="'Kategorie: ' + ${p.kategorie}"></p>
-            <p th:if="${p.ort}" th:text="'Ort: ' + ${p.ort}"></p>
+            <p th:if="${p.kategorie}">
+                <span th:text="#{vereinProfil.feld.kategoriePrefix}">Kategorie:</span>
+                <span th:text="${p.kategorie}"></span>
+            </p>
+            <p th:if="${p.ort}">
+                <span th:text="#{vereinProfil.feld.ortPrefix}">Ort:</span>
+                <span th:text="${p.ort}"></span>
+            </p>
         </div>
     </section>
 
-    <p th:if="${projekte.isEmpty()}">Dieser Verein hat aktuell keine veröffentlichten Projekte.</p>
+    <p th:if="${projekte.isEmpty()}" th:text="#{vereinProfil.keineProjekte}">Dieser Verein hat aktuell keine veröffentlichten Projekte.</p>
 </main>
 </body>
 </html>

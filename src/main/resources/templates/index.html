@@ -5,8 +5,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sponsorplatz — Wo Vereine und die CSS zueinander finden</title>
-    <meta name="description" content="Sponsorplatz ist die kuratierte Plattform für Schweizer Sport- und Health-Vereine und das CSS Sponsoring-Team. Bewegung, Reha, Mental Health, Ernährung — alles, was die Schweiz gesund hält.">
+    <title th:text="#{index.title}">Sponsorplatz — Wo Vereine und die CSS zueinander finden</title>
+    <meta name="description" th:content="#{index.metaDescription}" content="Sponsorplatz ist die kuratierte Plattform für Schweizer Sport- und Health-Vereine und das CSS Sponsoring-Team.">
     <meta name="keywords" content="CSS Sponsoring, Sportverein Sponsoring, Gesundheits-Sponsoring Schweiz, Mental Health, Bewegung, Reha, Ernährung">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
@@ -14,7 +14,7 @@
 </head>
 <body class="public-body">
 
-<div th:if="${demoModus}" class="demo-disclaimer">
+<div th:if="${demoModus}" class="demo-disclaimer" th:text="#{demo.disclaimer}">
     ⚠️ DEMO — Beispieldaten. Keine echten Vereine oder Sponsoren.
 </div>
 
@@ -37,64 +37,60 @@
 
 <main class="public-main">
     <section class="public-hero">
-        <p class="public-hero-rubrik">CSS Sponsoring-Hub · Sport und Gesundheit · Schweiz</p>
-        <h1>Wo Vereine und die CSS<br>zueinander finden.</h1>
-        <p class="public-hero-claim">
-            Eine Plattform. Vier Akteure. Eine Mission. Die kuratierte Anlaufstelle für
-            Schweizer Sport- und Health-Vereine und das CSS Sponsoring-Team — strikt fokussiert,
-            breit gefasst.
+        <p class="public-hero-rubrik" th:text="#{index.hero.rubrik}">CSS Sponsoring-Hub · Sport und Gesundheit · Schweiz</p>
+        <h1>
+            <span th:text="#{index.hero.h1.line1}">Wo Vereine und die CSS</span><br>
+            <span th:text="#{index.hero.h1.line2}">zueinander finden.</span>
+        </h1>
+        <p class="public-hero-claim" th:text="#{index.hero.claim}">
+            Eine Plattform. Vier Akteure. Eine Mission. ...
         </p>
 
         <div class="public-hero-cta">
-            <a th:href="@{/marktplatz}" class="app-btn">Marktplatz entdecken</a>
-            <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn app-btn-secondary">Verein registrieren</a>
+            <a th:href="@{/marktplatz}" class="app-btn" th:text="#{index.hero.cta.marktplatz}">Marktplatz entdecken</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}"
+               class="app-btn app-btn-secondary" th:text="#{index.hero.cta.registrieren}">Verein registrieren</a>
         </div>
 
         <!-- Vier Akteure aus dem Zielbild — 2×2-Layout über die bestehende Subclaim-Grid -->
         <div class="public-hero-subclaims">
             <div class="public-hero-subclaim">
-                <strong>Verein.</strong>
-                Schweizer Sport- und Health-Vereine bewerben sich mit strukturiertem
-                Profil und werden von der CSS gefunden — strikt fokussiert auf Sport
-                und Gesundheit.
+                <strong th:text="#{index.hero.akteur.verein.title}">Verein.</strong>
+                <span th:text="#{index.hero.akteur.verein.text}">…</span>
             </div>
             <div class="public-hero-subclaim">
-                <strong>CSS.</strong>
-                Das zentrale Sponsoring-Team kuratiert die Plattform, prüft Anfragen
-                einheitlich und macht das CSS-Engagement sichtbar.
+                <strong th:text="#{index.hero.akteur.css.title}">CSS.</strong>
+                <span th:text="#{index.hero.akteur.css.text}">…</span>
             </div>
             <div class="public-hero-subclaim">
-                <strong>Agentur.</strong>
-                Regionale CSS-Vertretungen arbeiten im gemeinsamen Workflow mit dem
-                Zentrum — keine Doppelspuren, keine Datenverluste.
+                <strong th:text="#{index.hero.akteur.agentur.title}">Agentur.</strong>
+                <span th:text="#{index.hero.akteur.agentur.text}">…</span>
             </div>
             <div class="public-hero-subclaim">
-                <strong>Versicherte.</strong>
-                CSS-Versicherte sehen, welche Vereine in ihrer Region durch die CSS
-                unterstützt werden — Engagement landet, statt zu verpuffen.
+                <strong th:text="#{index.hero.akteur.versicherte.title}">Versicherte.</strong>
+                <span th:text="#{index.hero.akteur.versicherte.text}">…</span>
             </div>
         </div>
 
         <div class="public-hero-fokus">
-            <span class="public-hero-fokus-label">Unser Fokus:</span>
-            <span class="public-hero-fokus-tag">Sport</span>
-            <span class="public-hero-fokus-tag">Bewegung</span>
-            <span class="public-hero-fokus-tag">Reha</span>
-            <span class="public-hero-fokus-tag">Mental Health</span>
-            <span class="public-hero-fokus-tag">Ernährung</span>
-            <span class="public-hero-fokus-tag">Prävention</span>
-            <span class="public-hero-fokus-tag">Selbsthilfe</span>
+            <span class="public-hero-fokus-label" th:text="#{index.hero.fokus.label}">Unser Fokus:</span>
+            <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.sport}">Sport</span>
+            <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.bewegung}">Bewegung</span>
+            <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.reha}">Reha</span>
+            <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.mental}">Mental Health</span>
+            <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.ernaehrung}">Ernährung</span>
+            <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.praevention}">Prävention</span>
+            <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.selbsthilfe}">Selbsthilfe</span>
         </div>
     </section>
 
     <section class="app-card" style="max-width: 720px; margin: 2rem auto;">
-        <p style="margin: 0 0 0.5rem;"><strong>Phase 0 — In Aufbau.</strong></p>
-        <p style="margin: 0 0 0.5rem;">Der CSS Sponsoring-Hub ist die kuratierte Plattform für
-            Sport- und Health-Sponsoring der CSS. Wir nehmen ausschliesslich Vereine auf,
-            deren Mission klar im Sport- oder Gesundheitsbereich verortet ist — Bewegung, Reha,
-            Mental Health, Ernährung, Selbsthilfe. So wird das CSS-Sponsoring zum verlässlichen
-            Treffpunkt für Vereine, das Sponsoring-Team, die regionalen Agenturen und die Versicherten.</p>
-        <p style="margin: 0;">Du willst Pilot-Verein werden? <a href="mailto:hallo@sponsorplatz.ch" style="color: var(--dash-violet-dark); font-weight: 600;">hallo@sponsorplatz.ch</a></p>
+        <p style="margin: 0 0 0.5rem;"><strong th:text="#{index.aufbau.title}">Phase 0 — In Aufbau.</strong></p>
+        <p style="margin: 0 0 0.5rem;" th:text="#{index.aufbau.text}">…</p>
+        <p style="margin: 0;">
+            <span th:text="#{index.aufbau.kontakt}">Du willst Pilot-Verein werden?</span>
+            <a href="mailto:hallo@sponsorplatz.ch" style="color: var(--dash-violet-dark); font-weight: 600;">hallo@sponsorplatz.ch</a>
+        </p>
     </section>
 </main>
 

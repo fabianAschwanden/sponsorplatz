@@ -5,15 +5,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marktplatz — Sponsorplatz</title>
-    <meta name="description" content="Sponsoring-Projekte von Schweizer Vereinen entdecken.">
+    <title th:text="#{navigation.marktplatz} + ' — Sponsorplatz'">Marktplatz — Sponsorplatz</title>
+    <meta name="description" th:content="#{marktplatz.metaDescription}" content="Sponsoring-Projekte von Schweizer Vereinen entdecken.">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
 <body class="public-body">
 
-<div th:if="${demoModus}" class="demo-disclaimer">
+<div th:if="${demoModus}" class="demo-disclaimer" th:text="#{demo.disclaimer}">
     ⚠️ DEMO — Beispieldaten. Keine echten Vereine oder Sponsoren.
 </div>
 
@@ -24,31 +24,38 @@
             <span>Sponsorplatz</span>
         </a>
         <nav class="public-nav">
-            <a th:href="@{/marktplatz}" class="aktiv">Marktplatz</a>
-            <a sec:authorize="!isAuthenticated()" th:href="@{/login}">Anmelden</a>
-            <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn">Registrieren</a>
-            <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}" class="app-btn">Dashboard</a>
+            <a th:href="@{/marktplatz}" class="aktiv" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn"
+               th:text="#{navigation.registrieren}">Registrieren</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}" class="app-btn"
+               th:text="#{navigation.dashboard}">Dashboard</a>
         </nav>
     </div>
 </header>
 
 <main class="public-main">
     <header style="margin-bottom: 1.5rem;">
-        <p class="public-hero-rubrik" style="text-align:left;">Sponsoring-Marktplatz</p>
-        <h1 style="font-family:var(--dash-font-head); font-size:2rem; margin:0.25rem 0 0.5rem;">Aktuelle Projekte entdecken</h1>
-        <p class="app-muted">Schweizer Vereine suchen Sponsoren für ihre Projekte — von Sport bis Kultur.</p>
+        <p class="public-hero-rubrik" style="text-align:left;" th:text="#{marktplatz.rubrik}">Sponsoring-Marktplatz</p>
+        <h1 style="font-family:var(--dash-font-head); font-size:2rem; margin:0.25rem 0 0.5rem;"
+            th:text="#{marktplatz.h1}">Aktuelle Projekte entdecken</h1>
+        <p class="app-muted" th:text="#{marktplatz.subtitel}">Schweizer Vereine suchen Sponsoren…</p>
     </header>
 
     <form th:action="@{/marktplatz}" method="get" class="public-filter">
-        <input type="text" name="q" th:value="${suchbegriff}" placeholder="Suche (z. B. Fussball, Zürich, Kultur…)" style="flex:2;">
-        <input type="text" name="kategorie" th:value="${filterKategorie}" placeholder="Kategorie">
-        <input type="text" name="ort" th:value="${filterOrt}" placeholder="Ort">
-        <button type="submit" class="app-btn">Suchen</button>
-        <a th:href="@{/marktplatz}" class="app-btn app-btn-secondary">Zurücksetzen</a>
+        <input type="text" name="q" th:value="${suchbegriff}" th:placeholder="#{marktplatz.suche.placeholder}"
+               placeholder="Suche…" style="flex:2;">
+        <input type="text" name="kategorie" th:value="${filterKategorie}" th:placeholder="#{marktplatz.kategorie.placeholder}"
+               placeholder="Kategorie">
+        <input type="text" name="ort" th:value="${filterOrt}" th:placeholder="#{marktplatz.ort.placeholder}"
+               placeholder="Ort">
+        <button type="submit" class="app-btn" th:text="#{marktplatz.suchen}">Suchen</button>
+        <a th:href="@{/marktplatz}" class="app-btn app-btn-secondary" th:text="#{marktplatz.zuruecksetzen}">Zurücksetzen</a>
 
         <!-- Branche-Chip-Cloud: Multi-Toggle für Health-Branchen -->
         <div class="branche-chips" style="width:100%; margin-top:0.75rem;">
-            <span style="font-size:0.85rem; color:var(--farbe-text-muted); margin-right:0.5rem;">Branche:</span>
+            <span style="font-size:0.85rem; color:var(--farbe-text-muted); margin-right:0.5rem;"
+                  th:text="#{marktplatz.brancheLabel}">Branche:</span>
             <label th:each="b : ${alleBranchen}" class="branche-chip-label">
                 <input type="checkbox" name="branche" th:value="${b.name()}"
                        th:checked="${filterBranchen.contains(b)}"
@@ -62,13 +69,13 @@
 
     <!-- Aktive Filter als entfernbare Chips -->
     <div th:if="${!filterBranchen.isEmpty()}" class="aktive-filter" style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
-        <span style="font-size:0.85rem; color:var(--farbe-text-muted);">Aktive Filter:</span>
+        <span style="font-size:0.85rem; color:var(--farbe-text-muted);" th:text="#{marktplatz.aktiveFilter}">Aktive Filter:</span>
         <!-- Pro aktiven Filter: Link, der genau diese eine Branche entfernt, die anderen behält -->
         <span th:each="b : ${filterBranchen}" class="branche-chip branche-chip-aktiv" style="position:relative; padding-right:1.5rem;">
             <span th:text="${b.anzeige}">Branche</span>
             <a th:with="restBranchen=${filterBranchen.?[#this != #vars.b].![name()]}"
                th:href="@{/marktplatz(q=${suchbegriff}, kategorie=${filterKategorie}, ort=${filterOrt}, branche=${restBranchen})}"
-               th:title="|${b.anzeige}-Filter entfernen|"
+               th:title="#{marktplatz.filterEntfernen(${b.anzeige})}"
                style="position:absolute; right:0.4rem; top:50%; transform:translateY(-50%); text-decoration:none; color:inherit; font-weight:bold;">×</a>
         </span>
     </div>
@@ -92,8 +99,8 @@
     </section>
 
     <div th:if="${projekte.isEmpty()}" class="app-empty">
-        <strong>Keine Projekte gefunden.</strong>
-        Aktuell sind keine veröffentlichten Projekte verfügbar — schau bald wieder vorbei.
+        <strong th:text="#{marktplatz.keineGefunden.titel}">Keine Projekte gefunden.</strong>
+        <span th:text="#{marktplatz.keineGefunden.text}">Aktuell sind keine veröffentlichten Projekte verfügbar.</span>
     </div>
 </main>
 

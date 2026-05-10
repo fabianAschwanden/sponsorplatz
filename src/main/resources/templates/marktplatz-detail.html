@@ -31,10 +31,12 @@
             <span>Sponsorplatz</span>
         </a>
         <nav class="public-nav">
-            <a th:href="@{/marktplatz}" class="aktiv">Marktplatz</a>
-            <a sec:authorize="!isAuthenticated()" th:href="@{/login}">Anmelden</a>
-            <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn">Registrieren</a>
-            <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}" class="app-btn">Dashboard</a>
+            <a th:href="@{/marktplatz}" class="aktiv" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn"
+               th:text="#{navigation.registrieren}">Registrieren</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}" class="app-btn"
+               th:text="#{navigation.dashboard}">Dashboard</a>
         </nav>
     </div>
 </header>
@@ -42,24 +44,28 @@
 <main class="public-main">
     <header style="margin-bottom: 1.5rem;">
         <p class="public-hero-rubrik" style="text-align:left;">
-            <a th:href="@{/marktplatz}" style="color: inherit; text-decoration: none;">← Marktplatz</a>
+            <a th:href="@{/marktplatz}" style="color: inherit; text-decoration: none;"
+               th:text="#{marktplatzDetail.zurueck}">← Marktplatz</a>
         </p>
         <h1 style="font-family:var(--dash-font-head); font-size:2.2rem; margin:0.5rem 0 0.5rem;" th:text="${projekt.name}">Projekt</h1>
-        <p class="app-muted" th:text="'Veranstalter: ' + ${projekt.org.name}">Verein</p>
+        <p class="app-muted">
+            <span th:text="#{marktplatzDetail.veranstalter}">Veranstalter:</span>
+            <span th:text="${projekt.org.name}">Verein</span>
+        </p>
     </header>
 
     <section class="app-card" style="max-width: 800px;">
         <dl class="app-datenliste">
-            <dt>Organisation</dt>
+            <dt th:text="#{marktplatzDetail.feld.organisation}">Organisation</dt>
             <dd th:text="${projekt.org.name}">Verein</dd>
 
-            <dt>Kategorie</dt>
+            <dt th:text="#{marktplatzDetail.feld.kategorie}">Kategorie</dt>
             <dd th:text="${projekt.kategorie} ?: '—'">—</dd>
 
-            <dt>Ort</dt>
+            <dt th:text="#{marktplatzDetail.feld.ort}">Ort</dt>
             <dd th:text="${projekt.ort} ?: '—'">—</dd>
 
-            <dt>Zeitraum</dt>
+            <dt th:text="#{marktplatzDetail.feld.zeitraum}">Zeitraum</dt>
             <dd>
                 <span th:if="${projekt.startDatum}" th:text="${#temporals.format(projekt.startDatum, 'dd.MM.yyyy')}"></span>
                 <span th:if="${projekt.startDatum != null and projekt.endDatum != null}"> — </span>
@@ -70,12 +76,14 @@
     </section>
 
     <section class="app-card" style="max-width: 800px;" th:if="${projekt.beschreibung}">
-        <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 0.75rem;">Beschreibung</h2>
+        <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 0.75rem;"
+            th:text="#{marktplatzDetail.beschreibung}">Beschreibung</h2>
         <p style="margin:0; line-height:1.6;" th:text="${projekt.beschreibung}">Beschreibung</p>
     </section>
 
     <section class="app-card" style="max-width: 800px;" th:if="${pakete != null and !pakete.isEmpty()}">
-        <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 1rem;">Sponsoring-Pakete</h2>
+        <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 1rem;"
+            th:text="#{marktplatzDetail.pakete.titel}">Sponsoring-Pakete</h2>
         <div th:each="p : ${pakete}" class="paket-zeile"
              style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; padding:0.75rem 0; border-top:1px solid #e5e7eb;">
             <div>
@@ -88,18 +96,22 @@
             <div>
                 <a sec:authorize="isAuthenticated()"
                    th:href="@{/anfragen/neu(paketId=${p.id})}"
-                   class="app-btn">Anfrage stellen</a>
+                   class="app-btn" th:text="#{marktplatzDetail.anfrageStellen}">Anfrage stellen</a>
                 <a sec:authorize="!isAuthenticated()"
                    th:href="@{/login(redirect=/anfragen/neu?paketId={id}(id=${p.id}))}"
-                   class="app-btn-secondary app-btn">Anmelden für Anfrage</a>
+                   class="app-btn-secondary app-btn"
+                   th:text="#{marktplatzDetail.anmeldenFuerAnfrage}">Anmelden für Anfrage</a>
             </div>
         </div>
     </section>
 
     <section class="app-card" style="max-width: 800px; background: var(--dash-violet-light); border-color: var(--dash-violet);"
              th:if="${pakete == null or pakete.isEmpty()}">
-        <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 0.5rem;">Interesse?</h2>
-        <p style="margin:0;">Melden Sie sich bei <strong th:text="${projekt.org.name}">Verein</strong>, um Sponsor zu werden.</p>
+        <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 0.5rem;"
+            th:text="#{marktplatzDetail.interesse.titel}">Interesse?</h2>
+        <p style="margin:0;" th:utext="#{marktplatzDetail.interesse.text(${projekt.org.name})}">
+            Melden Sie sich bei Verein, um Sponsor zu werden.
+        </p>
     </section>
 </main>
 
