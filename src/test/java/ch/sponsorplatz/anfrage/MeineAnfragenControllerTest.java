@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -61,7 +62,7 @@ class MeineAnfragenControllerTest {
         UUID orgId = UUID.randomUUID();
         when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of(orgId));
         when(anfrageService.findeAlleEingehenden(any())).thenReturn(List.of());
-        when(anfrageService.zaehleNeue(any(java.util.Collection.class))).thenReturn(0L);
+        when(anfrageService.zaehleNeue(anyCollection())).thenReturn(0L);
 
         mockMvc.perform(get("/anfragen"))
                 .andExpect(status().isOk())
@@ -81,7 +82,7 @@ class MeineAnfragenControllerTest {
         UUID orgId = UUID.randomUUID();
         when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of(orgId));
         when(anfrageService.findeAlleEingehenden(any())).thenReturn(List.of());
-        when(anfrageService.zaehleNeue(any(java.util.Collection.class))).thenReturn(5L);
+        when(anfrageService.zaehleNeue(anyCollection())).thenReturn(5L);
 
         mockMvc.perform(get("/anfragen"))
                 .andExpect(status().isOk())
