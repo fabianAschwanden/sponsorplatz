@@ -4,7 +4,7 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Organisation anlegen — Sponsorplatz</title>
+    <title th:text="#{orgForm.title.neu} + ' — Sponsorplatz'">Organisation anlegen — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
 </head>
@@ -13,46 +13,36 @@
 
 <main class="dash-main">
     <header style="margin-bottom:1.5rem;">
-        <p class="public-hero-rubrik" style="text-align:left;">Schritt 1 von 2</p>
-        <h1 style="font-family:var(--dash-font-head); font-size:1.75rem; margin:0.25rem 0 0.5rem;">Was für eine Organisation legst du an?</h1>
-        <p class="app-muted">Die folgenden Felder unterscheiden sich je nach Typ — Vereine fragt Sponsorplatz nach Health/Sport-Branche, Sponsor-Firmen nach Industrie.</p>
+        <p class="public-hero-rubrik" style="text-align:left;" th:text="#{orgTyp.schritt}">Schritt 1 von 2</p>
+        <h1 style="font-family:var(--dash-font-head); font-size:1.75rem; margin:0.25rem 0 0.5rem;"
+            th:text="#{orgTyp.h1}">Was für eine Organisation legst du an?</h1>
+        <p class="app-muted" th:text="#{orgTyp.text}">Die folgenden Felder unterscheiden sich je nach Typ…</p>
     </header>
 
     <section class="typ-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1rem;">
         <a th:href="@{/organisationen/neu(typ='VEREIN')}" class="app-card typ-card">
-            <h2 style="margin:0 0 0.5rem; font-family:var(--dash-font-head);">Verein</h2>
-            <p class="app-muted" style="margin:0;">
-                Sport-, Bewegungs- oder Gesundheits-Verein, der Sponsoren sucht.
-                Nach der Anlage könnt ihr Projekte erstellen und Sponsoring-Pakete anbieten.
-            </p>
+            <h2 style="margin:0 0 0.5rem; font-family:var(--dash-font-head);" th:text="#{orgTyp.verein.titel}">Verein</h2>
+            <p class="app-muted" style="margin:0;" th:text="#{orgTyp.verein.text}">…</p>
         </a>
 
         <a th:href="@{/organisationen/neu(typ='UNTERNEHMEN')}" class="app-card typ-card">
-            <h2 style="margin:0 0 0.5rem; font-family:var(--dash-font-head);">Unternehmen / Sponsor</h2>
-            <p class="app-muted" style="margin:0;">
-                Firma (Versicherung, Bank, Pharma, Lebensmittel, …), die Vereine sponsert.
-                Nach der Anlage könnt ihr Vereine kontaktieren und Engagements eingehen.
-            </p>
+            <h2 style="margin:0 0 0.5rem; font-family:var(--dash-font-head);" th:text="#{orgTyp.unternehmen.titel}">Unternehmen / Sponsor</h2>
+            <p class="app-muted" style="margin:0;" th:text="#{orgTyp.unternehmen.text}">…</p>
         </a>
 
         <a th:href="@{/organisationen/neu(typ='STIFTUNG')}" class="app-card typ-card">
-            <h2 style="margin:0 0 0.5rem; font-family:var(--dash-font-head);">Stiftung</h2>
-            <p class="app-muted" style="margin:0;">
-                Gemeinnützige Stiftung mit Förderzweck. Kann sowohl Sponsoren suchen als auch
-                Vereine fördern — beide Branche-Achsen sind möglich.
-            </p>
+            <h2 style="margin:0 0 0.5rem; font-family:var(--dash-font-head);" th:text="#{orgTyp.stiftung.titel}">Stiftung</h2>
+            <p class="app-muted" style="margin:0;" th:text="#{orgTyp.stiftung.text}">…</p>
         </a>
 
         <a th:href="@{/organisationen/neu(typ='ANDERE')}" class="app-card typ-card">
-            <h2 style="margin:0 0 0.5rem; font-family:var(--dash-font-head);">Andere</h2>
-            <p class="app-muted" style="margin:0;">
-                Weder klassischer Verein, Firma noch Stiftung — Branche-Felder sind optional.
-            </p>
+            <h2 style="margin:0 0 0.5rem; font-family:var(--dash-font-head);" th:text="#{orgTyp.andere.titel}">Andere</h2>
+            <p class="app-muted" style="margin:0;" th:text="#{orgTyp.andere.text}">…</p>
         </a>
     </section>
 
     <p style="margin-top:2rem;">
-        <a th:href="@{/organisationen}" class="app-btn app-btn-secondary">Abbrechen</a>
+        <a th:href="@{/organisationen}" class="app-btn app-btn-secondary" th:text="#{allgemein.abbrechen}">Abbrechen</a>
     </p>
 </main>
 </body>

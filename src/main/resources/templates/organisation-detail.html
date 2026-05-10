@@ -21,9 +21,12 @@
                 <h1 th:text="${org.name}">Name</h1>
             </div>
             <div style="display:flex; gap:0.5rem;">
-                <a th:href="@{/organisationen/{slug}/mitglieder(slug=${org.slug})}" class="app-btn-secondary app-btn">Mitglieder</a>
-                <a th:href="@{/organisationen/{slug}/projekte(slug=${org.slug})}" class="app-btn-secondary app-btn">Projekte</a>
-                <a th:href="@{/organisationen/{slug}/bearbeiten(slug=${org.slug})}" class="app-btn">Bearbeiten</a>
+                <a th:href="@{/organisationen/{slug}/mitglieder(slug=${org.slug})}" class="app-btn-secondary app-btn"
+                   th:text="#{orgDetail.aktion.mitglieder}">Mitglieder</a>
+                <a th:href="@{/organisationen/{slug}/projekte(slug=${org.slug})}" class="app-btn-secondary app-btn"
+                   th:text="#{orgDetail.aktion.projekte}">Projekte</a>
+                <a th:href="@{/organisationen/{slug}/bearbeiten(slug=${org.slug})}" class="app-btn"
+                   th:text="#{orgDetail.aktion.bearbeiten}">Bearbeiten</a>
             </div>
         </header>
 
@@ -31,39 +34,39 @@
 
         <section class="app-card">
             <dl class="app-datenliste">
-                <dt>Slug</dt>
+                <dt th:text="#{orgDetail.feld.slug}">Slug</dt>
                 <dd><code th:text="${org.slug}">slug</code></dd>
 
-                <dt>Status</dt>
+                <dt th:text="#{orgDetail.feld.status}">Status</dt>
                 <dd>
                     <span class="app-status" th:classappend="${'status-' + #strings.toLowerCase(org.status)}"
                           th:text="${org.status}">PENDING</span>
                 </dd>
 
                 <th:block th:if="${org.rechtsform}">
-                    <dt>Rechtsform</dt>
+                    <dt th:text="#{orgDetail.feld.rechtsform}">Rechtsform</dt>
                     <dd th:text="${org.rechtsform}"></dd>
                 </th:block>
 
                 <th:block th:if="${org.branche}">
-                    <dt>Branche</dt>
+                    <dt th:text="#{orgDetail.feld.branche}">Branche</dt>
                     <dd th:text="${org.branche.anzeige}"></dd>
                 </th:block>
 
                 <th:block th:if="${org.sponsorBranche}">
-                    <dt>Industrie</dt>
+                    <dt th:text="#{orgDetail.feld.industrie}">Industrie</dt>
                     <dd th:text="${org.sponsorBranche.anzeige}"></dd>
                 </th:block>
 
                 <th:block th:if="${org.websiteUrl}">
-                    <dt>Website</dt>
+                    <dt th:text="#{orgDetail.feld.website}">Website</dt>
                     <dd>
                         <a th:href="${org.websiteUrl}" target="_blank" rel="noopener" th:text="${org.websiteUrl}"></a>
                     </dd>
                 </th:block>
 
                 <th:block th:if="${org.beschreibung}">
-                    <dt>Beschreibung</dt>
+                    <dt th:text="#{orgDetail.feld.beschreibung}">Beschreibung</dt>
                     <dd th:text="${org.beschreibung}"></dd>
                 </th:block>
 
@@ -71,7 +74,7 @@
                      wenn überhaupt Hierarchie da ist (Eltern ODER Kinder). -->
                 <th:block th:if="${(elternkette != null and elternkette.size() > 1) or
                                   (untergeordneteOrgs != null and !untergeordneteOrgs.isEmpty())}">
-                    <dt>Hierarchie</dt>
+                    <dt th:text="#{orgDetail.feld.hierarchie}">Hierarchie</dt>
                     <dd>
                         <div class="hierarchie-tree">
                             <!-- Elternkette von Wurzel bis aktuelle Org.
@@ -87,7 +90,8 @@
                                 <span th:if="${stat.last}"
                                       class="h-aktuell"
                                       th:text="${eintrag.name}">FC Beispiel</span>
-                                <span th:if="${stat.last}" class="h-marker app-muted">(diese Org)</span>
+                                <span th:if="${stat.last}" class="h-marker app-muted"
+                                      th:text="#{orgDetail.hierarchie.dieseOrg}">(diese Org)</span>
                             </div>
 
                             <!-- Untergeordnete Orgs eine Stufe tiefer als die aktuelle -->
@@ -103,11 +107,11 @@
                     </dd>
                 </th:block>
 
-                <dt>Registriert am</dt>
+                <dt th:text="#{orgDetail.feld.registriert}">Registriert am</dt>
                 <dd th:text="${#temporals.format(org.registriertAm, 'dd.MM.yyyy HH:mm')}">01.01.2026</dd>
 
                 <th:block th:if="${org.verifiziertAm}">
-                    <dt>Verifiziert am</dt>
+                    <dt th:text="#{orgDetail.feld.verifiziert}">Verifiziert am</dt>
                     <dd th:text="${#temporals.format(org.verifiziertAm, 'dd.MM.yyyy')}"></dd>
                 </th:block>
             </dl>
@@ -115,8 +119,9 @@
 
         <form th:action="@{/organisationen/{slug}/loeschen(slug=${org.slug})}"
               method="post"
-              onsubmit="return confirm('Organisation wirklich löschen? Das kann nicht rückgängig gemacht werden.');">
-            <button type="submit" class="app-btn app-btn-danger">Organisation löschen</button>
+              onsubmit="return confirm(this.querySelector('.confirm-msg').textContent);">
+            <span class="confirm-msg" hidden th:text="#{orgDetail.loeschen.bestaetigung}"></span>
+            <button type="submit" class="app-btn app-btn-danger" th:text="#{orgDetail.loeschen}">Organisation löschen</button>
         </form>
     </main>
 </div>

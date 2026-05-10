@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — Sponsorplatz</title>
+    <title th:text="#{sidebar.dashboard} + ' — Sponsorplatz'">Dashboard — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -32,12 +32,12 @@
                     <span class="dash-period-text" th:text="${aktuellerMonat} ?: 'Mai 2026'">Mai 2026</span>
                     <span class="dash-period-separator">/</span>
                     <span class="dash-period-week" th:text="${aktuelleKw} ?: 'KW 18'">KW 18 ▾</span>
-                    <button class="dash-period-nav" type="button" aria-label="Vorherige Woche">
+                    <button class="dash-period-nav" type="button" th:aria-label="#{dashboard.aria.vorigeWoche}">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M15 18l-6-6 6-6"/>
                         </svg>
                     </button>
-                    <button class="dash-period-nav" type="button" aria-label="Nächste Woche">
+                    <button class="dash-period-nav" type="button" th:aria-label="#{dashboard.aria.naechsteWoche}">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 18l6-6-6-6"/>
                         </svg>
@@ -45,17 +45,17 @@
                 </div>
 
                 <div class="dash-topbar-actions">
-                    <button class="dash-icon-btn" type="button" aria-label="Notiz">
+                    <button class="dash-icon-btn" type="button" th:aria-label="#{dashboard.aria.notiz}">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M12 20h9M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4z"/>
                         </svg>
                     </button>
-                    <button class="dash-icon-btn" type="button" aria-label="Mitteilungen">
+                    <button class="dash-icon-btn" type="button" th:aria-label="#{dashboard.aria.mitteilungen}">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
                         </svg>
                     </button>
-                    <button class="dash-icon-btn primary" type="button" aria-label="Neu erstellen">
+                    <button class="dash-icon-btn primary" type="button" th:aria-label="#{dashboard.aria.neuErstellen}">
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
                             <path d="M12 5v14M5 12h14"/>
                         </svg>
@@ -72,10 +72,10 @@
                         </svg>
                     </div>
                     <div>
-                        <div class="dash-stat-label">Organisationen</div>
+                        <div class="dash-stat-label" th:text="#{dashboard.stats.organisationen.label}">Organisationen</div>
                         <div class="dash-stat-value">
                             <span th:text="${anzahlOrganisationen} ?: 0">5</span>
-                            <span class="dash-stat-unit">aktiv</span>
+                            <span class="dash-stat-unit" th:text="#{dashboard.stats.organisationen.unit}">aktiv</span>
                         </div>
                     </div>
                 </a>
@@ -87,10 +87,10 @@
                         </svg>
                     </div>
                     <div>
-                        <div class="dash-stat-label">Projekte</div>
+                        <div class="dash-stat-label" th:text="#{dashboard.stats.projekte.label}">Projekte</div>
                         <div class="dash-stat-value">
                             <span th:text="${anzahlProjekte} ?: 0">12</span>
-                            <span class="dash-stat-unit">veröffentlicht</span>
+                            <span class="dash-stat-unit" th:text="#{dashboard.stats.projekte.unit}">veröffentlicht</span>
                         </div>
                     </div>
                 </a>
@@ -102,15 +102,15 @@
                         </svg>
                     </div>
                     <div>
-                        <div class="dash-stat-label">Sponsoring-Anfragen</div>
+                        <div class="dash-stat-label" th:text="#{dashboard.stats.anfragen.label}">Sponsoring-Anfragen</div>
                         <div class="dash-stat-value">
                             <span th:text="${anzahlAnfragen} ?: 0">8</span>
-                            <span class="dash-stat-unit">offen</span>
+                            <span class="dash-stat-unit" th:text="#{dashboard.stats.anfragen.unit}">offen</span>
                         </div>
                     </div>
                 </a>
 
-                <button class="dash-stat-add" type="button" aria-label="Neu">
+                <button class="dash-stat-add" type="button" th:aria-label="#{dashboard.aria.neu}">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 5v14M5 12h14"/>
                     </svg>
@@ -119,13 +119,13 @@
 
             <!-- Events Timeline -->
             <section class="dash-section">
-                <h2 class="dash-section-title">Events Timeline</h2>
+                <h2 class="dash-section-title" th:text="#{dashboard.events.titel}">Events Timeline</h2>
                 <div class="dash-timeline">
                     <article class="dash-event-card">
                         <div class="dash-event-marker"></div>
                         <div class="dash-event-body">
                             <div class="dash-event-name" th:text="${naechstesEvent1?.name} ?: 'SCA Sommerturnier 2026'">SCA Sommerturnier 2026</div>
-                            <div class="dash-event-meta">Anstehendes Event</div>
+                            <div class="dash-event-meta" th:text="#{dashboard.events.anstehend}">Anstehendes Event</div>
                         </div>
                         <div class="dash-event-date" th:text="${naechstesEvent1?.datumKurz} ?: '15. Jun'">15. Jun</div>
                     </article>
@@ -136,7 +136,7 @@
                         <div class="dash-event-marker"></div>
                         <div class="dash-event-body">
                             <div class="dash-event-name" th:text="${naechstesEvent2?.name} ?: 'Kulturnacht Zürich'">Kulturnacht Zürich</div>
-                            <div class="dash-event-meta">Anstehendes Event</div>
+                            <div class="dash-event-meta" th:text="#{dashboard.events.anstehend}">Anstehendes Event</div>
                         </div>
                         <div class="dash-event-date" th:text="${naechstesEvent2?.datumKurz} ?: '22. Jul'">22. Jul</div>
                     </article>
@@ -152,11 +152,11 @@
 
                 <div class="dash-card">
                     <header class="dash-card-head">
-                        <h2 class="dash-section-title">Sponsoring-Entwicklung</h2>
-                        <select class="dash-pill-select" aria-label="Zeitraum">
-                            <option>Woche</option>
-                            <option>Monat</option>
-                            <option>Jahr</option>
+                        <h2 class="dash-section-title" th:text="#{dashboard.entwicklung.titel}">Sponsoring-Entwicklung</h2>
+                        <select class="dash-pill-select">
+                            <option th:text="#{dashboard.zeitraum.woche}">Woche</option>
+                            <option th:text="#{dashboard.zeitraum.monat}">Monat</option>
+                            <option th:text="#{dashboard.zeitraum.jahr}">Jahr</option>
                         </select>
                     </header>
 
@@ -180,10 +180,10 @@
 
                 <div class="dash-card">
                     <header class="dash-card-head">
-                        <h2 class="dash-section-title">Finanzierungs-Status</h2>
-                        <select class="dash-pill-select" aria-label="Zeitraum">
-                            <option>Aktuell</option>
-                            <option>Vorjahr</option>
+                        <h2 class="dash-section-title" th:text="#{dashboard.finanzierung.titel}">Finanzierungs-Status</h2>
+                        <select class="dash-pill-select">
+                            <option th:text="#{dashboard.zeitraum.aktuell}">Aktuell</option>
+                            <option th:text="#{dashboard.zeitraum.vorjahr}">Vorjahr</option>
                         </select>
                     </header>
 
@@ -211,10 +211,10 @@
             <!-- Aktive Projekte -->
             <section class="dash-section">
                 <header class="dash-card-head">
-                    <h2 class="dash-section-title">Aktive Projekte</h2>
+                    <h2 class="dash-section-title" th:text="#{dashboard.aktiveProjekte.titel}">Aktive Projekte</h2>
                     <select class="dash-pill-select">
-                        <option>Aktuell</option>
-                        <option>Archiv</option>
+                        <option th:text="#{dashboard.zeitraum.aktuell}">Aktuell</option>
+                        <option th:text="#{dashboard.zeitraum.archiv}">Archiv</option>
                     </select>
                 </header>
 
@@ -280,8 +280,8 @@
             <!-- Matching-Empfehlungen -->
             <section th:if="${!empfehlungen.isEmpty()}" class="dash-section" style="margin-top:2rem;">
                 <header class="dash-section-head">
-                    <h2 style="font-size:1.1rem; margin:0;">Empfohlene Projekte</h2>
-                    <span class="dash-section-meta">basierend auf Ihrer Branche</span>
+                    <h2 style="font-size:1.1rem; margin:0;" th:text="#{dashboard.empfehlungen.titel}">Empfohlene Projekte</h2>
+                    <span class="dash-section-meta" th:text="#{dashboard.empfehlungen.hinweis}">basierend auf Ihrer Branche</span>
                 </header>
                 <div class="dash-empfehlungen-grid">
                     <article th:each="p : ${empfehlungen}" class="dash-empfehlung-card">
@@ -306,8 +306,8 @@
 
             <section class="dash-rail-section">
                 <header class="dash-rail-head">
-                    <h3>Aufgaben heute</h3>
-                    <span class="dash-rail-meta">fällig</span>
+                    <h3 th:text="#{dashboard.aufgaben.titel}">Aufgaben heute</h3>
+                    <span class="dash-rail-meta" th:text="#{dashboard.aufgaben.faellig}">fällig</span>
                 </header>
 
                 <ul class="dash-todos">
@@ -337,16 +337,16 @@
                         <span class="dash-todo-time">15:00</span>
                     </li>
                     <li class="dash-todo-add">
-                        <button type="button">+ Aufgabe</button>
-                        <a th:href="@{/aufgaben}" class="dash-todo-link">Alle anzeigen</a>
+                        <button type="button" th:text="#{dashboard.aufgaben.hinzufuegen}">+ Aufgabe</button>
+                        <a th:href="@{/aufgaben}" class="dash-todo-link" th:text="#{dashboard.aufgaben.alleAnzeigen}">Alle anzeigen</a>
                     </li>
                 </ul>
             </section>
 
             <section class="dash-rail-section dash-meeting">
                 <header class="dash-rail-head">
-                    <h3>Sponsor-Termin</h3>
-                    <button class="dash-rail-more" aria-label="Optionen">⋯</button>
+                    <h3 th:text="#{dashboard.termin.titel}">Sponsor-Termin</h3>
+                    <button class="dash-rail-more" th:aria-label="#{dashboard.aria.optionen}">⋯</button>
                 </header>
                 <p class="dash-meeting-time">13:00 — 14:00</p>
 
@@ -358,17 +358,17 @@
                 </div>
 
                 <div class="dash-meeting-actions">
-                    <a href="#" class="dash-link">Link kopieren</a>
+                    <a href="#" class="dash-link" th:text="#{dashboard.termin.linkKopieren}">Link kopieren</a>
                     <div>
-                        <button class="dash-btn-pill">Einladen</button>
-                        <button class="dash-btn-pill" aria-label="Anrufen">📞</button>
+                        <button class="dash-btn-pill" th:text="#{dashboard.termin.einladen}">Einladen</button>
+                        <button class="dash-btn-pill" th:aria-label="#{dashboard.aria.anrufen}">📞</button>
                     </div>
                 </div>
             </section>
 
             <section class="dash-rail-knowledge">
                 <a th:href="@{/hilfe}" class="dash-knowledge-link">
-                    <span>Wissensdatenbank</span>
+                    <span th:text="#{dashboard.wissensdatenbank}">Wissensdatenbank</span>
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M5 19L19 5M9 5h10v10"/>
                     </svg>
@@ -376,7 +376,7 @@
             </section>
 
             <button type="button" class="dash-support">
-                <span>Support</span>
+                <span th:text="#{dashboard.support}">Support</span>
                 <span class="dash-support-icon">💬</span>
             </button>
         </aside>

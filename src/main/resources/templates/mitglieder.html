@@ -4,7 +4,7 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title th:text="'Mitglieder — ' + ${org.name} + ' — Sponsorplatz'">Mitglieder</title>
+    <title th:text="#{mitglieder.titel} + ' — ' + ${org.name} + ' — Sponsorplatz'">Mitglieder</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -18,13 +18,14 @@
         <header class="app-page-head">
             <div>
                 <p class="app-page-rubrik">
-                    <a th:href="@{/organisationen}" style="color:inherit;">Organisationen</a>
+                    <a th:href="@{/organisationen}" style="color:inherit;" th:text="#{orgListe.titel}">Organisationen</a>
                     /
                     <a th:href="@{/organisationen/{slug}(slug=${org.slug})}" style="color:inherit;" th:text="${org.name}">Org</a>
                 </p>
-                <h1>Mitglieder</h1>
+                <h1 th:text="#{mitglieder.titel}">Mitglieder</h1>
             </div>
-            <a th:href="@{/organisationen/{slug}(slug=${org.slug})}" class="app-btn app-btn-secondary">← Organisation</a>
+            <a th:href="@{/organisationen/{slug}(slug=${org.slug})}" class="app-btn app-btn-secondary"
+               th:text="#{mitglieder.zurueckOrg}">← Organisation</a>
         </header>
 
         <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
@@ -33,10 +34,10 @@
         <table class="app-table" th:if="${!mitglieder.isEmpty()}">
             <thead>
             <tr>
-                <th>Name</th>
-                <th>E-Mail</th>
-                <th>Rolle</th>
-                <th>Beigetreten</th>
+                <th th:text="#{mitglieder.feld.name}">Name</th>
+                <th th:text="#{mitglieder.feld.email}">E-Mail</th>
+                <th th:text="#{mitglieder.feld.rolle}">Rolle</th>
+                <th th:text="#{mitglieder.feld.beigetreten}">Beigetreten</th>
                 <th></th>
             </tr>
             </thead>
@@ -56,10 +57,12 @@
                 <td th:text="${#temporals.format(m.beigetretenAm, 'dd.MM.yyyy')}">01.01.2026</td>
                 <td>
                     <form th:action="@{/organisationen/{slug}/mitglieder/{id}/entfernen(slug=${org.slug}, id=${m.id})}"
-                          method="post" style="display:inline;">
+                          method="post" style="display:inline;"
+                          onsubmit="return confirm(this.querySelector('.confirm-msg').textContent);">
+                        <span class="confirm-msg" hidden th:text="#{mitglieder.entfernen.bestaetigung}"></span>
                         <button type="submit" class="app-btn app-btn-secondary"
                                 style="padding:0.35rem 0.75rem;font-size:0.82rem;color:var(--dash-coral);"
-                                onclick="return confirm('Mitglied wirklich entfernen?')">Entfernen</button>
+                                th:text="#{mitglieder.entfernen}">Entfernen</button>
                     </form>
                 </td>
             </tr>
@@ -67,27 +70,28 @@
         </table>
 
         <div th:if="${mitglieder.isEmpty()}" class="app-empty">
-            <strong>Noch keine Mitglieder.</strong>
-            Lade unten den ersten Benutzer ein.
+            <strong th:text="#{mitglieder.empty.titel}">Noch keine Mitglieder.</strong>
+            <span th:text="#{mitglieder.empty.text}">Lade unten den ersten Benutzer ein.</span>
         </div>
 
         <section class="app-card" style="margin-top:2rem;">
-            <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 1rem;">Mitglied hinzufügen</h2>
+            <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 1rem;"
+                th:text="#{mitglieder.hinzufuegenTitel}">Mitglied hinzufügen</h2>
             <form th:action="@{/organisationen/{slug}/mitglieder/hinzufuegen(slug=${org.slug})}" method="post" class="app-form">
                 <div class="app-form-group">
-                    <label for="email">E-Mail des Benutzers</label>
+                    <label for="email" th:text="#{mitglieder.feld.emailLabel}">E-Mail des Benutzers</label>
                     <input type="email" id="email" name="email" required placeholder="benutzer@example.com">
                 </div>
                 <div class="app-form-group">
-                    <label for="rolle">Rolle</label>
+                    <label for="rolle" th:text="#{mitglieder.feld.rolle}">Rolle</label>
                     <select id="rolle" name="rolle" required>
-                        <option value="ORG_VIEWER">Betrachter (ORG_VIEWER)</option>
-                        <option value="ORG_EDITOR">Bearbeiter (ORG_EDITOR)</option>
-                        <option value="ORG_OWNER">Eigentümer (ORG_OWNER)</option>
+                        <option value="ORG_VIEWER" th:text="#{mitglieder.rolle.viewer}">Betrachter (ORG_VIEWER)</option>
+                        <option value="ORG_EDITOR" th:text="#{mitglieder.rolle.editor}">Bearbeiter (ORG_EDITOR)</option>
+                        <option value="ORG_OWNER" th:text="#{mitglieder.rolle.owner}">Eigentümer (ORG_OWNER)</option>
                     </select>
                 </div>
                 <div class="app-form-actions">
-                    <button type="submit" class="app-btn">Hinzufügen</button>
+                    <button type="submit" class="app-btn" th:text="#{mitglieder.hinzufuegenBtn}">Hinzufügen</button>
                 </div>
             </form>
         </section>

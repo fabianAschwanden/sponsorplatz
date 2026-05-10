@@ -4,7 +4,7 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Organisationen — Sponsorplatz</title>
+    <title th:text="#{orgListe.titel} + ' — Sponsorplatz'">Organisationen — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -17,27 +17,27 @@
     <main class="app-main">
         <header class="app-page-head">
             <div>
-                <p class="app-page-rubrik">Übersicht</p>
-                <h1>Organisationen</h1>
+                <p class="app-page-rubrik" th:text="#{orgListe.rubrik}">Übersicht</p>
+                <h1 th:text="#{orgListe.titel}">Organisationen</h1>
             </div>
-            <a th:href="@{/organisationen/neu}" class="app-btn">+ Neue Organisation</a>
+            <a th:href="@{/organisationen/neu}" class="app-btn" th:text="#{orgListe.neuBtn}">+ Neue Organisation</a>
         </header>
 
         <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
         <div th:if="${#lists.isEmpty(organisationen)}" class="app-empty">
-            <strong>Noch keine Organisationen erfasst.</strong>
-            Lege die erste an — Verein, Unternehmen oder Stiftung.
+            <strong th:text="#{orgListe.empty.titel}">Noch keine Organisationen erfasst.</strong>
+            <span th:text="#{orgListe.empty.text}">Lege die erste an — Verein, Unternehmen oder Stiftung.</span>
         </div>
 
         <table th:if="${not #lists.isEmpty(organisationen)}" class="app-table">
             <thead>
             <tr>
-                <th>Name</th>
-                <th>Typ</th>
-                <th>Branche</th>
-                <th>Status</th>
-                <th>Registriert</th>
+                <th th:text="#{orgListe.feld.name}">Name</th>
+                <th th:text="#{orgListe.feld.typ}">Typ</th>
+                <th th:text="#{orgListe.feld.branche}">Branche</th>
+                <th th:text="#{orgListe.feld.status}">Status</th>
+                <th th:text="#{orgListe.feld.registriert}">Registriert</th>
             </tr>
             </thead>
             <tbody>
