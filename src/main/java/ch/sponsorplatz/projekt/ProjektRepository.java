@@ -11,23 +11,28 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Projekt-Repository.
+ *
+ * <p><b>Konvention:</b> Jede Methode, die {@link Projekt}-Entitäten zurückgibt,
+ * hängt {@code JOIN FETCH p.org} dran — {@link ProjektView#von(Projekt)} und
+ * {@code OrganisationKurzView.von(projekt.getOrg())} greifen auf
+ * {@code projekt.getOrg().getName/getSlug/getId} zu, was mit
+ * {@code spring.jpa.open-in-view=false} nach Service-Tx-Ende ohne JOIN FETCH
+ * konsequent zu {@code LazyInitializationException} (500) führt.
+ * Count-Queries brauchen es nicht (geben Long zurück).
+ */
 @Repository
 public interface ProjektRepository extends JpaRepository<Projekt, UUID> {
 
-    /**
-     * Lädt Projekt inkl. Org per {@code JOIN FETCH}. Verhindert
-     * {@code LazyInitializationException} in Controllern, die
-     * {@link ProjektView#von(Projekt)} benutzen — der Konstruktor greift
-     * auf {@code projekt.getOrg().getName()} zu, was mit
-     * {@code spring.jpa.open-in-view=false} sonst nach Service-Tx-Ende
-     * fehlschlägt.
-     */
     @Query("SELECT p FROM Projekt p JOIN FETCH p.org WHERE p.slug = :slug")
     Optional<Projekt> findBySlug(@Param("slug") String slug);
 
-    List<Projekt> findByOrgIdOrderByCreatedAtDesc(UUID orgId);
+    @Query("SELECT p FROM Projekt p JOIN FETCH p.org WHERE p.org.id = :orgId ORDER BY p.createdAt DESC")
+    List<Projekt> findByOrgIdOrderByCreatedAtDesc(@Param("orgId") UUID orgId);
 
-    List<Projekt> findBySichtbarkeitOrderByVeroeffentlichtAmDesc(Sichtbarkeit sichtbarkeit);
+    @Query("SELECT p FROM Projekt p JOIN FETCH p.org WHERE p.sichtbarkeit = :sichtbarkeit ORDER BY p.veroeffentlichtAm DESC")
+    List<Projekt> findBySichtbarkeitOrderByVeroeffentlichtAmDesc(@Param("sichtbarkeit") Sichtbarkeit sichtbarkeit);
 
     boolean existsBySlug(String slug);
 
@@ -45,12 +50,13 @@ public interface ProjektRepository extends JpaRepository<Projekt, UUID> {
      */
     @Query("""
             SELECT p FROM Projekt p
+              JOIN FETCH p.org o
             WHERE p.sichtbarkeit = :sichtbarkeit
             AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :suchbegriff, '%'))
                  OR LOWER(p.beschreibung) LIKE LOWER(CONCAT('%', :suchbegriff, '%'))
                  OR LOWER(p.kategorie) LIKE LOWER(CONCAT('%', :suchbegriff, '%'))
                  OR LOWER(p.ort) LIKE LOWER(CONCAT('%', :suchbegriff, '%'))
-                 OR LOWER(p.org.name) LIKE LOWER(CONCAT('%', :suchbegriff, '%')))
+                 OR LOWER(o.name) LIKE LOWER(CONCAT('%', :suchbegriff, '%')))
             ORDER BY p.veroeffentlichtAm DESC
             """)
     List<Projekt> sucheOeffentliche(@Param("suchbegriff") String suchbegriff,
@@ -62,9 +68,10 @@ public interface ProjektRepository extends JpaRepository<Projekt, UUID> {
      */
     @Query("""
             SELECT p FROM Projekt p
+              JOIN FETCH p.org o
             WHERE p.sichtbarkeit = :sichtbarkeit
-            AND p.org.branche IN :branchen
-            AND p.org.id NOT IN :eigeneOrgIds
+            AND o.branche IN :branchen
+            AND o.id NOT IN :eigeneOrgIds
             ORDER BY p.veroeffentlichtAm DESC
             """)
     List<Projekt> findePassende(@Param("branchen") Collection<Branche> branchen,
