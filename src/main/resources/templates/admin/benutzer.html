@@ -2,7 +2,7 @@
 <html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Admin — Benutzer — Sponsorplatz</title>
+    <title th:text="#{admin.rubrik} + ' — ' + #{admin.benutzer.titel} + ' — Sponsorplatz'">Admin — Benutzer — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -15,33 +15,33 @@
     <main class="app-main">
         <header class="app-page-head">
             <div>
-                <p class="app-page-rubrik">Plattform-Admin</p>
-                <h1>Benutzer-Verwaltung</h1>
+                <p class="app-page-rubrik" th:text="#{admin.rubrik}">Plattform-Admin</p>
+                <h1 th:text="#{admin.benutzer.titel}">Benutzer-Verwaltung</h1>
             </div>
         </header>
 
         <!-- Admin-Navigation -->
         <nav style="display:flex; gap:0.75rem; margin-bottom:2rem; flex-wrap:wrap;">
-            <a th:href="@{/admin}" class="app-btn app-btn-ghost">Übersicht</a>
-            <a th:href="@{/admin/benutzer}" class="app-btn">Benutzer</a>
-            <a th:href="@{/admin/organisationen}" class="app-btn app-btn-ghost">Organisationen</a>
-            <a th:href="@{/admin/verifizierungen}" class="app-btn app-btn-ghost">Verifizierungen</a>
+            <a th:href="@{/admin}" class="app-btn app-btn-ghost" th:text="#{admin.nav.uebersicht}">Übersicht</a>
+            <a th:href="@{/admin/benutzer}" class="app-btn" th:text="#{admin.nav.benutzer}">Benutzer</a>
+            <a th:href="@{/admin/organisationen}" class="app-btn app-btn-ghost" th:text="#{admin.nav.organisationen}">Organisationen</a>
+            <a th:href="@{/admin/verifizierungen}" class="app-btn app-btn-ghost" th:text="#{admin.nav.verifizierungen}">Verifizierungen</a>
         </nav>
 
         <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
-        <p class="app-muted" th:text="${#lists.size(benutzer) + ' Benutzer registriert'}"></p>
+        <p class="app-muted" th:text="#{admin.benutzer.zaehlung(${#lists.size(benutzer)})}"></p>
 
         <div class="admin-table-wrapper">
             <table class="admin-table">
                 <thead>
                 <tr>
-                    <th>Anzeigename</th>
-                    <th>E-Mail</th>
-                    <th>Status</th>
-                    <th>Rolle</th>
-                    <th>Registriert</th>
-                    <th>Aktionen</th>
+                    <th th:text="#{admin.feld.anzeigename}">Anzeigename</th>
+                    <th th:text="#{admin.feld.email}">E-Mail</th>
+                    <th th:text="#{admin.feld.status}">Status</th>
+                    <th th:text="#{admin.feld.rolle}">Rolle</th>
+                    <th th:text="#{admin.feld.registriert}">Registriert</th>
+                    <th th:text="#{admin.feld.aktionen}">Aktionen</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -57,15 +57,19 @@
                     </td>
                     <td th:text="${u.email}">email@test.ch</td>
                     <td>
-                        <span th:if="${u.aktiv}" class="app-chip" style="background:#dcfce7;color:#166534;">Aktiv</span>
-                        <span th:unless="${u.aktiv}" class="app-chip" style="background:#fecaca;color:#991b1b;">Gesperrt</span>
-                        <span th:unless="${u.emailVerifiziert}" class="app-chip" style="background:#fef3c7;color:#92400e;">Unverifiziert</span>
+                        <span th:if="${u.aktiv}" class="app-chip" style="background:#dcfce7;color:#166534;"
+                              th:text="#{admin.benutzer.aktiv}">Aktiv</span>
+                        <span th:unless="${u.aktiv}" class="app-chip" style="background:#fecaca;color:#991b1b;"
+                              th:text="#{admin.benutzer.gesperrt}">Gesperrt</span>
+                        <span th:unless="${u.emailVerifiziert}" class="app-chip" style="background:#fef3c7;color:#92400e;"
+                              th:text="#{admin.benutzer.unverifiziert}">Unverifiziert</span>
                     </td>
                     <td>
                         <form th:action="@{/admin/benutzer/{id}/rolle(id=${u.id})}" method="post"
                               style="display:inline; margin:0;">
                             <select name="rolle" onchange="this.form.submit()" style="font-size:0.85rem; padding:0.2rem;">
-                                <option value="" th:selected="${u.platformRolle == null}">— Keine —</option>
+                                <option value="" th:selected="${u.platformRolle == null}"
+                                        th:text="#{admin.benutzer.keineRolle}">— Keine —</option>
                                 <option th:each="r : ${rollen}" th:value="${r}" th:text="${r}"
                                         th:selected="${u.platformRolle == r}">ROLLE</option>
                             </select>
@@ -74,13 +78,15 @@
                     <td th:text="${u.registriertAm != null ? #temporals.format(u.registriertAm, 'dd.MM.yyyy') : '—'}">01.01.2026</td>
                     <td>
                         <form th:if="${u.aktiv}" th:action="@{/admin/benutzer/{id}/sperren(id=${u.id})}"
-                              method="post" style="display:inline; margin:0;">
+                              method="post" style="display:inline; margin:0;"
+                              onsubmit="return confirm(this.querySelector('.confirm-msg').textContent);">
+                            <span class="confirm-msg" hidden th:text="#{admin.benutzer.sperren.bestaetigung}"></span>
                             <button type="submit" class="app-btn app-btn-danger app-btn-sm"
-                                    onclick="return confirm('Benutzer wirklich sperren?')">Sperren</button>
+                                    th:text="#{admin.benutzer.sperren}">Sperren</button>
                         </form>
                         <form th:unless="${u.aktiv}" th:action="@{/admin/benutzer/{id}/entsperren(id=${u.id})}"
                               method="post" style="display:inline; margin:0;">
-                            <button type="submit" class="app-btn app-btn-sm">Entsperren</button>
+                            <button type="submit" class="app-btn app-btn-sm" th:text="#{admin.benutzer.entsperren}">Entsperren</button>
                         </form>
                     </td>
                 </tr>

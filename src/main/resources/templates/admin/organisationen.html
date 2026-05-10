@@ -2,7 +2,7 @@
 <html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Admin — Organisationen — Sponsorplatz</title>
+    <title th:text="#{admin.rubrik} + ' — ' + #{admin.organisationen.titel} + ' — Sponsorplatz'">Admin — Organisationen — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -15,33 +15,33 @@
     <main class="app-main">
         <header class="app-page-head">
             <div>
-                <p class="app-page-rubrik">Plattform-Admin</p>
-                <h1>Alle Organisationen</h1>
+                <p class="app-page-rubrik" th:text="#{admin.rubrik}">Plattform-Admin</p>
+                <h1 th:text="#{admin.organisationen.h1}">Alle Organisationen</h1>
             </div>
         </header>
 
         <!-- Admin-Navigation -->
         <nav style="display:flex; gap:0.75rem; margin-bottom:2rem; flex-wrap:wrap;">
-            <a th:href="@{/admin}" class="app-btn app-btn-ghost">Übersicht</a>
-            <a th:href="@{/admin/benutzer}" class="app-btn app-btn-ghost">Benutzer</a>
-            <a th:href="@{/admin/organisationen}" class="app-btn">Organisationen</a>
-            <a th:href="@{/admin/verifizierungen}" class="app-btn app-btn-ghost">Verifizierungen</a>
+            <a th:href="@{/admin}" class="app-btn app-btn-ghost" th:text="#{admin.nav.uebersicht}">Übersicht</a>
+            <a th:href="@{/admin/benutzer}" class="app-btn app-btn-ghost" th:text="#{admin.nav.benutzer}">Benutzer</a>
+            <a th:href="@{/admin/organisationen}" class="app-btn" th:text="#{admin.nav.organisationen}">Organisationen</a>
+            <a th:href="@{/admin/verifizierungen}" class="app-btn app-btn-ghost" th:text="#{admin.nav.verifizierungen}">Verifizierungen</a>
         </nav>
 
         <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
-        <p class="app-muted" th:text="${#lists.size(organisationen) + ' Organisationen'}"></p>
+        <p class="app-muted" th:text="#{admin.organisationen.zaehlung(${#lists.size(organisationen)})}"></p>
 
         <div class="admin-table-wrapper">
             <table class="admin-table">
                 <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Typ</th>
-                    <th>Branche</th>
-                    <th>Status</th>
-                    <th>Registriert</th>
-                    <th>Aktionen</th>
+                    <th th:text="#{admin.organisationen.feld.name}">Name</th>
+                    <th th:text="#{admin.organisationen.feld.typ}">Typ</th>
+                    <th th:text="#{admin.organisationen.feld.branche}">Branche</th>
+                    <th th:text="#{admin.feld.status}">Status</th>
+                    <th th:text="#{admin.feld.registriert}">Registriert</th>
+                    <th th:text="#{admin.feld.aktionen}">Aktionen</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -60,13 +60,16 @@
                         <form th:if="${org.status.name() == 'PENDING'}"
                               th:action="@{/admin/organisationen/{id}/verifizieren(id=${org.id})}" method="post"
                               style="display:inline; margin:0;">
-                            <button type="submit" class="app-btn app-btn-sm">✓ Verifizieren</button>
+                            <button type="submit" class="app-btn app-btn-sm"
+                                    th:text="#{admin.organisationen.verifizieren}">✓ Verifizieren</button>
                         </form>
                         <form th:if="${org.status.name() != 'SUSPENDED'}"
                               th:action="@{/admin/organisationen/{id}/suspendieren(id=${org.id})}" method="post"
                               style="display:inline; margin:0;"
-                              onsubmit="return confirm('Organisation suspendieren?')">
-                            <button type="submit" class="app-btn app-btn-danger app-btn-sm">Suspendieren</button>
+                              onsubmit="return confirm(this.querySelector('.confirm-msg').textContent);">
+                            <span class="confirm-msg" hidden th:text="#{admin.organisationen.suspendieren.bestaetigung}"></span>
+                            <button type="submit" class="app-btn app-btn-danger app-btn-sm"
+                                    th:text="#{admin.organisationen.suspendieren}">Suspendieren</button>
                         </form>
                     </td>
                 </tr>

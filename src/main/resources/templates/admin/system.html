@@ -2,7 +2,7 @@
 <html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Admin — System — Sponsorplatz</title>
+    <title th:text="#{admin.rubrik} + ' — ' + #{admin.system.titel} + ' — Sponsorplatz'">Admin — System — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -26,8 +26,8 @@
     <main class="app-main">
         <header class="app-page-head">
             <div>
-                <p class="app-page-rubrik">Plattform-Admin</p>
-                <h1>System</h1>
+                <p class="app-page-rubrik" th:text="#{admin.rubrik}">Plattform-Admin</p>
+                <h1 th:text="#{admin.system.titel}">System</h1>
                 <p class="app-muted" th:text="'Snapshot ' + ${#temporals.format(snapshot.zeitstempel, 'dd.MM.yyyy HH:mm:ss')}">Snapshot —</p>
             </div>
         </header>

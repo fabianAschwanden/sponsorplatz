@@ -2,7 +2,7 @@
 <html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Admin — Feature-Backlog — Sponsorplatz</title>
+    <title th:text="#{admin.rubrik} + ' — ' + #{admin.backlog.titel} + ' — Sponsorplatz'">Admin — Feature-Backlog — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -48,8 +48,8 @@
     <main class="app-main">
         <header class="app-page-head">
             <div>
-                <p class="app-page-rubrik">Plattform-Admin</p>
-                <h1>Feature-Backlog</h1>
+                <p class="app-page-rubrik" th:text="#{admin.rubrik}">Plattform-Admin</p>
+                <h1 th:text="#{admin.backlog.titel}">Backlog</h1>
                 <p class="app-muted">
                     Interner Ideen-Tracker für Verbesserungen an der App.
                     <strong th:text="${offenAnzahl}">0</strong> offen / in Arbeit ·

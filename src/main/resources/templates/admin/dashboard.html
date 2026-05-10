@@ -2,7 +2,7 @@
 <html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Admin — Dashboard — Sponsorplatz</title>
+    <title th:text="#{admin.rubrik} + ' — ' + #{admin.dashboard.titel} + ' — Sponsorplatz'">Admin — Dashboard — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -15,52 +15,52 @@
     <main class="app-main">
         <header class="app-page-head">
             <div>
-                <p class="app-page-rubrik">Plattform-Admin</p>
-                <h1>Dashboard</h1>
+                <p class="app-page-rubrik" th:text="#{admin.rubrik}">Plattform-Admin</p>
+                <h1 th:text="#{admin.dashboard.titel}">Dashboard</h1>
             </div>
         </header>
 
         <!-- Admin-Navigation -->
         <nav style="display:flex; gap:0.75rem; margin-bottom:2rem; flex-wrap:wrap;">
-            <a th:href="@{/admin}" class="app-btn">Übersicht</a>
-            <a th:href="@{/admin/benutzer}" class="app-btn app-btn-ghost">Benutzer</a>
-            <a th:href="@{/admin/organisationen}" class="app-btn app-btn-ghost">Organisationen</a>
-            <a th:href="@{/admin/verifizierungen}" class="app-btn app-btn-ghost">Verifizierungen</a>
+            <a th:href="@{/admin}" class="app-btn" th:text="#{admin.nav.uebersicht}">Übersicht</a>
+            <a th:href="@{/admin/benutzer}" class="app-btn app-btn-ghost" th:text="#{admin.nav.benutzer}">Benutzer</a>
+            <a th:href="@{/admin/organisationen}" class="app-btn app-btn-ghost" th:text="#{admin.nav.organisationen}">Organisationen</a>
+            <a th:href="@{/admin/verifizierungen}" class="app-btn app-btn-ghost" th:text="#{admin.nav.verifizierungen}">Verifizierungen</a>
         </nav>
 
         <!-- Statistik-Karten -->
         <section class="admin-stats-grid">
             <div class="app-card admin-stat-card">
                 <span class="admin-stat-value" th:text="${stats.anzahlBenutzer}">0</span>
-                <span class="admin-stat-label">Benutzer gesamt</span>
+                <span class="admin-stat-label" th:text="#{admin.dashboard.benutzerGesamt}">Benutzer gesamt</span>
             </div>
             <div class="app-card admin-stat-card">
                 <span class="admin-stat-value" th:text="${stats.anzahlAktiveBenutzer}">0</span>
-                <span class="admin-stat-label">Aktive Benutzer</span>
+                <span class="admin-stat-label" th:text="#{admin.dashboard.aktiveBenutzer}">Aktive Benutzer</span>
             </div>
             <div class="app-card admin-stat-card">
                 <span class="admin-stat-value" th:text="${stats.anzahlOrganisationen}">0</span>
-                <span class="admin-stat-label">Organisationen</span>
+                <span class="admin-stat-label" th:text="#{admin.dashboard.organisationen}">Organisationen</span>
             </div>
             <div class="app-card admin-stat-card">
                 <span class="admin-stat-value" th:text="${stats.anzahlPendingOrgs}">0</span>
-                <span class="admin-stat-label">Pending Orgs</span>
+                <span class="admin-stat-label" th:text="#{admin.dashboard.pendingOrgs}">Pending Orgs</span>
             </div>
             <div class="app-card admin-stat-card">
                 <span class="admin-stat-value" th:text="${stats.anzahlVerifizierteOrgs}">0</span>
-                <span class="admin-stat-label">Verifizierte Orgs</span>
+                <span class="admin-stat-label" th:text="#{admin.dashboard.verifizierteOrgs}">Verifizierte Orgs</span>
             </div>
             <div class="app-card admin-stat-card">
                 <span class="admin-stat-value" th:text="${stats.anzahlProjekte}">0</span>
-                <span class="admin-stat-label">Projekte</span>
+                <span class="admin-stat-label" th:text="#{admin.dashboard.projekte}">Projekte</span>
             </div>
             <div class="app-card admin-stat-card">
                 <span class="admin-stat-value" th:text="${stats.anzahlAnfragen}">0</span>
-                <span class="admin-stat-label">Anfragen</span>
+                <span class="admin-stat-label" th:text="#{admin.dashboard.anfragen}">Anfragen</span>
             </div>
             <div class="app-card admin-stat-card">
                 <span class="admin-stat-value" th:text="${stats.anzahlNachrichten}">0</span>
-                <span class="admin-stat-label">Nachrichten</span>
+                <span class="admin-stat-label" th:text="#{admin.dashboard.nachrichten}">Nachrichten</span>
             </div>
         </section>
     </main>
