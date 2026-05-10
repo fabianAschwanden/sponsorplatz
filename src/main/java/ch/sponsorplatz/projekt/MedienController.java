@@ -3,6 +3,7 @@ package ch.sponsorplatz.projekt;
 import java.util.UUID;
 
 import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.shared.exception.NotFoundException;
@@ -31,20 +33,23 @@ public class MedienController {
     private final ProjektService projektService;
     private final OrganisationService organisationService;
     private final AccessControl accessControl;
+    private final AppUserRepository appUserRepository;
 
     public MedienController(MedienAssetService medienAssetService,
             StorageService storageService,
             ProjektService projektService,
             OrganisationService organisationService,
-            AccessControl accessControl) {
+            AccessControl accessControl,
+            AppUserRepository appUserRepository) {
         this.medienAssetService = medienAssetService;
         this.storageService = storageService;
         this.projektService = projektService;
         this.organisationService = organisationService;
         this.accessControl = accessControl;
+        this.appUserRepository = appUserRepository;
     }
 
-    /** Öffentliche Auslieferung eines Medien-Assets. */
+    /** Öffentliche Auslieferung eines Medien-Assets. Bilder inline, Dokumente als Download. */
     @GetMapping("/medien/{id}")
     public ResponseEntity<Resource> ausliefern(@PathVariable UUID id) {
         MedienAsset asset = medienAssetService.findeNachId(id)
@@ -52,8 +57,17 @@ public class MedienController {
 
         Resource resource = storageService.ladeAlsResource(asset.getStoragePfad());
 
+        // Spring's ContentDisposition.builder() encoded den Filename gemäss
+        // RFC 5987 (UTF-8) und filtert Quotes/Newlines — schützt gegen
+        // Header-Injection durch user-uploaded Dateinamen.
+        boolean istBild = asset.getContentType() != null && asset.getContentType().startsWith("image/");
+        ContentDisposition disposition = istBild
+                ? ContentDisposition.inline().build()
+                : ContentDisposition.attachment().filename(asset.getDateiname()).build();
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, asset.getContentType())
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
                 .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400")
                 .body(resource);
     }
@@ -101,7 +115,12 @@ public class MedienController {
         return "redirect:/organisationen/" + slug;
     }
 
-    /** Löscht ein Medien-Asset. */
+    /**
+     * Löscht ein Medien-Asset. Prüft Edit-Recht über die assoziierte Org —
+     * für ORGANISATION-Assets direkt, für PROJEKT-Assets über die Org des
+     * Projekts (IDOR-Schutz: ohne diesen Check könnte jeder über die geratene
+     * Asset-UUID fremde Anhänge/Bilder löschen).
+     */
     @PostMapping("/medien/{id}/loeschen")
     public String loeschen(@PathVariable UUID id,
             Authentication auth,
@@ -109,14 +128,20 @@ public class MedienController {
         MedienAsset asset = medienAssetService.findeNachId(id)
                 .orElseThrow(() -> new NotFoundException("Asset nicht gefunden"));
 
-        // Prüfe Berechtigung anhand der zugehörigen Entity
-        if (asset.getEntityTyp() == EntityTyp.ORGANISATION) {
-            // AccessControl-Check über die Org
-            boolean erlaubt = organisationService.findeNachId(asset.getEntityId())
+        boolean erlaubt = switch (asset.getEntityTyp()) {
+            case ORGANISATION -> organisationService.findeNachId(asset.getEntityId())
                     .map(org -> accessControl.kannOrgEditierenNachSlug(org.getSlug(), auth))
                     .orElse(false);
-            if (!erlaubt)
-                throw new AccessDeniedException("Keine Berechtigung");
+            case PROJEKT -> projektService.findeNachId(asset.getEntityId())
+                    .map(p -> accessControl.kannOrgEditieren(p.getOrg().getId(), auth))
+                    .orElse(false);
+            // USER-Assets (Profilbild) darf nur der User selbst löschen.
+            case USER -> appUserRepository.findByEmail(auth.getName())
+                    .map(u -> u.getId().equals(asset.getEntityId()))
+                    .orElse(false);
+        };
+        if (!erlaubt) {
+            throw new AccessDeniedException("Keine Berechtigung");
         }
 
         medienAssetService.loesche(id);

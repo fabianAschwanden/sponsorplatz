@@ -53,8 +53,10 @@ class MedienAssetServiceTest {
     /** MA-02: Ungültiger Content-Type wird abgelehnt. */
     @Test
     void speichernMitUngueltigemContentTypeWirft() {
+        // ZIP ist weder Bild- noch Dokument-Whitelist (Bilder: JPEG/PNG/WebP,
+        // Dokumente: PDF/PPTX/DOCX/XLSX). PDF wäre seit Anhang-Feature erlaubt.
         MockMultipartFile datei = new MockMultipartFile(
-                "datei", "doc.pdf", "application/pdf", new byte[100]);
+                "datei", "archive.zip", "application/zip", new byte[100]);
 
         assertThatThrownBy(() -> service.speichere(datei, EntityTyp.PROJEKT, UUID.randomUUID(), AssetTyp.COVER))
                 .isInstanceOf(IllegalArgumentException.class)

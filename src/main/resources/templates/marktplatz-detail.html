@@ -105,6 +105,33 @@
         </div>
     </section>
 
+    <!-- ==================== DATEI-ANHÄNGE (öffentlich für Sponsoren) ==================== -->
+    <section class="app-card" style="max-width: 800px;" th:if="${anhaenge != null and !anhaenge.isEmpty()}">
+        <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 1rem;">📎 Projekt-Unterlagen</h2>
+        <p class="app-muted" style="margin:0 0 0.75rem; font-size:0.9rem;">
+            Laden Sie die Projekt-Unterlagen herunter, um mehr über dieses Sponsoring-Projekt zu erfahren.
+        </p>
+        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+            <a th:each="a : ${anhaenge}"
+               th:href="@{/medien/{id}(id=${a.id()})}"
+               style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; background:#f9fafb; border:1px solid #e5e7eb; border-radius:0.5rem; text-decoration:none; color:inherit; transition:background 0.15s;"
+               onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='#f9fafb'">
+                <span style="font-size:1.5rem;"
+                      th:text="${a.endung() == 'pdf' ? '📄' : (a.endung() == 'pptx' or a.endung() == 'ppt') ? '📊' : (a.endung() == 'docx' or a.endung() == 'doc') ? '📝' : '📎'}">📄</span>
+                <div style="flex:1; min-width:0;">
+                    <span th:text="${a.dateiname()}" style="font-weight:600; color:var(--farbe-primaer); display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Datei.pdf</span>
+                    <span style="font-size:0.8rem; color:#6b7280;">
+                        <span th:text="${a.endung().toUpperCase()}">PDF</span> ·
+                        <span th:text="${a.groesseFormatiert()}">1.2 MB</span>
+                    </span>
+                </div>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.4; flex-shrink:0;">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                </svg>
+            </a>
+        </div>
+    </section>
+
     <section class="app-card" style="max-width: 800px; background: var(--dash-violet-light); border-color: var(--dash-violet);"
              th:if="${pakete == null or pakete.isEmpty()}">
         <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 0.5rem;"

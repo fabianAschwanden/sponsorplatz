@@ -90,6 +90,46 @@
             </form>
         </section>
 
+        <!-- ==================== DATEI-ANHÄNGE ==================== -->
+        <section class="app-card">
+            <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0;">📎 Datei-Anhänge</h2>
+            </header>
+
+            <div th:if="${anhaenge != null and !anhaenge.isEmpty()}" style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1rem;">
+                <div th:each="a : ${anhaenge}"
+                     style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; background:#f9fafb; border-radius:0.5rem; border:1px solid #e5e7eb;">
+                    <span style="font-size:1.3rem;"
+                          th:text="${a.endung() == 'pdf' ? '📄' : (a.endung() == 'pptx' or a.endung() == 'ppt') ? '📊' : (a.endung() == 'docx' or a.endung() == 'doc') ? '📝' : '📎'}">📄</span>
+                    <div style="flex:1; min-width:0;">
+                        <a th:href="@{/medien/{id}(id=${a.id()})}" th:text="${a.dateiname()}"
+                           style="font-weight:600; color:var(--farbe-primaer); text-decoration:none; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Datei.pdf</a>
+                        <span style="font-size:0.8rem; color:#6b7280;" th:text="${a.groesseFormatiert()}">1.2 MB</span>
+                    </div>
+                    <form th:action="@{/medien/{id}/loeschen(id=${a.id()})}" method="post">
+                        <input type="hidden" name="redirect"
+                               th:value="@{/organisationen/{orgSlug}/projekte/{projektSlug}(orgSlug=${org.slug()}, projektSlug=${projekt.slug})}">
+                        <button type="submit" class="app-btn app-btn-danger" style="padding:2px 8px; font-size:0.75rem;">×</button>
+                    </form>
+                </div>
+            </div>
+            <p th:if="${anhaenge == null or anhaenge.isEmpty()}" class="app-muted">
+                Noch keine Anhänge. Laden Sie Dokumente hoch, die Sponsoren einsehen können (PDF, PPTX, DOCX, max. 20 MB).
+            </p>
+
+            <form th:action="@{/organisationen/{orgSlug}/projekte/{projektSlug}/medien(orgSlug=${org.slug()}, projektSlug=${projekt.slug})}"
+                  method="post" enctype="multipart/form-data" class="app-form" style="margin-top:1rem;">
+                <div class="app-form-group">
+                    <label for="anhangDatei">Dokument hochladen (PDF, PPTX, DOCX, XLSX, max. 20 MB)</label>
+                    <input type="file" id="anhangDatei" name="datei"
+                           accept=".pdf,.pptx,.docx,.xlsx,.ppt,.doc,.xls,application/pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                           required>
+                </div>
+                <input type="hidden" name="assetTyp" value="ANHANG">
+                <button type="submit" class="app-btn">Anhang hochladen</button>
+            </form>
+        </section>
+
         <section class="app-card">
             <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                 <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0;"

@@ -16,5 +16,8 @@ public interface MedienAssetRepository extends JpaRepository<MedienAsset, UUID> 
             EntityTyp entityTyp, UUID entityId, AssetTyp assetTyp);
 
     long countByEntityTypAndEntityId(EntityTyp entityTyp, UUID entityId);
+
+    List<MedienAsset> findByEntityTypAndEntityIdAndAssetTypOrderBySortierungAsc(
+            EntityTyp entityTyp, UUID entityId, AssetTyp assetTyp);
 }
 

@@ -33,6 +33,15 @@ public class ProjektService {
         return repository.findBySlug(slug);
     }
 
+    /**
+     * Findet ein Projekt per ID — wird vom MedienController für den
+     * Berechtigungs-Check beim Löschen von Projekt-Assets benutzt.
+     */
+    @Transactional(readOnly = true)
+    public Optional<Projekt> findeNachId(UUID id) {
+        return repository.findById(id);
+    }
+
     @Transactional(readOnly = true)
     public List<Projekt> findeNachOrg(UUID orgId) {
         return repository.findByOrgIdOrderByCreatedAtDesc(orgId);

@@ -18,9 +18,19 @@ import java.util.UUID;
 public class MedienAssetService {
 
     private static final long MAX_GROESSE_BYTES = 5 * 1024 * 1024; // 5 MB
+    private static final long MAX_DOKUMENT_BYTES = 20 * 1024 * 1024; // 20 MB
     private static final int MAX_ASSETS_PRO_ENTITY = 10;
-    private static final Set<String> ERLAUBTE_CONTENT_TYPES = Set.of(
+    private static final Set<String> ERLAUBTE_BILD_TYPES = Set.of(
             "image/jpeg", "image/png", "image/webp"
+    );
+    private static final Set<String> ERLAUBTE_DOKUMENT_TYPES = Set.of(
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation", // pptx
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",    // docx
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",          // xlsx
+            "application/vnd.ms-powerpoint",  // ppt
+            "application/msword",             // doc
+            "application/vnd.ms-excel"        // xls
     );
 
     private final MedienAssetRepository repository;
@@ -84,16 +94,29 @@ public class MedienAssetService {
         return repository.findById(id);
     }
 
+    /** Findet alle Anhänge (Dokumente) eines Projekts — für die öffentliche Ansicht. */
+    @Transactional(readOnly = true)
+    public List<MedienAsset> findeAnhaenge(EntityTyp entityTyp, UUID entityId) {
+        return repository.findByEntityTypAndEntityIdAndAssetTypOrderBySortierungAsc(
+                entityTyp, entityId, AssetTyp.ANHANG);
+    }
+
     private void validiereUpload(MultipartFile datei, EntityTyp entityTyp, UUID entityId) {
         if (datei == null || datei.isEmpty()) {
             throw new IllegalArgumentException("Keine Datei hochgeladen");
         }
-        if (!ERLAUBTE_CONTENT_TYPES.contains(datei.getContentType())) {
+        String contentType = datei.getContentType();
+        boolean istBild = ERLAUBTE_BILD_TYPES.contains(contentType);
+        boolean istDokument = ERLAUBTE_DOKUMENT_TYPES.contains(contentType);
+        if (!istBild && !istDokument) {
             throw new IllegalArgumentException(
-                    "Ungültiger Dateityp: " + datei.getContentType() + ". Erlaubt: JPEG, PNG, WebP");
+                    "Ungültiger Dateityp: " + contentType
+                    + ". Erlaubt: Bilder (JPEG, PNG, WebP) oder Dokumente (PDF, PPTX, DOCX, XLSX)");
         }
-        if (datei.getSize() > MAX_GROESSE_BYTES) {
-            throw new IllegalArgumentException("Datei zu gross (max. 5 MB)");
+        long maxBytes = istDokument ? MAX_DOKUMENT_BYTES : MAX_GROESSE_BYTES;
+        if (datei.getSize() > maxBytes) {
+            throw new IllegalArgumentException(
+                    "Datei zu gross (max. " + (maxBytes / 1024 / 1024) + " MB)");
         }
         long anzahl = repository.countByEntityTypAndEntityId(entityTyp, entityId);
         if (anzahl >= MAX_ASSETS_PRO_ENTITY) {

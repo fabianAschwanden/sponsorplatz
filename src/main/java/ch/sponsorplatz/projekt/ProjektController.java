@@ -97,12 +97,21 @@ public class ProjektController {
         Projekt projekt = projektService.findeNachSlug(projektSlug)
                 .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + projektSlug));
         List<SponsoringPaket> pakete = paketService.findeNachProjekt(projekt.getId());
-        List<MedienAsset> medien = medienAssetService.findeNachEntity(EntityTyp.PROJEKT, projekt.getId());
+        // Eine DB-Query, danach im Stream nach Asset-Typ aufsplitten —
+        // spart Round-Trip gegenüber zwei separaten findeAnhaenge/findeNachEntity-Calls.
+        List<MedienAsset> alleAssets = medienAssetService.findeNachEntity(EntityTyp.PROJEKT, projekt.getId());
+        List<MedienAsset> bilder = alleAssets.stream()
+                .filter(m -> m.getAssetTyp() != AssetTyp.ANHANG)
+                .toList();
+        List<MedienAsset> anhaenge = alleAssets.stream()
+                .filter(m -> m.getAssetTyp() == AssetTyp.ANHANG)
+                .toList();
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
         model.addAttribute("org", OrganisationView.von(org));
         model.addAttribute("projekt", ProjektView.von(projekt));
         model.addAttribute("pakete", pakete.stream().map(SponsoringPaketView::von).toList());
-        model.addAttribute("medien", MedienAssetView.von(medien));
+        model.addAttribute("medien", MedienAssetView.von(bilder));
+        model.addAttribute("anhaenge", MedienAssetView.von(anhaenge));
         model.addAttribute("paketForm", new SponsoringPaketFormDto());
         return "projekt-detail";
     }

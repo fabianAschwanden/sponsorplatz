@@ -42,6 +42,8 @@ class MedienControllerTest {
     @MockitoBean
     private AccessControl accessControl;
     @MockitoBean
+    private ch.sponsorplatz.benutzer.AppUserRepository appUserRepository;
+    @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
 
     /** MA-07: GET /medien/{id} liefert Bild mit korrektem Content-Type. */

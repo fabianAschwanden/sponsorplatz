@@ -102,9 +102,12 @@ public class MarktplatzController {
                 .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + slug));
         List<SponsoringPaketView> pakete = SponsoringPaketView.von(
                 paketService.findeAktiveNachProjekt(projekt.getId()));
+        List<MedienAssetView> anhaenge = MedienAssetView.von(
+                medienAssetService.findeAnhaenge(EntityTyp.PROJEKT, projekt.getId()));
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "marktplatz");
         model.addAttribute("projekt", ProjektView.von(projekt));
         model.addAttribute("pakete", pakete);
+        model.addAttribute("anhaenge", anhaenge);
         return "marktplatz-detail";
     }
 }
