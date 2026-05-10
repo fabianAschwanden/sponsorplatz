@@ -1,4 +1,5 @@
 package ch.sponsorplatz.organisation;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.shared.util.SlugGenerator;
 
 import ch.sponsorplatz.shared.exception.NotFoundException;
@@ -25,12 +26,15 @@ public class OrganisationService {
     private final OrganisationRepository repository;
     private final SlugGenerator slugGenerator;
     private final MitgliedschaftRepository mitgliedschaftRepository;
+    private final AppUserRepository appUserRepository;
 
     public OrganisationService(OrganisationRepository repository, SlugGenerator slugGenerator,
-                               MitgliedschaftRepository mitgliedschaftRepository) {
+                               MitgliedschaftRepository mitgliedschaftRepository,
+                               AppUserRepository appUserRepository) {
         this.repository = repository;
         this.slugGenerator = slugGenerator;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
+        this.appUserRepository = appUserRepository;
     }
 
     @Transactional(readOnly = true)
@@ -69,6 +73,28 @@ public class OrganisationService {
         Organisation org = new Organisation();
         wendeFormDatenAn(org, dto);
         return repository.save(org);
+    }
+
+    /**
+     * Legt eine neue Organisation an und verknüpft den ersteller-User automatisch
+     * als {@link Rolle#ORG_OWNER}. Wird vom regulären Controller (eingeloggte User)
+     * genutzt — so kann der Ersteller die Org sofort bearbeiten/verwalten.
+     *
+     * @throws IllegalArgumentException bei Slug-Konflikt
+     * @throws NotFoundException falls User nicht existiert
+     */
+    public Organisation erstelleMitEigentuemer(OrganisationFormDto dto, UUID eigentuemerUserId) {
+        Organisation org = erstelle(dto);
+
+
+        Mitgliedschaft mitgliedschaft = new Mitgliedschaft();
+        mitgliedschaft.setOrg(org);
+        mitgliedschaft.setUser(
+                appUserRepository.findById(eigentuemerUserId)
+                        .orElseThrow(() -> new NotFoundException("Benutzer nicht gefunden: " + eigentuemerUserId)));
+        mitgliedschaft.setRolle(Rolle.ORG_OWNER);
+        mitgliedschaftRepository.save(mitgliedschaft);
+        return org;
     }
 
     /**

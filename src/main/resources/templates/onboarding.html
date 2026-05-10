@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{onboarding.title} + ' — Sponsorplatz'">Willkommen — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <style>
+        .onboarding-layout {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: var(--dash-bg, #f7f8fa);
+        }
+        .onboarding-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 560px;
+            width: 100%;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        }
+        .onboarding-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .onboarding-header h1 {
+            font-size: 1.5rem;
+            margin: 0.5rem 0 0.25rem;
+        }
+        .onboarding-header p {
+            color: #6b7280;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+        .onboarding-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .onboarding-option {
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .onboarding-option:hover, .onboarding-option.aktiv {
+            border-color: var(--dash-violet, #7c3aed);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+        .onboarding-option h3 {
+            margin: 0 0 0.3rem;
+            font-size: 1.05rem;
+        }
+        .onboarding-option p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 0.88rem;
+        }
+        .onboarding-form {
+            margin-top: 1.25rem;
+            display: none;
+        }
+        .onboarding-form.sichtbar {
+            display: block;
+        }
+        .onboarding-form .app-form-group {
+            margin-bottom: 1rem;
+        }
+        .onboarding-form label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+        .onboarding-form input, .onboarding-form select, .onboarding-form textarea {
+            width: 100%;
+            padding: 0.55rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.9rem;
+        }
+        .onboarding-form textarea {
+            resize: vertical;
+        }
+        .onboarding-divider {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 1.25rem 0;
+            color: #9ca3af;
+            font-size: 0.85rem;
+        }
+        .onboarding-divider::before, .onboarding-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+        .skip-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.25rem;
+            color: #6b7280;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+        .skip-link:hover {
+            color: var(--dash-violet, #7c3aed);
+        }
+    </style>
+</head>
+<body>
+
+<div class="onboarding-layout">
+
+    <div class="onboarding-card">
+
+        <div class="onboarding-header">
+            <a th:href="@{/}">
+                <img th:src="@{/images/logo/icon-ringe.svg}" alt="Sponsorplatz" width="48" height="48">
+            </a>
+            <h1 th:text="#{onboarding.h1}">Willkommen bei Sponsorplatz!</h1>
+            <p th:text="#{onboarding.intro}">Noch ein Schritt — wie möchten Sie starten?</p>
+        </div>
+
+        <div th:if="${fehlermeldung}" class="app-meldung fehler" th:text="${fehlermeldung}" style="margin-bottom:1rem;"></div>
+
+        <!-- ==================== OPTION A: VEREIN ERSTELLEN ==================== -->
+        <div class="onboarding-option" id="optionVerein" onclick="zeigeForm('verein')">
+            <h3 th:text="#{onboarding.option.verein.title}">🏅 Verein eintragen</h3>
+            <p th:text="#{onboarding.option.verein.text}">Erstellen Sie ein Vereins-Profil und finden Sie Sponsoren für Ihre Projekte.</p>
+        </div>
+
+        <div class="onboarding-form" id="formVerein" th:classappend="${zeigeVereinForm} ? 'sichtbar'">
+            <form th:action="@{/onboarding/verein-erstellen}" th:object="${vereinForm}" method="post" class="app-form">
+                <div class="app-form-group">
+                    <label for="vereinName" th:text="#{onboarding.feld.vereinName}">Vereinsname *</label>
+                    <input type="text" id="vereinName" th:field="*{vereinName}"
+                           th:placeholder="#{onboarding.feld.vereinNamePlaceholder}"
+                           placeholder="z.B. FC Musterstadt" required autofocus>
+                    <span th:if="${#fields.hasErrors('vereinName')}" th:errors="*{vereinName}"
+                          style="color:#ef4444; font-size:0.8rem;"></span>
+                </div>
+
+                <div class="app-form-group">
+                    <label for="branche" th:text="#{onboarding.feld.branche}">Branche / Bereich *</label>
+                    <select id="branche" th:field="*{branche}" required>
+                        <option value="" th:text="#{onboarding.feld.brancheLeer}">— Bitte wählen —</option>
+                        <option th:each="b : ${branchen}" th:value="${b}" th:text="${b.anzeige}"></option>
+                    </select>
+                    <span th:if="${#fields.hasErrors('branche')}" th:errors="*{branche}"
+                          style="color:#ef4444; font-size:0.8rem;"></span>
+                </div>
+
+                <div class="app-form-group">
+                    <label for="ort" th:text="#{onboarding.feld.ort}">Ort</label>
+                    <input type="text" id="ort" th:field="*{ort}"
+                           th:placeholder="#{onboarding.feld.ortPlaceholder}" placeholder="z.B. Zürich">
+                </div>
+
+                <div class="app-form-group">
+                    <label for="beschreibung" th:text="#{onboarding.feld.beschreibung}">Kurzbeschreibung</label>
+                    <textarea id="beschreibung" th:field="*{beschreibung}" rows="3"
+                              th:placeholder="#{onboarding.feld.beschreibungPlaceholder}"
+                              placeholder="Was macht Ihr Verein? (optional, kann später ergänzt werden)"></textarea>
+                </div>
+
+                <button type="submit" class="app-btn" style="width:100%; justify-content:center; margin-top:0.5rem;"
+                        th:text="#{onboarding.btn.vereinErstellen}">Verein erstellen & loslegen</button>
+            </form>
+        </div>
+
+        <div class="onboarding-divider" th:text="#{onboarding.divider}">oder</div>
+
+        <!-- ==================== OPTION B: EINLADUNG ANNEHMEN ==================== -->
+        <div class="onboarding-option" id="optionEinladung" onclick="zeigeForm('einladung')">
+            <h3 th:text="#{onboarding.option.einladung.title}">✉️ Einladung annehmen</h3>
+            <p th:text="#{onboarding.option.einladung.text}">Sie haben einen Einladungs-Link oder -Token von einer Organisation erhalten.</p>
+        </div>
+
+        <div class="onboarding-form" id="formEinladung">
+            <form th:action="@{/onboarding/einladung-annehmen}" method="post" class="app-form">
+                <div class="app-form-group">
+                    <label for="token" th:text="#{onboarding.feld.token}">Einladungs-Token</label>
+                    <input type="text" id="token" name="token"
+                           th:placeholder="#{onboarding.feld.tokenPlaceholder}"
+                           placeholder="Token aus der Einladungs-Mail einfügen" required>
+                </div>
+                <button type="submit" class="app-btn" style="width:100%; justify-content:center; margin-top:0.5rem;"
+                        th:text="#{onboarding.btn.einladung}">Einladung annehmen</button>
+            </form>
+        </div>
+
+        <a th:href="@{/marktplatz}" class="skip-link" th:text="#{onboarding.skipLink}">Erstmal im Marktplatz stöbern →</a>
+    </div>
+</div>
+
+<script>
+    function zeigeForm(typ) {
+        document.getElementById('formVerein').classList.toggle('sichtbar', typ === 'verein');
+        document.getElementById('formEinladung').classList.toggle('sichtbar', typ === 'einladung');
+        document.getElementById('optionVerein').classList.toggle('aktiv', typ === 'verein');
+        document.getElementById('optionEinladung').classList.toggle('aktiv', typ === 'einladung');
+    }
+</script>
+
+</body>
+</html>
+

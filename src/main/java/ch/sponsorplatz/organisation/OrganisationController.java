@@ -1,5 +1,6 @@
 package ch.sponsorplatz.organisation;
 
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import jakarta.validation.Valid;
@@ -23,12 +24,15 @@ public class OrganisationController {
     private final OrganisationService service;
     private final AccessControl accessControl;
     private final OrgHierarchieService hierarchieService;
+    private final AppUserRepository appUserRepository;
 
     public OrganisationController(OrganisationService service, AccessControl accessControl,
-                                  OrgHierarchieService hierarchieService) {
+                                  OrgHierarchieService hierarchieService,
+                                  AppUserRepository appUserRepository) {
         this.service = service;
         this.accessControl = accessControl;
         this.hierarchieService = hierarchieService;
+        this.appUserRepository = appUserRepository;
     }
 
     @GetMapping
@@ -58,17 +62,34 @@ public class OrganisationController {
         return "organisation-form";
     }
 
-    /** Create — POST /organisationen (kein id im Body). */
+    /**
+     * Create — POST /organisationen. Der eingeloggte User wird automatisch
+     * als ORG_OWNER verknüpft, damit er die neue Org sofort bearbeiten und
+     * verwalten kann.
+     */
     @PostMapping
     public String erstelle(@Valid @ModelAttribute("orgForm") OrganisationFormDto dto,
                            BindingResult br,
+                           Authentication auth,
                            Model model,
                            RedirectAttributes redirect) {
         if (br.hasErrors()) {
             return zeigeFormular(model);
         }
         try {
-            Organisation neu = service.erstelle(dto);
+            Organisation neu;
+            if (auth != null && auth.isAuthenticated()) {
+                var userId = appUserRepository.findByEmail(auth.getName())
+                        .map(ch.sponsorplatz.benutzer.AppUser::getId)
+                        .orElse(null);
+                if (userId != null) {
+                    neu = service.erstelleMitEigentuemer(dto, userId);
+                } else {
+                    neu = service.erstelle(dto);
+                }
+            } else {
+                neu = service.erstelle(dto);
+            }
             redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                 "Organisation \"" + neu.getName() + "\" erstellt.");
             return "redirect:/organisationen/" + neu.getSlug();

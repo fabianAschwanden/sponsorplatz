@@ -9,11 +9,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.benutzer.AppUserService;
+import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 
 /**
  * Dashboard für angemeldete Benutzer — zeigt persönliche Übersicht
  * basierend auf den Mitgliedschaften des Users.
+ * Leitet auf /onboarding um, falls der User noch keiner Org angehört.
  */
 @Controller
 public class DashboardController {
@@ -21,18 +24,32 @@ public class DashboardController {
     private final DashboardService dashboardService;
     private final MatchingService matchingService;
     private final AppUserService appUserService;
+    private final AppUserRepository appUserRepository;
+    private final MitgliedschaftRepository mitgliedschaftRepository;
 
     public DashboardController(DashboardService dashboardService,
             MatchingService matchingService,
-            AppUserService appUserService) {
+            AppUserService appUserService,
+            AppUserRepository appUserRepository,
+            MitgliedschaftRepository mitgliedschaftRepository) {
         this.dashboardService = dashboardService;
         this.matchingService = matchingService;
         this.appUserService = appUserService;
+        this.appUserRepository = appUserRepository;
+        this.mitgliedschaftRepository = mitgliedschaftRepository;
     }
 
     @GetMapping("/dashboard")
     @PreAuthorize("isAuthenticated()")
     public String dashboard(Authentication auth, Model model) {
+        // Onboarding-Redirect: User ohne Mitgliedschaften → Wizard
+        boolean hatOrgs = appUserRepository.findByEmail(auth.getName())
+                .map(user -> !mitgliedschaftRepository.findOrgIdsByUserId(user.getId()).isEmpty())
+                .orElse(false);
+        if (!hatOrgs) {
+            return "redirect:/onboarding";
+        }
+
         DashboardDaten daten = dashboardService.ladeDashboardDaten(auth.getName());
 
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "dashboard");

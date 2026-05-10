@@ -45,6 +45,9 @@ class OrganisationControllerTest {
     @MockitoBean
     private OrgHierarchieService hierarchieService;
 
+    @MockitoBean
+    private ch.sponsorplatz.benutzer.AppUserRepository appUserRepository;
+
     /** ORG-08: GET /organisationen → 200 + Liste. */
     @Test
     void listeWirdAngezeigt() throws Exception {
@@ -56,12 +59,16 @@ class OrganisationControllerTest {
             .andExpect(model().attributeExists("organisationen"));
     }
 
-    /** ORG-17: POST /organisationen (Create) → Redirect auf Detail. */
+    /** ORG-17: POST /organisationen (Create) → Redirect auf Detail + automatische ORG_OWNER-Mitgliedschaft. */
     @Test
-    @WithMockUser
+    @WithMockUser("verein@test.ch")
     void erstellenRedirected() throws Exception {
         Organisation gespeichert = testOrg();
-        when(service.erstelle(any())).thenReturn(gespeichert);
+        ch.sponsorplatz.benutzer.AppUser user = new ch.sponsorplatz.benutzer.AppUser();
+        user.setId(UUID.randomUUID());
+        user.setEmail("verein@test.ch");
+        when(appUserRepository.findByEmail("verein@test.ch")).thenReturn(Optional.of(user));
+        when(service.erstelleMitEigentuemer(any(), eq(user.getId()))).thenReturn(gespeichert);
 
         mockMvc.perform(post("/organisationen")
                 .param("typ", "VEREIN")

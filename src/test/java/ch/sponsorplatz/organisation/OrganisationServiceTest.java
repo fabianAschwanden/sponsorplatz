@@ -1,4 +1,6 @@
 package ch.sponsorplatz.organisation;
+import ch.sponsorplatz.benutzer.AppUser;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.shared.util.SlugGenerator;
 
 import ch.sponsorplatz.shared.exception.NotFoundException;
@@ -13,19 +15,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class OrganisationServiceTest {
 
     private OrganisationRepository repository;
     private MitgliedschaftRepository mitgliedschaftRepository;
+    private AppUserRepository appUserRepository;
     private OrganisationService service;
 
     @BeforeEach
     void setUp() {
         repository = mock(OrganisationRepository.class);
         mitgliedschaftRepository = mock(MitgliedschaftRepository.class);
-        service = new OrganisationService(repository, new SlugGenerator(), mitgliedschaftRepository);
+        appUserRepository = mock(AppUserRepository.class);
+        service = new OrganisationService(repository, new SlugGenerator(),
+                mitgliedschaftRepository, appUserRepository);
     }
 
     /** ORG-05: Erstellen mit Auto-Slug aus dem Namen. */
@@ -271,6 +277,31 @@ class OrganisationServiceTest {
 
         assertThat(ergebnis).hasSize(1);
         assertThat(ergebnis.get(0).getStatus()).isEqualTo(OrgStatus.PENDING);
+    }
+
+    /** ORG-30: erstelleMitEigentuemer legt Org + ORG_OWNER-Mitgliedschaft an. */
+    @Test
+    void erstelleMitEigentuemerLegtMitgliedschaftAn() {
+        UUID userId = UUID.randomUUID();
+        AppUser user = new AppUser();
+        user.setId(userId);
+        user.setEmail("verein@test.ch");
+
+        when(repository.findBySlug(any())).thenReturn(Optional.empty());
+        when(repository.save(any(Organisation.class))).thenAnswer(inv -> {
+            Organisation o = inv.getArgument(0);
+            o.setId(UUID.randomUUID());
+            return o;
+        });
+        when(appUserRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(mitgliedschaftRepository.save(any(Mitgliedschaft.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        OrganisationFormDto dto = neuesDto("Mein Verein", null);
+        Organisation org = service.erstelleMitEigentuemer(dto, userId);
+
+        assertThat(org.getName()).isEqualTo("Mein Verein");
+        verify(mitgliedschaftRepository).save(any(Mitgliedschaft.class));
     }
 
     private OrganisationFormDto neuesDto(String name, String slug) {
