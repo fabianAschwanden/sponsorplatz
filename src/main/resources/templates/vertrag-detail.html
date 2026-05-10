@@ -2,7 +2,7 @@
 <html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="'Vertrag — ' + ${vertrag.orgName} + ' — Sponsorplatz'">Vertrag</title>
+    <title th:text="#{vertragDetail.rubrikSuffix} + ' — ' + ${vertrag.orgName} + ' — Sponsorplatz'">Vertrag</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -16,10 +16,14 @@
         <header class="app-page-head">
             <div>
                 <p class="app-page-rubrik">
-                    <a th:href="@{'/organisationen/' + ${vertrag.orgSlug} + '/anfragen'}">Anfragen</a>
-                    · Vertrag
+                    <a th:href="@{'/organisationen/' + ${vertrag.orgSlug} + '/anfragen'}"
+                       th:text="#{vertragDetail.rubrikLink}">Anfragen</a>
+                    · <span th:text="#{vertragDetail.rubrikSuffix}">Vertrag</span>
                 </p>
-                <h1 th:text="'Sponsoring-Vertrag: ' + ${vertrag.paketName}">Vertrag</h1>
+                <h1>
+                    <span th:text="#{vertragDetail.titelPrefix}">Sponsoring-Vertrag:</span>
+                    <span th:text="${vertrag.paketName}">Paket</span>
+                </h1>
                 <p class="app-muted">
                     <span th:text="${vertrag.orgName}">Verein</span> ↔
                     <span th:text="${vertrag.sponsorName ?: vertrag.sponsorOrgName ?: '—'}">Sponsor</span>
@@ -27,16 +31,17 @@
             </div>
             <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                 <a th:href="@{'/organisationen/' + ${vertrag.orgSlug} + '/vertraege/' + ${vertrag.id} + '/pdf'}"
-                   class="app-btn app-btn-ghost">PDF herunterladen</a>
+                   class="app-btn app-btn-ghost" th:text="#{vertragDetail.pdfDownload}">PDF herunterladen</a>
                 <form th:if="${vertrag.status.name() == 'ENTWURF'}"
                       th:action="@{'/organisationen/' + ${vertrag.orgSlug} + '/vertraege/' + ${vertrag.id} + '/unterzeichnen'}"
                       method="post"
-                      onsubmit="return confirm('Vertrag als unterzeichnet markieren? Die Konditionen werden danach gesperrt.');">
-                    <button type="submit" class="app-btn">Als unterzeichnet markieren</button>
+                      onsubmit="return confirm(this.querySelector('.confirm-msg').textContent);">
+                    <span class="confirm-msg" hidden th:text="#{vertragDetail.unterzeichnen.bestaetigung}"></span>
+                    <button type="submit" class="app-btn" th:text="#{vertragDetail.unterzeichnen}">Als unterzeichnet markieren</button>
                 </form>
                 <form th:action="@{'/organisationen/' + ${vertrag.orgSlug} + '/vertraege/' + ${vertrag.id} + '/rechnung/erstellen'}"
                       method="post">
-                    <button type="submit" class="app-btn">Rechnung erstellen</button>
+                    <button type="submit" class="app-btn" th:text="#{vertragDetail.rechnungErstellen}">Rechnung erstellen</button>
                 </form>
             </div>
         </header>
@@ -49,26 +54,27 @@
         <!-- ── Status-Banner ────────────────────────────────────────── -->
         <div class="app-card"
              th:style="${vertrag.status.name() == 'UNTERZEICHNET'} ? 'border-left:4px solid #16a34a;' : 'border-left:4px solid #f59e0b;'">
-            <strong th:if="${vertrag.status.name() == 'ENTWURF'}">Status: Entwurf</strong>
-            <strong th:if="${vertrag.status.name() == 'UNTERZEICHNET'}">Status: Unterzeichnet</strong>
-            <strong th:if="${vertrag.status.name() == 'GEKUENDIGT'}">Status: Gekündigt</strong>
-            <p style="margin:0.25rem 0 0;" th:if="${vertrag.status.name() == 'ENTWURF'}">
-                Konditionen ergänzen, dann beide Seiten unterschreiben (im PDF) und
-                hier als unterzeichnet markieren.
-            </p>
+            <strong>
+                <span th:text="#{vertragDetail.statusPrefix}">Status:</span>
+                <span th:text="#{'status.vertrag.' + ${vertrag.status.name()}}">Entwurf</span>
+            </strong>
+            <p style="margin:0.25rem 0 0;" th:if="${vertrag.status.name() == 'ENTWURF'}"
+               th:text="#{vertragDetail.entwurfHinweis}">Konditionen ergänzen, dann beide Seiten unterschreiben…</p>
             <p style="margin:0.25rem 0 0;" th:if="${vertrag.status.name() == 'UNTERZEICHNET'}">
-                Unterzeichnet am <span th:text="${#temporals.format(vertrag.unterzeichnetAm, 'dd.MM.yyyy HH:mm')}">—</span>
-                durch <span th:text="${vertrag.unterzeichnetVon}">—</span>.
+                <span th:text="#{vertragDetail.unterzeichnetAm}">Unterzeichnet am</span>
+                <span th:text="${#temporals.format(vertrag.unterzeichnetAm, 'dd.MM.yyyy HH:mm')}">—</span>
+                <span th:text="#{vertragDetail.durch}">durch</span>
+                <span th:text="${vertrag.unterzeichnetVon}">—</span>.
             </p>
         </div>
 
         <!-- ── Snapshot (read-only) ──────────────────────────────────── -->
         <section class="app-card">
-            <h2>Vertragspartner</h2>
+            <h2 th:text="#{vertragDetail.partner.titel}">Vertragspartner</h2>
             <dl class="app-dl">
-                <dt>Verein</dt>
+                <dt th:text="#{vertragDetail.partner.verein}">Verein</dt>
                 <dd th:text="${vertrag.orgName}">—</dd>
-                <dt>Sponsor</dt>
+                <dt th:text="#{vertragDetail.partner.sponsor}">Sponsor</dt>
                 <dd>
                     <span th:text="${vertrag.sponsorName ?: '—'}">—</span>
                     <span th:if="${vertrag.sponsorEmail}"
@@ -76,63 +82,67 @@
                     <span th:if="${vertrag.sponsorOrgName}"
                           class="app-muted" th:text="' · ' + ${vertrag.sponsorOrgName}"></span>
                 </dd>
-                <dt>Paket</dt>
+                <dt th:text="#{vertragDetail.partner.paket}">Paket</dt>
                 <dd th:text="${vertrag.paketName}">—</dd>
             </dl>
         </section>
 
         <!-- ── Konditionen-Form ──────────────────────────────────────── -->
         <section class="app-card">
-            <h2>Konditionen</h2>
-            <p class="app-muted" th:if="${vertrag.status.name() != 'ENTWURF'}">
-                Bearbeitung gesperrt — Vertrag ist nicht mehr im Entwurf.
-            </p>
+            <h2 th:text="#{vertragDetail.konditionen.titel}">Konditionen</h2>
+            <p class="app-muted" th:if="${vertrag.status.name() != 'ENTWURF'}"
+               th:text="#{vertragDetail.konditionen.gesperrt}">Bearbeitung gesperrt…</p>
 
             <form th:action="@{'/organisationen/' + ${vertrag.orgSlug} + '/vertraege/' + ${vertrag.id}}"
                   th:object="${form}" method="post">
                 <fieldset th:disabled="${vertrag.status.name() != 'ENTWURF'}" style="border:none; padding:0;">
                     <div class="app-form-grid">
                         <label>
-                            Sponsoring-Beschreibung
+                            <span th:text="#{vertragDetail.konditionen.beschreibung}">Sponsoring-Beschreibung</span>
                             <textarea th:field="*{paketBeschreibung}" rows="3"
+                                      th:placeholder="#{vertragDetail.konditionen.beschreibungPlaceholder}"
                                       placeholder="Was ist im Paket enthalten?"></textarea>
                         </label>
                         <label>
-                            Preis (CHF)
+                            <span th:text="#{vertragDetail.konditionen.preis}">Preis (CHF)</span>
                             <input type="number" step="0.01" min="0" th:field="*{preisChf}" required>
                         </label>
                         <label>
-                            Laufzeit von
+                            <span th:text="#{vertragDetail.konditionen.laufzeitVon}">Laufzeit von</span>
                             <input type="date" th:field="*{laufzeitVon}">
                         </label>
                         <label>
-                            Laufzeit bis
+                            <span th:text="#{vertragDetail.konditionen.laufzeitBis}">Laufzeit bis</span>
                             <input type="date" th:field="*{laufzeitBis}">
                         </label>
                         <label style="grid-column: 1 / -1;">
-                            Leistung des Vereins
+                            <span th:text="#{vertragDetail.konditionen.leistungVerein}">Leistung des Vereins</span>
                             <textarea th:field="*{leistungVerein}" rows="3"
-                                      placeholder="Bandenwerbung, Trikot-Logo, Erwähnung im Programmheft..."></textarea>
+                                      th:placeholder="#{vertragDetail.konditionen.leistungVereinPlaceholder}"
+                                      placeholder="Bandenwerbung, Trikot-Logo…"></textarea>
                         </label>
                         <label style="grid-column: 1 / -1;">
-                            Gegenleistung des Sponsors
+                            <span th:text="#{vertragDetail.konditionen.leistungSponsor}">Gegenleistung des Sponsors</span>
                             <textarea th:field="*{leistungSponsor}" rows="3"
-                                      placeholder="Geldbetrag, Sachleistung, Material..."></textarea>
+                                      th:placeholder="#{vertragDetail.konditionen.leistungSponsorPlaceholder}"
+                                      placeholder="Geldbetrag, Sachleistung…"></textarea>
                         </label>
                     </div>
                     <div style="margin-top:1rem;">
                         <button type="submit" class="app-btn"
-                                th:if="${vertrag.status.name() == 'ENTWURF'}">Speichern</button>
+                                th:if="${vertrag.status.name() == 'ENTWURF'}"
+                                th:text="#{allgemein.speichern}">Speichern</button>
                     </div>
                 </fieldset>
             </form>
         </section>
 
         <p class="app-muted" style="margin-top:1.5rem; font-size:0.875rem;">
-            Erstellt am <span th:text="${#temporals.format(vertrag.erstelltAm, 'dd.MM.yyyy HH:mm')}">—</span>
-            durch <span th:text="${vertrag.erstelltVon}">—</span>.
-            Snapshot der Konditionen — nachträgliche Änderungen am Quell-Paket
-            wirken nicht auf den Vertrag zurück.
+            <span th:text="#{vertragDetail.erstelltAm}">Erstellt am</span>
+            <span th:text="${#temporals.format(vertrag.erstelltAm, 'dd.MM.yyyy HH:mm')}">—</span>
+            <span th:text="#{vertragDetail.durch}">durch</span>
+            <span th:text="${vertrag.erstelltVon}">—</span>.
+            <span th:text="#{vertragDetail.snapshotHinweis}">Snapshot der Konditionen…</span>
         </p>
     </main>
 </div>
