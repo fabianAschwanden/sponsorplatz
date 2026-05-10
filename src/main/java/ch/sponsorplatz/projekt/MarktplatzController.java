@@ -73,6 +73,26 @@ public class MarktplatzController {
         model.addAttribute("suchbegriff", q);
         model.addAttribute("alleBranchen", Branche.values());
         model.addAttribute("filterBranchen", branche != null ? branche : Set.of());
+
+        // Neueste 3 Projekte als Highlight-Preview (nur auf der ungefilterten Startansicht)
+        boolean istGefiltertOderGesucht = (q != null && !q.isBlank())
+                || (kategorie != null && !kategorie.isBlank())
+                || (ort != null && !ort.isBlank())
+                || (branche != null && !branche.isEmpty());
+        if (!istGefiltertOderGesucht) {
+            List<ProjektView> neueste = projektService.findeNeuesteOeffentliche(3).stream()
+                    .map(p -> {
+                        String cover = medienAssetService.findeCover(EntityTyp.PROJEKT, p.getId())
+                                .map(a -> "/medien/" + a.getId())
+                                .orElse(null);
+                        return ProjektView.von(p, cover);
+                    })
+                    .toList();
+            model.addAttribute("neueste", neueste);
+        } else {
+            model.addAttribute("neueste", List.of());
+        }
+
         return "marktplatz";
     }
 

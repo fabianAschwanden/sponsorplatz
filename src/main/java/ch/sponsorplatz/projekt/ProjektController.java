@@ -78,11 +78,10 @@ public class ProjektController {
             model.addAttribute("org", OrganisationView.von(org));
             return "projekt-form";
         }
-        Projekt projekt = projektService.erstelle(org, dto.getName(), dto.getBeschreibung());
-        projekt.setKategorie(dto.getKategorie());
-        projekt.setOrt(dto.getOrt());
-        projekt.setStartDatum(dto.getStartDatum());
-        projekt.setEndDatum(dto.getEndDatum());
+        Projekt projekt = projektService.erstelleAusForm(
+                org, dto.getName(), dto.getBeschreibung(),
+                dto.getKategorie(), dto.getOrt(),
+                dto.getStartDatum(), dto.getEndDatum());
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                 "Projekt \"" + projekt.getName() + "\" erstellt.");
         return "redirect:/organisationen/" + orgSlug + "/projekte/" + projekt.getSlug();

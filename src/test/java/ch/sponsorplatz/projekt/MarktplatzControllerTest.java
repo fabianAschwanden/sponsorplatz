@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -46,6 +47,12 @@ class MarktplatzControllerTest {
 
     @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
+
+    @BeforeEach
+    void setUp() {
+        // Default-Stub: findeNeuesteOeffentliche wird im Controller immer aufgerufen
+        when(projektService.findeNeuesteOeffentliche(3)).thenReturn(List.of());
+    }
 
     private Projekt testProjekt() {
         Organisation org = new Organisation();
@@ -266,6 +273,46 @@ class MarktplatzControllerTest {
                             .hasSize(2)
                             .extracting(ProjektView::slug)
                             .containsExactlyInAnyOrder("sport", "reha");
+                });
+    }
+
+    /**
+     * MKT-11: Ungefilterte Startseite enthält „neueste" Attribut mit max. 3 Projekten.
+     */
+    @Test
+    void startseitenPreviewZeigtNeueste() throws Exception {
+        Projekt p = testProjekt();
+        when(projektService.findeOeffentliche()).thenReturn(List.of(p));
+        when(projektService.findeNeuesteOeffentliche(3)).thenReturn(List.of(p));
+
+        mockMvc.perform(get("/marktplatz"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("neueste"))
+                .andExpect(result -> {
+                    ModelAndView mv = result.getModelAndView();
+                    assertThat(mv).isNotNull();
+                    @SuppressWarnings("unchecked")
+                    List<ProjektView> neueste = (List<ProjektView>) mv.getModel().get("neueste");
+                    assertThat(neueste).hasSize(1);
+                    assertThat(neueste.get(0).name()).isEqualTo("Sommerfest");
+                });
+    }
+
+    /**
+     * MKT-12: Gefilterte Ansicht (z.B. ?q=xyz) zeigt KEINE Preview-Sektion.
+     */
+    @Test
+    void gefilterteAnsichtOhnePreview() throws Exception {
+        when(projektService.suche("Test")).thenReturn(List.of());
+
+        mockMvc.perform(get("/marktplatz").param("q", "Test"))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    ModelAndView mv = result.getModelAndView();
+                    assertThat(mv).isNotNull();
+                    @SuppressWarnings("unchecked")
+                    List<ProjektView> neueste = (List<ProjektView>) mv.getModel().get("neueste");
+                    assertThat(neueste).isEmpty();
                 });
     }
 

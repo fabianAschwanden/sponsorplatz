@@ -109,7 +109,8 @@ class ProjektControllerTest {
         Projekt projekt = testProjekt(org);
         when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
         when(orgService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
-        when(projektService.erstelle(any(), eq("Sommerfest 2026"), any())).thenReturn(projekt);
+        when(projektService.erstelleAusForm(any(), eq("Sommerfest 2026"), any(), any(), any(), any(), any()))
+                .thenReturn(projekt);
 
         mockMvc.perform(post("/organisationen/fc-test/projekte/speichern")
                         .with(csrf())

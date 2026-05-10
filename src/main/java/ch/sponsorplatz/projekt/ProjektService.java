@@ -43,6 +43,15 @@ public class ProjektService {
         return repository.findBySichtbarkeitOrderByVeroeffentlichtAmDesc(Sichtbarkeit.OEFFENTLICH);
     }
 
+    /** Die neuesten N öffentlichen Projekte — für die Marktplatz-Preview-Sektion. */
+    @Transactional(readOnly = true)
+    public List<Projekt> findeNeuesteOeffentliche(int limit) {
+        return repository.findBySichtbarkeitOrderByVeroeffentlichtAmDesc(Sichtbarkeit.OEFFENTLICH)
+                .stream()
+                .limit(limit)
+                .toList();
+    }
+
     /**
      * Durchsucht öffentliche Projekte nach einem Suchbegriff.
      * Sucht in: Name, Beschreibung, Kategorie, Ort, Org-Name.
@@ -70,6 +79,22 @@ public class ProjektService {
     }
 
     public Projekt erstelle(Organisation org, String name, String beschreibung) {
+        return erstelleAusForm(org, name, beschreibung, null, null, null, null);
+    }
+
+    /**
+     * Erstellt ein Projekt mit allen Form-Feldern innerhalb der Service-Tx.
+     *
+     * <p>Vorher wurden Kategorie/Ort/StartDatum/EndDatum vom Controller nach
+     * dem {@code service.erstelle(...)}-Call per Setter auf der Entity
+     * gesetzt — mit {@code spring.jpa.open-in-view=false} ist die Entity an
+     * dem Punkt aber detached, und die Setter sind silent No-Ops. Die
+     * Felder gingen ohne Fehler verloren.
+     */
+    public Projekt erstelleAusForm(Organisation org, String name, String beschreibung,
+                                   String kategorie, String ort,
+                                   java.time.LocalDate startDatum,
+                                   java.time.LocalDate endDatum) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Projektname darf nicht leer sein");
         }
@@ -84,6 +109,10 @@ public class ProjektService {
         projekt.setName(name.trim());
         projekt.setSlug(slug);
         projekt.setBeschreibung(beschreibung);
+        projekt.setKategorie(kategorie);
+        projekt.setOrt(ort);
+        projekt.setStartDatum(startDatum);
+        projekt.setEndDatum(endDatum);
         projekt.setSichtbarkeit(Sichtbarkeit.ENTWURF);
         return repository.save(projekt);
     }

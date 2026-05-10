@@ -80,6 +80,40 @@
         </span>
     </div>
 
+    <!-- ==================== NEUESTE PROJEKTE PREVIEW ==================== -->
+    <section th:if="${!neueste.isEmpty()}" class="neueste-preview" style="margin-bottom:2rem;">
+        <h2 style="font-size:1.15rem; margin:0 0 1rem; font-family:var(--dash-font-head);">🆕 Neueste Projekte</h2>
+        <div class="neueste-grid">
+            <a th:each="p : ${neueste}"
+               th:href="@{/marktplatz/{slug}(slug=${p.slug})}"
+               class="neueste-card">
+                <div class="neueste-card-img">
+                    <img th:if="${p.coverUrl}" th:src="${p.coverUrl}" alt=""
+                         style="width:100%; height:100%; object-fit:cover;">
+                    <div th:unless="${p.coverUrl}" class="neueste-placeholder">
+                        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.3;">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <path d="M21 15l-5-5L5 21"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="neueste-card-body">
+                    <span class="neueste-card-badge" th:if="${p.org}" th:text="${p.org.name}">Verein</span>
+                    <span class="neueste-card-name" th:text="${p.name}">Projektname</span>
+                    <p class="neueste-card-desc"
+                       th:if="${p.beschreibung}"
+                       th:text="${#strings.abbreviate(p.beschreibung, 120)}">Kurzbeschreibung…</p>
+                    <span class="neueste-card-meta">
+                        <span th:if="${p.kategorie}" th:text="${p.kategorie}">Kategorie</span>
+                        <span th:if="${p.kategorie != null and p.ort != null}"> · </span>
+                        <span th:if="${p.ort}" th:text="${p.ort}">Ort</span>
+                    </span>
+                </div>
+            </a>
+        </div>
+    </section>
+
     <section th:if="${!projekte.isEmpty()}" class="public-grid">
         <a th:each="p : ${projekte}"
            th:href="@{/marktplatz/{slug}(slug=${p.slug})}"

@@ -14,7 +14,16 @@ import java.util.UUID;
 @Repository
 public interface ProjektRepository extends JpaRepository<Projekt, UUID> {
 
-    Optional<Projekt> findBySlug(String slug);
+    /**
+     * Lädt Projekt inkl. Org per {@code JOIN FETCH}. Verhindert
+     * {@code LazyInitializationException} in Controllern, die
+     * {@link ProjektView#von(Projekt)} benutzen — der Konstruktor greift
+     * auf {@code projekt.getOrg().getName()} zu, was mit
+     * {@code spring.jpa.open-in-view=false} sonst nach Service-Tx-Ende
+     * fehlschlägt.
+     */
+    @Query("SELECT p FROM Projekt p JOIN FETCH p.org WHERE p.slug = :slug")
+    Optional<Projekt> findBySlug(@Param("slug") String slug);
 
     List<Projekt> findByOrgIdOrderByCreatedAtDesc(UUID orgId);
 
