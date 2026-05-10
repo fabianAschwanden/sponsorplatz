@@ -149,6 +149,17 @@
             <version>8.0</version>
         </dependency>
 
+        <!--
+          Generiert META-INF/spring-configuration-metadata.json für jede
+          @ConfigurationProperties-Klasse — IDE versteht eigene Properties
+          (kein "unknown property"-Hint mehr in application*.properties).
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Lombok + MapStruct -->
         <dependency>
             <groupId>org.projectlombok</groupId>
