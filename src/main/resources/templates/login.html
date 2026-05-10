@@ -56,6 +56,20 @@
             </div>
         </form>
 
+        <!-- OIDC-SSO-Buttons (nur wenn Identity-Provider konfiguriert sind, Spec §3.2) -->
+        <div th:if="${oauth2Anbieter != null and !oauth2Anbieter.isEmpty()}"
+             class="oidc-anbieter" style="margin-top:1.5rem;">
+            <div style="text-align:center; margin:1rem 0; color:var(--farbe-text-muted); font-size:0.85rem;">
+                — oder —
+            </div>
+            <a th:each="anbieter : ${oauth2Anbieter}"
+               th:href="@{'/oauth2/authorization/' + ${anbieter.registrationId}}"
+               class="app-btn app-btn-secondary"
+               style="display:flex; width:100%; justify-content:center; margin-bottom:0.5rem;">
+                Mit <span th:text="${anbieter.clientName}" style="margin:0 0.25rem;">CSS-Konto</span> anmelden
+            </a>
+        </div>
+
         <p class="public-auth-foot">
             Noch kein Konto? <a th:href="@{/registrieren}">Jetzt registrieren</a><br>
             <a th:href="@{/passwort-vergessen}">Passwort vergessen?</a>

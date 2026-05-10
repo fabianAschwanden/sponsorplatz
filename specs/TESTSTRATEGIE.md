@@ -571,6 +571,42 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **EVT-04** | `EventServiceTest` | `findeKommendeNachOrgIds` sortiert nach Datum aufsteigend |
 | **EVT-05** | `EventViewTest` | View-Mapping korrekt (kein Org-Entity im View) |
 
+### Phase 1.4 — SSO via OIDC / Entra ID (SSO)
+
+> **Ziel:** Single-Sign-On für Corporate-User via Microsoft Entra ID (vormals
+> Azure AD). Coexistence mit Form-Login. Vollständige Spec siehe
+> [`AUTH_SSO_OIDC.md`](AUTH_SSO_OIDC.md).
+>
+> **Service-Vertrag (`SponsorplatzOidcUserService`):**
+> - `loadUser(OidcUserRequest)` mappt OIDC-Subject auf `AppUser` mit drei Stufen:
+>   1. Lookup `(provider=ENTRA_ID, subject)` in `federierte_identitaet`
+>   2. Email-Match auf bestehenden `AppUser` → Auto-Verknüpfung
+>   3. Just-in-Time-Provisionierung neuer `AppUser` mit `email_verifiziert=true`
+> - Group-Mapping: `groups`-Claim → `PlatformRolle` per Properties-Konfiguration
+>
+> **Datenmodell:** Neue Tabelle `federierte_identitaet` (Migration V25) mit
+> `(provider, subject)` UNIQUE, FK auf `app_user(id)` mit ON DELETE CASCADE.
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **SSO-01** | _Pilot-Smoke-Test_ | Authorization-Code-Flow End-to-End. Bewusst NICHT als IT verdrahtet (verlangt Wiremock/Testcontainers-Keycloak, übermächtig für Pilot-Phase). Mapping-Logik ist via SSO-02..07 voll abgedeckt; Token-Verifikation ist Spring-Security-upstream-getestet. Manuell gegen Entra-Test-Tenant in der Pilot-Phase verifizieren. |
+| **SSO-02** | `SponsorplatzOidcUserServiceTest` | Bestehender User mit gleicher E-Mail wird via Email-Match verknüpft (Eintrag in `federierte_identitaet`) ✅ |
+| **SSO-03** | `SponsorplatzOidcUserServiceTest` | Neuer User wird Just-in-Time erstellt mit `email_verifiziert=true` und `passwort_hash=OIDC-ONLY` ✅ |
+| **SSO-04** | `SponsorplatzOidcUserServiceTest` | Subsequent Login findet User direkt via `(provider, subject)`, aktualisiert `letzter_login_am` ✅ |
+| **SSO-05** | `OidcLoginPageRenderTest` | Beide Login-Pfade aktiv: Form-Login + OAuth2-Anbieter-Button auf `/login`-Page sichtbar ✅ |
+| **SSO-06** | `SponsorplatzOidcUserServiceTest` | Group-Mapping setzt `PLATFORM_ADMIN`, wenn `groups`-Claim die konfigurierte Group enthält ✅ |
+| **SSO-07** | `SponsorplatzOidcUserServiceTest` | Group-Mapping entzieht `PLATFORM_ADMIN`, wenn die Group nicht mehr im Claim ist (Re-Sync bei jedem Login) ✅ |
+| **SSO-08** | _Spring-Security-upstream_ | Ungültige ID-Token-Signatur → 401. Spring Security validiert JWKS automatisch — keine eigene Logik, daher delegiert auf upstream-Tests. |
+| **SSO-09** | _Spring-Security-upstream_ | Abgelaufenes ID-Token → 401. Analog SSO-08. |
+| **SSO-10** | `LogoutControllerTest` | Logout entfernt Spring-Session lokal (Provider-Logout out of scope für initial) — TBD |
+| **SSO-11** | `FederierteIdentitaetRepositoryTest` | `findByProviderAndSubject` findet bei Treffer, gibt `Optional.empty()` bei Miss zurück ✅ |
+| **SSO-12** | `FederierteIdentitaetRepositoryTest` | UNIQUE-Constraint auf `(provider, subject)` — zweiter Eintrag wirft `ConstraintViolationException` ✅ |
+
+**Spätere Tests (Phase 1.4 fortgesetzt):**
+- **SSO-13** (TBD): Single Logout — Provider-initiated `end_session_endpoint`-Aufruf entfernt Session lokal und beim Provider
+- **SSO-14** (TBD): User-UI für manuelle Verknüpfung/Trennung der Entra-Identität in `/einstellungen`
+- **SSO-15** (TBD): Multi-Provider — Erweiterung um Google/Apple, Provider-Auswahl auf `/login`
+
 ## CI
 
 - Bei jedem Push und PR auf `main`: `mvn -B clean verify` + Docker-Build-Smoke
