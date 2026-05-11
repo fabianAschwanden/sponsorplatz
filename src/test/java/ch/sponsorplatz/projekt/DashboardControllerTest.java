@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.benutzer.AppUserService;
+import ch.sponsorplatz.benutzer.PlatformRolle;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import ch.sponsorplatz.shared.config.SecurityConfig;
@@ -127,18 +128,56 @@ class DashboardControllerTest {
                 .andExpect(status().isOk());
     }
 
-    /** DASH-05: User ohne Mitgliedschaften → Redirect auf Onboarding. */
+    /** DASH-05: User ohne Mitgliedschaften und Onboarding noch nicht gesehen → Redirect auf Onboarding. */
     @Test
     @WithMockUser("neu@test.ch")
     void ohneOrgRedirectAufOnboarding() throws Exception {
         AppUser user = new AppUser();
         user.setId(UUID.randomUUID());
         user.setEmail("neu@test.ch");
+        user.setOnboardingGesehen(false);
         when(appUserRepository.findByEmail("neu@test.ch")).thenReturn(Optional.of(user));
         when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of());
 
         mockMvc.perform(get("/dashboard"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/onboarding"));
+    }
+
+    /** DASH-06: User ohne Mitgliedschaften, aber Onboarding bereits gesehen → bleibt auf Dashboard. */
+    @Test
+    @WithMockUser("zurueck@test.ch")
+    void ohneOrgAberOnboardingGesehenBleibtAufDashboard() throws Exception {
+        AppUser user = new AppUser();
+        user.setId(UUID.randomUUID());
+        user.setEmail("zurueck@test.ch");
+        user.setOnboardingGesehen(true);
+        when(appUserRepository.findByEmail("zurueck@test.ch")).thenReturn(Optional.of(user));
+        when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of());
+        when(dashboardService.ladeDashboardDaten(anyString())).thenReturn(DashboardDaten.leer());
+        when(appUserService.findeNachEmail(anyString())).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/dashboard"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("dashboard"));
+    }
+
+    /** DASH-07: Plattform-Admin ohne Mitgliedschaften → bleibt auf Dashboard (kein Onboarding-Redirect). */
+    @Test
+    @WithMockUser("admin@test.ch")
+    void plattformAdminOhneOrgBleibtAufDashboard() throws Exception {
+        AppUser admin = new AppUser();
+        admin.setId(UUID.randomUUID());
+        admin.setEmail("admin@test.ch");
+        admin.setPlatformRolle(PlatformRolle.PLATFORM_ADMIN);
+        admin.setOnboardingGesehen(false);
+        when(appUserRepository.findByEmail("admin@test.ch")).thenReturn(Optional.of(admin));
+        when(mitgliedschaftRepository.findOrgIdsByUserId(admin.getId())).thenReturn(List.of());
+        when(dashboardService.ladeDashboardDaten(anyString())).thenReturn(DashboardDaten.leer());
+        when(appUserService.findeNachEmail(anyString())).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/dashboard"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("dashboard"));
     }
 }

@@ -9,14 +9,18 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
+import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.benutzer.AppUserService;
+import ch.sponsorplatz.benutzer.PlatformRolle;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 
 /**
  * Dashboard für angemeldete Benutzer — zeigt persönliche Übersicht
  * basierend auf den Mitgliedschaften des Users.
- * Leitet auf /onboarding um, falls der User noch keiner Org angehört.
+ * Leitet auf /onboarding um, falls der User noch keiner Org angehört
+ * UND das Onboarding noch nicht gesehen hat. Plattform-Admins werden
+ * nie in den Wizard geschickt.
  */
 @Controller
 public class DashboardController {
@@ -42,11 +46,15 @@ public class DashboardController {
     @GetMapping("/dashboard")
     @PreAuthorize("isAuthenticated()")
     public String dashboard(Authentication auth, Model model) {
-        // Onboarding-Redirect: User ohne Mitgliedschaften → Wizard
-        boolean hatOrgs = appUserRepository.findByEmail(auth.getName())
-                .map(user -> !mitgliedschaftRepository.findOrgIdsByUserId(user.getId()).isEmpty())
-                .orElse(false);
-        if (!hatOrgs) {
+        // Onboarding-Redirect nur einmal direkt nach der Registrierung:
+        // - Plattform-Admins werden nie umgeleitet.
+        // - User, die das Onboarding bereits gesehen haben, ebenfalls nicht
+        //   (auch ohne Org bleiben sie dann auf dem Dashboard).
+        AppUser user = appUserRepository.findByEmail(auth.getName()).orElse(null);
+        if (user != null
+                && user.getPlatformRolle() != PlatformRolle.PLATFORM_ADMIN
+                && !user.isOnboardingGesehen()
+                && mitgliedschaftRepository.findOrgIdsByUserId(user.getId()).isEmpty()) {
             return "redirect:/onboarding";
         }
 
@@ -62,7 +70,7 @@ public class DashboardController {
 
         // Matching-Empfehlungen
         List<ProjektView> empfehlungen = appUserService.findeNachEmail(auth.getName())
-                .map(user -> matchingService.findeEmpfehlungen(user.getId()))
+                .map(u -> matchingService.findeEmpfehlungen(u.getId()))
                 .orElse(List.of())
                 .stream()
                 .map(ProjektView::von)

@@ -65,11 +65,24 @@ public class OnboardingController {
 
     @GetMapping
     public String startseite(Authentication auth, Model model) {
-        // User mit Mitgliedschaften braucht kein Onboarding → Dashboard
         Optional<AppUser> userOpt = appUserRepository.findByEmail(auth.getName());
-        if (userOpt.isPresent()
-                && !mitgliedschaftRepository.findOrgIdsByUserId(userOpt.get().getId()).isEmpty()) {
-            return "redirect:/dashboard";
+        // Plattform-Admins sehen das Onboarding nie.
+        // User mit Mitgliedschaften brauchen kein Onboarding → Dashboard.
+        if (userOpt.isPresent()) {
+            AppUser user = userOpt.get();
+            if (user.getPlatformRolle() == PlatformRolle.PLATFORM_ADMIN) {
+                return "redirect:/dashboard";
+            }
+            if (!mitgliedschaftRepository.findOrgIdsByUserId(user.getId()).isEmpty()) {
+                return "redirect:/dashboard";
+            }
+            // Wizard wird angezeigt — Flag setzen, damit künftige Logins nicht
+            // erneut hierher umgeleitet werden, auch wenn der User keinen
+            // Verein anlegt oder den Wizard abbricht.
+            if (!user.isOnboardingGesehen()) {
+                user.setOnboardingGesehen(true);
+                appUserRepository.save(user);
+            }
         }
 
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "onboarding");

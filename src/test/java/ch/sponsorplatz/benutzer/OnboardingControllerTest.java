@@ -61,9 +61,10 @@ class OnboardingControllerTest {
 
     @Test
     @WithMockUser("neu@test.ch")
-    @DisplayName("ONB-02: /onboarding ohne Mitgliedschaften → zeigt Onboarding-Seite")
+    @DisplayName("ONB-02: /onboarding ohne Mitgliedschaften → zeigt Onboarding-Seite und markiert es als gesehen")
     void ohneOrgZeigtOnboarding() throws Exception {
         AppUser user = testUser();
+        user.setOnboardingGesehen(false);
         when(appUserRepository.findByEmail("neu@test.ch")).thenReturn(Optional.of(user));
         when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of());
 
@@ -71,6 +72,44 @@ class OnboardingControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("onboarding"))
                 .andExpect(model().attributeExists("vereinForm", "branchen"));
+
+        org.assertj.core.api.Assertions.assertThat(user.isOnboardingGesehen()).isTrue();
+        verify(appUserRepository).save(user);
+    }
+
+    @Test
+    @WithMockUser("admin@test.ch")
+    @DisplayName("ONB-06: Plattform-Admin → /onboarding redirected aufs Dashboard, ohne Flag-Update")
+    void plattformAdminWirdAufDashboardUmgeleitet() throws Exception {
+        AppUser admin = testUser();
+        admin.setEmail("admin@test.ch");
+        admin.setPlatformRolle(PlatformRolle.PLATFORM_ADMIN);
+        admin.setOnboardingGesehen(false);
+        when(appUserRepository.findByEmail("admin@test.ch")).thenReturn(Optional.of(admin));
+
+        mockMvc.perform(get("/onboarding"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
+
+        org.assertj.core.api.Assertions.assertThat(admin.isOnboardingGesehen()).isFalse();
+        org.mockito.Mockito.verify(appUserRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    @WithMockUser("zurueck@test.ch")
+    @DisplayName("ONB-07: User mit Flag=true und ohne Org darf /onboarding manuell erneut aufrufen — kein zweites save")
+    void onboardingErneutOhneFlagUpdate() throws Exception {
+        AppUser user = testUser();
+        user.setEmail("zurueck@test.ch");
+        user.setOnboardingGesehen(true);
+        when(appUserRepository.findByEmail("zurueck@test.ch")).thenReturn(Optional.of(user));
+        when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of());
+
+        mockMvc.perform(get("/onboarding"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("onboarding"));
+
+        org.mockito.Mockito.verify(appUserRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
     }
 
     @Test

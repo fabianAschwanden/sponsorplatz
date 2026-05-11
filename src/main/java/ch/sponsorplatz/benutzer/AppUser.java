@@ -46,6 +46,9 @@ public class AppUser {
     @Column(name = "email_verifiziert", nullable = false)
     private boolean emailVerifiziert = false;
 
+    @Column(name = "onboarding_gesehen", nullable = false)
+    private boolean onboardingGesehen = false;
+
     @Column(name = "verifikations_token", length = 64)
     private String verifikationsToken;
 
@@ -127,6 +130,9 @@ public class AppUser {
 
     public boolean isEmailVerifiziert() { return emailVerifiziert; }
     public void setEmailVerifiziert(boolean emailVerifiziert) { this.emailVerifiziert = emailVerifiziert; }
+
+    public boolean isOnboardingGesehen() { return onboardingGesehen; }
+    public void setOnboardingGesehen(boolean onboardingGesehen) { this.onboardingGesehen = onboardingGesehen; }
 
     public String getVerifikationsToken() { return verifikationsToken; }
     public void setVerifikationsToken(String verifikationsToken) { this.verifikationsToken = verifikationsToken; }
