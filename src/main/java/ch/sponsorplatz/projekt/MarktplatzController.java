@@ -104,10 +104,16 @@ public class MarktplatzController {
                 paketService.findeAktiveNachProjekt(projekt.getId()));
         List<MedienAssetView> anhaenge = MedienAssetView.von(
                 medienAssetService.findeAnhaenge(EntityTyp.PROJEKT, projekt.getId()));
+        List<MedienAssetView> galerie = MedienAssetView.von(
+                medienAssetService.findeGalerie(EntityTyp.PROJEKT, projekt.getId()));
+        String coverUrl = medienAssetService.findeCover(EntityTyp.PROJEKT, projekt.getId())
+                .map(a -> "/medien/" + a.getId())
+                .orElse(null);
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "marktplatz");
-        model.addAttribute("projekt", ProjektView.von(projekt));
+        model.addAttribute("projekt", ProjektView.von(projekt, coverUrl));
         model.addAttribute("pakete", pakete);
         model.addAttribute("anhaenge", anhaenge);
+        model.addAttribute("galerie", galerie);
         return "marktplatz-detail";
     }
 }

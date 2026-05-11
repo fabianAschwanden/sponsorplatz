@@ -37,14 +37,25 @@
         <h1 style="font-family:var(--dash-font-head); font-size:2.2rem; margin:0.5rem 0 0.5rem;" th:text="${projekt.name}">Projekt</h1>
         <p class="app-muted">
             <span th:text="#{marktplatzDetail.veranstalter}">Veranstalter:</span>
-            <span th:text="${projekt.org.name}">Verein</span>
+            <a th:href="@{'/vereine/' + ${projekt.org.slug}}" style="color:inherit;"
+               th:text="${projekt.org.name}">Verein</a>
         </p>
     </header>
+
+    <!-- Cover-Bild als Hero — falls vorhanden. Fix-höhe + object-fit, damit
+         hochformatige Uploads nicht das ganze Layout dominieren. -->
+    <figure class="projekt-cover" th:if="${projekt.coverUrl}"
+            style="max-width:800px; margin:0 0 1.5rem; border-radius:0.75rem; overflow:hidden; background:#f3f4f6;">
+        <img th:src="${projekt.coverUrl}" alt=""
+             style="display:block; width:100%; height:auto; max-height:420px; object-fit:cover;">
+    </figure>
 
     <section class="app-card" style="max-width: 800px;">
         <dl class="app-datenliste">
             <dt th:text="#{marktplatzDetail.feld.organisation}">Organisation</dt>
-            <dd th:text="${projekt.org.name}">Verein</dd>
+            <dd>
+                <a th:href="@{'/vereine/' + ${projekt.org.slug}}" th:text="${projekt.org.name}">Verein</a>
+            </dd>
 
             <dt th:text="#{marktplatzDetail.feld.kategorie}">Kategorie</dt>
             <dd th:text="${projekt.kategorie} ?: '—'">—</dd>
@@ -59,13 +70,35 @@
                 <span th:if="${projekt.endDatum}" th:text="${#temporals.format(projekt.endDatum, 'dd.MM.yyyy')}"></span>
                 <span th:if="${projekt.startDatum == null and projekt.endDatum == null}">—</span>
             </dd>
+
+            <dt th:if="${projekt.veroeffentlichtAm}" th:text="#{marktplatzDetail.feld.veroeffentlichtAm}">Veröffentlicht am</dt>
+            <dd th:if="${projekt.veroeffentlichtAm}"
+                th:text="${#temporals.format(projekt.veroeffentlichtAm, 'dd.MM.yyyy')}">01.01.2026</dd>
         </dl>
     </section>
 
     <section class="app-card" style="max-width: 800px;" th:if="${projekt.beschreibung}">
         <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 0.75rem;"
             th:text="#{marktplatzDetail.beschreibung}">Beschreibung</h2>
-        <p style="margin:0; line-height:1.6;" th:text="${projekt.beschreibung}">Beschreibung</p>
+        <p style="margin:0; line-height:1.6; white-space:pre-line;" th:text="${projekt.beschreibung}">Beschreibung</p>
+    </section>
+
+    <!-- Galerie — alle GALERIE-Assets als Grid mit Lightbox-on-Click.
+         Kein JS-Framework: simples [hidden]-Toggle via inline onclick.
+         Bilder werden in nativer Auflösung im Overlay angezeigt. -->
+    <section class="app-card" style="max-width: 800px;"
+             th:if="${galerie != null and !galerie.isEmpty()}">
+        <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 1rem;"
+            th:text="#{marktplatzDetail.galerie.titel}">Bilder</h2>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:0.75rem;">
+            <a th:each="g : ${galerie}" th:href="${g.url()}" target="_blank" rel="noopener"
+               th:title="${g.dateiname()}"
+               style="display:block; aspect-ratio:1/1; overflow:hidden; border-radius:0.5rem; background:#f3f4f6; border:1px solid #e5e7eb;">
+                <img th:src="${g.url()}" th:alt="${g.dateiname()}" loading="lazy"
+                     style="width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.2s;"
+                     onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+            </a>
+        </div>
     </section>
 
     <section class="app-card" style="max-width: 800px;" th:if="${pakete != null and !pakete.isEmpty()}">
@@ -94,8 +127,10 @@
 
     <!-- ==================== DATEI-ANHÄNGE (öffentlich für Sponsoren) ==================== -->
     <section class="app-card" style="max-width: 800px;" th:if="${anhaenge != null and !anhaenge.isEmpty()}">
-        <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 1rem;">📎 Projekt-Unterlagen</h2>
-        <p class="app-muted" style="margin:0 0 0.75rem; font-size:0.9rem;">
+        <h2 style="font-family:var(--dash-font-head); font-size:1.15rem; margin:0 0 1rem;"
+            th:text="#{marktplatzDetail.anhaenge.titel}">📎 Projekt-Unterlagen</h2>
+        <p class="app-muted" style="margin:0 0 0.75rem; font-size:0.9rem;"
+           th:text="#{marktplatzDetail.anhaenge.text}">
             Laden Sie die Projekt-Unterlagen herunter, um mehr über dieses Sponsoring-Projekt zu erfahren.
         </p>
         <div style="display:flex; flex-direction:column; gap:0.5rem;">

@@ -133,7 +133,58 @@ class MarktplatzControllerTest {
         mockMvc.perform(get("/marktplatz/sommerfest"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("marktplatz-detail"))
-                .andExpect(model().attributeExists("projekt"));
+                .andExpect(model().attributeExists("projekt", "pakete", "anhaenge", "galerie"));
+    }
+
+    /**
+     * MKT-05b: Detail-Seite reicht Cover, Galerie und Anhänge ans Template durch.
+     * Cover landet als coverUrl auf der ProjektView; Galerie und Anhänge separat.
+     */
+    @Test
+    void detailSeiteMitMedien() throws Exception {
+        Projekt p = testProjekt();
+        when(projektService.findeNachSlug("sommerfest")).thenReturn(Optional.of(p));
+
+        MedienAsset cover = new MedienAsset();
+        cover.setId(UUID.randomUUID());
+        cover.setDateiname("cover.jpg");
+        cover.setContentType("image/jpeg");
+        cover.setAssetTyp(AssetTyp.COVER);
+        when(medienAssetService.findeCover(EntityTyp.PROJEKT, p.getId()))
+                .thenReturn(Optional.of(cover));
+
+        MedienAsset galerieBild = new MedienAsset();
+        galerieBild.setId(UUID.randomUUID());
+        galerieBild.setDateiname("bild-1.jpg");
+        galerieBild.setContentType("image/jpeg");
+        galerieBild.setAssetTyp(AssetTyp.GALERIE);
+        when(medienAssetService.findeGalerie(EntityTyp.PROJEKT, p.getId()))
+                .thenReturn(List.of(galerieBild));
+
+        MedienAsset anhang = new MedienAsset();
+        anhang.setId(UUID.randomUUID());
+        anhang.setDateiname("pitch.pdf");
+        anhang.setContentType("application/pdf");
+        anhang.setAssetTyp(AssetTyp.ANHANG);
+        when(medienAssetService.findeAnhaenge(EntityTyp.PROJEKT, p.getId()))
+                .thenReturn(List.of(anhang));
+
+        ModelAndView mv = mockMvc.perform(get("/marktplatz/sommerfest"))
+                .andExpect(status().isOk())
+                .andReturn().getModelAndView();
+
+        ProjektView projektView = (ProjektView) mv.getModel().get("projekt");
+        assertThat(projektView.coverUrl()).isEqualTo("/medien/" + cover.getId());
+
+        @SuppressWarnings("unchecked")
+        List<MedienAssetView> galerie = (List<MedienAssetView>) mv.getModel().get("galerie");
+        assertThat(galerie).hasSize(1).first()
+                .extracting(MedienAssetView::dateiname).isEqualTo("bild-1.jpg");
+
+        @SuppressWarnings("unchecked")
+        List<MedienAssetView> anhaenge = (List<MedienAssetView>) mv.getModel().get("anhaenge");
+        assertThat(anhaenge).hasSize(1).first()
+                .extracting(MedienAssetView::dateiname).isEqualTo("pitch.pdf");
     }
 
     /**

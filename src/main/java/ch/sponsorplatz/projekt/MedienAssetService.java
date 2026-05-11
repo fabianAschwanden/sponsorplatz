@@ -101,6 +101,13 @@ public class MedienAssetService {
                 entityTyp, entityId, AssetTyp.ANHANG);
     }
 
+    /** Findet alle Galerie-Bilder eines Projekts — für die öffentliche Bildanzeige. */
+    @Transactional(readOnly = true)
+    public List<MedienAsset> findeGalerie(EntityTyp entityTyp, UUID entityId) {
+        return repository.findByEntityTypAndEntityIdAndAssetTypOrderBySortierungAsc(
+                entityTyp, entityId, AssetTyp.GALERIE);
+    }
+
     private void validiereUpload(MultipartFile datei, EntityTyp entityTyp, UUID entityId) {
         if (datei == null || datei.isEmpty()) {
             throw new IllegalArgumentException("Keine Datei hochgeladen");
