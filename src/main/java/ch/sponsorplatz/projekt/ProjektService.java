@@ -47,6 +47,19 @@ public class ProjektService {
         return repository.findByOrgIdOrderByCreatedAtDesc(orgId);
     }
 
+    /**
+     * Findet alle Projekte aller Organisationen, in denen der User Mitglied ist.
+     * Leere Collection → leere Liste, kein Repo-Aufruf (vermeidet eine sinnlose
+     * `WHERE id IN ()`-Query, die je nach DB-Dialekt aufwändig ist).
+     */
+    @Transactional(readOnly = true)
+    public List<Projekt> findeNachOrgIds(Collection<UUID> orgIds) {
+        if (orgIds == null || orgIds.isEmpty()) {
+            return List.of();
+        }
+        return repository.findByOrgIdInOrderByCreatedAtDesc(orgIds);
+    }
+
     @Transactional(readOnly = true)
     public List<Projekt> findeOeffentliche() {
         return repository.findBySichtbarkeitOrderByVeroeffentlichtAmDesc(Sichtbarkeit.OEFFENTLICH);

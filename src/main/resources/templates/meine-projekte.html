@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{meineProjekte.titel} + ' — Sponsorplatz'">Meine Projekte — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('projekte', ${anzahlOffeneAnfragen})}"></aside>
+
+    <main class="app-main">
+    <div class="app-page-head">
+        <h1 th:text="#{meineProjekte.titel}">Meine Projekte</h1>
+    </div>
+
+    <p th:if="${#lists.isEmpty(projekte)}" class="muted" th:text="#{meineProjekte.empty}">
+        Sie haben in keiner Organisation Projekte angelegt.
+    </p>
+
+    <table class="tabelle" th:unless="${#lists.isEmpty(projekte)}">
+        <thead>
+            <tr>
+                <th th:text="#{meineProjekte.feld.name}">Name</th>
+                <th th:text="#{meineProjekte.feld.organisation}">Organisation</th>
+                <th th:text="#{meineProjekte.feld.kategorie}">Kategorie</th>
+                <th th:text="#{meineProjekte.feld.ort}">Ort</th>
+                <th th:text="#{meineProjekte.feld.sichtbarkeit}">Sichtbarkeit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="p : ${projekte}">
+                <td>
+                    <a th:href="@{'/organisationen/' + ${p.org().slug()} + '/projekte/' + ${p.slug()}}"
+                       th:text="${p.name()}">Projekt</a>
+                </td>
+                <td>
+                    <a th:href="@{'/organisationen/' + ${p.org().slug()}}"
+                       th:text="${p.org().name()}">Organisation</a>
+                </td>
+                <td th:text="${p.kategorie() ?: '—'}">—</td>
+                <td th:text="${p.ort() ?: '—'}">—</td>
+                <td th:text="${p.sichtbarkeit()}">ENTWURF</td>
+            </tr>
+        </tbody>
+    </table>
+    </main>
+</div>
+
+</body>
+</html>

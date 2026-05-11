@@ -106,4 +106,30 @@ class ProjektServiceTest {
         assertThat(ergebnis).isEmpty();
         verify(volltext).suchen("");
     }
+
+    /** PRJ-05: findeNachOrgIds delegiert an Repository. */
+    @Test
+    void findeNachOrgIdsDelegiertAnRepo() {
+        UUID orgA = UUID.randomUUID();
+        UUID orgB = UUID.randomUUID();
+        Projekt p1 = new Projekt();
+        p1.setName("Projekt A");
+        Projekt p2 = new Projekt();
+        p2.setName("Projekt B");
+        when(repository.findByOrgIdInOrderByCreatedAtDesc(List.of(orgA, orgB)))
+                .thenReturn(List.of(p1, p2));
+
+        List<Projekt> ergebnis = service.findeNachOrgIds(List.of(orgA, orgB));
+
+        assertThat(ergebnis).extracting(Projekt::getName).containsExactly("Projekt A", "Projekt B");
+    }
+
+    /** PRJ-06: findeNachOrgIds gibt bei leerer Collection direkt leere Liste zurück, ohne Repo-Aufruf. */
+    @Test
+    void findeNachOrgIdsLeereCollectionGibtLeereListe() {
+        List<Projekt> ergebnis = service.findeNachOrgIds(List.of());
+
+        assertThat(ergebnis).isEmpty();
+        org.mockito.Mockito.verifyNoInteractions(repository);
+    }
 }

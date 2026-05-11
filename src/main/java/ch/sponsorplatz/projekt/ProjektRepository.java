@@ -31,6 +31,13 @@ public interface ProjektRepository extends JpaRepository<Projekt, UUID> {
     @Query("SELECT p FROM Projekt p JOIN FETCH p.org WHERE p.org.id = :orgId ORDER BY p.createdAt DESC")
     List<Projekt> findByOrgIdOrderByCreatedAtDesc(@Param("orgId") UUID orgId);
 
+    /**
+     * Alle Projekte über mehrere Orgs hinweg — fürs „Meine Projekte"-View
+     * eines Users mit Mitgliedschaften in mehreren Orgs.
+     */
+    @Query("SELECT p FROM Projekt p JOIN FETCH p.org WHERE p.org.id IN :orgIds ORDER BY p.createdAt DESC")
+    List<Projekt> findByOrgIdInOrderByCreatedAtDesc(@Param("orgIds") Collection<UUID> orgIds);
+
     @Query("SELECT p FROM Projekt p JOIN FETCH p.org WHERE p.sichtbarkeit = :sichtbarkeit ORDER BY p.veroeffentlichtAm DESC")
     List<Projekt> findBySichtbarkeitOrderByVeroeffentlichtAmDesc(@Param("sichtbarkeit") Sichtbarkeit sichtbarkeit);
 
