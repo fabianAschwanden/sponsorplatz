@@ -3,6 +3,9 @@ package ch.sponsorplatz.anfrage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -19,7 +22,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 
+import ch.sponsorplatz.benachrichtigung.BenachrichtigungTyp;
+import ch.sponsorplatz.benachrichtigung.NotificationService;
 import ch.sponsorplatz.benutzer.AppUser;
+import ch.sponsorplatz.organisation.Mitgliedschaft;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
@@ -38,6 +44,8 @@ class NachrichtServiceTest {
     private AppUserRepository appUserRepository;
     @Mock
     private MitgliedschaftRepository mitgliedschaftRepository;
+    @Mock
+    private NotificationService notificationService;
 
     private NachrichtService service;
 
@@ -49,7 +57,7 @@ class NachrichtServiceTest {
     @BeforeEach
     void setUp() {
         service = new NachrichtService(nachrichtRepository, anfrageRepository, appUserRepository,
-                mitgliedschaftRepository);
+                mitgliedschaftRepository, notificationService);
         anfrageId = UUID.randomUUID();
         userId = UUID.randomUUID();
         anfragenderOrgId = UUID.randomUUID();
@@ -145,5 +153,47 @@ class NachrichtServiceTest {
         assertThatThrownBy(() -> service.sendeNachricht(anfrageId, userId, ""))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("nicht leer");
+    }
+
+    @Test
+    @DisplayName("MSG-09: sendeNachricht benachrichtigt Mitglieder der anderen Org, nicht den Absender")
+    void sendeNachricht_publiziertNotifications() {
+        SponsoringAnfrage anfrage = angenommeneAnfrage();
+        anfrage.getEmpfaengerOrg().setSlug("empfaenger-slug");
+        when(anfrageRepository.findById(anfrageId)).thenReturn(Optional.of(anfrage));
+
+        AppUser absender = new AppUser();
+        absender.setId(userId);
+        absender.setAnzeigename("Max Muster");
+        when(appUserRepository.findById(userId)).thenReturn(Optional.of(absender));
+
+        // Absender ist Mitglied der anfragenden Org → Empfänger-Org bekommt Notifications
+        when(mitgliedschaftRepository.existsByUserIdAndOrgId(userId, anfragenderOrgId)).thenReturn(true);
+
+        // Empfänger-Org hat zwei Mitglieder
+        UUID empfaenger1 = UUID.randomUUID();
+        UUID empfaenger2 = UUID.randomUUID();
+        AppUser u1 = new AppUser();
+        u1.setId(empfaenger1);
+        AppUser u2 = new AppUser();
+        u2.setId(empfaenger2);
+        Mitgliedschaft m1 = new Mitgliedschaft();
+        m1.setUser(u1);
+        Mitgliedschaft m2 = new Mitgliedschaft();
+        m2.setUser(u2);
+        when(mitgliedschaftRepository.findByOrgId(empfaengerOrgId)).thenReturn(List.of(m1, m2));
+
+        when(nachrichtRepository.save(any(Nachricht.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        service.sendeNachricht(anfrageId, userId, "Hallo zusammen!");
+
+        verify(notificationService).benachrichtige(eq(empfaenger1),
+                eq(BenachrichtigungTyp.NEUE_NACHRICHT), anyString(), anyString(),
+                eq("/organisationen/empfaenger-slug/anfragen/" + anfrageId + "/nachrichten"));
+        verify(notificationService).benachrichtige(eq(empfaenger2),
+                eq(BenachrichtigungTyp.NEUE_NACHRICHT), anyString(), anyString(), anyString());
+        // Absender bekommt KEINE Self-Notification, auch wenn er Doppel-Mitglied wäre
+        verify(notificationService, never()).benachrichtige(eq(userId), any(), any(), any(), any());
     }
 }

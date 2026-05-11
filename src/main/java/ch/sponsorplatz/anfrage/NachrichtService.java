@@ -1,8 +1,11 @@
 package ch.sponsorplatz.anfrage;
 
+import ch.sponsorplatz.benachrichtigung.BenachrichtigungTyp;
+import ch.sponsorplatz.benachrichtigung.NotificationService;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.organisation.Mitgliedschaft;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -22,15 +25,18 @@ public class NachrichtService {
     private final SponsoringAnfrageRepository anfrageRepository;
     private final AppUserRepository appUserRepository;
     private final MitgliedschaftRepository mitgliedschaftRepository;
+    private final NotificationService notificationService;
 
     public NachrichtService(NachrichtRepository nachrichtRepository,
                             SponsoringAnfrageRepository anfrageRepository,
                             AppUserRepository appUserRepository,
-                            MitgliedschaftRepository mitgliedschaftRepository) {
+                            MitgliedschaftRepository mitgliedschaftRepository,
+                            NotificationService notificationService) {
         this.nachrichtRepository = nachrichtRepository;
         this.anfrageRepository = anfrageRepository;
         this.appUserRepository = appUserRepository;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -70,7 +76,36 @@ public class NachrichtService {
         nachricht.setAbsender(absender);
         nachricht.setText(text.trim());
 
-        return nachrichtRepository.save(nachricht);
+        Nachricht gespeichert = nachrichtRepository.save(nachricht);
+
+        // Benachrichtige alle Beteiligten der "anderen" Org — also der Org,
+        // zu der der Absender NICHT gehört. NotificationService.benachrichtige
+        // läuft @Async, blockiert die Tx also nicht. Die Empfänger-Org ergibt
+        // sich aus der Mitgliedschaft des Absenders.
+        boolean absenderInAnfragender = mitgliedschaftRepository
+                .existsByUserIdAndOrgId(absenderId, anfrage.getAnfragenderOrg().getId());
+        UUID empfaengerOrgId = absenderInAnfragender
+                ? anfrage.getEmpfaengerOrg().getId()
+                : anfrage.getAnfragenderOrg().getId();
+        String link = "/organisationen/" + anfrage.getEmpfaengerOrg().getSlug()
+                + "/anfragen/" + anfrage.getId() + "/nachrichten";
+        String titel = "Neue Nachricht von " + absender.getAnzeigename();
+        String vorschau = kuerzeText(nachricht.getText(), 140);
+        for (Mitgliedschaft m : mitgliedschaftRepository.findByOrgId(empfaengerOrgId)) {
+            UUID empfaengerId = m.getUser().getId();
+            if (empfaengerId.equals(absenderId)) {
+                continue; // kein Self-Notify (eingeladene Owner können in beiden Orgs sein)
+            }
+            notificationService.benachrichtige(empfaengerId,
+                    BenachrichtigungTyp.NEUE_NACHRICHT, titel, vorschau, link);
+        }
+
+        return gespeichert;
+    }
+
+    private static String kuerzeText(String s, int max) {
+        if (s == null) return "";
+        return s.length() <= max ? s : s.substring(0, max - 1) + "…";
     }
 
     /**

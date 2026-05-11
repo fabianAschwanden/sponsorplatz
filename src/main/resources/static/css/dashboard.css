@@ -1574,3 +1574,69 @@ body.public-body {
     font-family: inherit;
     color: var(--dash-text);
 }
+
+/* ===================== Nachrichten-Thread (In-App-Chat) ===================== */
+
+.nachricht-thread {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 720px;
+    margin: 1.5rem 0;
+}
+
+.nachricht-bubble {
+    background: #fff;
+    border: 1px solid var(--dash-border);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    max-width: 80%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+/* eingehend = von der anderen Org → links + neutral */
+.nachricht-bubble.nachricht-eingehend {
+    align-self: flex-start;
+    background: #f9fafb;
+    border-top-left-radius: 0.2rem;
+}
+
+/* eigen = vom angemeldeten User → rechts + akzentuiert */
+.nachricht-bubble.nachricht-eigene {
+    align-self: flex-end;
+    background: color-mix(in srgb, var(--dash-violet) 8%, #fff);
+    border-color: color-mix(in srgb, var(--dash-violet) 25%, var(--dash-border));
+    border-top-right-radius: 0.2rem;
+}
+
+.nachricht-bubble p {
+    margin: 0;
+    line-height: 1.5;
+    /* Zeilenumbrüche aus dem Textarea erhalten */
+    white-space: pre-line;
+    /* Sehr lange Wörter (z. B. URLs) brechen statt zu überlaufen */
+    overflow-wrap: anywhere;
+}
+
+.nachricht-form-wrapper {
+    max-width: 720px;
+    margin-top: 1rem;
+}
+
+.nachricht-form textarea {
+    width: 100%;
+    border: 1px solid var(--dash-border);
+    border-radius: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    font-family: inherit;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 4.5rem;
+}
+
+.nachricht-form textarea:focus {
+    outline: 2px solid color-mix(in srgb, var(--dash-violet) 50%, transparent);
+    outline-offset: 1px;
+    border-color: var(--dash-violet);
+}

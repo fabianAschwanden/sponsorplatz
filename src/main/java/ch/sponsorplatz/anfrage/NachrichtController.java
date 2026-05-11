@@ -58,10 +58,18 @@ public class NachrichtController {
 
         List<Nachricht> nachrichten = nachrichtService.findeNachAnfrage(anfrageId);
 
+        // aktuellerUserId fürs Template — damit der Bubble-Style (eigen vs.
+        // eingehend) per UUID-Vergleich entscheiden kann, anstatt UUID gegen
+        // Authentication-Email zu vergleichen (was nie matchte).
+        UUID aktuellerUserId = appUserService.findeNachEmail(auth.getName())
+                .map(AppUser::getId)
+                .orElse(null);
+
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "anfragen");
         model.addAttribute("org", OrganisationView.von(org));
         model.addAttribute("anfrage", AnfrageView.von(anfrage));
         model.addAttribute("nachrichten", NachrichtView.von(nachrichten));
+        model.addAttribute("aktuellerUserId", aktuellerUserId);
         return "nachrichten-thread";
     }
 

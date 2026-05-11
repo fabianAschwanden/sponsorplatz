@@ -24,7 +24,9 @@
     <div th:if="${erfolgsMeldung}" class="alert success" th:text="${erfolgsMeldung}"></div>
     <div th:if="${fehlermeldung}" class="alert error" th:text="${fehlermeldung}"></div>
 
-    <!-- Initiale Anfrage-Nachricht -->
+    <!-- Initiale Anfrage-Nachricht — wird immer als eingehend dargestellt,
+         da sie aus der Anfragender-Org stammt und konzeptionell „die andere
+         Seite" ist. -->
     <div class="nachricht-thread">
         <div class="nachricht-bubble nachricht-eingehend">
             <div class="nachricht-meta">
@@ -34,9 +36,11 @@
             <p th:text="${anfrage.nachricht}">Erste Nachricht</p>
         </div>
 
-        <!-- Thread-Nachrichten -->
+        <!-- Thread-Nachrichten — Eigen-vs-Eingehend via UUID-Vergleich gegen
+             aktuellerUserId (vom Controller gesetzt). Vorher wurde UUID gegen
+             auth.name (E-Mail) verglichen, was nie matchte. -->
         <div th:each="n : ${nachrichten}" class="nachricht-bubble"
-             th:classappend="${n.absenderId.toString() == T(org.springframework.security.core.context.SecurityContextHolder).context.authentication.name} ? 'nachricht-eigene' : 'nachricht-eingehend'">
+             th:classappend="${aktuellerUserId != null and n.absenderId == aktuellerUserId} ? 'nachricht-eigene' : 'nachricht-eingehend'">
             <div class="nachricht-meta">
                 <span th:replace="~{fragments/avatar :: avatar(
                         name=${n.absenderName},
@@ -47,6 +51,9 @@
             </div>
             <p th:text="${n.text}">Nachricht</p>
         </div>
+        <!-- Scroll-Anker, damit nach dem Senden automatisch zum letzten
+             Beitrag gesprungen wird (siehe Script unten). -->
+        <div id="thread-ende"></div>
     </div>
 
     <!-- Antwort-Formular (nur bei ANGENOMMEN) -->
@@ -69,6 +76,17 @@
         <p th:text="#{nachrichtenThread.nichtAngenommen}">Nachrichten können nur zu angenommenen Anfragen verfasst werden.</p>
     </div>
 </main>
+
+<script>
+    // Springt nach dem Laden zur untersten Nachricht — gewünschtes Verhalten
+    // bei einer Inbox-Thread-View, sowohl beim ersten Aufruf als auch nach
+    // dem POST-Redirect nach Senden.
+    (function () {
+        var anker = document.getElementById('thread-ende');
+        if (anker) anker.scrollIntoView({ block: 'end' });
+    })();
+</script>
+
 </body>
 </html>
 
