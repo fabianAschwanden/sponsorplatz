@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<html lang="de-CH"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title th:text="${org.name() + ' — Sponsorplatz'}">Vereinsprofil</title>
@@ -15,16 +17,20 @@
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body>
-<header>
-    <nav>
-        <a th:href="@{/}">Sponsorplatz</a> &gt;
-        <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a> &gt;
+<body class="app-body">
+<div class="app-layout">
+
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('marktplatz', ${anzahlOffeneAnfragen})}"></aside>
+
+    <main class="app-main">
+    <nav style="font-size:0.85rem; color:#6b7280; margin-bottom:1rem;">
+        <a th:href="@{/}" style="color:inherit;">Sponsorplatz</a> &gt;
+        <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}" style="color:inherit;">Marktplatz</a> &gt;
         <span th:text="${org.name()}">Verein</span>
     </nav>
-</header>
-<main>
     <!-- Health-Hero mit Branche-Chip -->
     <div class="verein-hero" style="margin-bottom:2rem;">
         <h1 th:text="${org.name()}">Vereinsname</h1>
@@ -67,7 +73,8 @@
     </section>
 
     <p th:if="${projekte.isEmpty()}" th:text="#{vereinProfil.keineProjekte}">Dieser Verein hat aktuell keine veröffentlichten Projekte.</p>
-</main>
+    </main>
+</div>
 </body>
 </html>
 

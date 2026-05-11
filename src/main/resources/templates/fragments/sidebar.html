@@ -87,6 +87,20 @@
         </div>
     </nav>
 
+    <!--
+      Anonyme User sehen Login/Registrieren-Buttons statt User-Box.
+      Damit funktioniert die Sidebar auf Public-Pages (Marktplatz,
+      Verein-Profil, Marken-Landing etc.) — sie ersetzt die alte
+      Public-Topbar und gibt anonymen Besuchern den Auth-Pfad.
+    -->
+    <footer class="dash-userbox" sec:authorize="!isAuthenticated()" style="flex-direction:column; gap:0.5rem;">
+        <a th:href="@{/login}" class="dash-user-link" style="justify-content:center;"
+           th:text="#{navigation.anmelden}">Anmelden</a>
+        <a th:href="@{/registrieren}" class="dash-user-link"
+           style="justify-content:center; background:rgba(255,255,255,0.12);"
+           th:text="#{navigation.registrieren}">Registrieren</a>
+    </footer>
+
     <footer class="dash-userbox" sec:authorize="isAuthenticated()">
         <div class="dash-notification-bell" id="notificationBell">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
@@ -125,7 +139,7 @@
       Lookup nötig); der Browser appended an den aktuellen Pfad und der
       LocaleChangeInterceptor schreibt das lang-Cookie.
     -->
-    <div class="dash-sidebar-lang" sec:authorize="isAuthenticated()">
+    <div class="dash-sidebar-lang">
         <a href="?lang=de">DE</a>
         <span aria-hidden="true">·</span>
         <a href="?lang=fr">FR</a>

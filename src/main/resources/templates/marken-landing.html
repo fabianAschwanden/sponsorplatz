@@ -16,27 +16,13 @@
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body class="public-body">
+<body class="app-body">
 
-<header class="public-topbar">
-    <div class="public-topbar-inner">
-        <a class="public-logo" th:href="@{/}">
-            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
-            <span>Sponsorplatz</span>
-        </a>
-        <nav class="public-nav">
-            <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
-            <a th:href="@{/fuer-marken}" class="aktiv" th:text="#{markenLanding.nav.aktiv}">Für Marken</a>
-            <a sec:authorize="!isAuthenticated()" th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
-            <a sec:authorize="!isAuthenticated()" th:href="@{/sponsor/registrieren}" class="app-btn"
-               th:text="#{markenLanding.nav.sponsorWerden}">Sponsor werden</a>
-            <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}" class="app-btn"
-               th:text="#{navigation.dashboard}">Dashboard</a>
-        </nav>
-    </div>
-</header>
+<div class="app-layout">
 
-<main class="public-main">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('marken', ${anzahlOffeneAnfragen})}"></aside>
+
+    <main class="app-main">
 
     <!-- Hero -->
     <section style="text-align:center; padding:3rem 0 2rem;">
@@ -133,13 +119,8 @@
            th:text="#{markenLanding.hero.cta}">Sponsor-Konto erstellen</a>
     </section>
 
-</main>
-
-<footer class="public-footer">
-    <div class="public-footer-inner">
-        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
-    </div>
-</footer>
+    </main>
+</div>
 
 </body>
 </html>

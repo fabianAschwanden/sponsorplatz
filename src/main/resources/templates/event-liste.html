@@ -7,10 +7,14 @@
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body class="dash-body">
+<body class="app-body">
 
-<main class="container hauptbereich">
-    <div class="seitenkopf">
+<div class="app-layout">
+
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('organisationen', ${anzahlOffeneAnfragen})}"></aside>
+
+    <main class="app-main">
+    <div class="app-page-head">
         <h1>
             <span th:text="#{eventListe.titel}">Events</span> —
             <span th:text="${orgName}">Org</span>
@@ -37,7 +41,8 @@
             </tr>
         </tbody>
     </table>
-</main>
+    </main>
+</div>
 
 </body>
 </html>

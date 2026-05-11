@@ -9,26 +9,17 @@
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body class="public-body">
+<body class="app-body">
 
 <div th:if="${demoModus}" class="demo-disclaimer" th:text="#{demo.disclaimer}">
     ⚠️ DEMO — Beispieldaten.
 </div>
 
-<header class="public-topbar">
-    <div class="public-topbar-inner">
-        <a class="public-logo" th:href="@{/}">
-            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
-            <span>Sponsorplatz</span>
-        </a>
-        <nav class="public-nav">
-            <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
-            <a th:href="@{/fuer-marken}" th:text="#{markenLanding.nav.aktiv}">Für Marken</a>
-        </nav>
-    </div>
-</header>
+<div class="app-layout">
 
-<main class="container hauptbereich">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('marken', ${anzahlOffeneAnfragen})}"></aside>
+
+    <main class="app-main">
     <div class="seitenkopf">
         <h1 th:text="#{engagement.titel}">Unsere Engagements</h1>
     </div>
@@ -58,17 +49,8 @@
             </p>
         </div>
     </div>
-</main>
-
-<footer class="fusszeile">
-    <div class="container">
-        <span>&copy; 2026 Sponsorplatz</span>
-        <nav>
-            <a th:href="@{/impressum}" th:text="#{footer.impressum}">Impressum</a>
-            <a th:href="@{/datenschutz}" th:text="#{footer.datenschutz}">Datenschutz</a>
-        </nav>
-    </div>
-</footer>
+    </main>
+</div>
 
 </body>
 </html>
