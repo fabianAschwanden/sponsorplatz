@@ -9,14 +9,23 @@
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body class="app-body">
+<body class="public-body">
 
-<div class="app-layout">
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
+            <span>Sponsorplatz</span>
+        </a>
+        <nav class="public-nav">
+            <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
+        </nav>
+    </div>
+</header>
 
-    <aside th:replace="~{fragments/sidebar :: app-sidebar('datenschutz', ${anzahlOffeneAnfragen})}"></aside>
-
-    <main class="app-main">
-    <article class="app-card" style="max-width: 760px; margin: 0 auto;">
+<main class="public-main">
+    <article class="app-card" style="max-width: 760px; margin: 2rem auto;">
         <h1 th:text="#{info.datenschutz.titel}">Datenschutzerklärung</h1>
         <p style="color: var(--dash-grau);">
             Stand: <span th:text="${#dates.format(#dates.createNow(), 'dd.MM.yyyy')}">01.01.2026</span>
@@ -106,8 +115,17 @@
             <a th:href="@{/}" th:text="#{error.zurueckLink}">Zurück zur Startseite</a>
         </p>
     </article>
-    </main>
-</div>
+</main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz · Schweiz</p>
+        <nav>
+            <a th:href="@{/impressum}" th:text="#{footer.impressum}">Impressum</a>
+            <a th:href="@{/datenschutz}" th:text="#{footer.datenschutz}">Datenschutz</a>
+        </nav>
+    </div>
+</footer>
 
 </body>
 </html>

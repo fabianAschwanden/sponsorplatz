@@ -27,6 +27,12 @@
     <section class="public-auth-card">
         <h1 th:text="#{register.titel}">Konto erstellen</h1>
 
+        <div th:if="${einladungOffen}" class="app-meldung erfolg"
+             th:text="#{register.einladungOffenHinweis}">
+            Sie wurden zu einer Organisation eingeladen. Nach der Registrierung
+            können Sie die Einladung im Dashboard annehmen.
+        </div>
+
         <div th:if="${fehlermeldung}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
 
         <form th:action="@{/registrieren}" th:object="${userForm}" method="post" class="app-form">

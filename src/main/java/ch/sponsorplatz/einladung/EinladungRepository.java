@@ -22,6 +22,13 @@ public interface EinladungRepository extends JpaRepository<Einladung, UUID> {
 
     Optional<Einladung> findByOrgIdAndEmail(UUID orgId, String email);
 
+    /**
+     * Offene (noch nicht angenommene) Einladungen für eine E-Mail, sortiert
+     * nach Erstellungsdatum absteigend. Für das Dashboard-Banner, das
+     * frisch registrierten Usern ihre noch-offenen Einladungen zeigt.
+     */
+    List<Einladung> findByEmailAndAngenommenAmIsNullOrderByCreatedAtDesc(String email);
+
     void deleteByToken(String token);
 
     /**

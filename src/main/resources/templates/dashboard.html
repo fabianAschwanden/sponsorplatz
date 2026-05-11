@@ -117,6 +117,29 @@
                 </button>
             </section>
 
+            <!-- Offene Einladungen — eine Karte pro pending Einladung mit
+                 Annehmen-Button (POST per Vorschau-Seite, damit CSRF greift). -->
+            <section th:if="${offeneEinladungen != null and !offeneEinladungen.isEmpty()}"
+                     class="dash-section" style="margin-top:1.5rem;">
+                <h2 class="dash-section-title" th:text="#{dashboard.einladungen.titel}">Offene Einladungen</h2>
+                <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                    <article th:each="e : ${offeneEinladungen}" class="app-card"
+                             style="display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:1rem 1.25rem;">
+                        <div>
+                            <strong th:text="${e.orgName()}">Org</strong>
+                            <p class="app-muted" style="margin:0.25rem 0 0; font-size:0.9rem;">
+                                <span th:text="#{dashboard.einladungen.eingeladenVon}">Eingeladen von</span>
+                                <strong th:text="${e.eingeladenVonName()}">Org-Owner</strong>
+                                <span> · </span>
+                                <span th:text="${e.rolle()}">ORG_EDITOR</span>
+                            </p>
+                        </div>
+                        <a th:href="@{/einladung/annehmen(token=${e.token()})}"
+                           class="app-btn" th:text="#{dashboard.einladungen.ansehen}">Ansehen &amp; Annehmen</a>
+                    </article>
+                </div>
+            </section>
+
             <!-- Events Timeline -->
             <section class="dash-section">
                 <h2 class="dash-section-title" th:text="#{dashboard.events.titel}">Events Timeline</h2>

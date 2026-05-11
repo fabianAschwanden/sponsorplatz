@@ -132,6 +132,26 @@ public class EinladungsService {
     }
 
     /**
+     * Offene, noch gültige Einladungen für eine E-Mail. Wird vom Dashboard
+     * verwendet, damit frisch registrierte User ihre Einladung(en) ohne
+     * Rückgriff auf die Mail mit einem Klick annehmen können.
+     */
+    @Transactional(readOnly = true)
+    public java.util.List<EinladungVorschauView> findeOffeneFuerEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return java.util.List.of();
+        }
+        String normalisiert = email.trim().toLowerCase();
+        Instant jetzt = Instant.now();
+        return einladungRepository
+                .findByEmailAndAngenommenAmIsNullOrderByCreatedAtDesc(normalisiert)
+                .stream()
+                .filter(e -> e.getGueltigBis().isAfter(jetzt))
+                .map(EinladungVorschauView::von)
+                .toList();
+    }
+
+    /**
      * Nimmt eine Einladung an. Erstellt die Mitgliedschaft und markiert die
      * Einladung
      * als angenommen (M4-Fix: idempotent — wiederholte Klicks auf denselben Token

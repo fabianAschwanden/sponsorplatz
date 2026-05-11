@@ -13,6 +13,7 @@ import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.PlatformRolle;
+import ch.sponsorplatz.einladung.EinladungsService;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 
 /**
@@ -30,17 +31,20 @@ public class DashboardController {
     private final AppUserService appUserService;
     private final AppUserRepository appUserRepository;
     private final MitgliedschaftRepository mitgliedschaftRepository;
+    private final EinladungsService einladungsService;
 
     public DashboardController(DashboardService dashboardService,
             MatchingService matchingService,
             AppUserService appUserService,
             AppUserRepository appUserRepository,
-            MitgliedschaftRepository mitgliedschaftRepository) {
+            MitgliedschaftRepository mitgliedschaftRepository,
+            EinladungsService einladungsService) {
         this.dashboardService = dashboardService;
         this.matchingService = matchingService;
         this.appUserService = appUserService;
         this.appUserRepository = appUserRepository;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
+        this.einladungsService = einladungsService;
     }
 
     @GetMapping("/dashboard")
@@ -76,6 +80,11 @@ public class DashboardController {
                 .map(ProjektView::von)
                 .toList();
         model.addAttribute("empfehlungen", empfehlungen);
+
+        // Offene Einladungen für die angemeldete E-Mail — frisch registrierte
+        // User finden so ihre Einladungen ohne erneutes Anklicken des Mail-Links.
+        model.addAttribute("offeneEinladungen",
+                einladungsService.findeOffeneFuerEmail(auth.getName()));
 
         return "dashboard";
     }

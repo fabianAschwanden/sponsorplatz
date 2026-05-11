@@ -27,6 +27,7 @@ import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.PlatformRolle;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.einladung.EinladungsService;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import ch.sponsorplatz.shared.config.SecurityConfig;
 
@@ -55,6 +56,9 @@ class DashboardControllerTest {
 
     @MockitoBean
     private MitgliedschaftRepository mitgliedschaftRepository;
+
+    @MockitoBean
+    private EinladungsService einladungsService;
 
     /**
      * Simuliert einen User mit mindestens einer Org — damit kein

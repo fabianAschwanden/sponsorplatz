@@ -8,6 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Controller für Benutzer-Registrierung.
@@ -21,9 +22,22 @@ public class RegistrierungController {
         this.appUserService = appUserService;
     }
 
+    /**
+     * Zeigt das Registrierungs-Formular. Der optionale {@code email}-Parameter
+     * wird gesetzt, wenn der User per Einladung kommt — dann ist die Adresse
+     * read-only zu betrachten (Form-Submit greift weiter auf POST mit derselben
+     * E-Mail). Das Flag {@code einladungOffen} steuert nur den Hinweistext.
+     */
     @GetMapping("/registrieren")
-    public String formular(Model model) {
-        model.addAttribute("userForm", new AppUserFormDto());
+    public String formular(@RequestParam(required = false) String email,
+                           @RequestParam(required = false) String einladung,
+                           Model model) {
+        AppUserFormDto dto = new AppUserFormDto();
+        if (email != null && !email.isBlank()) {
+            dto.setEmail(email.trim().toLowerCase());
+        }
+        model.addAttribute("userForm", dto);
+        model.addAttribute("einladungOffen", "offen".equals(einladung));
         return "registrieren";
     }
 

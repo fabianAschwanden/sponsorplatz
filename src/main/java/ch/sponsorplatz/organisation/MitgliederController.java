@@ -3,7 +3,9 @@ package ch.sponsorplatz.organisation;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.benutzer.AppUser;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.benutzer.AppUserService;
+import ch.sponsorplatz.einladung.EinladungsService;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -26,15 +28,21 @@ public class MitgliederController {
     private final OrganisationService organisationService;
     private final MitgliedschaftService mitgliedschaftService;
     private final AppUserService appUserService;
+    private final AppUserRepository appUserRepository;
+    private final EinladungsService einladungsService;
     private final AccessControl accessControl;
 
     public MitgliederController(OrganisationService organisationService,
                                 MitgliedschaftService mitgliedschaftService,
                                 AppUserService appUserService,
+                                AppUserRepository appUserRepository,
+                                EinladungsService einladungsService,
                                 AccessControl accessControl) {
         this.organisationService = organisationService;
         this.mitgliedschaftService = mitgliedschaftService;
         this.appUserService = appUserService;
+        this.appUserRepository = appUserRepository;
+        this.einladungsService = einladungsService;
         this.accessControl = accessControl;
     }
 
@@ -61,12 +69,27 @@ public class MitgliederController {
             throw new AccessDeniedException("Keine Verwalten-Berechtigung für Org: " + slug);
         }
         Organisation org = findeOrgOderWirf(slug);
-        Optional<AppUser> user = appUserService.findeNachEmail(email.trim().toLowerCase());
+        String normalisierteEmail = email.trim().toLowerCase();
+        Optional<AppUser> user = appUserService.findeNachEmail(normalisierteEmail);
+
+        // Existiert kein User mit dieser E-Mail → Einladung erstellen.
+        // Der EinladungsMailListener verschickt den Link nach AFTER_COMMIT;
+        // der Eingeladene landet via /einladung/annehmen auf /registrieren mit
+        // pre-filled E-Mail.
         if (user.isEmpty()) {
-            redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
-                    "Kein Benutzer mit E-Mail \"" + email + "\" gefunden.");
+            UUID eingeladenVonId = appUserRepository.findByEmail(auth.getName())
+                    .map(AppUser::getId)
+                    .orElseThrow(() -> new NotFoundException("Angemeldeter User nicht gefunden"));
+            try {
+                einladungsService.erstelleEinladung(org.getId(), normalisierteEmail, rolle, eingeladenVonId);
+                redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
+                        "Einladung an \"" + normalisierteEmail + "\" wurde erstellt.");
+            } catch (IllegalArgumentException ex) {
+                redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG, ex.getMessage());
+            }
             return "redirect:/organisationen/" + slug + "/mitglieder";
         }
+
         try {
             mitgliedschaftService.fuegeHinzu(org.getId(), user.get().getId(), rolle, null);
             redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,

@@ -42,6 +42,23 @@ class RegistrierungControllerTest {
                 .andExpect(model().attributeExists("userForm"));
     }
 
+    /**
+     * REG-05: GET /registrieren?email=…&einladung=offen pre-filled die E-Mail
+     * und setzt das Banner-Flag, damit der Einladungs-Hinweis erscheint.
+     */
+    @Test
+    void formularPreFilledFuerEinladung() throws Exception {
+        mockMvc.perform(get("/registrieren")
+                        .param("email", "Max@Example.com")
+                        .param("einladung", "offen"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("registrieren"))
+                .andExpect(model().attribute("einladungOffen", true))
+                .andExpect(model().attribute("userForm",
+                        org.hamcrest.Matchers.hasProperty("email",
+                                org.hamcrest.Matchers.equalTo("max@example.com"))));
+    }
+
     /** REG-02: POST /registrieren mit gültigen Daten → Redirect zu /login. */
     @Test
     void registrierungErfolgreich() throws Exception {
