@@ -80,7 +80,7 @@
                     </div>
                 </a>
 
-                <a th:href="@{/projekte}" class="dash-stat-card">
+                <a th:href="@{/meine-projekte}" class="dash-stat-card">
                     <div class="dash-stat-icon stat-icon-violet">
                         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/>
@@ -104,7 +104,7 @@
                     <div>
                         <div class="dash-stat-label" th:text="#{dashboard.stats.anfragen.label}">Sponsoring-Anfragen</div>
                         <div class="dash-stat-value">
-                            <span th:text="${anzahlAnfragen} ?: 0">8</span>
+                            <span th:text="${anzahlOffeneAnfragen} ?: 0">8</span>
                             <span class="dash-stat-unit" th:text="#{dashboard.stats.anfragen.unit}">offen</span>
                         </div>
                     </div>
@@ -140,34 +140,38 @@
                 </div>
             </section>
 
-            <!-- Events Timeline -->
+            <!-- Events Timeline — direkt aus DashboardDaten.naechsteEvents.
+                 Iteriert echte EventViews aus den eigenen Organisationen.
+                 Ist die Liste leer, wird ein Empty-State angezeigt. -->
             <section class="dash-section">
                 <h2 class="dash-section-title" th:text="#{dashboard.events.titel}">Events Timeline</h2>
-                <div class="dash-timeline">
-                    <article class="dash-event-card">
-                        <div class="dash-event-marker"></div>
-                        <div class="dash-event-body">
-                            <div class="dash-event-name" th:text="${naechstesEvent1?.name} ?: 'SCA Sommerturnier 2026'">SCA Sommerturnier 2026</div>
-                            <div class="dash-event-meta" th:text="#{dashboard.events.anstehend}">Anstehendes Event</div>
-                        </div>
-                        <div class="dash-event-date" th:text="${naechstesEvent1?.datumKurz} ?: '15. Jun'">15. Jun</div>
-                    </article>
-
-                    <div class="dash-timeline-divider"></div>
-
-                    <article class="dash-event-card">
-                        <div class="dash-event-marker"></div>
-                        <div class="dash-event-body">
-                            <div class="dash-event-name" th:text="${naechstesEvent2?.name} ?: 'Kulturnacht Zürich'">Kulturnacht Zürich</div>
-                            <div class="dash-event-meta" th:text="#{dashboard.events.anstehend}">Anstehendes Event</div>
-                        </div>
-                        <div class="dash-event-date" th:text="${naechstesEvent2?.datumKurz} ?: '22. Jul'">22. Jul</div>
-                    </article>
-
+                <div class="dash-timeline" th:if="${!#lists.isEmpty(naechsteEvents)}">
+                    <th:block th:each="ev, iter : ${naechsteEvents}">
+                        <article class="dash-event-card">
+                            <div class="dash-event-marker"></div>
+                            <div class="dash-event-body">
+                                <a th:href="@{'/organisationen/' + ${ev.orgSlug()} + '/events'}"
+                                   class="dash-event-name" style="color:inherit; text-decoration:none;"
+                                   th:text="${ev.name()}">Event</a>
+                                <div class="dash-event-meta">
+                                    <span th:text="${ev.orgName()}">Org</span>
+                                    <span th:if="${ev.ort()}"> · </span>
+                                    <span th:if="${ev.ort()}" th:text="${ev.ort()}">Ort</span>
+                                </div>
+                            </div>
+                            <div class="dash-event-date"
+                                 th:text="${#temporals.format(ev.datum(), 'dd. MMM')}">15. Jun</div>
+                        </article>
+                        <div th:unless="${iter.last}" class="dash-timeline-divider"></div>
+                    </th:block>
                     <div class="dash-timeline-bar">
                         <div class="dash-timeline-bar-fill"></div>
                     </div>
                 </div>
+                <p th:if="${#lists.isEmpty(naechsteEvents)}" class="app-muted"
+                   style="margin:0.75rem 0 0;" th:text="#{dashboard.events.empty}">
+                    Keine anstehenden Events.
+                </p>
             </section>
 
             <!-- Performance + Finanzierung -->
@@ -231,71 +235,28 @@
                 </div>
             </section>
 
-            <!-- Aktive Projekte -->
-            <section class="dash-section">
+            <!-- Aktive Projekte — Top-N aus den eigenen Organisationen.
+                 Jede Karte verlinkt direkt aufs Projekt-Detail im Org-Kontext.
+                 Der frühere Archiv-Filter blieb ungenutzt (kein Backend) und
+                 wurde entfernt; ein „Alle anzeigen"-Link führt zur /meine-projekte-Liste. -->
+            <section class="dash-section" th:if="${!#lists.isEmpty(meineProjekte)}">
                 <header class="dash-card-head">
                     <h2 class="dash-section-title" th:text="#{dashboard.aktiveProjekte.titel}">Aktive Projekte</h2>
-                    <select class="dash-pill-select">
-                        <option th:text="#{dashboard.zeitraum.aktuell}">Aktuell</option>
-                        <option th:text="#{dashboard.zeitraum.archiv}">Archiv</option>
-                    </select>
+                    <a th:href="@{/meine-projekte}" class="dash-section-meta"
+                       style="text-decoration:none;"
+                       th:text="#{dashboard.aktiveProjekte.alleAnzeigen}">Alle anzeigen →</a>
                 </header>
 
                 <div class="dash-project-grid">
-                    <article class="dash-project-card">
-                        <div class="dash-project-top">
-                            <span class="dash-grip"></span>
-                            <label class="dash-toggle">
-                                <input type="checkbox" checked>
-                                <span></span>
-                            </label>
-                        </div>
-                        <div class="dash-project-body">
-                            <div class="dash-project-name">Sommerturnier 2026</div>
-                            <div class="dash-project-cat">Sport</div>
-                        </div>
-                    </article>
-
-                    <article class="dash-project-card">
-                        <div class="dash-project-top">
-                            <span class="dash-grip"></span>
-                            <label class="dash-toggle">
-                                <input type="checkbox" checked>
-                                <span></span>
-                            </label>
-                        </div>
-                        <div class="dash-project-body">
-                            <div class="dash-project-name">Kulturnacht Zürich</div>
-                            <div class="dash-project-cat">Kultur</div>
-                        </div>
-                    </article>
-
-                    <article class="dash-project-card">
-                        <div class="dash-project-top">
-                            <span class="dash-grip"></span>
-                            <label class="dash-toggle">
-                                <input type="checkbox">
-                                <span></span>
-                            </label>
-                        </div>
-                        <div class="dash-project-body">
-                            <div class="dash-project-name">Jugend-Cup Herbst</div>
-                            <div class="dash-project-cat">Sport</div>
-                        </div>
-                    </article>
-
-                    <article class="dash-project-card">
-                        <div class="dash-project-top">
-                            <span class="dash-grip"></span>
-                            <label class="dash-toggle">
-                                <input type="checkbox">
-                                <span></span>
-                            </label>
-                        </div>
-                        <div class="dash-project-body">
-                            <div class="dash-project-name">Vereinsfest 25. Jubiläum</div>
-                            <div class="dash-project-cat">Soziales</div>
-                        </div>
+                    <article th:each="p : ${meineProjekte}" class="dash-project-card">
+                        <a th:href="@{'/organisationen/' + ${p.org.slug} + '/projekte/' + ${p.slug}}"
+                           class="dash-project-link"
+                           style="display:block; padding:0.75rem; text-decoration:none; color:inherit;">
+                            <div class="dash-project-body">
+                                <div class="dash-project-name" th:text="${p.name}">Projekt</div>
+                                <div class="dash-project-cat" th:text="${p.kategorie} ?: ${p.org.name}">Kategorie</div>
+                            </div>
+                        </a>
                     </article>
                 </div>
             </section>
@@ -361,7 +322,6 @@
                     </li>
                     <li class="dash-todo-add">
                         <button type="button" th:text="#{dashboard.aufgaben.hinzufuegen}">+ Aufgabe</button>
-                        <a th:href="@{/aufgaben}" class="dash-todo-link" th:text="#{dashboard.aufgaben.alleAnzeigen}">Alle anzeigen</a>
                     </li>
                 </ul>
             </section>
@@ -387,15 +347,6 @@
                         <button class="dash-btn-pill" th:aria-label="#{dashboard.aria.anrufen}">📞</button>
                     </div>
                 </div>
-            </section>
-
-            <section class="dash-rail-knowledge">
-                <a th:href="@{/hilfe}" class="dash-knowledge-link">
-                    <span th:text="#{dashboard.wissensdatenbank}">Wissensdatenbank</span>
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 19L19 5M9 5h10v10"/>
-                    </svg>
-                </a>
             </section>
 
             <a th:href="@{/support}" class="dash-support" style="text-decoration:none;">

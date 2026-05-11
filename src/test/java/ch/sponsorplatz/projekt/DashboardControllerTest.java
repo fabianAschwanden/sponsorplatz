@@ -49,6 +49,9 @@ class DashboardControllerTest {
     private MatchingService matchingService;
 
     @MockitoBean
+    private ProjektService projektService;
+
+    @MockitoBean
     private AppUserService appUserService;
 
     @MockitoBean
@@ -112,7 +115,10 @@ class DashboardControllerTest {
                         "anzahlProjekte",
                         "anzahlAnfragen",
                         "anzahlOffeneAnfragen",
-                        "empfehlungen"))
+                        "empfehlungen",
+                        "naechsteEvents",
+                        "meineProjekte",
+                        "offeneEinladungen"))
                 .andExpect(model().attribute("anzahlOrganisationen", 3L))
                 .andExpect(model().attribute("anzahlProjekte", 5L))
                 .andExpect(model().attribute("anzahlAnfragen", 12L))

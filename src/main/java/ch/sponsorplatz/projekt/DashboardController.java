@@ -26,8 +26,15 @@ import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 @Controller
 public class DashboardController {
 
+    /**
+     * Maximal-Anzahl Projekte in der „Aktive Projekte"-Sektion. Mehr passt
+     * visuell nicht ins Grid (4-spaltig auf Desktop, 2 Zeilen).
+     */
+    private static final int MAX_AKTIVE_PROJEKTE_AUF_DASHBOARD = 8;
+
     private final DashboardService dashboardService;
     private final MatchingService matchingService;
+    private final ProjektService projektService;
     private final AppUserService appUserService;
     private final AppUserRepository appUserRepository;
     private final MitgliedschaftRepository mitgliedschaftRepository;
@@ -35,12 +42,14 @@ public class DashboardController {
 
     public DashboardController(DashboardService dashboardService,
             MatchingService matchingService,
+            ProjektService projektService,
             AppUserService appUserService,
             AppUserRepository appUserRepository,
             MitgliedschaftRepository mitgliedschaftRepository,
             EinladungsService einladungsService) {
         this.dashboardService = dashboardService;
         this.matchingService = matchingService;
+        this.projektService = projektService;
         this.appUserService = appUserService;
         this.appUserRepository = appUserRepository;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
@@ -71,6 +80,21 @@ public class DashboardController {
         model.addAttribute("anzahlProjekte", daten.anzahlProjekte());
         model.addAttribute("anzahlAnfragen", daten.anzahlAnfragen());
         model.addAttribute("anzahlOffeneAnfragen", daten.anzahlOffeneAnfragen());
+        model.addAttribute("naechsteEvents", daten.naechsteEvents());
+
+        // Aktive Projekte der eigenen Orgs — Top-N fürs Dashboard-Grid.
+        // Für Org-lose User bleibt die Liste leer (Template versteckt die Sektion).
+        List<ProjektView> meineProjekte = List.of();
+        if (user != null) {
+            List<java.util.UUID> orgIds = mitgliedschaftRepository.findOrgIdsByUserId(user.getId());
+            if (!orgIds.isEmpty()) {
+                meineProjekte = projektService.findeNachOrgIds(orgIds).stream()
+                        .limit(MAX_AKTIVE_PROJEKTE_AUF_DASHBOARD)
+                        .map(ProjektView::von)
+                        .toList();
+            }
+        }
+        model.addAttribute("meineProjekte", meineProjekte);
 
         // Matching-Empfehlungen
         List<ProjektView> empfehlungen = appUserService.findeNachEmail(auth.getName())
