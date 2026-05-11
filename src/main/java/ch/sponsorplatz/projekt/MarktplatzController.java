@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/marktplatz")
@@ -60,40 +62,48 @@ public class MarktplatzController {
         }
 
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "marktplatz");
-        model.addAttribute("projekte", projekte.stream()
-                .map(p -> {
-                    String coverUrl = medienAssetService.findeCover(EntityTyp.PROJEKT, p.getId())
-                            .map(a -> "/medien/" + a.getId())
-                            .orElse(null);
-                    return ProjektView.von(p, coverUrl);
-                })
-                .toList());
         model.addAttribute("filterKategorie", kategorie);
         model.addAttribute("filterOrt", ort);
         model.addAttribute("suchbegriff", q);
         model.addAttribute("alleBranchen", Branche.values());
         model.addAttribute("filterBranchen", branche != null ? branche : Set.of());
 
-        // Neueste 3 Projekte als Highlight-Preview (nur auf der ungefilterten Startansicht)
+        // Neueste 3 Projekte als Highlight-Preview (nur auf der ungefilterten
+        // Startansicht). Damit die Hauptliste keine Duplikate enthält, werden
+        // diese IDs anschließend aus der Hauptliste herausgefiltert.
         boolean istGefiltertOderGesucht = (q != null && !q.isBlank())
                 || (kategorie != null && !kategorie.isBlank())
                 || (ort != null && !ort.isBlank())
                 || (branche != null && !branche.isEmpty());
+
+        Set<UUID> neuesteIds = Set.of();
         if (!istGefiltertOderGesucht) {
-            List<ProjektView> neueste = projektService.findeNeuesteOeffentliche(3).stream()
-                    .map(p -> {
-                        String cover = medienAssetService.findeCover(EntityTyp.PROJEKT, p.getId())
-                                .map(a -> "/medien/" + a.getId())
-                                .orElse(null);
-                        return ProjektView.von(p, cover);
-                    })
-                    .toList();
-            model.addAttribute("neueste", neueste);
+            List<Projekt> neuesteEntities = projektService.findeNeuesteOeffentliche(3);
+            neuesteIds = neuesteEntities.stream()
+                    .map(Projekt::getId)
+                    .collect(Collectors.toUnmodifiableSet());
+            model.addAttribute("neueste", neuesteEntities.stream()
+                    .map(this::toViewMitCover)
+                    .toList());
         } else {
             model.addAttribute("neueste", List.of());
         }
 
+        Set<UUID> idsZumAusblenden = neuesteIds;
+        model.addAttribute("projekte", projekte.stream()
+                .filter(p -> !idsZumAusblenden.contains(p.getId()))
+                .map(this::toViewMitCover)
+                .toList());
+
         return "marktplatz";
+    }
+
+    /** Holt das Cover-Asset des Projekts (falls vorhanden) und baut die ProjektView. */
+    private ProjektView toViewMitCover(Projekt p) {
+        String coverUrl = medienAssetService.findeCover(EntityTyp.PROJEKT, p.getId())
+                .map(a -> "/medien/" + a.getId())
+                .orElse(null);
+        return ProjektView.von(p, coverUrl);
     }
 
     @GetMapping("/{slug}")

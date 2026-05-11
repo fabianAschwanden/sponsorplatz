@@ -94,6 +94,37 @@ class MarktplatzControllerTest {
                 .andExpect(model().attributeExists("projekte"));
     }
 
+    /**
+     * MKT-02b: In der ungefilterten Startansicht erscheinen die als
+     * "Neueste" gezeigten Projekte NICHT zusätzlich in der Hauptliste,
+     * sonst sieht der User dieselbe Karte zweimal.
+     */
+    @Test
+    void neuesteProjekteWerdenAusHauptlisteHerausgefiltert() throws Exception {
+        Projekt neu = testProjekt();
+        Projekt alt = testProjekt();
+        alt.setId(UUID.randomUUID());
+        alt.setName("Älteres Projekt");
+        alt.setSlug("aelteres-projekt");
+
+        when(projektService.findeOeffentliche()).thenReturn(java.util.List.of(neu, alt));
+        when(projektService.findeNeuesteOeffentliche(3)).thenReturn(java.util.List.of(neu));
+
+        org.springframework.test.web.servlet.MvcResult result = mockMvc.perform(get("/marktplatz"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        @SuppressWarnings("unchecked")
+        java.util.List<ProjektView> hauptliste = (java.util.List<ProjektView>)
+                result.getModelAndView().getModel().get("projekte");
+        @SuppressWarnings("unchecked")
+        java.util.List<ProjektView> neueste = (java.util.List<ProjektView>)
+                result.getModelAndView().getModel().get("neueste");
+
+        assertThat(neueste).extracting(ProjektView::id).containsExactly(neu.getId());
+        assertThat(hauptliste).extracting(ProjektView::id).containsExactly(alt.getId());
+    }
+
     /** MKT-03: Filter nach Kategorie. */
     @Test
     void filterNachKategorie() throws Exception {
