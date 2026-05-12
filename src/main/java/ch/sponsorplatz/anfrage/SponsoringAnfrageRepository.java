@@ -98,4 +98,38 @@ public interface SponsoringAnfrageRepository extends JpaRepository<SponsoringAnf
             """)
     List<SponsoringAnfrage> findByAnfragenderOrgIdInOrderByCreatedAtDesc(
             @Param("anfragenderOrgIds") Collection<UUID> anfragenderOrgIds);
+
+    /**
+     * Ausgehende Anfragen, die der angegebene User <b>selbst</b> erstellt hat
+     * (egal aus welcher Org). Bucket „Meine ausgehende Anfragen".
+     */
+    @Query("""
+            select a from SponsoringAnfrage a
+              left join fetch a.paket
+              left join fetch a.anfragenderOrg
+              left join fetch a.empfaengerOrg
+             where a.erstelltVon.id = :userId
+             order by a.createdAt desc
+            """)
+    List<SponsoringAnfrage> findByErstelltVonIdOrderByCreatedAtDesc(
+            @Param("userId") UUID userId);
+
+    /**
+     * Ausgehende Anfragen <em>meiner Organisationen</em>, die der angegebene
+     * User <b>nicht selbst</b> erstellt hat — inklusive historischer Anfragen
+     * (erstellt_von_id IS NULL, vor V32). Bucket „Ausgehende Anfragen zu
+     * meiner Organisation".
+     */
+    @Query("""
+            select a from SponsoringAnfrage a
+              left join fetch a.paket
+              left join fetch a.anfragenderOrg
+              left join fetch a.empfaengerOrg
+             where a.anfragenderOrg.id in :anfragenderOrgIds
+               and (a.erstelltVon is null or a.erstelltVon.id <> :userId)
+             order by a.createdAt desc
+            """)
+    List<SponsoringAnfrage> findOrgAusgehendNichtVonUser(
+            @Param("anfragenderOrgIds") Collection<UUID> anfragenderOrgIds,
+            @Param("userId") UUID userId);
 }

@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ch.sponsorplatz.benachrichtigung.BenachrichtigungTyp;
 import ch.sponsorplatz.benachrichtigung.NotificationService;
+import ch.sponsorplatz.benutzer.AppUser;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.projekt.SponsoringPaket;
@@ -26,15 +28,18 @@ public class SponsoringAnfrageService {
     private final BenachrichtigungsService benachrichtigungsService;
     private final NotificationService notificationService;
     private final MitgliedschaftRepository mitgliedschaftRepository;
+    private final AppUserRepository appUserRepository;
 
     public SponsoringAnfrageService(SponsoringAnfrageRepository repository,
             BenachrichtigungsService benachrichtigungsService,
             NotificationService notificationService,
-            MitgliedschaftRepository mitgliedschaftRepository) {
+            MitgliedschaftRepository mitgliedschaftRepository,
+            AppUserRepository appUserRepository) {
         this.repository = repository;
         this.benachrichtigungsService = benachrichtigungsService;
         this.notificationService = notificationService;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
+        this.appUserRepository = appUserRepository;
     }
 
     @Transactional(readOnly = true)
@@ -88,12 +93,38 @@ public class SponsoringAnfrageService {
         return repository.findByAnfragenderOrgIdInOrderByCreatedAtDesc(anfragenderOrgIds);
     }
 
+    /**
+     * Bucket „Meine ausgehende Anfragen" — vom angegebenen User selbst gestellt.
+     */
+    @Transactional(readOnly = true)
+    public List<SponsoringAnfrage> findeAusgehendeVonUser(UUID userId) {
+        if (userId == null) {
+            return List.of();
+        }
+        return repository.findByErstelltVonIdOrderByCreatedAtDesc(userId);
+    }
+
+    /**
+     * Bucket „Ausgehende Anfragen meiner Organisation" — von der/den eigenen
+     * Vereins-Orgs gestellt, aber <em>nicht</em> vom angegebenen User selbst.
+     * Historische Anfragen (erstelltVon IS NULL) landen ebenfalls hier.
+     */
+    @Transactional(readOnly = true)
+    public List<SponsoringAnfrage> findeAusgehendeMeinerOrgsOhneUser(
+            Collection<UUID> anfragenderOrgIds, UUID userId) {
+        if (anfragenderOrgIds == null || anfragenderOrgIds.isEmpty() || userId == null) {
+            return List.of();
+        }
+        return repository.findOrgAusgehendNichtVonUser(anfragenderOrgIds, userId);
+    }
+
     public SponsoringAnfrage erstelle(SponsoringPaket paket,
             Organisation anfragenderOrg,
             Organisation empfaengerOrg,
             String nachricht,
             String kontaktName,
-            String kontaktEmail) {
+            String kontaktEmail,
+            UUID erstelltVonUserId) {
         if (nachricht == null || nachricht.isBlank()) {
             throw new IllegalArgumentException("Nachricht darf nicht leer sein");
         }
@@ -106,6 +137,7 @@ public class SponsoringAnfrageService {
         anfrage.setKontaktName(kontaktName);
         anfrage.setKontaktEmail(kontaktEmail);
         anfrage.setStatus(AnfrageStatus.NEU);
+        anfrage.setErstelltVon(ladeUser(erstelltVonUserId));
         SponsoringAnfrage gespeichert = repository.save(anfrage);
 
         // Benachrichtigung an Empfänger-Org (async)
@@ -129,7 +161,8 @@ public class SponsoringAnfrageService {
             String betreff,
             String nachricht,
             String kontaktName,
-            String kontaktEmail) {
+            String kontaktEmail,
+            UUID erstelltVonUserId) {
         if (betreff == null || betreff.isBlank()) {
             throw new IllegalArgumentException("Betreff darf nicht leer sein");
         }
@@ -148,6 +181,7 @@ public class SponsoringAnfrageService {
         anfrage.setKontaktName(kontaktName);
         anfrage.setKontaktEmail(kontaktEmail);
         anfrage.setStatus(AnfrageStatus.NEU);
+        anfrage.setErstelltVon(ladeUser(erstelltVonUserId));
         SponsoringAnfrage gespeichert = repository.save(anfrage);
 
         // Benachrichtigung an Empfänger-Org
@@ -222,6 +256,21 @@ public class SponsoringAnfrageService {
     private SponsoringAnfrage laden(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Anfrage nicht gefunden: " + id));
+    }
+
+    /**
+     * Lädt den User, der die Anfrage stellt. Bewusst defensiv: {@code null}
+     * (etwa weil der Controller kein Auth-Kontext hatte) → wir akzeptieren
+     * NULL erstelltVon. Eine unbekannte UUID ist dagegen ein Programmfehler,
+     * darum {@link IllegalArgumentException}.
+     */
+    private AppUser ladeUser(UUID userId) {
+        if (userId == null) {
+            return null;
+        }
+        return appUserRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Erstellender User nicht gefunden: " + userId));
     }
 
     private void pruefeNichtBeantwortet(SponsoringAnfrage anfrage) {

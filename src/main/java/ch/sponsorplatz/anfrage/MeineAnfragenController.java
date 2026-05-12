@@ -79,6 +79,9 @@ public class MeineAnfragenController {
 
     @GetMapping("/anfragen")
     public String meineAnfragen(Authentication auth, Model model) {
+        AppUser user = appUserRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
+
         List<Mitgliedschaft> mitgliedschaften = ladeMitgliedschaften(auth);
         List<UUID> alleOrgIds = mitgliedschaften.stream()
                 .map(m -> m.getOrg().getId())
@@ -88,9 +91,10 @@ public class MeineAnfragenController {
         List<AnfrageView> eingehend = AnfrageView.von(anfrageService.findeAlleEingehenden(alleOrgIds));
         long offene = anfrageService.zaehleNeue(alleOrgIds);
 
-        // Vereins-Mitglieder sehen zusätzlich ihre ausgehenden (Verein → Sponsor)
-        // und bekommen den "Neue Kontakt-Anfrage"-Button. Sponsoren-only-User
-        // sehen NUR eingehende — laut Anforderung der UNTERNEHMEN-Sicht.
+        // Vereins-Mitglieder sehen zwei separate Bucketts ausgehender Anfragen:
+        // (1) was sie persönlich gestellt haben, (2) was ihre Org gestellt hat,
+        // aber jemand anderes als sie selbst. Sponsoren-only-User sehen weder
+        // den "Neue Kontakt-Anfrage"-Button noch die Listen.
         List<UUID> vereinsOrgIds = mitgliedschaften.stream()
                 .filter(m -> EDIT_ROLLEN.contains(m.getRolle()))
                 .map(Mitgliedschaft::getOrg)
@@ -98,13 +102,28 @@ public class MeineAnfragenController {
                 .map(Organisation::getId)
                 .toList();
         boolean istVereinsMitglied = !vereinsOrgIds.isEmpty();
-        List<AnfrageView> ausgehend = istVereinsMitglied
-                ? AnfrageView.von(anfrageService.findeAlleAusgehenden(vereinsOrgIds))
+
+        List<AnfrageView> meineAusgehend = istVereinsMitglied
+                ? AnfrageView.von(anfrageService.findeAusgehendeVonUser(user.getId()))
                 : List.of();
+        List<AnfrageView> orgAusgehend = istVereinsMitglied
+                ? AnfrageView.von(anfrageService.findeAusgehendeMeinerOrgsOhneUser(
+                        vereinsOrgIds, user.getId()))
+                : List.of();
+
+        // Bezeichnungen der eigenen Vereins-Orgs für die Sektion-Überschrift
+        List<String> meineOrgNamen = mitgliedschaften.stream()
+                .filter(m -> EDIT_ROLLEN.contains(m.getRolle()))
+                .map(Mitgliedschaft::getOrg)
+                .filter(o -> o.getTyp() == OrgTyp.VEREIN)
+                .map(Organisation::getName)
+                .toList();
 
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "anfragen");
         model.addAttribute("anfragen", eingehend);
-        model.addAttribute("ausgehendeAnfragen", ausgehend);
+        model.addAttribute("meineAusgehendeAnfragen", meineAusgehend);
+        model.addAttribute("orgAusgehendeAnfragen", orgAusgehend);
+        model.addAttribute("meineOrgNamen", meineOrgNamen);
         model.addAttribute("anzahlOffene", offene);
         model.addAttribute("kannKontaktanfrageStellen", istVereinsMitglied);
         return "meine-anfragen";
@@ -173,9 +192,13 @@ public class MeineAnfragenController {
             return "anfrage-kontakt-neu";
         }
 
+        UUID erstelltVonUserId = appUserRepository.findByEmail(auth.getName())
+                .map(AppUser::getId)
+                .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
         anfrageService.erstelleKontaktAnfrage(anfragenderOrg, empfaengerOrg,
                 form.getBetreff(), form.getNachricht(),
-                form.getKontaktName(), form.getKontaktEmail());
+                form.getKontaktName(), form.getKontaktEmail(),
+                erstelltVonUserId);
 
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                 "Kontakt-Anfrage an " + empfaengerOrg.getName() + " wurde gesendet.");
@@ -272,8 +295,12 @@ public class MeineAnfragenController {
         Organisation anfragenderOrg = organisationService.findeNachId(anfragenderOrgId)
                 .orElseThrow(() -> new NotFoundException("Org nicht gefunden: " + anfragenderOrgId));
 
+        UUID erstelltVonUserId = appUserRepository.findByEmail(auth.getName())
+                .map(AppUser::getId)
+                .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
         anfrageService.erstelle(paket, anfragenderOrg, empfaengerOrg,
-                form.getNachricht(), form.getKontaktName(), form.getKontaktEmail());
+                form.getNachricht(), form.getKontaktName(), form.getKontaktEmail(),
+                erstelltVonUserId);
 
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                 "Anfrage an " + empfaengerOrg.getName() + " wurde gesendet.");

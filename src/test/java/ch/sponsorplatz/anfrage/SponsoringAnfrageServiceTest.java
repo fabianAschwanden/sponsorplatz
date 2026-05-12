@@ -15,6 +15,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import ch.sponsorplatz.benutzer.AppUser;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.projekt.SponsoringPaket;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
@@ -25,7 +27,10 @@ class SponsoringAnfrageServiceTest {
     private BenachrichtigungsService benachrichtigungsService;
     private NotificationService notificationService;
     private MitgliedschaftRepository mitgliedschaftRepository;
+    private AppUserRepository appUserRepository;
     private SponsoringAnfrageService service;
+
+    private UUID erstellerUserId;
 
     @BeforeEach
     void setUp() {
@@ -33,9 +38,14 @@ class SponsoringAnfrageServiceTest {
         benachrichtigungsService = mock(BenachrichtigungsService.class);
         notificationService = mock(NotificationService.class);
         mitgliedschaftRepository = mock(MitgliedschaftRepository.class);
+        appUserRepository = mock(AppUserRepository.class);
         service = new SponsoringAnfrageService(repository, benachrichtigungsService,
-                notificationService, mitgliedschaftRepository);
+                notificationService, mitgliedschaftRepository, appUserRepository);
         when(mitgliedschaftRepository.findByOrgId(any())).thenReturn(Collections.emptyList());
+        erstellerUserId = UUID.randomUUID();
+        AppUser ersteller = new AppUser();
+        ersteller.setId(erstellerUserId);
+        when(appUserRepository.findById(erstellerUserId)).thenReturn(Optional.of(ersteller));
     }
 
     /** ANF-01: Anfrage erstellen setzt Status NEU. */
@@ -51,12 +61,14 @@ class SponsoringAnfrageServiceTest {
         when(repository.save(any(SponsoringAnfrage.class))).thenAnswer(inv -> inv.getArgument(0));
 
         SponsoringAnfrage anfrage = service.erstelle(paket, anfragender, empfaenger, "Interesse am Gold-Paket",
-                "Max Muster", "max@example.com");
+                "Max Muster", "max@example.com", erstellerUserId);
 
         assertThat(anfrage.getStatus()).isEqualTo(AnfrageStatus.NEU);
         assertThat(anfrage.getNachricht()).isEqualTo("Interesse am Gold-Paket");
         assertThat(anfrage.getKontaktName()).isEqualTo("Max Muster");
         assertThat(anfrage.getPaket()).isEqualTo(paket);
+        assertThat(anfrage.getErstelltVon()).isNotNull();
+        assertThat(anfrage.getErstelltVon().getId()).isEqualTo(erstellerUserId);
     }
 
     /** ANF-02: Erstellen ohne Nachricht wirft. */
@@ -66,7 +78,7 @@ class SponsoringAnfrageServiceTest {
         Organisation anfragender = new Organisation();
         Organisation empfaenger = new Organisation();
 
-        assertThatThrownBy(() -> service.erstelle(paket, anfragender, empfaenger, "", null, null))
+        assertThatThrownBy(() -> service.erstelle(paket, anfragender, empfaenger, "", null, null, erstellerUserId))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -133,7 +145,7 @@ class SponsoringAnfrageServiceTest {
 
         when(repository.save(any(SponsoringAnfrage.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        service.erstelle(paket, anfragender, empfaenger, "Test-Nachricht", "Max", "max@test.ch");
+        service.erstelle(paket, anfragender, empfaenger, "Test-Nachricht", "Max", "max@test.ch", erstellerUserId);
 
         verify(benachrichtigungsService).benachrichtigeUeberNeueAnfrage(any(SponsoringAnfrage.class), any());
     }

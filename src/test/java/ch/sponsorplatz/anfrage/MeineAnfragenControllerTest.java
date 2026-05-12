@@ -163,7 +163,7 @@ class MeineAnfragenControllerTest {
 
         verify(anfrageService).erstelle(eq(paket), eq(sponsorOrg), eq(empfaenger),
                 eq("Wir haben grosses Interesse am Sommerfest 2026."),
-                eq("Sponsorin"), eq("sponsor@sp.ch"));
+                eq("Sponsorin"), eq("sponsor@sp.ch"), eq(userId));
     }
 
     @Test
@@ -192,7 +192,45 @@ class MeineAnfragenControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("anfrage-neu"));
 
-        verify(anfrageService, never()).erstelle(any(), any(), any(), any(), any(), any());
+        verify(anfrageService, never()).erstelle(any(), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    @WithMockUser("editor@verein.ch")
+    @DisplayName("MANF-08: /anfragen splittet ausgehende in meine vs. Org-ohne-mich")
+    void splittetAusgehendeInZweiBuckets() throws Exception {
+        UUID userId = UUID.randomUUID();
+        UUID vereinsOrgId = UUID.randomUUID();
+
+        AppUser user = neuerUser(userId, "editor@verein.ch", "Editor");
+        Organisation vereinsOrg = neueOrg(vereinsOrgId, "FC Test", "fc-test", OrgTyp.VEREIN);
+        when(appUserRepository.findByEmail("editor@verein.ch")).thenReturn(Optional.of(user));
+        when(mitgliedschaftRepository.findByUserIdAndRolleInMitOrg(eq(userId), any()))
+                .thenReturn(List.of(neueMitgliedschaft(user, vereinsOrg, Rolle.ORG_EDITOR)));
+
+        SponsoringAnfrage meineAnfrage = new SponsoringAnfrage();
+        meineAnfrage.setId(UUID.randomUUID());
+        meineAnfrage.setAnfragenderOrg(vereinsOrg);
+        meineAnfrage.setEmpfaengerOrg(vereinsOrg);
+        meineAnfrage.setStatus(AnfrageStatus.NEU);
+
+        SponsoringAnfrage orgAnfrage = new SponsoringAnfrage();
+        orgAnfrage.setId(UUID.randomUUID());
+        orgAnfrage.setAnfragenderOrg(vereinsOrg);
+        orgAnfrage.setEmpfaengerOrg(vereinsOrg);
+        orgAnfrage.setStatus(AnfrageStatus.NEU);
+
+        when(anfrageService.findeAusgehendeVonUser(userId)).thenReturn(List.of(meineAnfrage));
+        when(anfrageService.findeAusgehendeMeinerOrgsOhneUser(eq(List.of(vereinsOrgId)), eq(userId)))
+                .thenReturn(List.of(orgAnfrage));
+
+        mockMvc.perform(get("/anfragen"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("meineAusgehendeAnfragen", "orgAusgehendeAnfragen", "meineOrgNamen"))
+                .andExpect(model().attribute("kannKontaktanfrageStellen", true));
+
+        verify(anfrageService).findeAusgehendeVonUser(userId);
+        verify(anfrageService).findeAusgehendeMeinerOrgsOhneUser(List.of(vereinsOrgId), userId);
     }
 
     @Test

@@ -1,4 +1,5 @@
 package ch.sponsorplatz.anfrage;
+import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.projekt.SponsoringPaket;
 import ch.sponsorplatz.organisation.Organisation;
 
@@ -46,6 +47,15 @@ public class SponsoringAnfrage {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "empfaenger_org_id", nullable = false)
     private Organisation empfaengerOrg;
+
+    /**
+     * Der User, der die Anfrage konkret gestellt hat. NULL bei
+     * historischen Anfragen vor V32. Foreign Key mit ON DELETE SET NULL,
+     * damit Konto-Löschung den Audit-Trail nicht abreißt.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "erstellt_von_id")
+    private AppUser erstelltVon;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
@@ -104,6 +114,9 @@ public class SponsoringAnfrage {
 
     public Organisation getEmpfaengerOrg() { return empfaengerOrg; }
     public void setEmpfaengerOrg(Organisation empfaengerOrg) { this.empfaengerOrg = empfaengerOrg; }
+
+    public AppUser getErstelltVon() { return erstelltVon; }
+    public void setErstelltVon(AppUser erstelltVon) { this.erstelltVon = erstelltVon; }
 
     public AnfrageStatus getStatus() { return status; }
     public void setStatus(AnfrageStatus status) { this.status = status; }
