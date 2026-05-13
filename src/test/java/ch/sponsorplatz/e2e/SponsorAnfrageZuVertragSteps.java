@@ -18,14 +18,21 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Steps fuer das Pilot-Szenario:
- * Verein-Registrierung → Verein-Anlage → Projekt + Paket → CSS stellt Anfrage
- * → Verein nimmt an → Vertrag wird erstellt.
+ * Steps für den vom User definierten E2E-Flow (siehe
+ * specs/KONTAKT_ANFRAGE_VERTRAG.md):
+ * Verein-Registrierung → Verein anlegen → Kontakt-Anfrage an CSS →
+ * CSS nimmt an → Verein erstellt Vertrag.
  *
- * <p>Wir nutzen Playwright's {@link Page#getByLabel}/{@link Page#getByRole}-
- * Locators wo moeglich, weil sie an die sichtbaren Beschriftungen binden
- * (i18n-stabil + accessibility-getrieben), und nur dort
- * CSS-Selektoren wo Labels mehrdeutig sind.
+ * <p>Bewusst <b>keine</b> Paket-Erstellung — der Flow ist Verein-zu-Sponsor-
+ * Initiative, kein Marktplatz-Browse-Pfad. Der Vertrag entsteht aus einer
+ * paket-losen Kontakt-Anfrage (Snapshot via {@code VertragService.erstelle}).
+ *
+ * <p>Locator-Strategie:
+ * <ul>
+ *   <li>{@code page.getByLabel(...)} für Form-Felder (i18n-stabil)</li>
+ *   <li>{@code page.getByRole(BUTTON, name=...)} für Klick-Targets</li>
+ *   <li>Inline CSS-Selektoren nur, wenn Labels mehrdeutig sind</li>
+ * </ul>
  */
 public class SponsorAnfrageZuVertragSteps {
 
@@ -46,6 +53,7 @@ public class SponsorAnfrageZuVertragSteps {
                         "Sponsor-Fixture wurde nicht von @Before geseedet"));
         assertThat(sponsor.getName()).isEqualTo(sponsorName);
         ctx.getDaten().put("sponsorOrgId", sponsor.getId());
+        ctx.getDaten().put("sponsorName", sponsorName);
     }
 
     // -------- Verein-Registrierung + Onboarding --------
@@ -79,8 +87,6 @@ public class SponsorAnfrageZuVertragSteps {
     @Und("ich im Onboarding den Verein {string} in der Branche {string} anlege")
     public void onboarding_vereinAnlegen(String vereinName, String branche) {
         Page page = ctx.getPage();
-        // Nach Login direkt auf /dashboard; ohne Org leitet das auf /onboarding.
-        // Wir navigieren explizit, falls der Redirect schon konsumiert wurde.
         if (!page.url().contains("/onboarding")) {
             page.navigate(ctx.getBaseUrl() + "/onboarding");
         }
@@ -92,48 +98,42 @@ public class SponsorAnfrageZuVertragSteps {
                 .click();
         page.waitForURL("**/dashboard**");
 
-        // Slug ableiten — der SlugGenerator macht Lowercase + Bindestriche
         ctx.getDaten().put("vereinName", vereinName);
         ctx.getDaten().put("vereinSlug", vereinName.toLowerCase().replace(' ', '-'));
     }
 
-    // -------- Projekt + Paket --------
+    // -------- Verein stellt Kontakt-Anfrage --------
 
-    @Und("ich ein Projekt {string} mit Sponsoring-Paket {string} zu {int} CHF erstelle")
-    public void projektUndPaket(String projektName, String paketName, int preisChf) {
+    @Und("ich eine Kontakt-Anfrage an {string} mit Betreff {string} stelle")
+    public void stelleKontaktAnfrage(String sponsorName, String betreff) {
         Page page = ctx.getPage();
-        String vereinSlug = ctx.daten("vereinSlug");
+        page.navigate(ctx.getBaseUrl() + "/anfragen/neu-kontakt");
 
-        page.navigate(ctx.getBaseUrl() + "/organisationen/" + vereinSlug + "/projekte/neu");
-        page.locator("#name").fill(projektName);
-        page.locator("#beschreibung").fill("E2E-Projekt, Beschreibung egal");
+        // Verein-Org-Dropdown — Verein-Owner hat nur eine Org
+        page.locator("#anfragenderOrgId")
+                .selectOption(new com.microsoft.playwright.options.SelectOption()
+                        .setLabel(ctx.daten("vereinName")));
+
+        // Sponsor-Dropdown — wir wählen via UUID, weil Label das
+        // Branche-Suffix enthält (z.B. "CSS Versicherung (Prävention)")
+        page.locator("#empfaengerOrgId")
+                .selectOption(((UUID) ctx.daten("sponsorOrgId")).toString());
+
+        page.locator("#betreff").fill(betreff);
+        page.locator("#nachricht").fill(
+                "Wir vom Verein FC E2E würden uns sehr freuen, " + sponsorName
+                + " für unser Sommerfest 2026 als Sponsor zu gewinnen.");
+
         page.getByRole(AriaRole.BUTTON,
-                        new Page.GetByRoleOptions().setName("Speichern"))
+                        new Page.GetByRoleOptions().setName("Anfrage senden"))
                 .first()
                 .click();
-        page.waitForURL("**/projekte/" + projektSlug(projektName));
+        page.waitForURL("**/anfragen**");
 
-        // Projekt veroeffentlichen — sonst erscheint es nicht im Marktplatz
-        page.getByRole(AriaRole.BUTTON,
-                        new Page.GetByRoleOptions().setName("Veröffentlichen"))
-                .first()
-                .click();
-        page.waitForURL("**/projekte/" + projektSlug(projektName) + "**");
-
-        // Paket im Projekt-Detail anlegen
-        page.locator("#paketName").fill(paketName);
-        page.locator("#paketPreis").fill(String.valueOf(preisChf));
-        page.getByRole(AriaRole.BUTTON,
-                        new Page.GetByRoleOptions().setName("Paket speichern"))
-                .first()
-                .click();
-        page.waitForURL("**/projekte/" + projektSlug(projektName) + "**");
-
-        ctx.getDaten().put("projektSlug", projektSlug(projektName));
-        ctx.getDaten().put("paketName", paketName);
+        ctx.getDaten().put("betreff", betreff);
     }
 
-    // -------- Sponsor stellt Anfrage --------
+    // -------- Sponsor nimmt an --------
 
     @Und("sich der Sponsor {string} einloggt")
     public void sponsorEinloggen(String sponsorName) {
@@ -142,43 +142,12 @@ public class SponsorAnfrageZuVertragSteps {
         login(E2EFixtures.SPONSOR_EMAIL, E2EFixtures.SPONSOR_PASSWORT);
     }
 
-    @Und("der Sponsor eine Sponsor-Anfrage zum Paket {string} stellt")
-    public void sponsorStelltAnfrage(String paketName) {
-        Page page = ctx.getPage();
-        String projektSlug = ctx.daten("projektSlug");
-
-        page.navigate(ctx.getBaseUrl() + "/marktplatz/" + projektSlug);
-        page.getByRole(AriaRole.LINK,
-                        new Page.GetByRoleOptions().setName("Anfrage stellen"))
-                .first()
-                .click();
-        page.waitForURL("**/anfragen/neu**");
-
-        // anfragenderOrgId-Dropdown enthaelt nur die Sponsor-Org
-        page.locator("#anfragenderOrgId")
-                .selectOption(((UUID) ctx.daten("sponsorOrgId")).toString());
-        page.locator("#nachricht")
-                .fill("Wir bei CSS würden gerne das Sommerfest sponsern.");
-        page.getByRole(AriaRole.BUTTON,
-                        new Page.GetByRoleOptions().setName("Anfrage senden"))
-                .first()
-                .click();
-        page.waitForURL("**/anfragen**");
-    }
-
-    // -------- Annehmen + Vertrag --------
-
-    @Und("ich mich wieder als Verein-Owner einlogge")
-    public void verein_reLogin() {
-        logout();
-        login(ctx.daten("vereinEmail"), VEREIN_PASSWORT);
-    }
-
-    @Und("ich die Anfrage von {string} annehme")
-    public void anfrageAnnehmen(String sponsorName) {
+    @Und("der Sponsor die Kontakt-Anfrage von {string} annimmt")
+    public void sponsorNimmtKontaktAnfrageAn(String vereinName) {
         Page page = ctx.getPage();
         page.navigate(ctx.getBaseUrl() + "/anfragen");
-        // Im Eingehend-Block der ersten passenden Anfrage auf "Annehmen" klicken
+        // Im Eingehend-Block der ersten passenden Anfrage auf "Annehmen" klicken.
+        // Bei nur 1 Anfrage im Test-Scope reicht .first().
         page.locator("form[action*='/annehmen']")
                 .first()
                 .getByRole(AriaRole.BUTTON,
@@ -186,15 +155,24 @@ public class SponsorAnfrageZuVertragSteps {
                 .click();
         page.waitForURL("**/anfragen**");
 
-        UUID anfrageId = findeNeuesteAnfrageIdFuerSponsor(sponsorName);
+        UUID anfrageId = findeKontaktAnfrageId(vereinName);
         ctx.getDaten().put("anfrageId", anfrageId);
     }
 
-    @Und("ich für die angenommene Anfrage einen Vertrag erstelle")
+    // -------- Verein erstellt Vertrag --------
+
+    @Und("ich mich wieder als Verein-Owner einlogge")
+    public void verein_reLogin() {
+        logout();
+        login(ctx.daten("vereinEmail"), VEREIN_PASSWORT);
+    }
+
+    @Und("ich für die angenommene Kontakt-Anfrage einen Vertrag erstelle")
     public void vertragErstellen() {
         Page page = ctx.getPage();
-        // Auf /anfragen erscheint der "Vertrag erstellen"-Button bei
-        // ANGENOMMEN-Paket-Anfragen. Ein POST über Form-Submit reicht.
+        page.navigate(ctx.getBaseUrl() + "/anfragen");
+        // Vertrag-Button erscheint bei ANGENOMMENen Kontakt-Anfragen in der
+        // "Meine ausgehende"-Section — siehe meine-anfragen.html.
         page.locator("form[action*='/vertrag/erstellen']")
                 .first()
                 .getByRole(AriaRole.BUTTON,
@@ -203,14 +181,27 @@ public class SponsorAnfrageZuVertragSteps {
         page.waitForURL("**/vertraege/**");
     }
 
-    // -------- Assertion --------
+    // -------- Assertions --------
 
     @Dann("existiert in der Datenbank ein Vertrag zwischen {string} und {string}")
-    public void vertragExistiert(String anfragenderName, String empfaengerName) {
-        long anzahl = zaehleVertraegeZwischen(anfragenderName, empfaengerName);
+    public void vertragExistiert(String vereinName, String sponsorName) {
+        long anzahl = zaehleVertraegeZwischen(vereinName, sponsorName);
         assertThat(anzahl)
-                .as("Vertrag zwischen %s und %s sollte existieren", anfragenderName, empfaengerName)
+                .as("Vertrag zwischen %s und %s sollte existieren", vereinName, sponsorName)
                 .isGreaterThanOrEqualTo(1);
+    }
+
+    @Und("der Vertrag referenziert die Kontakt-Anfrage als Quelle")
+    public void vertragReferenziertKontaktAnfrage() {
+        UUID anfrageId = ctx.daten("anfrageId");
+        long mitAnfrage = vertragRepository.findAll().stream()
+                .filter(v -> v.getAnfrage() != null
+                        && v.getAnfrage().getId().equals(anfrageId)
+                        && v.getAnfrage().getPaket() == null) // Kontakt-Anfrage = paket-frei
+                .count();
+        assertThat(mitAnfrage)
+                .as("Vertrag muss an die paket-lose Kontakt-Anfrage gebunden sein")
+                .isEqualTo(1);
     }
 
     // -------- Helpers --------
@@ -224,40 +215,31 @@ public class SponsorAnfrageZuVertragSteps {
                         new Page.GetByRoleOptions().setName("Anmelden"))
                 .first()
                 .click();
-        // Login redirected je nach Onboarding-Status; URL-Wait auf einen der
-        // gueltigen Folgezustaende
         page.waitForFunction("() => !location.pathname.endsWith('/login')");
     }
 
     private void logout() {
-        Page page = ctx.getPage();
-        // POST /logout via JS direkt — die Sidebar-Form ist u.U. nicht sichtbar
-        page.context().clearCookies();
-    }
-
-    private String projektSlug(String name) {
-        return name.toLowerCase().replace(' ', '-');
+        ctx.getPage().context().clearCookies();
     }
 
     @Transactional
-    public long zaehleVertraegeZwischen(String anfragenderName, String empfaengerName) {
+    public long zaehleVertraegeZwischen(String vereinName, String sponsorName) {
         return vertragRepository.findAll().stream()
-                .filter(v -> {
-                    var a = v.getAnfrage();
-                    if (a == null) return false;
-                    return a.getAnfragenderOrg().getName().equals(anfragenderName)
-                            && a.getEmpfaengerOrg().getName().equals(empfaengerName);
-                })
+                .filter(v -> v.getOrg() != null
+                        && v.getOrg().getName().equals(vereinName)
+                        && v.getSponsorOrg() != null
+                        && v.getSponsorOrg().getName().equals(sponsorName))
                 .count();
     }
 
     @Transactional
-    public UUID findeNeuesteAnfrageIdFuerSponsor(String sponsorName) {
+    public UUID findeKontaktAnfrageId(String vereinName) {
         return anfrageRepository.findAll().stream()
-                .filter(a -> a.getAnfragenderOrg().getName().equals(sponsorName))
+                .filter(a -> a.getAnfragenderOrg().getName().equals(vereinName)
+                        && a.getPaket() == null)
                 .map(a -> a.getId())
                 .findFirst()
                 .orElseThrow(() -> new AssertionError(
-                        "Anfrage von " + sponsorName + " nicht gefunden"));
+                        "Kontakt-Anfrage von " + vereinName + " nicht gefunden"));
     }
 }

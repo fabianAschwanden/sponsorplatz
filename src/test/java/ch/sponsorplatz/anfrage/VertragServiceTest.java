@@ -1,6 +1,7 @@
 package ch.sponsorplatz.anfrage;
 
 import ch.sponsorplatz.shared.exception.NotFoundException;
+import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.projekt.SponsoringPaket;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,8 +43,8 @@ class VertragServiceTest {
     void setUp() {
         service = new VertragService(repository, anfrageRepository);
 
-        Organisation verein = neueOrg("FC Beispiel");
-        Organisation sponsor = neueOrg("Acme AG");
+        Organisation verein = neueOrg("FC Beispiel", OrgTyp.VEREIN);
+        Organisation sponsor = neueOrg("Acme AG", OrgTyp.UNTERNEHMEN);
         SponsoringPaket paket = neuesPaket("Gold", "1 Banner", new BigDecimal("5000.00"));
 
         anfrage = new SponsoringAnfrage();
@@ -132,11 +133,57 @@ class VertragServiceTest {
                 .isInstanceOf(IllegalStateException.class);
     }
 
-    private static Organisation neueOrg(String name) {
+    @Test
+    @DisplayName("VTR-09: erstelle aus Kontakt-Anfrage mappt Verein-Org als v.org via OrgTyp")
+    void erstelleAusKontaktAnfrageMappingNachOrgTyp() {
+        // Bei Kontakt-Anfrage ist die Rollen-Richtung umgedreht:
+        // anfragenderOrg = Verein, empfaengerOrg = Sponsor. Das Mapping muss
+        // trotzdem v.org = Verein, v.sponsorOrg = Sponsor liefern.
+        Organisation verein = neueOrg("FC Sportverein", OrgTyp.VEREIN);
+        Organisation sponsor = neueOrg("CSS Versicherung", OrgTyp.UNTERNEHMEN);
+
+        anfrage.setAnfragenderOrg(verein);       // Verein als Anfragender
+        anfrage.setEmpfaengerOrg(sponsor);       // Sponsor als Empfänger
+        anfrage.setPaket(null);                  // Kontakt-Anfrage hat kein Paket
+        anfrage.setBetreff("Sommerfest-Sponsoring");
+
+        when(repository.findByAnfrageId(anfrageId)).thenReturn(Optional.empty());
+
+        Vertrag v = service.erstelle(anfrageId, "max@verein.ch");
+
+        assertThat(v.getOrg()).as("v.org muss der Verein sein").isEqualTo(verein);
+        assertThat(v.getOrgName()).isEqualTo("FC Sportverein");
+        assertThat(v.getSponsorOrg()).as("v.sponsorOrg muss der Sponsor sein").isEqualTo(sponsor);
+    }
+
+    @Test
+    @DisplayName("VTR-10: erstelle aus Kontakt-Anfrage snapshot't betreff + nachricht, preisChf=0")
+    void erstelleAusKontaktAnfrageSnapshot() {
+        anfrage.setAnfragenderOrg(neueOrg("FC Sportverein", OrgTyp.VEREIN));
+        anfrage.setEmpfaengerOrg(neueOrg("CSS Versicherung", OrgTyp.UNTERNEHMEN));
+        anfrage.setPaket(null);
+        anfrage.setBetreff("Sommerfest-Sponsoring 2026");
+        anfrage.setNachricht("Wir suchen einen Sponsor für unser Sommerfest.");
+
+        when(repository.findByAnfrageId(anfrageId)).thenReturn(Optional.empty());
+
+        Vertrag v = service.erstelle(anfrageId, "max@verein.ch");
+
+        assertThat(v.getPaketName()).isEqualTo("Sommerfest-Sponsoring 2026");
+        assertThat(v.getPaketBeschreibung())
+                .isEqualTo("Wir suchen einen Sponsor für unser Sommerfest.");
+        assertThat(v.getPreisChf())
+                .as("Preis muss 0 sein — Verein-Owner ergänzt im Edit-Form")
+                .isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(v.getStatus()).isEqualTo(VertragsStatus.ENTWURF);
+    }
+
+    private static Organisation neueOrg(String name, OrgTyp typ) {
         Organisation o = new Organisation();
         o.setId(UUID.randomUUID());
         o.setName(name);
         o.setSlug(name.toLowerCase().replace(" ", "-"));
+        o.setTyp(typ);
         return o;
     }
 

@@ -1,5 +1,7 @@
 package ch.sponsorplatz.anfrage;
 
+import ch.sponsorplatz.organisation.OrgTyp;
+import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,24 +60,36 @@ public class VertragService {
         v.setAnfrage(anfrage);
         v.setStatus(VertragsStatus.ENTWURF);
 
-        // Snapshot der Verein-Seite (Empfänger der Anfrage)
-        v.setOrg(anfrage.getEmpfaengerOrg());
-        v.setOrgName(anfrage.getEmpfaengerOrg().getName());
+        // Welche Org ist Verein, welche Sponsor? Bei Paket-Anfragen ist der
+        // Verein der Empfänger, bei Kontakt-Anfragen der Anfragende. Wir
+        // mappen über den OrgTyp statt über Anfrage-Richtung — funktioniert
+        // robust für beide Flow-Richtungen.
+        Organisation vereinOrg = (anfrage.getEmpfaengerOrg().getTyp() == OrgTyp.VEREIN)
+                ? anfrage.getEmpfaengerOrg()
+                : anfrage.getAnfragenderOrg();
+        Organisation sponsorOrg = (anfrage.getEmpfaengerOrg().getTyp() == OrgTyp.VEREIN)
+                ? anfrage.getAnfragenderOrg()
+                : anfrage.getEmpfaengerOrg();
 
-        // Snapshot der Sponsor-Seite — Kontakt-Daten aus der Anfrage selbst
+        v.setOrg(vereinOrg);
+        v.setOrgName(vereinOrg.getName());
+
         v.setSponsorName(anfrage.getKontaktName());
         v.setSponsorEmail(anfrage.getKontaktEmail());
-        v.setSponsorOrg(anfrage.getAnfragenderOrg());
+        v.setSponsorOrg(sponsorOrg);
 
-        // Snapshot des Pakets — wird vom Aufrufer eingetragen, wenn das Anfrage-
-        // Modell die Paket-Referenz hat. Falls null, ENTWURF kann später ergänzt
-        // werden im Edit-Form.
+        // Snapshot des Pakets bei klassischer Paket-Anfrage. Kontakt-Anfragen
+        // haben kein Paket — Preis + Leistungsumfang ergänzt der Verein-Owner
+        // anschliessend im Vertrags-Edit-Form (Status bleibt ENTWURF bis dahin).
         if (anfrage.getPaket() != null) {
             v.setPaketName(anfrage.getPaket().getName());
             v.setPaketBeschreibung(anfrage.getPaket().getBeschreibung());
             v.setPreisChf(anfrage.getPaket().getPreisChf());
         } else {
-            v.setPaketName("(Paket nicht angegeben)");
+            v.setPaketName(anfrage.getBetreff() != null
+                    ? anfrage.getBetreff()
+                    : "(Kontakt-Anfrage ohne Betreff)");
+            v.setPaketBeschreibung(anfrage.getNachricht());
             v.setPreisChf(java.math.BigDecimal.ZERO);
         }
 

@@ -339,7 +339,8 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
    - `SponsoringAnfrageService.erstelleKontaktAnfrage(anfrager, empfaenger, betreff, nachricht, …)`
    - `MeineAnfragenController` rollenabhängig: Vereins-Mitglieder sehen ausgehende + bekommen „+ Sponsor anfragen"-Button; Sponsoren-only-User sehen nur eingehende
    - Picker `/anfragen/neu-kontakt` listet aktive Sponsor-Orgs (`OrgTyp.UNTERNEHMEN`, `Status.VERIFIED|ACTIVE`)
-   - `AnfrageView.istPaketAnfrage()` unterscheidet die beiden Typen — Vertrag-/Konversations-Aktionen nur bei Paket-Anfragen
+   - `AnfrageView.istPaketAnfrage()` unterscheidet die beiden Typen
+- [x] **Vertrag aus Kontakt-Anfrage**: nach Sponsor-Annahme erscheint der „Vertrag erstellen"-Button beim Verein-Owner (Meine-/Org-ausgehend); `VertragService.erstelle` mappt Verein-/Sponsor-Org via `OrgTyp`-Check — siehe [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md). Tests: VTR-09, VTR-10, VIEW-13
 - [x] Tests: MANF-01..07
 
 ### 11.6 — Sicht-Filter `/organisationen`

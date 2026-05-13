@@ -397,6 +397,8 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **VTR-06** | `VertragServiceTest` | `markiereUnterzeichnet` auf bereits unterzeichnetem Vertrag wirft |
 | **VTR-07** *(TBD)* | `VertragServiceTest` | `kuendige` mit bezahlter Rechnung wirft `IllegalStateException` |
 | **VTR-08** *(TBD)* | `VertragServiceTest` | `kuendige` mit offener Rechnung erlaubt — Rechnung wird mit storniert |
+| **VTR-09** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage (paket=null): Verein-Org wird via `OrgTyp.VEREIN`-Check als `v.org` gemappt, Sponsor als `v.sponsorOrg` — unabhängig von Anfrage-Richtung. Siehe [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md) |
+| **VTR-10** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage: `betreff` wird zu `paketName`, `nachricht` zu `paketBeschreibung`, `preisChf = 0` (Verein-Owner ergänzt vor `markiereUnterzeichnet`) |
 
 ### Phase Operational — DSG-Pflichtseiten (INFO)
 
@@ -708,6 +710,7 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **VIEW-11** | `MedienAssetViewTest` | `istBild()` → true für Bilder, false für Dokumente |
 | **VIEW-12** | `MedienAssetViewTest` | `groesseFormatiert()` zeigt B/KB/MB korrekt |
 | **VIEW-12b** | `MedienAssetViewTest` | `endung()` extrahiert Datei-Endung lowercase, leer wenn kein Punkt im Namen |
+| **VIEW-13** | `AnfrageViewTest` | `vereinSlug()` liefert Anfragender-Slug bei Kontakt-Anfrage (Verein → Sponsor), Empfänger-Slug bei Paket-Anfrage. Siehe [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md) |
 
 ### Monitoring & Observability (MON) — Phase 10.1
 
