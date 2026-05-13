@@ -18,6 +18,13 @@
     <meta property="og:image" th:content="@{/og/projekt/{slug}.png(slug=${projekt.slug})}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
+    <!-- Twitter / X Card: gleiches Bild, gleicher Titel, summary_large_image
+         lässt das Card 2:1 statt nur Mini-Thumbnail darstellen. -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" th:content="${projekt.name + ' — Sponsorplatz'}">
+    <meta name="twitter:description"
+          th:content="${projekt.beschreibung != null ? #strings.abbreviate(projekt.beschreibung, 200) : 'Sponsoring-Projekt auf Sponsorplatz'}">
+    <meta name="twitter:image" th:content="@{/og/projekt/{slug}.png(slug=${projekt.slug})}">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">

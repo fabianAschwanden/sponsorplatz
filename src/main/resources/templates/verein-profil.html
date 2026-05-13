@@ -16,6 +16,12 @@
     <meta property="og:image" th:content="@{/og/verein/{slug}.png(slug=${org.slug()})}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" th:content="${org.name() + ' — Sponsorplatz'}">
+    <meta name="twitter:description"
+          th:content="${org.beschreibung() != null ? #strings.abbreviate(org.beschreibung(), 200) : org.name() + ' auf Sponsorplatz'}">
+    <meta name="twitter:image" th:content="@{/og/verein/{slug}.png(slug=${org.slug()})}">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">

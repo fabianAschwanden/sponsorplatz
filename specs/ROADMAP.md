@@ -197,7 +197,7 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 - [x] `verein-profil.html` Branche-Chip im Hero (Coral-Background, prominent)
 - [x] `Branche.beschreibung()` als neue Methode am Enum für Subhead-Text
 - [x] Verlinkung des Chips auf `/marktplatz?branche=...` (führt direkt in den Branchen-Filter)
-- [ ] OG-Image-Slot mit Branche-Tag (siehe 8.3)
+- [x] OG-Image-Slot mit Branche-Tag (siehe 8.3) — Branche.anzeige (lesbar statt Enum), als gerundeter Pill oben rechts gerendert; Projekt-OG zieht die Branche aus der Org. Plus Twitter-Card-Meta-Tags auf Verein-Profil + Marktplatz-Detail.
 - [x] Tests: VP-03 Chip rendert, VP-04 Subhead enthält Beschreibung
 
 ### 7.3 — Marken-Landing-Page

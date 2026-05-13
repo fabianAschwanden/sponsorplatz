@@ -49,19 +49,34 @@ public class OgImageRenderer {
     public byte[] rendereVerein(String slug) {
         Organisation org = orgRepository.findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
-        String brancheText = org.getBranche() != null ? org.getBranche().name() : "";
-        return erzeugeBild(org.getName(), brancheText, "Verein auf Sponsorplatz");
+        // Menschen-lesbares Label statt Enum-Name (z.B. „Mentale Gesundheit"
+        // statt „MENTAL_HEALTH"). Aktivieren via Branche.anzeige.
+        String brancheTag = org.getBranche() != null ? org.getBranche().getAnzeige() : null;
+        return erzeugeBild(org.getName(), null, brancheTag, "Verein auf Sponsorplatz");
     }
 
     @Cacheable(value = CacheConfig.OG_IMAGES, key = "'projekt:' + #slug")
     public byte[] rendereProjekt(String slug) {
         Projekt projekt = projektRepository.findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + slug));
-        String subtitle = projekt.getKategorie() != null ? projekt.getKategorie() : "";
-        return erzeugeBild(projekt.getName(), subtitle, "Projekt auf Sponsorplatz");
+        // Branche aus der Org (visueller Tag oben rechts) + projekt-spezifische
+        // Kategorie als Untertitel. Das ist der „Branche-Tag im OG-Image", der
+        // im Roadmap-Item 7.2 noch offen war — vorher zeigte das Projekt-OG
+        // gar keine Branche.
+        String brancheTag = projekt.getOrg() != null && projekt.getOrg().getBranche() != null
+                ? projekt.getOrg().getBranche().getAnzeige()
+                : null;
+        String untertitel = projekt.getKategorie();
+        return erzeugeBild(projekt.getName(), untertitel, brancheTag, "Projekt auf Sponsorplatz");
     }
 
-    private byte[] erzeugeBild(String titel, String untertitel, String slogan) {
+    /**
+     * Rendert das OG-Bild. {@code untertitel} ist optional (z.B. Projekt-
+     * Kategorie), {@code brancheTag} wird als gerundeter Pill in der Akzent-
+     * farbe oben rechts gerendert — passt visuell zum {@code health-hero-chip}
+     * im Vereins-Profil-Hero.
+     */
+    private byte[] erzeugeBild(String titel, String untertitel, String brancheTag, String slogan) {
         BufferedImage bild = new BufferedImage(BREITE, HOEHE, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = bild.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -80,6 +95,10 @@ public class OgImageRenderer {
         g.setColor(new Color(0x64, 0x74, 0x8B));
         g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 22));
         g.drawString(slogan, 60, 120);
+
+        if (brancheTag != null && !brancheTag.isBlank()) {
+            zeichneBranchePill(g, brancheTag);
+        }
 
         g.setColor(FARBE_PRIMAER);
         g.setFont(new Font(Font.SERIF, Font.BOLD, 56));
@@ -107,6 +126,34 @@ public class OgImageRenderer {
             throw new UncheckedIOException("PNG-Encoding fehlgeschlagen", e);
         }
         return out.toByteArray();
+    }
+
+    /**
+     * Zeichnet einen abgerundeten Pill in der Akzentfarbe oben rechts mit
+     * dem Branchen-Label. Visuell konsistent zum {@code health-hero-chip}
+     * im Vereins-Profil-Hero und zum Branche-Filter-Chip auf dem Marktplatz.
+     * Höhe 36px, Padding 18/8, weisser Text, abgerundete Ecken (radius=18).
+     */
+    private void zeichneBranchePill(Graphics2D g, String label) {
+        Font alterFont = g.getFont();
+        Color alteFarbe = g.getColor();
+
+        g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
+        FontMetrics fm = g.getFontMetrics();
+        int textBreite = fm.stringWidth(label);
+        int pillBreite = textBreite + 36; // Padding 18 links/rechts
+        int pillHoehe = 36;
+        int x = BREITE - 60 - pillBreite;
+        int y = 60;
+
+        g.setColor(FARBE_AKZENT);
+        g.fillRoundRect(x, y, pillBreite, pillHoehe, 36, 36);
+
+        g.setColor(Color.WHITE);
+        g.drawString(label, x + 18, y + 24);
+
+        g.setFont(alterFont);
+        g.setColor(alteFarbe);
     }
 
     private void zeichneMehrzeilig(Graphics2D g, String text, int x, int y, int maxBreite, int zeilenHoehe) {
