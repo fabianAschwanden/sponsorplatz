@@ -9,7 +9,38 @@
 | Web | `@WebMvcTest` + MockMvc | HTTP-Routen, Redirects |
 | Security | `@SpringBootTest` mit Profilen | Form-Login, AccessControl, OIDC |
 | Container | Testcontainers (PostgreSQL) | echte DB für Migrations-Tests |
+| **E2E** | **Cucumber + Playwright + Testcontainers** | **Browser-getriebene Cross-Page-Flows (Login → Onboarding → Anfrage → Vertrag)** |
 | Smoke | manuell + CI Healthcheck | Startup, Browser-Happy-Path |
+
+### E2E-Suite (Pilot)
+
+Die E2E-Suite läuft **nicht** in `mvn test` — sondern via Failsafe-Profil:
+
+```bash
+mvn verify -P e2e            # alle E2E-Szenarien (benötigt Docker für Postgres-Testcontainer)
+mvn verify -P e2e -De2e.headless=false   # Browser sichtbar (Debug)
+mvn verify -P e2e -De2e.browser=firefox  # alternative Browser-Engine
+```
+
+Surefire excludet das Package `src/test/java/ch/sponsorplatz/e2e/**` im
+Default-Lauf, damit `mvn test` schnell + Docker-frei bleibt.
+
+**Konventionen für E2E-Tests:**
+
+- Feature-Dateien (`.feature`) unter `src/test/resources/features/`, Sprache `de`
+  (Gherkin-Keywords `Funktionalität`, `Szenario`, `Angenommen`, `Wenn`, `Und`, `Dann`).
+- Step-Definitions im Package `ch.sponsorplatz.e2e`, eine Klasse pro Flow.
+- Test-Daten via `E2EFixtures` seeden (z.B. CSS-Sponsor); zwischen Szenarien
+  TRUNCATE der mutierbaren Tabellen — Email-Unique-Constraints kollidieren
+  sonst bei wiederholten Läufen.
+- Bei fehlgeschlagenen Szenarien schreibt `E2EHooks` Screenshot + HTML
+  ins `target/`-Verzeichnis (Post-Mortem-Debug).
+- Pre-Filled Test-Profil `application-e2e.properties`: Mail off, Storage
+  lokal, kein OCI — alles, was Test-Reibung erzeugt, wird ausgehängt.
+
+| ID | Feature | Beschreibung |
+|---|---|---|
+| **E2E-01** | `sponsor-anfrage-zu-vertrag.feature` | Verein registriert → Verein anlegen → Projekt + Paket → CSS-Sponsor stellt Anfrage → Verein nimmt an → Vertrag entsteht in DB |
 
 ## Konventionen
 
