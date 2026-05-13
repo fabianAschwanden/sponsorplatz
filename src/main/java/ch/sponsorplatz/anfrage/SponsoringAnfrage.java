@@ -17,6 +17,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -80,6 +81,17 @@ public class SponsoringAnfrage {
     @Column(name = "kontakt_email", length = 255)
     private String kontaktEmail;
 
+    /**
+     * Wunsch-Betrag in CHF — nur bei Kontakt-Anfragen sinnvoll, weil
+     * Paket-Anfragen den Preis über das verbundene Paket transportieren.
+     * Kann auch bei Kontakt-Anfragen NULL bleiben, wenn der Verein keinen
+     * Richtbetrag nennen will. {@code VertragService.erstelle} übernimmt
+     * den Wert (oder {@code 0}, wenn NULL) als Initial-Preis im Vertrag.
+     * DB-CHECK {@code >= 0} (V33).
+     */
+    @Column(name = "wunsch_betrag_chf", precision = 12, scale = 2)
+    private BigDecimal wunschBetragChf;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -135,6 +147,9 @@ public class SponsoringAnfrage {
 
     public String getKontaktEmail() { return kontaktEmail; }
     public void setKontaktEmail(String kontaktEmail) { this.kontaktEmail = kontaktEmail; }
+
+    public BigDecimal getWunschBetragChf() { return wunschBetragChf; }
+    public void setWunschBetragChf(BigDecimal wunschBetragChf) { this.wunschBetragChf = wunschBetragChf; }
 
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

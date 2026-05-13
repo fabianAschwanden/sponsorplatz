@@ -70,6 +70,14 @@
                             Kontakt-Anfrage: <strong th:text="${a.betreff ?: '–'}">Betreff</strong>
                         </span>
                         <span th:if="${a.kontaktEmail}"> · <span th:text="${a.kontaktEmail}">email</span></span>
+                        <!-- Wunsch-Betrag bei Kontakt-Anfragen, Paket-Preis bei Paket-Anfragen -->
+                        <span th:if="${a.istPaketAnfrage() and a.paketPreisChf != null}"> ·
+                            <strong th:text="'CHF ' + ${#numbers.formatDecimal(a.paketPreisChf, 0, 'POINT', 2, 'POINT')}">CHF 5'000.00</strong>
+                        </span>
+                        <span th:if="${!a.istPaketAnfrage() and a.wunschBetragChf != null}"> ·
+                            <span th:text="#{meineAnfragen.wunschBetragLabel}">Wunsch-Betrag:</span>
+                            <strong th:text="'CHF ' + ${#numbers.formatDecimal(a.wunschBetragChf, 0, 'POINT', 2, 'POINT')}">CHF 5'000.00</strong>
+                        </span>
                     </p>
 
                     <p th:text="${a.nachricht}" style="margin:0.5rem 0;">Nachricht</p>
@@ -147,6 +155,10 @@
                     </div>
                     <div style="font-size:0.85rem; color:#374151; margin-bottom:0.3rem;">
                         <strong th:text="${a.anzeigeTitel()}">Betreff</strong>
+                        <span th:if="${a.wunschBetragChf != null}" style="margin-left:0.5rem; color:#6b7280; font-weight:normal;">
+                            · <span th:text="#{meineAnfragen.wunschBetragLabel}">Wunsch-Betrag:</span>
+                            <strong th:text="'CHF ' + ${#numbers.formatDecimal(a.wunschBetragChf, 0, 'POINT', 2, 'POINT')}">CHF 5'000.00</strong>
+                        </span>
                     </div>
                     <p th:text="${a.nachricht}" style="margin:0.25rem 0; font-size:0.9rem; color:#4b5563; white-space:pre-line;">Nachricht</p>
                     <div th:if="${a.antwort}" style="background:#f9fafb; padding:0.6rem 0.75rem; border-radius:0.5rem; margin-top:0.5rem; font-size:0.85rem;">
@@ -198,6 +210,10 @@
                     </div>
                     <div style="font-size:0.85rem; color:#374151; margin-bottom:0.3rem;">
                         <strong th:text="${a.anzeigeTitel()}">Betreff</strong>
+                        <span th:if="${a.wunschBetragChf != null}" style="margin-left:0.5rem; color:#6b7280; font-weight:normal;">
+                            · <span th:text="#{meineAnfragen.wunschBetragLabel}">Wunsch-Betrag:</span>
+                            <strong th:text="'CHF ' + ${#numbers.formatDecimal(a.wunschBetragChf, 0, 'POINT', 2, 'POINT')}">CHF 5'000.00</strong>
+                        </span>
                     </div>
                     <p th:text="${a.nachricht}" style="margin:0.25rem 0; font-size:0.9rem; color:#4b5563; white-space:pre-line;">Nachricht</p>
                     <div th:if="${a.antwort}" style="background:#f9fafb; padding:0.6rem 0.75rem; border-radius:0.5rem; margin-top:0.5rem; font-size:0.85rem;">

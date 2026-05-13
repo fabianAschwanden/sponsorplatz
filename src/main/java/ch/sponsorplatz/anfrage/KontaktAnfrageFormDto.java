@@ -1,10 +1,13 @@
 package ch.sponsorplatz.anfrage;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -36,6 +39,16 @@ public class KontaktAnfrageFormDto {
     @Size(max = 255)
     private String kontaktEmail;
 
+    /**
+     * Optionaler Wunsch-Betrag in CHF. {@code null} = kein Richtbetrag,
+     * der Verein-Owner ergänzt ihn beim Vertrag-Edit-Form. {@code 0} ist
+     * erlaubt (Naturalien-Sponsoring). Max 9'999'999.99 entspricht der
+     * DB-Spalte NUMERIC(12, 2).
+     */
+    @DecimalMin(value = "0", message = "Wunsch-Betrag darf nicht negativ sein")
+    @DecimalMax(value = "9999999.99", message = "Wunsch-Betrag zu hoch")
+    private BigDecimal wunschBetragChf;
+
     public UUID getEmpfaengerOrgId() { return empfaengerOrgId; }
     public void setEmpfaengerOrgId(UUID empfaengerOrgId) { this.empfaengerOrgId = empfaengerOrgId; }
 
@@ -53,4 +66,7 @@ public class KontaktAnfrageFormDto {
 
     public String getKontaktEmail() { return kontaktEmail; }
     public void setKontaktEmail(String kontaktEmail) { this.kontaktEmail = kontaktEmail; }
+
+    public BigDecimal getWunschBetragChf() { return wunschBetragChf; }
+    public void setWunschBetragChf(BigDecimal wunschBetragChf) { this.wunschBetragChf = wunschBetragChf; }
 }

@@ -198,6 +198,7 @@ public class MeineAnfragenController {
         anfrageService.erstelleKontaktAnfrage(anfragenderOrg, empfaengerOrg,
                 form.getBetreff(), form.getNachricht(),
                 form.getKontaktName(), form.getKontaktEmail(),
+                form.getWunschBetragChf(),
                 erstelltVonUserId);
 
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,

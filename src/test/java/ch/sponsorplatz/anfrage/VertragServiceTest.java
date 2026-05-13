@@ -157,13 +157,14 @@ class VertragServiceTest {
     }
 
     @Test
-    @DisplayName("VTR-10: erstelle aus Kontakt-Anfrage snapshot't betreff + nachricht, preisChf=0")
+    @DisplayName("VTR-10: erstelle aus Kontakt-Anfrage ohne Wunsch-Betrag — preisChf=0")
     void erstelleAusKontaktAnfrageSnapshot() {
         anfrage.setAnfragenderOrg(neueOrg("FC Sportverein", OrgTyp.VEREIN));
         anfrage.setEmpfaengerOrg(neueOrg("CSS Versicherung", OrgTyp.UNTERNEHMEN));
         anfrage.setPaket(null);
         anfrage.setBetreff("Sommerfest-Sponsoring 2026");
         anfrage.setNachricht("Wir suchen einen Sponsor für unser Sommerfest.");
+        anfrage.setWunschBetragChf(null); // kein Richtbetrag
 
         when(repository.findByAnfrageId(anfrageId)).thenReturn(Optional.empty());
 
@@ -173,9 +174,27 @@ class VertragServiceTest {
         assertThat(v.getPaketBeschreibung())
                 .isEqualTo("Wir suchen einen Sponsor für unser Sommerfest.");
         assertThat(v.getPreisChf())
-                .as("Preis muss 0 sein — Verein-Owner ergänzt im Edit-Form")
+                .as("Ohne Wunsch-Betrag: 0 — Verein-Owner ergänzt im Edit-Form")
                 .isEqualByComparingTo(BigDecimal.ZERO);
         assertThat(v.getStatus()).isEqualTo(VertragsStatus.ENTWURF);
+    }
+
+    @Test
+    @DisplayName("VTR-10b: erstelle aus Kontakt-Anfrage mit Wunsch-Betrag — preisChf = wunschBetrag")
+    void erstelleAusKontaktAnfrageMitWunschBetrag() {
+        anfrage.setAnfragenderOrg(neueOrg("FC Sportverein", OrgTyp.VEREIN));
+        anfrage.setEmpfaengerOrg(neueOrg("CSS Versicherung", OrgTyp.UNTERNEHMEN));
+        anfrage.setPaket(null);
+        anfrage.setBetreff("Sommerfest-Sponsoring 2026");
+        anfrage.setWunschBetragChf(new BigDecimal("5000.00"));
+
+        when(repository.findByAnfrageId(anfrageId)).thenReturn(Optional.empty());
+
+        Vertrag v = service.erstelle(anfrageId, "max@verein.ch");
+
+        assertThat(v.getPreisChf())
+                .as("Initial-Preis kommt aus anfrage.wunschBetragChf")
+                .isEqualByComparingTo(new BigDecimal("5000.00"));
     }
 
     private static Organisation neueOrg(String name, OrgTyp typ) {

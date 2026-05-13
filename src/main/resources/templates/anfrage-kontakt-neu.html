@@ -79,6 +79,19 @@
             </div>
 
             <div class="app-form-group">
+                <label for="wunschBetragChf">Wunsch-Betrag in CHF (optional)</label>
+                <input type="number" id="wunschBetragChf" th:field="*{wunschBetragChf}"
+                       min="0" max="9999999.99" step="0.01"
+                       placeholder="z.B. 5000.00">
+                <p class="app-muted" style="font-size:0.85rem; margin:0.25rem 0 0;">
+                    Wenn ihr einen Richtbetrag im Kopf habt, gebt ihn hier ein —
+                    er wird als Initial-Preis in den Vertrag übernommen, wenn der
+                    Sponsor zustimmt. Naturalien-Sponsoring? Leer lassen oder 0 setzen.
+                </p>
+                <p class="app-meldung fehler" th:if="${#fields.hasErrors('wunschBetragChf')}" th:errors="*{wunschBetragChf}"></p>
+            </div>
+
+            <div class="app-form-group">
                 <label for="kontaktName">Kontaktname</label>
                 <input type="text" id="kontaktName" th:field="*{kontaktName}" maxlength="255">
             </div>

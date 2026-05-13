@@ -79,8 +79,9 @@ public class VertragService {
         v.setSponsorOrg(sponsorOrg);
 
         // Snapshot des Pakets bei klassischer Paket-Anfrage. Kontakt-Anfragen
-        // haben kein Paket — Preis + Leistungsumfang ergänzt der Verein-Owner
-        // anschliessend im Vertrags-Edit-Form (Status bleibt ENTWURF bis dahin).
+        // haben kein Paket — Preis kommt aus anfrage.wunschBetragChf (V33),
+        // fällt auf 0 zurück wenn der Verein keinen Richtbetrag nannte.
+        // Leistungsumfang ergänzt der Verein-Owner im Vertrag-Edit-Form.
         if (anfrage.getPaket() != null) {
             v.setPaketName(anfrage.getPaket().getName());
             v.setPaketBeschreibung(anfrage.getPaket().getBeschreibung());
@@ -90,7 +91,9 @@ public class VertragService {
                     ? anfrage.getBetreff()
                     : "(Kontakt-Anfrage ohne Betreff)");
             v.setPaketBeschreibung(anfrage.getNachricht());
-            v.setPreisChf(java.math.BigDecimal.ZERO);
+            v.setPreisChf(anfrage.getWunschBetragChf() != null
+                    ? anfrage.getWunschBetragChf()
+                    : java.math.BigDecimal.ZERO);
         }
 
         v.setErstelltVon(erstelltVon);

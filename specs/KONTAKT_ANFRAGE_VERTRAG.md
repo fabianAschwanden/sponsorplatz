@@ -61,18 +61,26 @@ Organisation vereinOrg = (anfrage.getEmpfaengerOrg().getTyp() == OrgTyp.VEREIN)
 
 ### Paket-Snapshot
 
-Kontakt-Anfragen haben kein Paket — daher kein Preis, kein Leistungsumfang:
+Kontakt-Anfragen haben kein Paket — daher kein Preis, kein Leistungsumfang.
+Mit V33 können Vereine optional einen **Wunsch-Betrag** mitgeben, der als
+Initial-Preis in den Vertrag übernommen wird:
 
 | Vertrag-Feld | Paket-Anfrage | Kontakt-Anfrage |
 |---|---|---|
 | `paketName` | `paket.getName()` | `anfrage.getBetreff()` |
 | `paketBeschreibung` | `paket.getBeschreibung()` | `anfrage.getNachricht()` |
-| `preisChf` | `paket.getPreisChf()` | `BigDecimal.ZERO` (vom Verein-Owner ergänzt) |
+| `preisChf` | `paket.getPreisChf()` | `anfrage.getWunschBetragChf()` (oder 0, wenn nicht angegeben) |
 
-Der Verein-Owner muss `preisChf` + `leistungVerein`/`leistungSponsor` im Vertrags-
-Edit-Form ergänzen, bevor `markiereUnterzeichnet` aufrufbar ist. (Validierung im
-Form-Layer, kein DB-Constraint — `preisChf=0` ist technisch möglich für Naturalien-
-Sponsoring, das wird in der Vertrags-Spec spezifiziert.)
+Der Verein-Owner kann `preisChf` + `leistungVerein`/`leistungSponsor` im Vertrags-
+Edit-Form anpassen, bevor `markiereUnterzeichnet` aufrufbar ist. Der Wunsch-Betrag
+ist ein Vorschlag — Sponsor + Verein verhandeln im Vertrag-Entwurf den finalen Wert.
+
+**V33-Schema-Erweiterung** (`sponsoring_anfrage.wunsch_betrag_chf NUMERIC(12,2) NULL`):
+
+- NULLABLE: Paket-Anfragen brauchen den Wert nie; Kontakt-Anfragen können ihn
+  weglassen (= "kein Richtbetrag genannt").
+- CHECK `>= 0`: defense-in-depth zur Form-Validierung (`@DecimalMin("0")`).
+- 0 ist erlaubt — Naturalien-Sponsoring (keine Geldzahlung, nur Sachleistungen).
 
 ### AnfrageView.vereinSlug()
 
@@ -128,8 +136,10 @@ Template-Bedingungen:
 | ID | Test | Verifiziert |
 |---|---|---|
 | **VTR-09** | `VertragServiceTest` | Kontakt-Anfrage → Vertrag mit OrgTyp-basiertem Mapping (Verein = `org`, Sponsor = `sponsorOrg`) |
-| **VTR-10** | `VertragServiceTest` | Kontakt-Anfrage-Snapshot: `betreff` → `paketName`, `preisChf` = 0 |
+| **VTR-10** | `VertragServiceTest` | Kontakt-Anfrage-Snapshot ohne Wunsch-Betrag: `betreff` → `paketName`, `preisChf` = 0 |
+| **VTR-10b** | `VertragServiceTest` | Kontakt-Anfrage mit `wunschBetragChf=5000` → Vertrag startet mit `preisChf=5000` (Verein kann's noch editieren) |
 | **VIEW-13** | `AnfrageViewTest` | `vereinSlug()` liefert Anfragender-Slug bei Kontakt-Anfrage, Empfänger-Slug bei Paket-Anfrage |
+| **ANF-08** | `SponsoringAnfrageServiceTest` | `erstelleKontaktAnfrage` mit negativem Wunsch-Betrag wirft `IllegalArgumentException` (Defense-in-Depth zum DB-CHECK) |
 | **E2E-01** | `sponsor-anfrage-zu-vertrag.feature` | End-to-End: Verein registriert → Verein anlegt → Kontakt-Anfrage → CSS nimmt an → Vertrag |
 
 ## Offene Punkte (TBD)
@@ -140,11 +150,17 @@ Template-Bedingungen:
 - **Mehrfache Verträge pro Sponsor-Beziehung**: bisher `UNIQUE(anfrage_id)`.
   Wenn ein Verein wiederkehrend bei demselben Sponsor anfragt, gibt es pro
   Anfrage einen Vertrag — keine Aggregation auf Org-Ebene. Bewusst so für Phase 0.
+- **Mehrere Pakete pro Anfrage** (Variante B aus dem Review): Anfrage-zu-Paket
+  als M:N — eine Anfrage könnte mehrere Pakete „auswählen" lassen. Nicht für
+  Phase 0; benötigt separate Spec mit Verhandlungs-Status-Maschine.
 
 ## Migration
 
-Keine DB-Migration nötig. Die `vertrag.anfrage_id`-FK existiert seit V18 und
-ist bereits nullable-tolerant gegenüber `paket_id`. Snapshot-Felder (`org_name`,
-`paket_name`, `preis_chf`, `sponsor_org_id`) sind bereits in der Tabelle.
+- **V33** (`anfrage_wunschbetrag.sql`): fügt `wunsch_betrag_chf NUMERIC(12,2)
+  NULL` plus `chk_anfrage_wunsch_betrag_nicht_negativ` zur Tabelle
+  `sponsoring_anfrage` hinzu.
+- Die `vertrag.anfrage_id`-FK existiert seit V18 und ist bereits
+  nullable-tolerant gegenüber `paket_id`. Snapshot-Felder (`org_name`,
+  `paket_name`, `preis_chf`, `sponsor_org_id`) sind bereits in der Tabelle.
 
-Die fachliche Erweiterung passiert rein auf Service + Template + View-DTO-Ebene.
+Restliche fachliche Erweiterung passiert auf Service + Template + View-DTO-Ebene.

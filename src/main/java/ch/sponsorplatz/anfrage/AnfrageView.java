@@ -3,6 +3,7 @@ package ch.sponsorplatz.anfrage;
 
 import ch.sponsorplatz.organisation.OrgTyp;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -34,7 +35,9 @@ public record AnfrageView(
         Instant createdAt,
         Instant beantwortetAm,
         String paketName,
+        BigDecimal paketPreisChf,
         String betreff,
+        BigDecimal wunschBetragChf,
         String empfaengerOrgSlug,
         String empfaengerOrgName,
         OrgTyp empfaengerOrgTyp,
@@ -54,7 +57,9 @@ public record AnfrageView(
                 a.getCreatedAt(),
                 a.getBeantwortetAm(),
                 a.getPaket() != null ? a.getPaket().getName() : null,
+                a.getPaket() != null ? a.getPaket().getPreisChf() : null,
                 a.getBetreff(),
+                a.getWunschBetragChf(),
                 a.getEmpfaengerOrg() != null ? a.getEmpfaengerOrg().getSlug() : null,
                 a.getEmpfaengerOrg() != null ? a.getEmpfaengerOrg().getName() : null,
                 a.getEmpfaengerOrg() != null ? a.getEmpfaengerOrg().getTyp() : null,

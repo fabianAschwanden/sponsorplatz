@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import ch.sponsorplatz.benutzer.AppUser;
@@ -167,5 +168,29 @@ class SponsoringAnfrageServiceTest {
         service.annehme(anfrage.getId(), "Gerne!");
 
         verify(benachrichtigungsService).benachrichtigeUeberAntwort(any(SponsoringAnfrage.class), any());
+    }
+
+    /**
+     * ANF-08: Defense-in-depth zum DB-CHECK in V33 (chk_anfrage_wunsch_betrag_nicht_negativ).
+     * Service prüft den Wunsch-Betrag selbst, damit die Fehlermeldung lesbar ist
+     * — sonst kommt ein roher Hibernate/Postgres-Constraint-Violation-Trace ans UI.
+     */
+    @Test
+    @DisplayName("ANF-08: erstelleKontaktAnfrage mit negativem Wunsch-Betrag wirft")
+    void kontaktAnfrageNegativerBetragWirft() {
+        Organisation verein = new Organisation();
+        verein.setId(UUID.randomUUID());
+        Organisation sponsor = new Organisation();
+        sponsor.setId(UUID.randomUUID());
+
+        // appUserRepository ist im setUp() so gestubbt, dass erstellerUserId valide ist
+        assertThatThrownBy(() -> service.erstelleKontaktAnfrage(
+                verein, sponsor,
+                "Sommerfest", "Wir suchen einen Sponsor.",
+                "Max", "max@verein.ch",
+                new java.math.BigDecimal("-100.00"),
+                erstellerUserId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("nicht negativ");
     }
 }

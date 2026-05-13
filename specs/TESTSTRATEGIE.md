@@ -398,7 +398,9 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **VTR-07** *(TBD)* | `VertragServiceTest` | `kuendige` mit bezahlter Rechnung wirft `IllegalStateException` |
 | **VTR-08** *(TBD)* | `VertragServiceTest` | `kuendige` mit offener Rechnung erlaubt — Rechnung wird mit storniert |
 | **VTR-09** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage (paket=null): Verein-Org wird via `OrgTyp.VEREIN`-Check als `v.org` gemappt, Sponsor als `v.sponsorOrg` — unabhängig von Anfrage-Richtung. Siehe [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md) |
-| **VTR-10** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage: `betreff` wird zu `paketName`, `nachricht` zu `paketBeschreibung`, `preisChf = 0` (Verein-Owner ergänzt vor `markiereUnterzeichnet`) |
+| **VTR-10** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage ohne Wunsch-Betrag: `betreff` wird zu `paketName`, `nachricht` zu `paketBeschreibung`, `preisChf = 0` |
+| **VTR-10b** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage mit `wunschBetragChf=5000`: Vertrag startet mit `preisChf=5000` (Initial-Preis aus Anfrage-Wunsch). Siehe V33 + [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md) |
+| **ANF-08** | `SponsoringAnfrageServiceTest` | `erstelleKontaktAnfrage` mit negativem Wunsch-Betrag wirft `IllegalArgumentException` (Defense-in-Depth zum DB-CHECK in V33) |
 
 ### Phase Operational — DSG-Pflichtseiten (INFO)
 

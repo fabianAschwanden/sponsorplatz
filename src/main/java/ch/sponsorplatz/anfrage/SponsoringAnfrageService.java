@@ -162,6 +162,7 @@ public class SponsoringAnfrageService {
             String nachricht,
             String kontaktName,
             String kontaktEmail,
+            java.math.BigDecimal wunschBetragChf,
             UUID erstelltVonUserId) {
         if (betreff == null || betreff.isBlank()) {
             throw new IllegalArgumentException("Betreff darf nicht leer sein");
@@ -172,6 +173,10 @@ public class SponsoringAnfrageService {
         if (anfragenderOrg.getId().equals(empfaengerOrg.getId())) {
             throw new IllegalArgumentException("Eigene Org kann nicht angefragt werden");
         }
+        if (wunschBetragChf != null && wunschBetragChf.signum() < 0) {
+            // Defense-in-depth — DB-CHECK gibt's auch, aber hier mit klarer Fehlermeldung
+            throw new IllegalArgumentException("Wunsch-Betrag darf nicht negativ sein");
+        }
 
         SponsoringAnfrage anfrage = new SponsoringAnfrage();
         anfrage.setAnfragenderOrg(anfragenderOrg);
@@ -180,6 +185,7 @@ public class SponsoringAnfrageService {
         anfrage.setNachricht(nachricht.trim());
         anfrage.setKontaktName(kontaktName);
         anfrage.setKontaktEmail(kontaktEmail);
+        anfrage.setWunschBetragChf(wunschBetragChf);
         anfrage.setStatus(AnfrageStatus.NEU);
         anfrage.setErstelltVon(ladeUser(erstelltVonUserId));
         SponsoringAnfrage gespeichert = repository.save(anfrage);
