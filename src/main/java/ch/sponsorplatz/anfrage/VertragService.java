@@ -1,5 +1,7 @@
 package ch.sponsorplatz.anfrage;
 
+import ch.sponsorplatz.audit.AuditAktion;
+import ch.sponsorplatz.audit.AuditService;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.shared.exception.NotFoundException;
@@ -29,11 +31,14 @@ public class VertragService {
 
     private final VertragRepository repository;
     private final SponsoringAnfrageRepository anfrageRepository;
+    private final AuditService auditService;
 
     public VertragService(VertragRepository repository,
-                          SponsoringAnfrageRepository anfrageRepository) {
+                          SponsoringAnfrageRepository anfrageRepository,
+                          AuditService auditService) {
         this.repository = repository;
         this.anfrageRepository = anfrageRepository;
+        this.auditService = auditService;
     }
 
     /**
@@ -97,7 +102,15 @@ public class VertragService {
         }
 
         v.setErstelltVon(erstelltVon);
-        return repository.save(v);
+        Vertrag gespeichert = repository.save(v);
+
+        auditService.protokolliere(AuditAktion.VERTRAG_ERSTELLT, "VERTRAG",
+                gespeichert.getId(), "Vertrag",
+                "anfrage_id=" + anfrage.getId()
+                        + ", verein=" + gespeichert.getOrgName()
+                        + ", erstellt_von=" + erstelltVon);
+
+        return gespeichert;
     }
 
     @Transactional(readOnly = true)
@@ -142,6 +155,12 @@ public class VertragService {
         v.setStatus(VertragsStatus.UNTERZEICHNET);
         v.setUnterzeichnetAm(Instant.now());
         v.setUnterzeichnetVon(unterzeichnetVon);
-        return repository.save(v);
+        Vertrag gespeichert = repository.save(v);
+
+        auditService.protokolliere(AuditAktion.VERTRAG_UNTERZEICHNET, "VERTRAG",
+                gespeichert.getId(), "Vertrag",
+                "unterzeichnet_von=" + unterzeichnetVon);
+
+        return gespeichert;
     }
 }

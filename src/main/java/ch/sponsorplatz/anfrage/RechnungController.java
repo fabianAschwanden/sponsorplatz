@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import ch.sponsorplatz.organisation.AccessControl;
@@ -109,12 +110,13 @@ public class RechnungController {
     @PostMapping("/rechnungen/{id}/stornieren")
     public String stornieren(@PathVariable String slug,
             @PathVariable UUID id,
+            @RequestParam(required = false) String grund,
             Authentication auth,
             RedirectAttributes redirect) {
         Rechnung r = rechnungService.findeNachId(id);
         pruefeAccess(slug, r, auth);
         try {
-            rechnungService.stornieren(id);
+            rechnungService.stornieren(id, grund);
             redirect.addFlashAttribute("erfolgsMeldung", "Rechnung storniert.");
         } catch (IllegalStateException e) {
             redirect.addFlashAttribute("fehlermeldung", e.getMessage());

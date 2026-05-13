@@ -1,6 +1,8 @@
 package ch.sponsorplatz.anfrage;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,4 +15,20 @@ public interface RechnungRepository extends JpaRepository<Rechnung, UUID> {
     List<Rechnung> findByOrgIdOrderByErstelltAmDesc(UUID orgId);
 
     long countByOrgId(UUID orgId);
+
+    /**
+     * Höchste laufende Nummer (NNNNN aus „R-YYYY-NNNNN") für eine Org im Jahr.
+     * Lückenlose Nummerierung: zählt auch stornierte Rechnungen mit, damit die
+     * nächste Nummer nicht versehentlich Lücken überspringt (OR Art. 957 ff.).
+     *
+     * <p>Substring-Position 9 = nach „R-2026-" (8 Zeichen-Präfix incl. Bindestrich).
+     * Liefert {@code null}, wenn die Org im Jahr noch keine Rechnung hat.
+     */
+    @Query("""
+            select max(cast(substring(r.rechnungsnummer, 9) as int))
+              from Rechnung r
+             where r.org.id = :orgId
+               and r.rechnungsnummer like :praefix
+            """)
+    Integer findeMaxLfdNr(@Param("orgId") UUID orgId, @Param("praefix") String praefix);
 }

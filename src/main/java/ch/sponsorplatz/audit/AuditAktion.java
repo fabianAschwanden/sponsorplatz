@@ -21,6 +21,16 @@ public final class AuditAktion {
     public static final String ANFRAGE_ANGENOMMEN = "ANFRAGE_ANGENOMMEN";
     public static final String ANFRAGE_ABGELEHNT = "ANFRAGE_ABGELEHNT";
 
+    // Vertrag-/Rechnung-Lifecycle (Pflicht laut SPONSORING_ZAHLUNGSFLUSS.md §10)
+    public static final String VERTRAG_ERSTELLT = "VERTRAG_ERSTELLT";
+    public static final String VERTRAG_UNTERZEICHNET = "VERTRAG_UNTERZEICHNET";
+    public static final String VERTRAG_GEKUENDIGT = "VERTRAG_GEKUENDIGT";
+    public static final String RECHNUNG_ERSTELLT = "RECHNUNG_ERSTELLT";
+    public static final String RECHNUNG_BEZAHLT = "RECHNUNG_BEZAHLT";
+    public static final String RECHNUNG_STORNIERT = "RECHNUNG_STORNIERT";
+    public static final String RECHNUNG_MAHNUNG_VERSENDET = "RECHNUNG_MAHNUNG_VERSENDET";
+    public static final String RECHNUNG_PDF_HERUNTERGELADEN = "RECHNUNG_PDF_HERUNTERGELADEN";
+
     private AuditAktion() {}
 }
 

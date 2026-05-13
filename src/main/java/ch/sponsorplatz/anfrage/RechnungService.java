@@ -1,5 +1,7 @@
 package ch.sponsorplatz.anfrage;
 
+import ch.sponsorplatz.audit.AuditAktion;
+import ch.sponsorplatz.audit.AuditService;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.organisation.Organisation;
 import net.codecrete.qrbill.generator.Payments;
@@ -34,10 +36,17 @@ public class RechnungService {
 
     private final RechnungRepository repository;
     private final VertragService vertragService;
+    private final RechnungsnummerGenerator rechnungsnummerGenerator;
+    private final AuditService auditService;
 
-    public RechnungService(RechnungRepository repository, VertragService vertragService) {
+    public RechnungService(RechnungRepository repository,
+                           VertragService vertragService,
+                           RechnungsnummerGenerator rechnungsnummerGenerator,
+                           AuditService auditService) {
         this.repository = repository;
         this.vertragService = vertragService;
+        this.rechnungsnummerGenerator = rechnungsnummerGenerator;
+        this.auditService = auditService;
     }
 
     /**
@@ -71,9 +80,9 @@ public class RechnungService {
                             + "Bitte unter Organisation/" + org.getSlug() + "/bearbeiten ergänzen.");
         }
 
-        long count = repository.countByOrgId(org.getId());
-        int jahr = LocalDate.now().getYear();
-        String rechnungsnummer = String.format("SP-%d-%04d", jahr, count + 1);
+        // Rechnungsnummer R-YYYY-NNNNN (lückenlos pro Org-Jahr, Buchhaltungs-Pflicht
+        // OR Art. 957 ff. — siehe SPONSORING_ZAHLUNGSFLUSS.md §5).
+        String rechnungsnummer = rechnungsnummerGenerator.naechste(org.getId());
 
         Rechnung r = new Rechnung();
         r.setId(UUID.randomUUID());
@@ -97,7 +106,16 @@ public class RechnungService {
             r.setQrReferenz(berechnet);
         }
 
-        return repository.save(r);
+        Rechnung gespeichert = repository.save(r);
+
+        // Audit-Pflicht-Event laut Spec §10
+        auditService.protokolliere(AuditAktion.RECHNUNG_ERSTELLT, "RECHNUNG",
+                gespeichert.getId(), "Rechnung",
+                "rechnungsnummer=" + rechnungsnummer
+                        + ", betrag=" + gespeichert.getBetragChf()
+                        + ", erstellt_von=" + erstelltVon);
+
+        return gespeichert;
     }
 
     @Transactional(readOnly = true)
@@ -124,7 +142,15 @@ public class RechnungService {
         r.setStatus(RechnungsStatus.BEZAHLT);
         r.setBezahltAm(Instant.now());
         r.setBezahltVon(bezahltVon);
-        return repository.save(r);
+        Rechnung gespeichert = repository.save(r);
+
+        auditService.protokolliere(AuditAktion.RECHNUNG_BEZAHLT, "RECHNUNG",
+                gespeichert.getId(), "Rechnung",
+                "rechnungsnummer=" + gespeichert.getRechnungsnummer()
+                        + ", bezahlt_von=" + bezahltVon
+                        + ", quelle=MANUELL");
+
+        return gespeichert;
     }
 
     /**
@@ -145,16 +171,37 @@ public class RechnungService {
         r.setStatus(RechnungsStatus.BEZAHLT);
         r.setBezahltAm(Instant.now());
         r.setBezahltVon("webhook");
-        repository.save(r);
+        Rechnung gespeichert = repository.save(r);
+
+        auditService.protokolliere(AuditAktion.RECHNUNG_BEZAHLT, "RECHNUNG",
+                gespeichert.getId(), "Rechnung",
+                "rechnungsnummer=" + gespeichert.getRechnungsnummer()
+                        + ", quelle=WEBHOOK_DATATRANS");
     }
 
-    public Rechnung stornieren(UUID id) {
+    /**
+     * Storniert eine offene Rechnung mit optionalem Grund. Bezahlte Rechnungen
+     * können nicht storniert werden (Backlog: BEZAHLT → Rückabwicklung via
+     * Provider-Refund). Lückenlosigkeit der Nummerierung bleibt erhalten —
+     * stornierte Rechnungen behalten ihre Nummer.
+     */
+    public Rechnung stornieren(UUID id, String grund) {
         Rechnung r = findeNachId(id);
         if (r.getStatus() == RechnungsStatus.BEZAHLT) {
             throw new IllegalStateException("Bezahlte Rechnungen können nicht storniert werden.");
         }
+        RechnungsStatus vorher = r.getStatus();
         r.setStatus(RechnungsStatus.STORNIERT);
-        return repository.save(r);
+        r.setStornoGrund(grund);
+        Rechnung gespeichert = repository.save(r);
+
+        auditService.protokolliere(AuditAktion.RECHNUNG_STORNIERT, "RECHNUNG",
+                gespeichert.getId(), "Rechnung",
+                "rechnungsnummer=" + gespeichert.getRechnungsnummer()
+                        + ", vorheriger_status=" + vorher
+                        + ", grund=" + (grund == null ? "" : grund));
+
+        return gespeichert;
     }
 
     /** Reduziert einen String auf reine Ziffern, max. 26 Stellen (QR-Ref erlaubt 27 mit Prüfziffer). */

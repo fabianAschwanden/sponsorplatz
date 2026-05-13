@@ -368,16 +368,17 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 
 | ID | Test-Klasse | Beschreibung |
 |---|---|---|
-| **RECH-07** | `RechnungsnummerGeneratorTest` | Format `R-YYYY-NNNNN`, pro Org-Jahr fortlaufend, lückenlos |
+| **RECH-07** | `RechnungsnummerGeneratorTest` | Format `R-YYYY-NNNNN`, 5-stellige LfdNr pro Org-Jahr fortlaufend |
+| **RECH-07b** | `RechnungsnummerGeneratorTest` | Bei vorhandenen Rechnungen zählt der Generator um 1 hoch |
 | **RECH-08** | `RechnungsnummerGeneratorTest` | Jahres-Rollover startet bei 1, kein Reset bei laufendem Jahr |
-| **RECH-09** | `RechnungsnummerGeneratorTest` | Stornierte Rechnung bleibt in Nummerierung, nächste Nummer überspringt nicht |
-| **RECH-10** | `IbanValidatorTest` | Mod-97-Prüfsumme erkennt ungültige Iban |
-| **RECH-11** | `IbanValidatorTest` | `istQrIban` true für 30000-31999, false sonst |
-| **RECH-12** | `QrReferenzGeneratorTest` | 27-stellige Referenz mit Mod-10-Prüfziffer am Ende |
-| **RECH-13** | `RechnungControllerTest` | GET `/rechnungen/{id}` ohne ORG_VIEWER-Recht → 403 |
-| **RECH-14** | `RechnungControllerTest` | GET `/rechnungen/{id}/pdf` mit Sponsor-Org-Mitgliedschaft → 200, eigene Rechnung |
-| **RECH-15** | `RechnungServiceTest` | `markiereBezahlt` schreibt `RECHNUNG_BEZAHLT` ins Audit-Log |
-| **RECH-16** | `RechnungServiceTest` | `stornieren` schreibt `RECHNUNG_STORNIERT` ins Audit-Log mit Grund |
+| **RECH-09** | `RechnungsnummerGeneratorTest` | Lückenlosigkeit — stornierte Rechnung behält Nummer, nächste = max+1 |
+| **RECH-10** *(Backlog)* | `IbanValidatorTest` | Mod-97-Prüfsumme — heute via qrbill-generator-Lib (`Payments.isQRIBAN`) abgedeckt |
+| **RECH-11** *(Backlog)* | `IbanValidatorTest` | `istQrIban` true für 30000-31999, false sonst |
+| **RECH-12** *(Backlog)* | `QrReferenzGeneratorTest` | 27-stellige Referenz mit Mod-10-Prüfziffer — heute via `Payments.createQRReference` |
+| **RECH-13** *(TBD)* | `RechnungControllerTest` | GET `/rechnungen/{id}` ohne ORG_VIEWER-Recht → 403 |
+| **RECH-14** *(TBD)* | `RechnungControllerTest` | GET `/rechnungen/{id}/pdf` mit Sponsor-Org-Mitgliedschaft → 200, eigene Rechnung |
+| **RECH-15** | `RechnungServiceTest` | `markiereBezahlt` schreibt `RECHNUNG_BEZAHLT` ins Audit-Log (Quelle MANUELL/WEBHOOK) |
+| **RECH-16** | `RechnungServiceTest` | `stornieren` schreibt `RECHNUNG_STORNIERT` ins Audit-Log mit Grund + vorherigem Status |
 | **MAHN-01** | `MahnungsCronJobTest` | 7 Tage vor Fälligkeit → Reminder versendet, `mahnstufe=0` bleibt |
 | **MAHN-02** | `MahnungsCronJobTest` | 7 Tage nach Fälligkeit → 1. Mahnung, `mahnstufe=1` gesetzt |
 | **MAHN-03** | `MahnungsCronJobTest` | Mehrfacher Lauf am gleichen Tag versendet nur eine Mahnung (Idempotenz) |

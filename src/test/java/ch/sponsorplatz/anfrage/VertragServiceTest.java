@@ -1,5 +1,6 @@
 package ch.sponsorplatz.anfrage;
 
+import ch.sponsorplatz.audit.AuditService;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
@@ -33,6 +34,7 @@ class VertragServiceTest {
 
     @Mock private VertragRepository repository;
     @Mock private SponsoringAnfrageRepository anfrageRepository;
+    @Mock private AuditService auditService;
 
     private VertragService service;
 
@@ -41,7 +43,7 @@ class VertragServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new VertragService(repository, anfrageRepository);
+        service = new VertragService(repository, anfrageRepository, auditService);
 
         Organisation verein = neueOrg("FC Beispiel", OrgTyp.VEREIN);
         Organisation sponsor = neueOrg("Acme AG", OrgTyp.UNTERNEHMEN);

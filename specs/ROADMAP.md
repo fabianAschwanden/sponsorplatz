@@ -373,6 +373,14 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 - [x] **F3** `ProjektController.detail()` lädt Medien einmalig + Stream-split bilder/anhaenge
 - [x] **MeineAnfragenController IDOR**: annehmen/ablehnen prüfen `kannOrgEditieren(empfaengerOrg)`
 
+### 11.11 — Rechnungs-Lifecycle-Kern (5.F-Folge, Spec [SPONSORING_ZAHLUNGSFLUSS.md](SPONSORING_ZAHLUNGSFLUSS.md))
+
+- [x] **Audit-Log-Verdrahtung** (Spec §10): neue `AuditAktion`-Konstanten `VERTRAG_ERSTELLT/UNTERZEICHNET/GEKUENDIGT`, `RECHNUNG_ERSTELLT/BEZAHLT/STORNIERT/MAHNUNG_VERSENDET/PDF_HERUNTERGELADEN`. `RechnungService` + `VertragService` rufen `auditService.protokolliere(...)` bei jedem Status-Übergang.
+- [x] **RechnungsnummerGenerator** (Spec §5): separate Klasse, Format `R-YYYY-NNNNN` (5-stellig), pro Org-Jahr fortlaufend, lückenlos. Repository-Query `findeMaxLfdNr(orgId, praefix)` mit JPQL-`substring`. `Clock`-Bean injection für deterministische Tests.
+- [x] **Storno-Grund** (Spec §8.1, Migration V34): `rechnung.storno_grund VARCHAR(500) NULL`. `stornieren(id, grund)`-Signatur, Audit-Log mit `vorheriger_status` + `grund`.
+- [x] Tests: RECH-07/07b/08/09 (RechnungsnummerGenerator), RECH-15 (markiereBezahlt-Audit), RECH-16 (stornieren-Audit + Grund). 462 Tests gesamt.
+- [ ] **Mahnwesen + Vertrag-Kündigung** (Spec §7, V35) — nächste Iteration: `mahnstufe`/`letzte_mahnung_am`-Spalten, `MahnungsCronJob` täglich 06:00, `VertragService.kuendige(id, grund)` mit Rechnungs-Logik. Tests MAHN-01..04, VTR-07/08.
+
 ---
 
 ## Phase 10 — Production-Readiness & Pilot-Launch ⏳

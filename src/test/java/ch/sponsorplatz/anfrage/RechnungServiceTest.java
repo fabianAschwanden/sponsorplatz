@@ -1,5 +1,7 @@
 package ch.sponsorplatz.anfrage;
 
+import ch.sponsorplatz.audit.AuditAktion;
+import ch.sponsorplatz.audit.AuditService;
 import ch.sponsorplatz.organisation.Organisation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +19,9 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -30,6 +35,8 @@ class RechnungServiceTest {
 
     @Mock private RechnungRepository repository;
     @Mock private VertragService vertragService;
+    @Mock private RechnungsnummerGenerator rechnungsnummerGenerator;
+    @Mock private AuditService auditService;
 
     private RechnungService service;
 
@@ -38,7 +45,9 @@ class RechnungServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new RechnungService(repository, vertragService);
+        service = new RechnungService(repository, vertragService,
+                rechnungsnummerGenerator, auditService);
+        when(rechnungsnummerGenerator.naechste(any())).thenReturn("R-2026-00001");
 
         Organisation verein = neueOrg("FC Beispiel", "fc-beispiel", "CH4431999123000889012");
 
@@ -70,7 +79,7 @@ class RechnungServiceTest {
         assertThat(r.getSponsorName()).isEqualTo("Acme AG");
         assertThat(r.getSponsorEmail()).isEqualTo("kontakt@acme.ch");
         assertThat(r.getZahlungszweck()).contains("Gold");
-        assertThat(r.getRechnungsnummer()).startsWith("SP-").contains("0001");
+        assertThat(r.getRechnungsnummer()).isEqualTo("R-2026-00001");
         assertThat(r.getFaelligAm()).isAfter(java.time.LocalDate.now());
     }
 
@@ -131,8 +140,48 @@ class RechnungServiceTest {
         r.setStatus(RechnungsStatus.BEZAHLT);
         when(repository.findById(r.getId())).thenReturn(Optional.of(r));
 
-        assertThatThrownBy(() -> service.stornieren(r.getId()))
+        assertThatThrownBy(() -> service.stornieren(r.getId(), "ignored"))
                 .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    @DisplayName("RECH-15: markiereBezahlt schreibt RECHNUNG_BEZAHLT ins Audit-Log mit Quelle MANUELL")
+    void markiereBezahlt_auditEvent() {
+        Rechnung r = new Rechnung();
+        r.setId(UUID.randomUUID());
+        r.setStatus(RechnungsStatus.OFFEN);
+        r.setRechnungsnummer("R-2026-00042");
+        when(repository.findById(r.getId())).thenReturn(Optional.of(r));
+
+        service.markiereBezahlt(r.getId(), "owner@verein.ch");
+
+        verify(auditService).protokolliere(
+                eq(AuditAktion.RECHNUNG_BEZAHLT),
+                eq("RECHNUNG"),
+                eq(r.getId()),
+                eq("Rechnung"),
+                contains("quelle=MANUELL"));
+    }
+
+    @Test
+    @DisplayName("RECH-16: stornieren schreibt RECHNUNG_STORNIERT ins Audit-Log mit Grund + vorherigem Status")
+    void stornieren_auditEventMitGrund() {
+        Rechnung r = new Rechnung();
+        r.setId(UUID.randomUUID());
+        r.setStatus(RechnungsStatus.OFFEN);
+        r.setRechnungsnummer("R-2026-00042");
+        when(repository.findById(r.getId())).thenReturn(Optional.of(r));
+
+        service.stornieren(r.getId(), "Sponsor zog Anfrage zurück");
+
+        verify(auditService).protokolliere(
+                eq(AuditAktion.RECHNUNG_STORNIERT),
+                eq("RECHNUNG"),
+                eq(r.getId()),
+                eq("Rechnung"),
+                contains("Sponsor zog Anfrage zurück"));
+        assertThat(r.getStornoGrund()).isEqualTo("Sponsor zog Anfrage zurück");
+        assertThat(r.getStatus()).isEqualTo(RechnungsStatus.STORNIERT);
     }
 
     private static Organisation neueOrg(String name, String slug, String iban) {

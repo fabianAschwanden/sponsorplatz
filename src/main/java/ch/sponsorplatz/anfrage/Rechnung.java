@@ -85,6 +85,14 @@ public class Rechnung {
     @Column(name = "bezahlt_von")
     private String bezahltVon;
 
+    /**
+     * Freitextlicher Grund für Stornierung — gesetzt von
+     * {@link RechnungService#stornieren(UUID, String)}. Bei Migration V34
+     * eingeführt; bleibt NULL für historische Storno-Datensätze.
+     */
+    @Column(name = "storno_grund", length = 500)
+    private String stornoGrund;
+
     @PrePersist
     void initId() {
         if (this.id == null) this.id = UUID.randomUUID();
@@ -141,4 +149,7 @@ public class Rechnung {
 
     public String getBezahltVon() { return bezahltVon; }
     public void setBezahltVon(String bezahltVon) { this.bezahltVon = bezahltVon; }
+
+    public String getStornoGrund() { return stornoGrund; }
+    public void setStornoGrund(String stornoGrund) { this.stornoGrund = stornoGrund; }
 }
