@@ -46,13 +46,20 @@ COPY --from=build /workspace/target/sponsorplatz.jar app.jar
 # das Erstellen unter WORKDIR /app
 RUN mkdir -p /app/uploads && chown -R sponsor:sponsor /app
 
-# Healthcheck nutzt /actuator/health
+# Healthcheck nutzt /actuator/health auf dem Management-Port.
+# In prod laufen Actuator-Endpoints auf Port 9090 (loopback-bind via
+# application-prod.properties), in dev fallen sie auf 8080 zurück.
+# Single-line CMD mit Shell-OR — Dockerfile-Parser akzeptiert nur
+# zusammenhängende Zeilen für die CMD-Direktive der HEALTHCHECK-Instruktion.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:9090/actuator/health || wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
 USER sponsor
 
 EXPOSE 8080
+# Management-Port nur intern: nicht via EXPOSE freigeben, damit der
+# Container-Operator ihn nicht aus Versehen public mappt. Prometheus
+# muss innerhalb des Compose-Netzes oder via Sidecar scrapen.
 
 # JVM-Tuning sinnvoll fürs Container-Setup
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"

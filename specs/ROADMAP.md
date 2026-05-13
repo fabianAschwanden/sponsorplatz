@@ -262,9 +262,13 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 
 ### 9.2 — Zahlungs-Provider-Anbindung
 
+> **End-to-End-Spec:** [`SPONSORING_ZAHLUNGSFLUSS.md`](SPONSORING_ZAHLUNGSFLUSS.md)
+> — Lifecycle, Statusmaschinen, Swiss-QR-Bill-Compliance, Nummerierung, MwSt,
+> Mahnwesen, Storno, DSG-Permissions, Audit-Log, Datatrans-Detail-Spec.
+
 - [x] `PaymentProvider`-Interface (`erstelleZahlung`, `bestaetigeZahlung`, `widerrufe`)
 - [x] `LokalerStubProvider` für dev/test (sofort BEZAHLT)
-- [ ] `DatatransProvider` für prod (Backlog — Sandbox-Konfiguration)
+- [ ] `DatatransProvider` für prod (Backlog — Sandbox-Konfiguration, HMAC-Webhook, siehe ZAHLUNGSFLUSS §11)
 - [x] `PaymentWebhookController` für Provider-Callbacks (`/payment/webhook/{provider}`)
 - [x] `PaymentService` delegiert an aktiven Provider
 - [x] `RechnungService.markiereAlsBezahltViaWebhook` für idempotente Webhook-Verarbeitung
@@ -375,14 +379,15 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 > **Paket 4.** Plattform ist produktiv betreibbar in OCI Cloud mit Monitoring, DSG-Compliance und Error-Tracking.
 > Iteration: ~4 Tage vor dem Pilot-Launch.
 
-### 10.1 — Monitoring & Observability
+### 10.1 — Monitoring & Observability ✓
 
-- [ ] Spring Actuator: `/actuator/health/{liveness,readiness}` mit DB-Check
-- [ ] Spring Actuator: `/actuator/prometheus` für Prometheus-Scrape
-- [ ] `logback-spring.xml` mit JSON-Encoder (logstash-encoder ist im pom)
-- [ ] Strukturierte Logs mit Trace-ID via MDC (`X-Trace-ID`-Header)
+- [x] Spring Actuator: `/actuator/health/{liveness,readiness}` mit DB-Check
+- [x] Spring Actuator: `/actuator/prometheus` für Prometheus-Scrape (in prod auf separatem Management-Port 9090, Loopback-Bind)
+- [x] `logback-spring.xml` mit JSON-Encoder (logstash-encoder, prod/cloud-free)
+- [x] Strukturierte Logs mit Trace-ID via MDC (`X-Trace-ID`-Header) — `TraceIdFilter` mit Format-Validierung (Log-Injection-Schutz)
+- [ ] **MON-W3C**: Migration von `X-Trace-ID` (UUID) zu W3C-`traceparent` (`00-<32hex>-<16hex>-01`) sobald Distributed-Tracing-Backend (Tempo/Jaeger) eingeführt wird — OpenTelemetry-kompatibel
 - [ ] OCI Cloud Logging-Forwarding via Sidecar oder Direct-Push
-- [ ] Tests: MON-01 Health-Endpoint, MON-02 JSON-Log-Format, MON-03 Prometheus-Scrape
+- [x] Tests: MON-01..04 + MON-03c/d (9 Tests, alle grün)
 
 ### 10.2 — Error-Tracking
 

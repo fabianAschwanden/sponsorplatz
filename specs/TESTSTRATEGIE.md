@@ -33,7 +33,7 @@ Default-Lauf, damit `mvn test` schnell + Docker-frei bleibt.
 - Test-Daten via `E2EFixtures` seeden (z.B. CSS-Sponsor); zwischen Szenarien
   TRUNCATE der mutierbaren Tabellen — Email-Unique-Constraints kollidieren
   sonst bei wiederholten Läufen.
-- Bei fehlgeschlagenen Szenarien schreibt `E2EHooks` Screenshot + HTML
+- Bei fehlgeschlagenen Szenarien schreibt {@link E2EHooks} Screenshot + HTML
   ins `target/`-Verzeichnis (Post-Mortem-Debug).
 - Pre-Filled Test-Profil `application-e2e.properties`: Mail off, Storage
   lokal, kein OCI — alles, was Test-Reibung erzeugt, wird ausgehängt.
@@ -348,6 +348,10 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 
 ### Phase Wachstum — Zahlungs-Integration (RECH, QRB)
 
+> **End-to-End-Spec:** [`SPONSORING_ZAHLUNGSFLUSS.md`](SPONSORING_ZAHLUNGSFLUSS.md)
+> — Lifecycle, Statusmaschinen, Swiss-QR-Bill-Compliance, Nummerierung, MwSt,
+> Mahnwesen, Storno, DSG-Permissions, Audit-Log-Pflicht-Events.
+
 | ID | Test-Klasse | Beschreibung |
 |---|---|---|
 | **RECH-01** | `RechnungServiceTest` | `erstelle` aus Vertrag kopiert IBAN + Sponsor + Betrag, Status OFFEN |
@@ -360,7 +364,28 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **QRB-02** | `QrBillServiceTest` | `erzeugeAlsDataUrl` gibt `data:image/png;base64,…` zurück |
 | **QRB-03** | `QrBillServiceTest` | Ohne IBAN wirft `IllegalArgumentException` |
 
+**Aus SPONSORING_ZAHLUNGSFLUSS.md (TBD):**
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **RECH-07** | `RechnungsnummerGeneratorTest` | Format `R-YYYY-NNNNN`, pro Org-Jahr fortlaufend, lückenlos |
+| **RECH-08** | `RechnungsnummerGeneratorTest` | Jahres-Rollover startet bei 1, kein Reset bei laufendem Jahr |
+| **RECH-09** | `RechnungsnummerGeneratorTest` | Stornierte Rechnung bleibt in Nummerierung, nächste Nummer überspringt nicht |
+| **RECH-10** | `IbanValidatorTest` | Mod-97-Prüfsumme erkennt ungültige Iban |
+| **RECH-11** | `IbanValidatorTest` | `istQrIban` true für 30000-31999, false sonst |
+| **RECH-12** | `QrReferenzGeneratorTest` | 27-stellige Referenz mit Mod-10-Prüfziffer am Ende |
+| **RECH-13** | `RechnungControllerTest` | GET `/rechnungen/{id}` ohne ORG_VIEWER-Recht → 403 |
+| **RECH-14** | `RechnungControllerTest` | GET `/rechnungen/{id}/pdf` mit Sponsor-Org-Mitgliedschaft → 200, eigene Rechnung |
+| **RECH-15** | `RechnungServiceTest` | `markiereBezahlt` schreibt `RECHNUNG_BEZAHLT` ins Audit-Log |
+| **RECH-16** | `RechnungServiceTest` | `stornieren` schreibt `RECHNUNG_STORNIERT` ins Audit-Log mit Grund |
+| **MAHN-01** | `MahnungsCronJobTest` | 7 Tage vor Fälligkeit → Reminder versendet, `mahnstufe=0` bleibt |
+| **MAHN-02** | `MahnungsCronJobTest` | 7 Tage nach Fälligkeit → 1. Mahnung, `mahnstufe=1` gesetzt |
+| **MAHN-03** | `MahnungsCronJobTest` | Mehrfacher Lauf am gleichen Tag versendet nur eine Mahnung (Idempotenz) |
+| **MAHN-04** | `MahnungsCronJobTest` | BEZAHLT-Rechnung wird nie gemahnt |
+
 ### Phase Wachstum — Vertrags-Generator (VTR)
+
+> **End-to-End-Spec:** [`SPONSORING_ZAHLUNGSFLUSS.md`](SPONSORING_ZAHLUNGSFLUSS.md)
 
 | ID | Test-Klasse | Beschreibung |
 |---|---|---|
@@ -370,6 +395,8 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **VTR-04** | `VertragServiceTest` | `erstelle` bei unbekannter Anfrage wirft `NotFoundException` |
 | **VTR-05** | `VertragServiceTest` | `markiereUnterzeichnet` setzt Status, Zeitstempel, User |
 | **VTR-06** | `VertragServiceTest` | `markiereUnterzeichnet` auf bereits unterzeichnetem Vertrag wirft |
+| **VTR-07** *(TBD)* | `VertragServiceTest` | `kuendige` mit bezahlter Rechnung wirft `IllegalStateException` |
+| **VTR-08** *(TBD)* | `VertragServiceTest` | `kuendige` mit offener Rechnung erlaubt — Rechnung wird mit storniert |
 
 ### Phase Operational — DSG-Pflichtseiten (INFO)
 
@@ -681,6 +708,32 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **VIEW-11** | `MedienAssetViewTest` | `istBild()` → true für Bilder, false für Dokumente |
 | **VIEW-12** | `MedienAssetViewTest` | `groesseFormatiert()` zeigt B/KB/MB korrekt |
 | **VIEW-12b** | `MedienAssetViewTest` | `endung()` extrahiert Datei-Endung lowercase, leer wenn kein Punkt im Namen |
+
+### Monitoring & Observability (MON) — Phase 10.1
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **MON-01** | `MonitoringTest` | `GET /actuator/health` → 200 mit `status: UP` |
+| **MON-01b** | `MonitoringTest` | `GET /actuator/health/liveness` → 200 (Kubernetes Liveness-Probe) |
+| **MON-01c** | `MonitoringTest` | `GET /actuator/health/readiness` → 200 (Kubernetes Readiness-Probe) |
+| **MON-02** | `MonitoringTest` | `GET /actuator/prometheus` → 200, enthält JVM-Metriken im Prometheus-Format |
+| **MON-03** | `MonitoringTest` | Response enthält `X-Trace-ID`-Header (generiert wenn nicht vorhanden) |
+| **MON-03b** | `MonitoringTest` | Vorhandener `X-Trace-ID`-Request-Header wird übernommen (Load-Balancer-Propagation) |
+| **MON-03c** | `MonitoringTest` | Sonderzeichen in `X-Trace-ID` (Quote, Space, …) werden verworfen → UUID-Fallback (Log-Injection-Schutz). CR/LF fängt Tomcat selbst mit 400 ab. |
+| **MON-03d** | `MonitoringTest` | Overlong `X-Trace-ID` (>64 Zeichen) wird verworfen — kein unbegrenzter MDC-Memory-Footprint |
+| **MON-04** | `MonitoringTest` | MDC wird nach jedem Request aufgeräumt — keine Trace-ID-Leaks im Spring-Thread-Pool |
+
+**Architektur-Hinweise zum Monitoring-Setup:**
+
+- **Management-Port-Split in prod**: Actuator-Endpoints laufen auf `${MANAGEMENT_SERVER_PORT:9090}` mit Loopback-Bind
+  (`${MANAGEMENT_SERVER_ADDRESS:127.0.0.1}`). Damit ist `/actuator/prometheus` für externe Scraper nicht direkt erreichbar
+  — Operations setzt einen SSH-Tunnel, Sidecar oder Same-Host-Prometheus-Container. K8s-Probes hitten Port 9090 direkt
+  am Pod; Docker-Healthcheck probiert 9090 → 8080 als Fallback.
+- **Public-Endpoints am Application-Port** (8080): nur `/actuator/health`, `/actuator/health/liveness`,
+  `/actuator/health/readiness`, `/actuator/info` — explizite Allowlist statt `/actuator/**`-Wildcard, damit
+  `diskSpace`/`db`/`ping`-Sub-Indikatoren nicht versehentlich freigeschaltet werden.
+- **MON-W3C (Roadmap)**: Migration von proprietärem `X-Trace-ID` zu W3C-`traceparent` (OpenTelemetry-kompatibel),
+  sobald Distributed-Tracing-Backend (Tempo/Jaeger) eingeführt wird.
 
 ## CI
 

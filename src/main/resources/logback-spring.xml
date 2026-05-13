@@ -11,16 +11,37 @@
     -->
     <appender name="RECENT_ERRORS" class="ch.sponsorplatz.ops.RecentErrorsAppender"/>
 
-    <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="RECENT_ERRORS"/>
-    </root>
+    <!--
+        JSON-Appender für prod/cloud-free: strukturierte Logs mit logstash-encoder.
+        Trace-ID aus MDC wird automatisch als Feld mitgeliefert.
+    -->
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>method</includeMdcKeyName>
+            <includeMdcKeyName>uri</includeMdcKeyName>
+            <fieldNames>
+                <timestamp>timestamp</timestamp>
+                <version>[ignore]</version>
+            </fieldNames>
+        </encoder>
+    </appender>
 
+    <!-- Dev/Test: menschenlesbare Console-Ausgabe -->
     <springProfile name="dev,test,default">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="RECENT_ERRORS"/>
+        </root>
         <logger name="ch.sponsorplatz" level="DEBUG"/>
     </springProfile>
 
+    <!-- Prod/Cloud-free: JSON-Ausgabe für Log-Aggregation -->
     <springProfile name="prod,cloud-free">
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE"/>
+            <appender-ref ref="RECENT_ERRORS"/>
+        </root>
         <logger name="ch.sponsorplatz" level="INFO"/>
     </springProfile>
 

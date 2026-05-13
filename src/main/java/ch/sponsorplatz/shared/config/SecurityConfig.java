@@ -128,7 +128,19 @@ public class SecurityConfig {
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         .requestMatchers("/sponsor/**").permitAll()
                         .requestMatchers("/einladung/**").permitAll()
-                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        // Actuator: nur die K8s-Probes + info sind öffentlich auf
+                        // dem Application-Port. /actuator/prometheus wandert in prod
+                        // auf den Management-Port (application-prod.properties:
+                        // management.server.port=9090, loopback-bind). Falls Operator
+                        // den Management-Port auf 8080 zurückklappt, greifen alle
+                        // Actuator-Routen unter /actuator/** den anyRequest-authenticated-
+                        // Pfad — Prometheus erfordert dann Auth. Damit ist „permitAll
+                        // versehentlich gesetzt" als Misconfiguration ausgeschlossen.
+                        .requestMatchers(
+                                "/actuator/health",
+                                "/actuator/health/liveness",
+                                "/actuator/health/readiness",
+                                "/actuator/info").permitAll()
                         .requestMatchers("/organisationen").permitAll()
                         .requestMatchers("/organisationen/{slug}").permitAll()
                         .requestMatchers("/marktplatz/**").permitAll()
