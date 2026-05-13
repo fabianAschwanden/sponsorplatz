@@ -396,8 +396,12 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **VTR-04** | `VertragServiceTest` | `erstelle` bei unbekannter Anfrage wirft `NotFoundException` |
 | **VTR-05** | `VertragServiceTest` | `markiereUnterzeichnet` setzt Status, Zeitstempel, User |
 | **VTR-06** | `VertragServiceTest` | `markiereUnterzeichnet` auf bereits unterzeichnetem Vertrag wirft |
-| **VTR-07** *(TBD)* | `VertragServiceTest` | `kuendige` mit bezahlter Rechnung wirft `IllegalStateException` |
-| **VTR-08** *(TBD)* | `VertragServiceTest` | `kuendige` mit offener Rechnung erlaubt — Rechnung wird mit storniert |
+| **VTR-05b** | `VertragServiceTest` | `markiereUnterzeichnet` ohne Preis UND ohne Leistung wirft — Pflicht-Check vor Status-Übergang |
+| **VTR-05c** | `VertragServiceTest` | `markiereUnterzeichnet` bei Naturalien-Sponsoring (preisChf=0, Leistung gepflegt) erlaubt |
+| **VTR-07** | `VertragServiceTest` | `kuendige` mit bezahlter Rechnung wirft `IllegalStateException` (Buchhaltungs-Integrität) |
+| **VTR-08** | `VertragServiceTest` | `kuendige` mit offener Rechnung storniert diese mit Grund-Hinweis (Audit-Trail) |
+| **VTR-08b** | `VertragServiceTest` | `kuendige` ohne Rechnung läuft sauber durch (einfacher Pfad) |
+| **VTR-08c** | `VertragServiceTest` | `kuendige` bei Status ENTWURF wirft (nur aus UNTERZEICHNET erlaubt) |
 | **VTR-09** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage (paket=null): Verein-Org wird via `OrgTyp.VEREIN`-Check als `v.org` gemappt, Sponsor als `v.sponsorOrg` — unabhängig von Anfrage-Richtung. Siehe [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md) |
 | **VTR-10** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage ohne Wunsch-Betrag: `betreff` wird zu `paketName`, `nachricht` zu `paketBeschreibung`, `preisChf = 0` |
 | **VTR-10b** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage mit `wunschBetragChf=5000`: Vertrag startet mit `preisChf=5000` (Initial-Preis aus Anfrage-Wunsch). Siehe V33 + [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md) |

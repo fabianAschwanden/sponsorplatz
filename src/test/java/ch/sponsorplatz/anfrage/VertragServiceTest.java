@@ -21,6 +21,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -35,6 +37,7 @@ class VertragServiceTest {
     @Mock private VertragRepository repository;
     @Mock private SponsoringAnfrageRepository anfrageRepository;
     @Mock private AuditService auditService;
+    @Mock private RechnungService rechnungService;
 
     private VertragService service;
 
@@ -43,7 +46,7 @@ class VertragServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new VertragService(repository, anfrageRepository, auditService);
+        service = new VertragService(repository, anfrageRepository, auditService, rechnungService);
 
         Organisation verein = neueOrg("FC Beispiel", OrgTyp.VEREIN);
         Organisation sponsor = neueOrg("Acme AG", OrgTyp.UNTERNEHMEN);
@@ -109,11 +112,12 @@ class VertragServiceTest {
     }
 
     @Test
-    @DisplayName("VTR-05: markiereUnterzeichnet setzt Status + Zeitstempel + User")
+    @DisplayName("VTR-05: markiereUnterzeichnet setzt Status + Zeitstempel + User (mit Preis > 0)")
     void markiereUnterzeichnet() {
         Vertrag v = new Vertrag();
         v.setId(UUID.randomUUID());
         v.setStatus(VertragsStatus.ENTWURF);
+        v.setPreisChf(new BigDecimal("5000.00")); // Geld-Sponsoring → Pflicht-Check passt
         when(repository.findById(v.getId())).thenReturn(Optional.of(v));
 
         Vertrag result = service.markiereUnterzeichnet(v.getId(), "fabian@example.ch");
@@ -197,6 +201,106 @@ class VertragServiceTest {
         assertThat(v.getPreisChf())
                 .as("Initial-Preis kommt aus anfrage.wunschBetragChf")
                 .isEqualByComparingTo(new BigDecimal("5000.00"));
+    }
+
+    @Test
+    @DisplayName("VTR-05b: markiereUnterzeichnet ohne Preis und ohne Leistung wirft")
+    void unterzeichnenOhnePreisUndLeistungWirft() {
+        Vertrag v = new Vertrag();
+        v.setId(UUID.randomUUID());
+        v.setStatus(VertragsStatus.ENTWURF);
+        v.setPreisChf(BigDecimal.ZERO); // Naturalien-Kandidat
+        v.setLeistungVerein(null);
+        v.setLeistungSponsor("   "); // blank zählt als nicht gepflegt
+        when(repository.findById(v.getId())).thenReturn(Optional.of(v));
+
+        assertThatThrownBy(() -> service.markiereUnterzeichnet(v.getId(), "u"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Preis > 0 oder eine Leistungsbeschreibung");
+    }
+
+    @Test
+    @DisplayName("VTR-05c: markiereUnterzeichnet bei Naturalien-Sponsoring (preisChf=0, Leistung gepflegt) erlaubt")
+    void unterzeichnenMitNaturalienErlaubt() {
+        Vertrag v = new Vertrag();
+        v.setId(UUID.randomUUID());
+        v.setStatus(VertragsStatus.ENTWURF);
+        v.setPreisChf(BigDecimal.ZERO);
+        v.setLeistungVerein("Trikot-Logo für Saison 2026");
+        when(repository.findById(v.getId())).thenReturn(Optional.of(v));
+
+        Vertrag result = service.markiereUnterzeichnet(v.getId(), "verein@test.ch");
+
+        assertThat(result.getStatus()).isEqualTo(VertragsStatus.UNTERZEICHNET);
+    }
+
+    @Test
+    @DisplayName("VTR-07: kuendige mit bezahlter Rechnung wirft IllegalStateException")
+    void kuendigeMitBezahlterRechnungWirft() {
+        Vertrag v = new Vertrag();
+        v.setId(UUID.randomUUID());
+        v.setStatus(VertragsStatus.UNTERZEICHNET);
+        when(repository.findById(v.getId())).thenReturn(Optional.of(v));
+
+        Rechnung bezahlt = new Rechnung();
+        bezahlt.setId(UUID.randomUUID());
+        bezahlt.setStatus(RechnungsStatus.BEZAHLT);
+        when(rechnungService.findeNachVertrag(v.getId())).thenReturn(Optional.of(bezahlt));
+
+        assertThatThrownBy(() -> service.kuendige(v.getId(), "Grund egal"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("bezahlter Rechnung");
+    }
+
+    @Test
+    @DisplayName("VTR-08: kuendige mit offener Rechnung storniert diese mit Grund-Hinweis")
+    void kuendigeMitOffenerRechnungStorniert() {
+        Vertrag v = new Vertrag();
+        v.setId(UUID.randomUUID());
+        v.setStatus(VertragsStatus.UNTERZEICHNET);
+        when(repository.findById(v.getId())).thenReturn(Optional.of(v));
+
+        Rechnung offen = new Rechnung();
+        offen.setId(UUID.randomUUID());
+        offen.setStatus(RechnungsStatus.OFFEN);
+        when(rechnungService.findeNachVertrag(v.getId())).thenReturn(Optional.of(offen));
+
+        Vertrag result = service.kuendige(v.getId(), "Sponsor-Insolvenz");
+
+        assertThat(result.getStatus()).isEqualTo(VertragsStatus.GEKUENDIGT);
+        assertThat(result.getGekuendigtAm()).isNotNull();
+        assertThat(result.getKuendigungsGrund()).isEqualTo("Sponsor-Insolvenz");
+        verify(rechnungService).stornieren(eq(offen.getId()),
+                org.mockito.ArgumentMatchers.contains("Sponsor-Insolvenz"));
+    }
+
+    @Test
+    @DisplayName("VTR-08b: kuendige ohne Rechnung läuft sauber durch (einfacher Pfad)")
+    void kuendigeOhneRechnung() {
+        Vertrag v = new Vertrag();
+        v.setId(UUID.randomUUID());
+        v.setStatus(VertragsStatus.UNTERZEICHNET);
+        when(repository.findById(v.getId())).thenReturn(Optional.of(v));
+        when(rechnungService.findeNachVertrag(v.getId())).thenReturn(Optional.empty());
+
+        Vertrag result = service.kuendige(v.getId(), null);
+
+        assertThat(result.getStatus()).isEqualTo(VertragsStatus.GEKUENDIGT);
+        verify(rechnungService, org.mockito.Mockito.never())
+                .stornieren(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    @DisplayName("VTR-08c: kuendige bei Status ENTWURF wirft (nur aus UNTERZEICHNET erlaubt)")
+    void kuendigeAusEntwurfWirft() {
+        Vertrag v = new Vertrag();
+        v.setId(UUID.randomUUID());
+        v.setStatus(VertragsStatus.ENTWURF);
+        when(repository.findById(v.getId())).thenReturn(Optional.of(v));
+
+        assertThatThrownBy(() -> service.kuendige(v.getId(), "egal"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("unterzeichnete");
     }
 
     private static Organisation neueOrg(String name, OrgTyp typ) {

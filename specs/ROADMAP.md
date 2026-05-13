@@ -379,7 +379,8 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 - [x] **RechnungsnummerGenerator** (Spec §5): separate Klasse, Format `R-YYYY-NNNNN` (5-stellig), pro Org-Jahr fortlaufend, lückenlos. Repository-Query `findeMaxLfdNr(orgId, praefix)` mit JPQL-`substring`. `Clock`-Bean injection für deterministische Tests.
 - [x] **Storno-Grund** (Spec §8.1, Migration V34): `rechnung.storno_grund VARCHAR(500) NULL`. `stornieren(id, grund)`-Signatur, Audit-Log mit `vorheriger_status` + `grund`.
 - [x] Tests: RECH-07/07b/08/09 (RechnungsnummerGenerator), RECH-15 (markiereBezahlt-Audit), RECH-16 (stornieren-Audit + Grund). 462 Tests gesamt.
-- [ ] **Mahnwesen + Vertrag-Kündigung** (Spec §7, V35) — nächste Iteration: `mahnstufe`/`letzte_mahnung_am`-Spalten, `MahnungsCronJob` täglich 06:00, `VertragService.kuendige(id, grund)` mit Rechnungs-Logik. Tests MAHN-01..04, VTR-07/08.
+- [x] **State-Machine-Sauber-Iteration**: `VertragService.kuendige(id, grund)` mit BEZAHLT-Check (wirft) + OFFEN-Auto-Storno + Audit-Event `VERTRAG_GEKUENDIGT`. `markiereUnterzeichnet` prüft `preisChf > 0 OR leistungVerein/Sponsor gepflegt` (verhindert versehentliche Standardwert-Unterzeichnung; Naturalien-Sponsoring explizit erlaubt). Migration V35 (`gekuendigt_am`, `kuendigungs_grund`). VertragService↔RechnungService-Cycle via `@Lazy`-Proxy gelöst. Tests VTR-05b/c, VTR-07/08/08b/08c — 468 Tests gesamt.
+- [ ] **Mahnwesen** (Spec §7, V36) — nächste Iteration: `mahnstufe`/`letzte_mahnung_am`-Spalten, `MahnungsCronJob` täglich 06:00, Tests MAHN-01..04.
 
 ---
 

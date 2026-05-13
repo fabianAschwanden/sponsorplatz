@@ -90,6 +90,18 @@ public class Vertrag {
     @Column(name = "unterzeichnet_von")
     private String unterzeichnetVon;
 
+    /**
+     * Zeitstempel der Kündigung. NULL, solange der Vertrag im Status
+     * ENTWURF oder UNTERZEICHNET ist. Gesetzt von
+     * {@link VertragService#kuendige(UUID, String)} (V35).
+     */
+    @Column(name = "gekuendigt_am")
+    private Instant gekuendigtAm;
+
+    /** Freitext-Grund der Kündigung (V35). Optional. */
+    @Column(name = "kuendigungs_grund", length = 500)
+    private String kuendigungsGrund;
+
     @PrePersist
     void initId() {
         if (this.id == null) this.id = UUID.randomUUID();
@@ -152,4 +164,10 @@ public class Vertrag {
 
     public String getUnterzeichnetVon() { return unterzeichnetVon; }
     public void setUnterzeichnetVon(String unterzeichnetVon) { this.unterzeichnetVon = unterzeichnetVon; }
+
+    public Instant getGekuendigtAm() { return gekuendigtAm; }
+    public void setGekuendigtAm(Instant gekuendigtAm) { this.gekuendigtAm = gekuendigtAm; }
+
+    public String getKuendigungsGrund() { return kuendigungsGrund; }
+    public void setKuendigungsGrund(String kuendigungsGrund) { this.kuendigungsGrund = kuendigungsGrund; }
 }

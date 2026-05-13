@@ -5,9 +5,11 @@ import ch.sponsorplatz.audit.AuditService;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.shared.exception.NotFoundException;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,13 +34,22 @@ public class VertragService {
     private final VertragRepository repository;
     private final SponsoringAnfrageRepository anfrageRepository;
     private final AuditService auditService;
+    /**
+     * @Lazy bricht den potenziellen Cycle VertragService ↔ RechnungService:
+     * RechnungService injiziert VertragService (für findeNachId), VertragService
+     * braucht RechnungService nur in kuendige() um die offene Rechnung mit zu
+     * stornieren. Lazy-Proxy → keine Eager-Initialisierung.
+     */
+    private final RechnungService rechnungService;
 
     public VertragService(VertragRepository repository,
                           SponsoringAnfrageRepository anfrageRepository,
-                          AuditService auditService) {
+                          AuditService auditService,
+                          @Lazy RechnungService rechnungService) {
         this.repository = repository;
         this.anfrageRepository = anfrageRepository;
         this.auditService = auditService;
+        this.rechnungService = rechnungService;
     }
 
     /**
@@ -152,6 +163,20 @@ public class VertragService {
             throw new IllegalStateException(
                     "Nur Entwurf-Verträge können unterzeichnet werden. Status: " + v.getStatus());
         }
+        // Pflicht-Check vor Unterzeichnung: entweder Geld-Sponsoring (preisChf > 0)
+        // ODER explizit Naturalien-Sponsoring (Leistung Verein/Sponsor gepflegt).
+        // Verhindert versehentliche Unterzeichnung leerer Entwürfe — der Verein
+        // muss bewusst eine der beiden Sponsoring-Formen wählen.
+        boolean hatGeldsponsoring = v.getPreisChf() != null
+                && v.getPreisChf().compareTo(BigDecimal.ZERO) > 0;
+        boolean hatNaturalien = istNichtLeer(v.getLeistungVerein())
+                || istNichtLeer(v.getLeistungSponsor());
+        if (!hatGeldsponsoring && !hatNaturalien) {
+            throw new IllegalStateException(
+                    "Vertrag braucht einen Preis > 0 oder eine Leistungsbeschreibung "
+                            + "(Naturalien-Sponsoring), bevor er unterzeichnet werden kann.");
+        }
+
         v.setStatus(VertragsStatus.UNTERZEICHNET);
         v.setUnterzeichnetAm(Instant.now());
         v.setUnterzeichnetVon(unterzeichnetVon);
@@ -162,5 +187,52 @@ public class VertragService {
                 "unterzeichnet_von=" + unterzeichnetVon);
 
         return gespeichert;
+    }
+
+    /**
+     * Kündigt einen unterzeichneten Vertrag. Konsistenz mit der zugehörigen
+     * Rechnung (Spec §3.3):
+     * <ul>
+     *   <li>Rechnung BEZAHLT → wirft {@link IllegalStateException} (Buchhaltungs-
+     *       Integrität, manuelle Rückabwicklung nötig)</li>
+     *   <li>Rechnung OFFEN → wird mit-storniert (Grund: „Vertrag gekündigt: …")</li>
+     *   <li>Keine Rechnung / Rechnung schon STORNIERT → einfacher Pfad</li>
+     * </ul>
+     * Status-Übergang nur aus UNTERZEICHNET; ENTWURF + GEKUENDIGT werfen.
+     */
+    public Vertrag kuendige(UUID id, String grund) {
+        Vertrag v = findeNachId(id);
+        if (v.getStatus() != VertragsStatus.UNTERZEICHNET) {
+            throw new IllegalStateException(
+                    "Nur unterzeichnete Verträge können gekündigt werden. Status: " + v.getStatus());
+        }
+
+        // Rechnungs-Konsistenz prüfen
+        rechnungService.findeNachVertrag(id).ifPresent(rechnung -> {
+            if (rechnung.getStatus() == RechnungsStatus.BEZAHLT) {
+                throw new IllegalStateException(
+                        "Vertrag mit bezahlter Rechnung kann nicht gekündigt werden. "
+                                + "Rechnung muss erst storniert/zurückgebucht werden.");
+            }
+            if (rechnung.getStatus() == RechnungsStatus.OFFEN) {
+                rechnungService.stornieren(rechnung.getId(),
+                        "Vertrag gekündigt" + (grund != null ? ": " + grund : ""));
+            }
+        });
+
+        v.setStatus(VertragsStatus.GEKUENDIGT);
+        v.setGekuendigtAm(Instant.now());
+        v.setKuendigungsGrund(grund);
+        Vertrag gespeichert = repository.save(v);
+
+        auditService.protokolliere(AuditAktion.VERTRAG_GEKUENDIGT, "VERTRAG",
+                gespeichert.getId(), "Vertrag",
+                "grund=" + (grund == null ? "" : grund));
+
+        return gespeichert;
+    }
+
+    private static boolean istNichtLeer(String s) {
+        return s != null && !s.isBlank();
     }
 }
