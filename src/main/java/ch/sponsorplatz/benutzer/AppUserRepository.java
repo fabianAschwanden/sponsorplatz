@@ -21,4 +21,11 @@ public interface AppUserRepository extends JpaRepository<AppUser, UUID> {
     long countByAktivTrue();
 
     List<AppUser> findAllByOrderByRegistriertAmDesc();
+
+    /**
+     * Alle User mit einer bestimmten Plattform-Rolle — wird genutzt, um neue
+     * Org-Registrierungen an alle PLATFORM_ADMINs zu pushen (In-App-Glocke
+     * und E-Mail).
+     */
+    List<AppUser> findByPlatformRolle(PlatformRolle platformRolle);
 }

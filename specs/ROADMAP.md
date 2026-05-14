@@ -396,6 +396,14 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 - [x] i18n DE/EN/FR/IT (39 Keys — 28 Sponsor + 11 Verein/Statistik-Container).
 - [x] Tests STAT-01..07b (Sponsor-Service, 8) + STAT-VEREIN-01..07b (Verein-Service, 8) + STAT-CTRL-01..04 (Controller, 4) — 489 Tests gesamt.
 
+### 11.13 — Admin-Benachrichtigung bei neuer Org-Registrierung
+
+- [x] Jede Self-Service-Registrierung (Verein über `/organisationen` Owner-on-Create + Sponsor über `/sponsor/registrieren`) erzeugt In-App-Notifications und E-Mails an **alle** PLATFORM_ADMIN-User. Stand heute deckungsgleich mit „die Rollen, die Vereine approven können".
+- [x] Neuer `AdminBenachrichtigungService` (Paket `admin`) kapselt den Versand: lädt alle Admins via `AppUserRepository.findByPlatformRolle`, ruft `NotificationService.benachrichtige` (Typ `NEUE_ORG_REGISTRIERT`, Link `/admin/verifizierungen`) und `MailService.sendePlain`. Mail-Fehler werden pro Admin als WARN-Log geschluckt — andere Admins werden nicht mitgerissen, Registrierung bleibt erfolgreich.
+- [x] Titel/Body unterscheidet Verein vs. Sponsor-Organisation; Mail-Subject enthält Org-Name, Body verweist auf Verifizierungs-Queue.
+- [x] Trigger in `OrganisationService.erstelleMitEigentuemer` (Verein/Stiftung via Owner-on-Create) und `SponsorRegistrierungService.registriereSponsor` — Admin-direkt-Anlage über `OrganisationService.erstelle` löst *keine* Notification aus (kein Verifizierungs-Bedarf).
+- [x] Tests: ADMIN-NOTIF-01..04 (Service) + ORG-31/32 (Trigger im OrganisationService) + SR-01 erweitert — 495 Tests gesamt.
+
 ---
 
 ## Phase 10 — Production-Readiness & Pilot-Launch ⏳

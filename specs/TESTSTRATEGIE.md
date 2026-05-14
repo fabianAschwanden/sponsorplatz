@@ -329,13 +329,29 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 
 | ID | Test-Klasse | Beschreibung |
 |---|---|---|
-| **SR-01** | `SponsorRegistrierungServiceTest` | `registriereSponsor` erstellt AppUser, Organisation (UNTERNEHMEN/PENDING), Mitgliedschaft (ORG_OWNER) |
+| **SR-01** | `SponsorRegistrierungServiceTest` | `registriereSponsor` erstellt AppUser, Organisation (UNTERNEHMEN/PENDING), Mitgliedschaft (ORG_OWNER), triggert `AdminBenachrichtigungService` |
 | **SR-02** | `SponsorRegistrierungServiceTest` | Doppelte E-Mail → IllegalArgumentException (delegiert an AppUserService) |
 | **SR-03** | `SponsorRegistrierungServiceTest` | Slug-Konflikt bei Firmenname → IllegalArgumentException |
 | **SR-04** | `SponsorRegistrierungControllerTest` | GET `/sponsor/registrieren` → 200 + sponsor-registrieren Template |
 | **SR-05** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` valid → 302 Redirect `/login?registriert` |
 | **SR-06** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` mit Validierungsfehler → bleibt auf Formular |
 | **SR-07** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` doppelte E-Mail → Fehlermeldung auf Formular |
+
+### Admin-Benachrichtigung bei neuer Org-Registrierung (ADMIN-NOTIF)
+
+Jede Self-Service-Registrierung (Verein oder Sponsor) pusht eine In-App-Notification
+und eine E-Mail an alle PLATFORM_ADMIN-User. Trigger sitzen in den beiden
+Registrierungs-Services; der Versand selbst ist im
+`AdminBenachrichtigungService` gekapselt und gegen SMTP-Ausfälle robust.
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **ADMIN-NOTIF-01** | `AdminBenachrichtigungServiceTest` | Verein-Registrierung → für jeden PLATFORM_ADMIN eine In-App-Notification (Typ `NEUE_ORG_REGISTRIERT`, Link `/admin/verifizierungen`) und eine Mail |
+| **ADMIN-NOTIF-02** | `AdminBenachrichtigungServiceTest` | Titel und Body unterscheiden „Verein" vs. „Sponsor-Organisation"; Org-Name + Stichwort „Verifizierung" im Body |
+| **ADMIN-NOTIF-03** | `AdminBenachrichtigungServiceTest` | Mail-Versand wirft (SMTP down) → andere Admins werden trotzdem bedient, keine Exception nach oben |
+| **ADMIN-NOTIF-04** | `AdminBenachrichtigungServiceTest` | Keine PLATFORM_ADMINs konfiguriert → kein Notification-/Mail-Versand, keine Exception |
+| **ORG-31** | `OrganisationServiceTest` | `erstelleMitEigentuemer` triggert `AdminBenachrichtigungService` mit der neuen Org |
+| **ORG-32** | `OrganisationServiceTest` | `erstelle` ohne Eigentümer (Admin-direkt-Anlage) triggert *keine* Admin-Benachrichtigung |
 
 ### Phase Wachstum — Postgres-Volltextsuche (VTS-PG)
 

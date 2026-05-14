@@ -1,4 +1,5 @@
 package ch.sponsorplatz.organisation;
+import ch.sponsorplatz.admin.AdminBenachrichtigungService;
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.shared.util.SlugGenerator;
@@ -23,6 +24,7 @@ class OrganisationServiceTest {
     private OrganisationRepository repository;
     private MitgliedschaftRepository mitgliedschaftRepository;
     private AppUserRepository appUserRepository;
+    private AdminBenachrichtigungService adminBenachrichtigungService;
     private OrganisationService service;
 
     @BeforeEach
@@ -30,8 +32,9 @@ class OrganisationServiceTest {
         repository = mock(OrganisationRepository.class);
         mitgliedschaftRepository = mock(MitgliedschaftRepository.class);
         appUserRepository = mock(AppUserRepository.class);
+        adminBenachrichtigungService = mock(AdminBenachrichtigungService.class);
         service = new OrganisationService(repository, new SlugGenerator(),
-                mitgliedschaftRepository, appUserRepository);
+                mitgliedschaftRepository, appUserRepository, adminBenachrichtigungService);
     }
 
     /** ORG-05: Erstellen mit Auto-Slug aus dem Namen. */
@@ -302,6 +305,34 @@ class OrganisationServiceTest {
 
         assertThat(org.getName()).isEqualTo("Mein Verein");
         verify(mitgliedschaftRepository).save(any(Mitgliedschaft.class));
+    }
+
+    /** ORG-31: erstelleMitEigentuemer triggert Admin-Benachrichtigung — Verifizierungs-Queue ohne aktives Pollen. */
+    @Test
+    void erstelleMitEigentuemerLoestAdminBenachrichtigungAus() {
+        UUID userId = UUID.randomUUID();
+        AppUser user = new AppUser();
+        user.setId(userId);
+        when(repository.findBySlug(any())).thenReturn(Optional.empty());
+        when(repository.save(any(Organisation.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(appUserRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(mitgliedschaftRepository.save(any(Mitgliedschaft.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        Organisation org = service.erstelleMitEigentuemer(neuesDto("Mein Verein", null), userId);
+
+        verify(adminBenachrichtigungService).benachrichtigeUeberNeueOrgRegistrierung(org);
+    }
+
+    /** ORG-32: erstelle ohne Eigentümer (Admin-direkt-Anlage) triggert keine Admin-Benachrichtigung. */
+    @Test
+    void erstelleOhneEigentuemerLoestKeineAdminBenachrichtigungAus() {
+        when(repository.findBySlug(any())).thenReturn(Optional.empty());
+        when(repository.save(any(Organisation.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        service.erstelle(neuesDto("Direkt vom Admin", null));
+
+        org.mockito.Mockito.verifyNoInteractions(adminBenachrichtigungService);
     }
 
     private OrganisationFormDto neuesDto(String name, String slug) {

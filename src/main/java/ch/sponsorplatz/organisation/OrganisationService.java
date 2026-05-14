@@ -1,4 +1,5 @@
 package ch.sponsorplatz.organisation;
+import ch.sponsorplatz.admin.AdminBenachrichtigungService;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.shared.util.SlugGenerator;
 
@@ -27,14 +28,17 @@ public class OrganisationService {
     private final SlugGenerator slugGenerator;
     private final MitgliedschaftRepository mitgliedschaftRepository;
     private final AppUserRepository appUserRepository;
+    private final AdminBenachrichtigungService adminBenachrichtigungService;
 
     public OrganisationService(OrganisationRepository repository, SlugGenerator slugGenerator,
                                MitgliedschaftRepository mitgliedschaftRepository,
-                               AppUserRepository appUserRepository) {
+                               AppUserRepository appUserRepository,
+                               AdminBenachrichtigungService adminBenachrichtigungService) {
         this.repository = repository;
         this.slugGenerator = slugGenerator;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
         this.appUserRepository = appUserRepository;
+        this.adminBenachrichtigungService = adminBenachrichtigungService;
     }
 
     @Transactional(readOnly = true)
@@ -107,6 +111,8 @@ public class OrganisationService {
                         .orElseThrow(() -> new NotFoundException("Benutzer nicht gefunden: " + eigentuemerUserId)));
         mitgliedschaft.setRolle(Rolle.ORG_OWNER);
         mitgliedschaftRepository.save(mitgliedschaft);
+
+        adminBenachrichtigungService.benachrichtigeUeberNeueOrgRegistrierung(org);
         return org;
     }
 

@@ -1,4 +1,5 @@
 package ch.sponsorplatz.organisation;
+import ch.sponsorplatz.admin.AdminBenachrichtigungService;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.AppUser;
 
@@ -35,11 +36,15 @@ class SponsorRegistrierungServiceTest {
     @Mock
     private MitgliedschaftService mitgliedschaftService;
 
+    @Mock
+    private AdminBenachrichtigungService adminBenachrichtigungService;
+
     private SponsorRegistrierungService service;
 
     @BeforeEach
     void setUp() {
-        service = new SponsorRegistrierungService(appUserService, organisationService, mitgliedschaftService);
+        service = new SponsorRegistrierungService(appUserService, organisationService,
+                mitgliedschaftService, adminBenachrichtigungService);
     }
 
     private SponsorRegistrierungFormDto gueltigesFormular() {
@@ -93,6 +98,9 @@ class SponsorRegistrierungServiceTest {
 
         // Mitgliedschaft als ORG_OWNER
         verify(mitgliedschaftService).fuegeHinzu(eq(org.getId()), eq(user.getId()), eq(Rolle.ORG_OWNER), eq(null));
+
+        // Admins werden über die neue Registrierung benachrichtigt
+        verify(adminBenachrichtigungService).benachrichtigeUeberNeueOrgRegistrierung(org);
     }
 
     @Test

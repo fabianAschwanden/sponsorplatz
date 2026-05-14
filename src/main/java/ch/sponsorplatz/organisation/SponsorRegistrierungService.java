@@ -1,4 +1,5 @@
 package ch.sponsorplatz.organisation;
+import ch.sponsorplatz.admin.AdminBenachrichtigungService;
 import ch.sponsorplatz.benutzer.AppUserService;
 
 import ch.sponsorplatz.benutzer.AppUserFormDto;
@@ -17,13 +18,16 @@ public class SponsorRegistrierungService {
     private final AppUserService appUserService;
     private final OrganisationService organisationService;
     private final MitgliedschaftService mitgliedschaftService;
+    private final AdminBenachrichtigungService adminBenachrichtigungService;
 
     public SponsorRegistrierungService(AppUserService appUserService,
                                         OrganisationService organisationService,
-                                        MitgliedschaftService mitgliedschaftService) {
+                                        MitgliedschaftService mitgliedschaftService,
+                                        AdminBenachrichtigungService adminBenachrichtigungService) {
         this.appUserService = appUserService;
         this.organisationService = organisationService;
         this.mitgliedschaftService = mitgliedschaftService;
+        this.adminBenachrichtigungService = adminBenachrichtigungService;
     }
 
     /**
@@ -53,6 +57,8 @@ public class SponsorRegistrierungService {
 
         // 3. Mitgliedschaft als ORG_OWNER
         mitgliedschaftService.fuegeHinzu(org.getId(), user.getId(), Rolle.ORG_OWNER, null);
+
+        adminBenachrichtigungService.benachrichtigeUeberNeueOrgRegistrierung(org);
     }
 }
 
