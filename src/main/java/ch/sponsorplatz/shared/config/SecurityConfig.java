@@ -17,8 +17,12 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.benutzer.SponsorplatzOidcUserService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 
 /**
  * Sicherheits-Konfiguration für Sponsorplatz.
@@ -49,10 +53,28 @@ public class SecurityConfig {
         return new LoginFailureHandler(bruteForceSchutz);
     }
 
+    // Hinweis: Der konkrete LoginSuccessHandler wohnt im benutzer/-Package
+    // (gehört dort hin — er liest AppUser-Spracheinstellung beim Login). Bean-
+    // Definition steht in BenutzerSecurityConfig; SecurityConfig kennt nur den
+    // Spring-Interface-Typ AuthenticationSuccessHandler (ARCH-07).
+    //
+    // Fallback unten greift in WebMvcTests, die nur SecurityConfig importieren —
+    // sie sehen BenutzerSecurityConfig nicht und brauchen einen Default-Handler,
+    // damit die FilterChain initialisierbar bleibt.
     @Bean
-    public LoginSuccessHandler loginSuccessHandler(LoginBruteForceSchutz bruteForceSchutz,
-            ObjectProvider<AppUserRepository> appUserRepositoryProvider) {
-        return new LoginSuccessHandler(bruteForceSchutz, appUserRepositoryProvider);
+    @ConditionalOnMissingBean(name = "loginSuccessHandler")
+    public AuthenticationSuccessHandler loginSuccessHandler() {
+        SavedRequestAwareAuthenticationSuccessHandler h = new SavedRequestAwareAuthenticationSuccessHandler();
+        h.setDefaultTargetUrl("/dashboard");
+        return h;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(AuthenticationSuccessHandler.class)
+    public AuthenticationSuccessHandler defaultLoginSuccessHandler() {
+        SavedRequestAwareAuthenticationSuccessHandler handler = new SavedRequestAwareAuthenticationSuccessHandler();
+        handler.setDefaultTargetUrl("/dashboard");
+        return handler;
     }
 
     @Bean
@@ -68,9 +90,9 @@ public class SecurityConfig {
             RateLimitFilter rateLimitFilter,
             LoginSperreFilter loginSperreFilter,
             LoginFailureHandler loginFailureHandler,
-            LoginSuccessHandler loginSuccessHandler,
+            AuthenticationSuccessHandler loginSuccessHandler,
             ObjectProvider<ClientRegistrationRepository> oauth2Clients,
-            ObjectProvider<SponsorplatzOidcUserService> oidcUserService) throws Exception {
+            ObjectProvider<OAuth2UserService<OidcUserRequest, OidcUser>> oidcUserService) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
@@ -116,9 +138,9 @@ public class SecurityConfig {
             RateLimitFilter rateLimitFilter,
             LoginSperreFilter loginSperreFilter,
             LoginFailureHandler loginFailureHandler,
-            LoginSuccessHandler loginSuccessHandler,
+            AuthenticationSuccessHandler loginSuccessHandler,
             ObjectProvider<ClientRegistrationRepository> oauth2Clients,
-            ObjectProvider<SponsorplatzOidcUserService> oidcUserService) throws Exception {
+            ObjectProvider<OAuth2UserService<OidcUserRequest, OidcUser>> oidcUserService) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
@@ -181,13 +203,13 @@ public class SecurityConfig {
      */
     private void wendeOidcLoginAn(HttpSecurity http,
             ObjectProvider<ClientRegistrationRepository> oauth2Clients,
-            ObjectProvider<SponsorplatzOidcUserService> oidcUserService,
-            LoginSuccessHandler loginSuccessHandler,
+            ObjectProvider<OAuth2UserService<OidcUserRequest, OidcUser>> oidcUserService,
+            AuthenticationSuccessHandler loginSuccessHandler,
             LoginFailureHandler loginFailureHandler) throws Exception {
         if (oauth2Clients.getIfAvailable() == null) {
             return;
         }
-        SponsorplatzOidcUserService userService = oidcUserService.getIfAvailable();
+        OAuth2UserService<OidcUserRequest, OidcUser> userService = oidcUserService.getIfAvailable();
         http.oauth2Login(oauth2 -> {
             oauth2.loginPage("/login");
             oauth2.successHandler(loginSuccessHandler);

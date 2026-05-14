@@ -1,8 +1,6 @@
 package ch.sponsorplatz.benachrichtigung;
 
-import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -34,12 +32,12 @@ import java.util.UUID;
 public class NotificationController {
 
     private final NotificationService notificationService;
-    private final AppUserRepository appUserRepository;
+    private final AppUserService appUserService;
 
     public NotificationController(NotificationService notificationService,
-                                  AppUserRepository appUserRepository) {
+                                  AppUserService appUserService) {
         this.notificationService = notificationService;
-        this.appUserRepository = appUserRepository;
+        this.appUserService = appUserService;
     }
 
     /**
@@ -48,47 +46,40 @@ public class NotificationController {
      */
     @GetMapping
     public String htmlListe(Authentication auth, Model model) {
-        AppUser user = ladeUser(auth);
-        List<Benachrichtigung> liste = notificationService.letzteNachrichtenFuer(user.getId());
+        UUID userId = appUserService.findeIdNachEmail(auth.getName());
+        List<Benachrichtigung> liste = notificationService.letzteNachrichtenFuer(userId);
         model.addAttribute("benachrichtigungen", BenachrichtigungView.von(liste));
-        notificationService.markiereAlleAlsGelesen(user.getId());
+        notificationService.markiereAlleAlsGelesen(userId);
         return "benachrichtigungen";
     }
 
     @GetMapping("/anzahl")
     @ResponseBody
     public ResponseEntity<Map<String, Long>> anzahlUngelesen(Authentication auth) {
-        AppUser user = ladeUser(auth);
-        long anzahl = notificationService.zaehleUngelesen(user.getId());
+        UUID userId = appUserService.findeIdNachEmail(auth.getName());
+        long anzahl = notificationService.zaehleUngelesen(userId);
         return ResponseEntity.ok(Map.of("ungelesen", anzahl));
     }
 
     @GetMapping("/liste")
     @ResponseBody
     public ResponseEntity<List<BenachrichtigungView>> liste(Authentication auth) {
-        AppUser user = ladeUser(auth);
-        List<Benachrichtigung> liste = notificationService.letzteNachrichtenFuer(user.getId());
+        UUID userId = appUserService.findeIdNachEmail(auth.getName());
+        List<Benachrichtigung> liste = notificationService.letzteNachrichtenFuer(userId);
         return ResponseEntity.ok(BenachrichtigungView.von(liste));
     }
 
     @PostMapping("/gelesen")
     @ResponseBody
     public ResponseEntity<Void> alleGelesen(Authentication auth) {
-        AppUser user = ladeUser(auth);
-        notificationService.markiereAlleAlsGelesen(user.getId());
+        notificationService.markiereAlleAlsGelesen(appUserService.findeIdNachEmail(auth.getName()));
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/gelesen")
     @ResponseBody
     public ResponseEntity<Void> einzelnGelesen(@PathVariable UUID id, Authentication auth) {
-        AppUser user = ladeUser(auth);
-        notificationService.markiereAlsGelesen(id, user.getId());
+        notificationService.markiereAlsGelesen(id, appUserService.findeIdNachEmail(auth.getName()));
         return ResponseEntity.ok().build();
-    }
-
-    private AppUser ladeUser(Authentication auth) {
-        return appUserRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
     }
 }

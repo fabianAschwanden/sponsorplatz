@@ -56,6 +56,22 @@ public class AppUserService {
         return repository.findByEmail(email);
     }
 
+    /**
+     * Liefert die User-UUID anhand der Email — Komfort-Methode für Controller,
+     * damit sie {@link AppUserRepository} nicht direkt injizieren müssen
+     * (ARCH-01: Controller → Service, nicht → Repository).
+     *
+     * @throws ch.sponsorplatz.shared.exception.NotFoundException wenn die Email
+     *         keinem User zugeordnet ist
+     */
+    @Transactional(readOnly = true)
+    public UUID findeIdNachEmail(String email) {
+        return repository.findByEmail(email)
+                .map(AppUser::getId)
+                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
+                        "User nicht gefunden: " + email));
+    }
+
     @Transactional(readOnly = true)
     public Optional<AppUser> findeNachId(UUID id) {
         return repository.findById(id);
