@@ -30,24 +30,6 @@ import ch.sponsorplatz.shared.pdf.PdfGeneratorService;
 
 /**
  * Sponsoring-Vertrags-Verwaltung pro Organisation.
- *
- * <p>
- * Routen:
- * <ul>
- * <li>{@code POST /organisationen/{slug}/anfragen/{id}/vertrag/erstellen} —
- * neu</li>
- * <li>{@code GET  /organisationen/{slug}/vertraege/{id}} —
- * Detail/Edit-Form</li>
- * <li>{@code POST /organisationen/{slug}/vertraege/{id}} — Speichern</li>
- * <li>{@code POST /organisationen/{slug}/vertraege/{id}/unterzeichnen} —
- * Status-Wechsel</li>
- * <li>{@code GET  /organisationen/{slug}/vertraege/{id}/pdf} —
- * PDF-Download</li>
- * </ul>
- *
- * <p>
- * Edit + Status-Wechsel: nur ORG_EDITOR/OWNER der Verein-Org.
- * PDF-Download: gleiche AccessControl (Vertrag enthält Sponsor-Kontaktdaten).
  */
 @Controller
 @RequestMapping("/organisationen/{slug}")
@@ -75,10 +57,10 @@ public class VertragController {
         if (!accessControl.kannOrgEditierenNachSlug(slug, auth)) {
             throw new AccessDeniedException("Keine Edit-Berechtigung für Org: " + slug);
         }
-        Vertrag v = vertragService.erstelle(anfrageId, auth.getName());
+        VertragView v = vertragService.erstelleAlsView(anfrageId, auth.getName());
         redirect.addFlashAttribute("erfolgsMeldung",
                 "Vertrags-Entwurf erstellt. Konditionen jetzt ergänzen.");
-        return "redirect:/organisationen/" + slug + "/vertraege/" + v.getId();
+        return "redirect:/organisationen/" + slug + "/vertraege/" + v.id();
     }
 
     @GetMapping("/vertraege/{id}")
@@ -86,12 +68,12 @@ public class VertragController {
             @PathVariable UUID id,
             Authentication auth,
             Model model) {
-        Vertrag v = vertragService.findeNachId(id);
+        VertragView v = vertragService.findeViewNachId(id);
         pruefeAccess(slug, v, auth);
 
-        model.addAttribute("vertrag", VertragView.von(v));
+        model.addAttribute("vertrag", v);
         if (!model.containsAttribute("form")) {
-            model.addAttribute("form", formAusVertrag(v));
+            model.addAttribute("form", vertragService.findeFormularNachId(id));
         }
         return "vertrag-detail";
     }
@@ -110,14 +92,7 @@ public class VertragController {
             redirect.addFlashAttribute("fehlermeldung", "Bitte Eingaben prüfen.");
             return "redirect:/organisationen/" + slug + "/vertraege/" + id;
         }
-        Vertrag aenderungen = new Vertrag();
-        aenderungen.setPaketBeschreibung(form.getPaketBeschreibung());
-        aenderungen.setPreisChf(form.getPreisChf());
-        aenderungen.setLaufzeitVon(form.getLaufzeitVon());
-        aenderungen.setLaufzeitBis(form.getLaufzeitBis());
-        aenderungen.setLeistungVerein(form.getLeistungVerein());
-        aenderungen.setLeistungSponsor(form.getLeistungSponsor());
-        vertragService.aktualisiere(id, aenderungen);
+        vertragService.aktualisiereAusForm(id, form);
         redirect.addFlashAttribute("erfolgsMeldung", "Vertrag gespeichert.");
         return "redirect:/organisationen/" + slug + "/vertraege/" + id;
     }
@@ -139,11 +114,11 @@ public class VertragController {
     public ResponseEntity<ByteArrayResource> pdf(@PathVariable String slug,
             @PathVariable UUID id,
             Authentication auth) {
-        Vertrag v = vertragService.findeNachId(id);
+        VertragView v = vertragService.findeViewNachId(id);
         pruefeAccess(slug, v, auth);
 
         Map<String, Object> vars = new HashMap<>();
-        vars.put("vertrag", VertragView.von(v));
+        vars.put("vertrag", v);
         vars.put("erstelltAmDatum", LocalDate.now());
 
         byte[] pdf = pdfGenerator.erzeuge("vertrag-pdf", vars, "/");
@@ -157,26 +132,12 @@ public class VertragController {
                 .body(new ByteArrayResource(pdf));
     }
 
-    /**
-     * Vertrag muss zur URL-Slug-Org gehören + User muss Editor der Verein-Org sein.
-     */
-    private void pruefeAccess(String slug, Vertrag v, Authentication auth) {
-        if (v.getOrg() == null || !slug.equals(v.getOrg().getSlug())) {
+    private void pruefeAccess(String slug, VertragView v, Authentication auth) {
+        if (v.orgSlug() == null || !slug.equals(v.orgSlug())) {
             throw new NotFoundException("Vertrag nicht gefunden.");
         }
         if (!accessControl.kannOrgEditierenNachSlug(slug, auth)) {
             throw new AccessDeniedException("Keine Berechtigung für Org: " + slug);
         }
-    }
-
-    private VertragFormDto formAusVertrag(Vertrag v) {
-        VertragFormDto f = new VertragFormDto();
-        f.setPaketBeschreibung(v.getPaketBeschreibung());
-        f.setPreisChf(v.getPreisChf());
-        f.setLaufzeitVon(v.getLaufzeitVon());
-        f.setLaufzeitBis(v.getLaufzeitBis());
-        f.setLeistungVerein(v.getLeistungVerein());
-        f.setLeistungSponsor(v.getLeistungSponsor());
-        return f;
     }
 }

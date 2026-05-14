@@ -67,11 +67,11 @@ public class RechnungController {
             throw new AccessDeniedException("Keine Edit-Berechtigung für Org: " + slug);
         }
         try {
-            Rechnung r = rechnungService.erstelle(vertragId, auth.getName());
+            RechnungView v = rechnungService.erstelleAlsView(vertragId, auth.getName());
             redirect.addFlashAttribute("erfolgsMeldung",
-                    "Rechnung " + r.getRechnungsnummer() + " erstellt — fällig am "
-                            + r.getFaelligAm() + ".");
-            return "redirect:/organisationen/" + slug + "/rechnungen/" + r.getId();
+                    "Rechnung " + v.rechnungsnummer() + " erstellt — fällig am "
+                            + v.faelligAm() + ".");
+            return "redirect:/organisationen/" + slug + "/rechnungen/" + v.id();
         } catch (IllegalStateException e) {
             redirect.addFlashAttribute("fehlermeldung", e.getMessage());
             return "redirect:/organisationen/" + slug + "/vertraege/" + vertragId;
@@ -83,11 +83,11 @@ public class RechnungController {
             @PathVariable UUID id,
             Authentication auth,
             Model model) {
-        Rechnung r = rechnungService.findeNachId(id);
-        pruefeAccess(slug, r, auth);
+        RechnungView v = rechnungService.findeViewNachId(id);
+        pruefeAccess(slug, v, auth);
 
-        model.addAttribute("rechnung", RechnungView.von(r));
-        model.addAttribute("qrBildDataUrl", qrBillService.erzeugeAlsDataUrl(r));
+        model.addAttribute("rechnung", v);
+        model.addAttribute("qrBildDataUrl", qrBillService.erzeugeAlsDataUrlFuerId(id));
         return "rechnung-detail";
     }
 
@@ -96,8 +96,7 @@ public class RechnungController {
             @PathVariable UUID id,
             Authentication auth,
             RedirectAttributes redirect) {
-        Rechnung r = rechnungService.findeNachId(id);
-        pruefeAccess(slug, r, auth);
+        pruefeAccess(slug, rechnungService.findeViewNachId(id), auth);
         try {
             rechnungService.markiereBezahlt(id, auth.getName());
             redirect.addFlashAttribute("erfolgsMeldung", "Rechnung als bezahlt markiert.");
@@ -113,8 +112,7 @@ public class RechnungController {
             @RequestParam(required = false) String grund,
             Authentication auth,
             RedirectAttributes redirect) {
-        Rechnung r = rechnungService.findeNachId(id);
-        pruefeAccess(slug, r, auth);
+        pruefeAccess(slug, rechnungService.findeViewNachId(id), auth);
         try {
             rechnungService.stornieren(id, grund);
             redirect.addFlashAttribute("erfolgsMeldung", "Rechnung storniert.");
@@ -128,16 +126,16 @@ public class RechnungController {
     public ResponseEntity<ByteArrayResource> pdf(@PathVariable String slug,
             @PathVariable UUID id,
             Authentication auth) {
-        Rechnung r = rechnungService.findeNachId(id);
-        pruefeAccess(slug, r, auth);
+        RechnungView v = rechnungService.findeViewNachId(id);
+        pruefeAccess(slug, v, auth);
 
         Map<String, Object> vars = new HashMap<>();
-        vars.put("rechnung", RechnungView.von(r));
-        vars.put("qrBildDataUrl", qrBillService.erzeugeAlsDataUrl(r));
+        vars.put("rechnung", v);
+        vars.put("qrBildDataUrl", qrBillService.erzeugeAlsDataUrlFuerId(id));
         vars.put("erstelltAmDatum", LocalDate.now());
 
         byte[] pdf = pdfGenerator.erzeuge("rechnung-pdf", vars, "/");
-        String dateiname = "sponsorplatz-rechnung-" + r.getRechnungsnummer() + ".pdf";
+        String dateiname = "sponsorplatz-rechnung-" + v.rechnungsnummer() + ".pdf";
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
@@ -146,8 +144,8 @@ public class RechnungController {
                 .body(new ByteArrayResource(pdf));
     }
 
-    private void pruefeAccess(String slug, Rechnung r, Authentication auth) {
-        if (r.getOrg() == null || !slug.equals(r.getOrg().getSlug())) {
+    private void pruefeAccess(String slug, RechnungView v, Authentication auth) {
+        if (v.orgSlug() == null || !slug.equals(v.orgSlug())) {
             throw new NotFoundException("Rechnung nicht gefunden.");
         }
         if (!accessControl.kannOrgEditierenNachSlug(slug, auth)) {

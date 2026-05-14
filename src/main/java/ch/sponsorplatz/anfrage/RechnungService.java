@@ -128,6 +128,23 @@ public class RechnungService {
                 .orElseThrow(() -> new NotFoundException("Rechnung nicht gefunden: " + id));
     }
 
+    /**
+     * Liefert die View einer Rechnung — Controller braucht keine Entity mehr
+     * (ARCH-02).
+     */
+    @Transactional(readOnly = true)
+    public RechnungView findeViewNachId(UUID id) {
+        return RechnungView.von(findeNachId(id));
+    }
+
+    /**
+     * View-Variante von {@link #erstelle(UUID, String)} — Controller bekommt
+     * sofort das DTO für Flash-Message und Redirect.
+     */
+    public RechnungView erstelleAlsView(UUID vertragId, String erstelltVon) {
+        return RechnungView.von(erstelle(vertragId, erstelltVon));
+    }
+
     @Transactional(readOnly = true)
     public Optional<Rechnung> findeNachVertrag(UUID vertragId) {
         return repository.findByVertragId(vertragId);

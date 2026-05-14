@@ -135,6 +135,46 @@ public class VertragService {
                 .orElseThrow(() -> new NotFoundException("Vertrag nicht gefunden: " + id));
     }
 
+    /** View statt Entity — Controller braucht keine Entity-Methoden (ARCH-02). */
+    @Transactional(readOnly = true)
+    public VertragView findeViewNachId(UUID id) {
+        return VertragView.von(findeNachId(id));
+    }
+
+    /** Form-DTO für den Edit-Pfad — kein Entity-Touch im Controller. */
+    @Transactional(readOnly = true)
+    public VertragFormDto findeFormularNachId(UUID id) {
+        Vertrag v = findeNachId(id);
+        VertragFormDto f = new VertragFormDto();
+        f.setPaketBeschreibung(v.getPaketBeschreibung());
+        f.setPreisChf(v.getPreisChf());
+        f.setLaufzeitVon(v.getLaufzeitVon());
+        f.setLaufzeitBis(v.getLaufzeitBis());
+        f.setLeistungVerein(v.getLeistungVerein());
+        f.setLeistungSponsor(v.getLeistungSponsor());
+        return f;
+    }
+
+    /** View-Variante von {@link #erstelle(UUID, String)}. */
+    public VertragView erstelleAlsView(UUID anfrageId, String erstelltVon) {
+        return VertragView.von(erstelle(anfrageId, erstelltVon));
+    }
+
+    /**
+     * Aktualisierung über das Form-DTO, ohne dass der Controller eine
+     * Vertrag-Entity selbst anlegen muss (ARCH-02).
+     */
+    public void aktualisiereAusForm(UUID id, VertragFormDto form) {
+        Vertrag aenderungen = new Vertrag();
+        aenderungen.setPaketBeschreibung(form.getPaketBeschreibung());
+        aenderungen.setPreisChf(form.getPreisChf());
+        aenderungen.setLaufzeitVon(form.getLaufzeitVon());
+        aenderungen.setLaufzeitBis(form.getLaufzeitBis());
+        aenderungen.setLeistungVerein(form.getLeistungVerein());
+        aenderungen.setLeistungSponsor(form.getLeistungSponsor());
+        aktualisiere(id, aenderungen);
+    }
+
     @Transactional(readOnly = true)
     public Optional<Vertrag> findeNachAnfrage(UUID anfrageId) {
         return repository.findByAnfrageId(anfrageId);

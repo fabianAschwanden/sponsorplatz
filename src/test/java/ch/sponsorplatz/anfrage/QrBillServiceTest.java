@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class QrBillServiceTest {
 
-    private final QrBillService service = new QrBillService();
+    private final QrBillService service = new QrBillService(org.mockito.Mockito.mock(RechnungRepository.class));
 
     @Test
     @DisplayName("QRB-01: erzeuge liefert nicht-leeres PNG mit Magic Bytes")

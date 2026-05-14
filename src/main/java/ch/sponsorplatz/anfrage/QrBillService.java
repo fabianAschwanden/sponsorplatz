@@ -34,6 +34,23 @@ import net.codecrete.qrbill.generator.QRBill;
 @Service
 public class QrBillService {
 
+    private final RechnungRepository rechnungRepository;
+
+    public QrBillService(RechnungRepository rechnungRepository) {
+        this.rechnungRepository = rechnungRepository;
+    }
+
+    /**
+     * Controller-freundlicher Eingang: lädt die Rechnung selbst und baut den
+     * Data-URL, damit der Aufrufer keine Entity halten muss (ARCH-02).
+     */
+    public String erzeugeAlsDataUrlFuerId(java.util.UUID rechnungId) {
+        Rechnung r = rechnungRepository.findById(rechnungId)
+                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
+                        "Rechnung nicht gefunden: " + rechnungId));
+        return erzeugeAlsDataUrl(r);
+    }
+
     /**
      * Generiert das QR-Bill-PNG (Base64-Data-URL für direkte Einbettung in
      * HTML/PDF-Templates via {@code <img src="data:image/png;base64,…">}).
