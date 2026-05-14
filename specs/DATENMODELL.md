@@ -33,6 +33,12 @@
 | V28 | `federierte_identitaet` (OIDC-Subject-Mapping) | 1.4 ✓ |
 | V29 | `sponsoring_anfrage`-Status-Cleanup (IN_PRUEFUNG/ZURUECKGEZOGEN entfernt) | 5+ ✓ |
 | V30 | `sponsoring_anfrage.paket_id` nullable + `betreff`-Spalte (Kontakt-Anfrage) | 11 ✓ |
+| V31 | `app_user.onboarding_gesehen` (Wizard-State) | 11 ✓ |
+| V32 | `sponsoring_anfrage.erstellt_von_id` (Audit-Spur) | 11 ✓ |
+| V33 | `sponsoring_anfrage.wunsch_betrag_chf` (Kontakt-Anfrage Richtbetrag) | 11 ✓ |
+| V34 | `rechnung.storno_grund` | 11.11 ✓ |
+| V35 | `vertrag.gekuendigt_am` + `kuendigungs_grund` (State-Machine sauber) | 11.11 ✓ |
+| V36 | `aufgaben_definition` + `aufgabe` (customizable Task-Engine, fünf System-Seed-Defs) | 12 ✓ |
 
 > **Hinweis:** V22 wurde reserviert für die Postgres-`tsvector`-Migration (Phase 5+). Die Datei ist für H2 nicht relevant und liegt nur als Postgres-spezifische Variante vor (siehe TECHNISCHE_SPEZIFIKATION.md → Volltextsuche).
 
@@ -197,6 +203,15 @@ Die untenstehenden Tabellen sind ab V5 stabil im Code; Field-Detail-Dokumentatio
 | `audit_log` | `AuditLog` | `audit/` | Plattform-Aktionen (V14), async befüllt. |
 | `feature_backlog` | `FeatureBacklog` | `admin/` | Interner Ideen-Tracker (V21), V27 seedet OIDC-Item. |
 | `plattform_einstellungen` | `PlattformEinstellungen` | `shared/einstellungen/` | Singleton-Row mit SMTP-Settings (V15) — DB > ENV > leer. |
+| `aufgaben_definition` | `AufgabenDefinition` | `aufgabe/` | „Workflow-Vorlage" (V36, Phase 12): `trigger_entity_typ` ENUM (ORG/ANFRAGE/VERTRAG/RECHNUNG/PROJEKT), `trigger_status` + optional `ziel_status` (freie Strings, weil pro Domain-Aggregat eigene Status-Enums), `assignee_regel` ENUM (PLATFORM_ADMIN, ORG_MITGLIEDER, ANFRAGE_EMPFAENGER_ORG, ANFRAGE_ANFRAGENDER_ORG, VERTRAG_VEREIN_ORG, VERTRAG_SPONSOR_ORG, RECHNUNG_VEREIN_ORG), `aktiv` + `system_definition` (V36-Seeds nicht löschbar). |
+| `aufgabe` | `Aufgabe` | `aufgabe/` | Instanz einer Definition (V36): polymorphe Entity-Referenz via `entity_typ` + `entity_id` (kein FK — typunabhängig), `status` OFFEN/ERLEDIGT/ENTFALLEN, Sichtbarkeit via `assignee_org_id` (alle Org-Mitglieder) oder `nur_platform_admin=true`. |
+
+### `aufgabe` + `aufgaben_definition` — generische Task-Engine (V36)
+
+- **Definition** ist die customizable Vorlage: ein Admin pflegt im UI an, dass ein Status-Wechsel eines bestimmten Entity-Typs (`trigger_entity_typ`) auf einen Status-Wert (`trigger_status`) eine Aufgabe erzeugen soll, und optional dass ein anderer Status-Wert (`ziel_status`) sie als ERLEDIGT markiert.
+- **Aufgabe** ist die Instanz für ein konkretes Domain-Aggregat. `entity_typ` + `entity_id` ist polymorph — bewusst kein FK, weil die Tabelle auf 5 verschiedene Aggregate zeigt; integritätsschutz auf Engine-Seite (Soft-Delete bzw. CASCADE auf `assignee_org_id` reicht).
+- **System-Defs** (`system_definition=true`, V36-Seed): Trigger-Felder im Admin-UI gesperrt, damit die im Code verdrahteten Service-Trigger nicht ins Leere zeigen. Anzeige-Text + `aktiv` + `link_template` bleiben editierbar.
+- **Idempotenz**: Engine prüft `existsByDefinitionIdAndEntityIdAndStatus(OFFEN)` vor jedem Save — doppelte Trigger-Aufrufe (z.B. Status setzen + danach setzen mit gleichem Wert) erzeugen keine Duplikate.
 
 ### `sponsoring_anfrage` — zwei Anfrage-Typen ab V30
 

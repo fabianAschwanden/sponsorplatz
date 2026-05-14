@@ -79,6 +79,16 @@ public void aktualisiere(UUID orgId, ...) { ... }
 | Onboarding-Wizard sehen | – | ✓ wenn ohne Org | – | – | – | – |
 | Support-Anfrage stellen | – | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Audit-Log lesen | – | – | – | – | – | ✓ |
+| `/aufgaben` öffnen (eigene Tasks abarbeiten) | – | ✓ leer | ✓\* | ✓\* | ✓\* | ✓ alle Admin-Tasks |
+| Aufgaben-Definitionen pflegen (`/admin/aufgaben-definitionen`) | – | – | – | – | – | ✓ |
+
+**Aufgaben-Sichtbarkeit (Phase 12)**: Eine Aufgabe ist für einen User sichtbar, wenn
+entweder (a) `aufgabe.assignee_org_id` zu einer seiner Mitgliedschaften gehört —
+jede Org-Rolle reicht, weil ein VIEWER (oft der Vorstand) ebenfalls Reporting auf
+offene Aufgaben braucht — oder (b) `aufgabe.nur_platform_admin = true` und der
+User PLATFORM_ADMIN ist. Die Aufgabe kann **immer** manuell als erledigt
+markiert werden, sobald sie sichtbar ist; Auto-Erledigung läuft separat über
+`AufgabenEngine` beim Status-Wechsel der zugrundeliegenden Entity.
 
 Vollständige Konzept-Matrix in `Sponsoring Plattform/05_Rollenkonzept.md`.
 
@@ -121,7 +131,10 @@ Alle mutierenden Endpunkte rufen am Anfang der Controller-Methode `accessControl
 | GET, POST | `/login`, `/registrieren`, `/verifizieren` | public | Auth-Flows |
 | GET, POST | `/passwort-vergessen`, `/passwort-reset` | public | Passwort-Reset-Flow (Token, 1h gültig) |
 | GET, POST | `/einladung/annehmen` | public (GET = Vorschau, POST = Annahme — K3-Fix) | Token in URL akzeptiert, weil Mail-Link auch GET ist |
-| GET | `/admin/**` | `hasRole('PLATFORM_ADMIN')` | Plattform-Admin-Tools (Verifizierung, Audit, Backups, Backlog, System) |
+| GET | `/admin/**` | `hasRole('PLATFORM_ADMIN')` | Plattform-Admin-Tools (Verifizierung, Audit, Backups, Backlog, System, Aufgaben-Definitionen) |
+| GET | `/aufgaben` | `isAuthenticated()`, **sichtbarkeits-gefiltert** | Liefert nur Aufgaben, deren `assignee_org_id` zu einer Mitgliedschaft des Users gehört, plus (für PLATFORM_ADMIN) Tasks mit `nur_platform_admin=true`. Implementiert in `AufgabenService.meineOffenen` über `AufgabeRepository.findOffeneFuer(orgIds, istAdmin)`. |
+| POST | `/aufgaben/{id}/erledigen` | `isAuthenticated()` + Sichtbarkeitsprüfung | IDOR-Schutz: `AufgabenService.darfSehen(a, user)` wirft `AccessDeniedException`, wenn die Aufgabe weder zu den Org-Mitgliedschaften noch zum Admin-Profil des Users passt. |
+| GET, POST | `/admin/aufgaben-definitionen/**` | `hasRole('PLATFORM_ADMIN')` | CRUD auf Workflow-Vorlagen; System-Defs sind nicht löschbar (Service wirft `IllegalStateException`) und Trigger-Felder sind im Form gesperrt, damit die im Code verdrahteten Service-Trigger nicht ins Leere zeigen. |
 
 **Anti-Pattern vermieden:** Keine `@Secured`-Annotationen mit Hardcoded-Rollen — Org-Rollen sind kontextabhängig (pro Org), das geht nur über die `AccessControl`-Bean (programmatisch oder SpEL).
 

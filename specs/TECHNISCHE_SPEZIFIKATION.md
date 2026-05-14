@@ -155,6 +155,8 @@ Wenn ein optionaler `BackupCloudUploader` im Context registriert ist (z.B. `OciB
 | `/organisationen/{slug}/projekte/**` | `accessControl.kannOrgEditierenNachSlug(slug)` |
 | `/organisationen/{slug}/anfragen/**` | `accessControl.kannOrgEditierenNachSlug(slug)` |
 | `/admin/**` | `hasRole('PLATFORM_ADMIN')` |
+| `/aufgaben`, `/aufgaben/{id}/erledigen` | `authenticated`, ergebnis nach Org-Mitgliedschaft + Platform-Rolle gefiltert |
+| `/admin/aufgaben-definitionen/**` | `hasRole('PLATFORM_ADMIN')` |
 | `/anfragen` | `authenticated`, ergebnis-rollenabhängig |
 | `/anfragen/neu`, `/anfragen/erstellen` | `authenticated` + `kannOrgEditieren(anfragenderOrg)` |
 | `/anfragen/neu-kontakt`, `/anfragen/kontakt-erstellen` | `authenticated` + `OrgTyp.VEREIN`-Whitelist |
@@ -180,6 +182,21 @@ Wenn ein optionaler `BackupCloudUploader` im Context registriert ist (z.B. `OciB
 | POST | `/onboarding/verein-erstellen` | authenticated | Schnell-Org anlegen + ORG_OWNER-Mitgliedschaft (`OrganisationService.erstelleMitEigentuemer`) |
 | POST | `/onboarding/einladung-annehmen` | authenticated | Token-Whitelist-Validierung + Forward auf `/einladung/annehmen` |
 | GET, POST | `/support` | authenticated | Mail-Form an `sponsorplatz.support.empfaenger` (ENV `SPONSORPLATZ_ADMIN_EMAIL`, Default `support@sponsorplatz.ch`); bei Mail-Fehler bleibt Form mit Fehlermeldung offen |
+
+### Aufgaben-Verwaltung (Phase 12 — generische Task-Engine)
+
+| Methode | Pfad | Zugriff | Beschreibung |
+|---|---|---|---|
+| GET | `/aufgaben` | authenticated | „Meine offenen Aufgaben" — Vereinigung aus Org-Aufgaben aller eigenen Org-Mitgliedschaften (jede Rolle) und PLATFORM_ADMIN-Aufgaben (wenn die Plattform-Rolle gesetzt ist). |
+| POST | `/aufgaben/{id}/erledigen` | authenticated + IDOR-Check: User muss zur Sichtbarkeit der Aufgabe gehören | Manuelles Abhaken. Auto-Erledigung über `AufgabenEngine` ist der Normalfall; dieser Endpoint nur für „kann manuell weggewischt werden". |
+| GET | `/admin/aufgaben-definitionen` | PLATFORM_ADMIN | Liste aller Workflow-Vorlagen mit System-Badge. |
+| GET, POST | `/admin/aufgaben-definitionen/neu` | PLATFORM_ADMIN | Neue Definition anlegen — Admin pflegt Trigger-Entity-Typ + Trigger-Status + Ziel-Status + Assignee-Regel. |
+| GET, POST | `/admin/aufgaben-definitionen/{id}/bearbeiten` | PLATFORM_ADMIN | Bei System-Defs ist das `<fieldset>` für Trigger-Felder gesperrt — Service-Verkabelung bleibt intakt. |
+| POST | `/admin/aufgaben-definitionen/{id}/loeschen` | PLATFORM_ADMIN; System-Defs werfen `IllegalStateException` | Custom-Defs löschbar, System-Seeds nur deaktivierbar (aktiv=false). |
+
+**Engine-Trigger** sind in den Domain-Services verdrahtet (kein eigener Endpoint) — `OrganisationService` / `SponsoringAnfrageService` / `VertragService` / `RechnungService` rufen `AufgabenEngine.on<Entity>StatusWechsel(entity)` an jeder Status-Setz-Stelle. Engine ist idempotent (existsByDefinitionIdAndEntityIdAndStatus-Guard).
+
+**Sichtbarkeit**: Eine Aufgabe ist sichtbar wenn entweder `assignee_org_id` zu einer Org-Mitgliedschaft des Users gehört (jede Rolle reicht — der Vorstand ist oft VIEWER und braucht trotzdem Reporting), oder `nur_platform_admin=true` und der User PLATFORM_ADMIN ist.
 
 ### Medien & Datei-Anhänge (Phase 11)
 
@@ -227,10 +244,15 @@ src/main/java/ch/sponsorplatz/
 │                          # PaymentProvider (Webhook + StubProvider)
 ├── einladung/             # Einladung + Mail-Listener + Cleanup-Job
 ├── benachrichtigung/      # In-App-Glocke (NotificationService + Bell-UI)
+├── aufgabe/               # Customizable Task-Engine: Aufgabe + AufgabenDefinition,
+│                          # AufgabenEngine (Status-Wechsel-Listener), AssigneeKontext,
+│                          # AufgabenController (/aufgaben),
+│                          # AdminAufgabenDefinitionController (/admin/aufgaben-definitionen)
 ├── audit/                 # AuditLog + DSG-Datenexport
 ├── backup/                # BackupService + Restore + Cloud-Upload
 ├── ops/                   # Ops-Dashboard, Alerts, RecentErrors, DB/Bucket-Stats
-├── admin/                 # Admin-UI: Backlog, Mail-Settings, Verifizierung
+├── admin/                 # Admin-UI: Backlog, Mail-Settings, Verifizierung,
+│                          # AdminBenachrichtigungService (Push an PLATFORM_ADMINs bei neuer Org-Reg)
 └── home/                  # HomeController, InfoController (Impressum/DSG)
 
 src/main/resources/
