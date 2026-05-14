@@ -49,7 +49,7 @@ class VereinProfilControllerTest {
         org.setSlug("fc-muster");
         org.setTyp(OrgTyp.VEREIN);
 
-        when(orgService.findeNachSlug("fc-muster")).thenReturn(Optional.of(org));
+        when(orgService.findeViewNachSlug("fc-muster")).thenReturn(Optional.of(OrganisationView.von(org)));
         when(projektService.findeNachOrg(org.getId())).thenReturn(List.of());
 
         mockMvc.perform(get("/vereine/fc-muster"))
@@ -61,7 +61,7 @@ class VereinProfilControllerTest {
     /** VP-02: Unbekannter Verein → 404. */
     @Test
     void unbekannterVereinIst404() throws Exception {
-        when(orgService.findeNachSlug("gibts-nicht")).thenReturn(Optional.empty());
+        when(orgService.findeViewNachSlug("gibts-nicht")).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/vereine/gibts-nicht"))
                 .andExpect(status().isNotFound());
@@ -77,7 +77,7 @@ class VereinProfilControllerTest {
         org.setTyp(OrgTyp.VEREIN);
         org.setBranche(Branche.SPORT);
 
-        when(orgService.findeNachSlug("fc-sportverein")).thenReturn(Optional.of(org));
+        when(orgService.findeViewNachSlug("fc-sportverein")).thenReturn(Optional.of(OrganisationView.von(org)));
         when(projektService.findeNachOrg(org.getId())).thenReturn(List.of());
 
         mockMvc.perform(get("/vereine/fc-sportverein"))
@@ -103,7 +103,7 @@ class VereinProfilControllerTest {
         org.setTyp(OrgTyp.VEREIN);
         org.setBranche(Branche.REHA);
 
-        when(orgService.findeNachSlug("reha-zentrum")).thenReturn(Optional.of(org));
+        when(orgService.findeViewNachSlug("reha-zentrum")).thenReturn(Optional.of(OrganisationView.von(org)));
         when(projektService.findeNachOrg(org.getId())).thenReturn(List.of());
 
         mockMvc.perform(get("/vereine/reha-zentrum"))
@@ -133,7 +133,7 @@ class VereinProfilControllerTest {
         org.setTyp(OrgTyp.VEREIN);
         org.setBranche(Branche.SPORT);
 
-        when(orgService.findeNachSlug("fc-sportverein")).thenReturn(Optional.of(org));
+        when(orgService.findeViewNachSlug("fc-sportverein")).thenReturn(Optional.of(OrganisationView.von(org)));
         when(projektService.findeNachOrg(org.getId())).thenReturn(List.of());
 
         mockMvc.perform(get("/vereine/fc-sportverein"))
@@ -159,7 +159,7 @@ class VereinProfilControllerTest {
         org.setTyp(OrgTyp.VEREIN);
         org.setBranche(Branche.SPORT);
 
-        when(orgService.findeNachSlug("fc-sportverein")).thenReturn(Optional.of(org));
+        when(orgService.findeViewNachSlug("fc-sportverein")).thenReturn(Optional.of(OrganisationView.von(org)));
         when(projektService.findeNachOrg(org.getId())).thenReturn(List.of());
 
         mockMvc.perform(get("/vereine/fc-sportverein"))

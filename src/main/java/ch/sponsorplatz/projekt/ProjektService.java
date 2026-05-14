@@ -42,6 +42,15 @@ public class ProjektService {
         return repository.findById(id);
     }
 
+    /** Nur öffentliche Projekte einer Org als View — für /vereine/{slug} (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<ProjektView> findeOeffentlicheViewsNachOrg(UUID orgId) {
+        return findeNachOrg(orgId).stream()
+                .filter(p -> p.getSichtbarkeit() == Sichtbarkeit.OEFFENTLICH)
+                .map(ProjektView::von)
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     public List<Projekt> findeNachOrg(UUID orgId) {
         return repository.findByOrgIdOrderByCreatedAtDesc(orgId);
