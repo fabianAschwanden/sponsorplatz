@@ -77,6 +77,14 @@
             </svg>
             <span th:text="#{sidebar.statistiken}">Statistiken</span>
         </a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/aufgaben}" class="dash-nav-item"
+           th:classappend="${aktiv == 'aufgaben'} ? 'aktiv'">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 11 12 14 22 4"/>
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+            </svg>
+            <span th:text="#{sidebar.aufgaben}">Aufgaben</span>
+        </a>
 
         <!-- Admin-Bereich (nur für PLATFORM_ADMIN) -->
         <div sec:authorize="hasRole('PLATFORM_ADMIN')" style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1);">
@@ -106,6 +114,14 @@
                     <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
                 </svg>
                 <span th:text="#{sidebar.adminBacklog}">Backlog</span>
+            </a>
+            <a th:href="@{/admin/aufgaben-definitionen}" class="dash-nav-item"
+               th:classappend="${aktiv == 'admin-aufgaben'} ? 'aktiv'">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 4h6v6"/>
+                    <path d="M20 4L9 15l-5-5"/>
+                </svg>
+                <span th:text="#{sidebar.adminAufgaben}">Aufgaben-Definitionen</span>
             </a>
         </div>
     </nav>

@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import ch.sponsorplatz.aufgabe.AufgabenEngine;
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.organisation.Organisation;
@@ -29,6 +30,7 @@ class SponsoringAnfrageServiceTest {
     private NotificationService notificationService;
     private MitgliedschaftRepository mitgliedschaftRepository;
     private AppUserRepository appUserRepository;
+    private AufgabenEngine aufgabenEngine;
     private SponsoringAnfrageService service;
 
     private UUID erstellerUserId;
@@ -40,8 +42,9 @@ class SponsoringAnfrageServiceTest {
         notificationService = mock(NotificationService.class);
         mitgliedschaftRepository = mock(MitgliedschaftRepository.class);
         appUserRepository = mock(AppUserRepository.class);
+        aufgabenEngine = mock(AufgabenEngine.class);
         service = new SponsoringAnfrageService(repository, benachrichtigungsService,
-                notificationService, mitgliedschaftRepository, appUserRepository);
+                notificationService, mitgliedschaftRepository, appUserRepository, aufgabenEngine);
         when(mitgliedschaftRepository.findByOrgId(any())).thenReturn(Collections.emptyList());
         erstellerUserId = UUID.randomUUID();
         AppUser ersteller = new AppUser();

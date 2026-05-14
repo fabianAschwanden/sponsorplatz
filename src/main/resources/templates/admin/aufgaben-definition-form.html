@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="(${bearbeitenId} != null ? #{aufgabenDefinition.titel.edit} : #{aufgabenDefinition.titel.neu}) + ' — Sponsorplatz'">Aufgaben-Definition — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('admin', ${anzahlOffeneAnfragen})}"></aside>
+    <main class="app-main">
+        <div class="app-page-head">
+            <h1 th:text="${bearbeitenId} != null ? #{aufgabenDefinition.titel.edit} : #{aufgabenDefinition.titel.neu}">Aufgaben-Definition</h1>
+        </div>
+
+        <div th:if="${fehlermeldung}" class="app-flash app-flash-error" th:text="${fehlermeldung}">Fehler</div>
+
+        <div th:if="${systemSchutz}" class="app-card"
+             style="background:#fef3c7; border:1px solid #fde68a; padding:0.75rem 1rem; margin-bottom:1rem;"
+             th:text="#{aufgabenDefinition.systemHinweis}">
+            System-Definition — Trigger-Felder sind gesperrt, weil sie mit den Domain-Services verkabelt sind.
+        </div>
+
+        <form th:action="${bearbeitenId} != null ? @{|/admin/aufgaben-definitionen/${bearbeitenId}|} : @{/admin/aufgaben-definitionen}"
+              method="post" th:object="${defForm}" class="app-form">
+
+            <div class="app-form-row">
+                <label th:text="#{aufgabenDefinition.feld.titel}">Titel</label>
+                <input type="text" th:field="*{titel}" required>
+            </div>
+
+            <div class="app-form-row">
+                <label th:text="#{aufgabenDefinition.feld.beschreibung}">Beschreibung</label>
+                <textarea th:field="*{beschreibung}" rows="3"></textarea>
+            </div>
+
+            <fieldset th:disabled="${systemSchutz}" style="border:1px solid #e5e7eb; padding:1rem; margin:1rem 0; border-radius:0.5rem;">
+                <legend th:text="#{aufgabenDefinition.feld.trigger}" style="padding:0 0.5rem;">Trigger</legend>
+
+                <div class="app-form-row">
+                    <label th:text="#{aufgabenDefinition.feld.entityTyp}">Entity-Typ</label>
+                    <select th:field="*{triggerEntityTyp}" required>
+                        <option th:each="t : ${entityTypen}" th:value="${t}" th:text="${t}">ORG</option>
+                    </select>
+                </div>
+
+                <div class="app-form-row">
+                    <label th:text="#{aufgabenDefinition.feld.triggerStatus}">Trigger-Status</label>
+                    <input type="text" th:field="*{triggerStatus}" placeholder="z.B. PENDING, NEU, ENTWURF" required>
+                </div>
+
+                <div class="app-form-row">
+                    <label th:text="#{aufgabenDefinition.feld.zielStatus}">Ziel-Status (optional)</label>
+                    <input type="text" th:field="*{zielStatus}" placeholder="z.B. VERIFIED, ANGENOMMEN">
+                </div>
+
+                <div class="app-form-row">
+                    <label th:text="#{aufgabenDefinition.feld.assigneeRegel}">Assignee-Regel</label>
+                    <select th:field="*{assigneeRegel}" required>
+                        <option th:each="r : ${assigneeRegeln}" th:value="${r}" th:text="${r}">PLATFORM_ADMIN</option>
+                    </select>
+                </div>
+            </fieldset>
+
+            <div class="app-form-row">
+                <label th:text="#{aufgabenDefinition.feld.linkTemplate}">Link (optional)</label>
+                <input type="text" th:field="*{linkTemplate}" placeholder="/admin/verifizierungen">
+            </div>
+
+            <div class="app-form-row" style="display:flex; align-items:center; gap:0.5rem;">
+                <input type="checkbox" th:field="*{aktiv}" id="aktiv">
+                <label for="aktiv" th:text="#{aufgabenDefinition.feld.aktiv}">Aktiv</label>
+            </div>
+
+            <div class="app-form-actions" style="margin-top:1rem;">
+                <button type="submit" class="app-btn" th:text="#{aufgabenDefinition.speichern}">Speichern</button>
+                <a th:href="@{/admin/aufgaben-definitionen}" class="app-btn app-btn-secondary"
+                   th:text="#{aufgabenDefinition.abbrechen}">Abbrechen</a>
+            </div>
+        </form>
+    </main>
+</div>
+</body>
+</html>

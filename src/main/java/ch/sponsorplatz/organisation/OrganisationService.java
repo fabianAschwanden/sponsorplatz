@@ -1,5 +1,6 @@
 package ch.sponsorplatz.organisation;
 import ch.sponsorplatz.admin.AdminBenachrichtigungService;
+import ch.sponsorplatz.aufgabe.AufgabenEngine;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.shared.util.SlugGenerator;
 
@@ -29,16 +30,19 @@ public class OrganisationService {
     private final MitgliedschaftRepository mitgliedschaftRepository;
     private final AppUserRepository appUserRepository;
     private final AdminBenachrichtigungService adminBenachrichtigungService;
+    private final AufgabenEngine aufgabenEngine;
 
     public OrganisationService(OrganisationRepository repository, SlugGenerator slugGenerator,
                                MitgliedschaftRepository mitgliedschaftRepository,
                                AppUserRepository appUserRepository,
-                               AdminBenachrichtigungService adminBenachrichtigungService) {
+                               AdminBenachrichtigungService adminBenachrichtigungService,
+                               AufgabenEngine aufgabenEngine) {
         this.repository = repository;
         this.slugGenerator = slugGenerator;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
         this.appUserRepository = appUserRepository;
         this.adminBenachrichtigungService = adminBenachrichtigungService;
+        this.aufgabenEngine = aufgabenEngine;
     }
 
     @Transactional(readOnly = true)
@@ -89,7 +93,9 @@ public class OrganisationService {
     public Organisation erstelle(OrganisationFormDto dto) {
         Organisation org = new Organisation();
         wendeFormDatenAn(org, dto);
-        return repository.save(org);
+        Organisation gespeichert = repository.save(org);
+        aufgabenEngine.onOrgStatusWechsel(gespeichert);
+        return gespeichert;
     }
 
     /**
@@ -294,7 +300,9 @@ public class OrganisationService {
         }
         org.setStatus(OrgStatus.VERIFIED);
         org.setVerifiziertAm(Instant.now());
-        return repository.save(org);
+        Organisation gespeichert = repository.save(org);
+        aufgabenEngine.onOrgStatusWechsel(gespeichert);
+        return gespeichert;
     }
 
     /**
@@ -306,6 +314,8 @@ public class OrganisationService {
         Organisation org = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + id));
         org.setStatus(OrgStatus.SUSPENDED);
-        return repository.save(org);
+        Organisation gespeichert = repository.save(org);
+        aufgabenEngine.onOrgStatusWechsel(gespeichert);
+        return gespeichert;
     }
 }

@@ -2,6 +2,7 @@ package ch.sponsorplatz.anfrage;
 
 import ch.sponsorplatz.audit.AuditAktion;
 import ch.sponsorplatz.audit.AuditService;
+import ch.sponsorplatz.aufgabe.AufgabenEngine;
 import ch.sponsorplatz.organisation.Organisation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,6 +38,7 @@ class RechnungServiceTest {
     @Mock private VertragService vertragService;
     @Mock private RechnungsnummerGenerator rechnungsnummerGenerator;
     @Mock private AuditService auditService;
+    @Mock private AufgabenEngine aufgabenEngine;
 
     private RechnungService service;
 
@@ -46,7 +48,7 @@ class RechnungServiceTest {
     @BeforeEach
     void setUp() {
         service = new RechnungService(repository, vertragService,
-                rechnungsnummerGenerator, auditService);
+                rechnungsnummerGenerator, auditService, aufgabenEngine);
         when(rechnungsnummerGenerator.naechste(any())).thenReturn("R-2026-00001");
 
         Organisation verein = neueOrg("FC Beispiel", "fc-beispiel", "CH4431999123000889012");

@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ch.sponsorplatz.aufgabe.AufgabenEngine;
 import ch.sponsorplatz.benachrichtigung.BenachrichtigungTyp;
 import ch.sponsorplatz.benachrichtigung.NotificationService;
 import ch.sponsorplatz.benutzer.AppUser;
@@ -29,17 +30,20 @@ public class SponsoringAnfrageService {
     private final NotificationService notificationService;
     private final MitgliedschaftRepository mitgliedschaftRepository;
     private final AppUserRepository appUserRepository;
+    private final AufgabenEngine aufgabenEngine;
 
     public SponsoringAnfrageService(SponsoringAnfrageRepository repository,
             BenachrichtigungsService benachrichtigungsService,
             NotificationService notificationService,
             MitgliedschaftRepository mitgliedschaftRepository,
-            AppUserRepository appUserRepository) {
+            AppUserRepository appUserRepository,
+            AufgabenEngine aufgabenEngine) {
         this.repository = repository;
         this.benachrichtigungsService = benachrichtigungsService;
         this.notificationService = notificationService;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
         this.appUserRepository = appUserRepository;
+        this.aufgabenEngine = aufgabenEngine;
     }
 
     @Transactional(readOnly = true)
@@ -149,6 +153,7 @@ public class SponsoringAnfrageService {
                 "Von " + (kontaktName != null ? kontaktName : "Unbekannt"),
                 "/organisationen/" + empfaengerOrg.getSlug() + "/anfragen");
 
+        aufgabenEngine.onAnfrageStatusWechsel(gespeichert);
         return gespeichert;
     }
 
@@ -198,6 +203,7 @@ public class SponsoringAnfrageService {
                 "Von " + anfragenderOrg.getName() + ": " + betreff.trim(),
                 "/anfragen");
 
+        aufgabenEngine.onAnfrageStatusWechsel(gespeichert);
         return gespeichert;
     }
 
@@ -218,6 +224,7 @@ public class SponsoringAnfrageService {
                 "Ihre Anfrage wurde angenommen",
                 "/organisationen/" + anfrage.getAnfragenderOrg().getSlug() + "/anfragen");
 
+        aufgabenEngine.onAnfrageStatusWechsel(gespeichert);
         return gespeichert;
     }
 
@@ -238,6 +245,7 @@ public class SponsoringAnfrageService {
                 "Ihre Anfrage wurde leider abgelehnt",
                 "/organisationen/" + anfrage.getAnfragenderOrg().getSlug() + "/anfragen");
 
+        aufgabenEngine.onAnfrageStatusWechsel(gespeichert);
         return gespeichert;
     }
 

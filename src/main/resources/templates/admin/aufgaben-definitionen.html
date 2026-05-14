@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{aufgabenDefinitionen.titel} + ' — Sponsorplatz'">Aufgaben-Definitionen — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('admin', ${anzahlOffeneAnfragen})}"></aside>
+    <main class="app-main">
+        <div class="app-page-head" style="display:flex; justify-content:space-between; align-items:center;">
+            <h1 th:text="#{aufgabenDefinitionen.titel}">Aufgaben-Definitionen</h1>
+            <a th:href="@{/admin/aufgaben-definitionen/neu}" class="app-btn"
+               th:text="#{aufgabenDefinitionen.neu}">Neue Definition</a>
+        </div>
+
+        <p class="app-muted" style="margin:0 0 1rem;" th:text="#{aufgabenDefinitionen.hinweis}">
+            System-Definitionen sind nicht löschbar — sie verkabeln den Trigger-Mechanismus
+            mit den Domain-Services. Anzeige-Text und Aktiv-Flag bleiben aber editierbar.
+        </p>
+
+        <div th:if="${erfolgsMeldung}" class="app-flash app-flash-success" th:text="${erfolgsMeldung}">OK</div>
+        <div th:if="${fehlermeldung}" class="app-flash app-flash-error" th:text="${fehlermeldung}">Fehler</div>
+
+        <div class="app-card" style="padding:0;">
+            <table class="app-table" style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#f3f4f6;">
+                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{aufgabenDefinitionen.spalte.titel}">Titel</th>
+                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{aufgabenDefinitionen.spalte.trigger}">Trigger</th>
+                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{aufgabenDefinitionen.spalte.ziel}">Ziel-Status</th>
+                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{aufgabenDefinitionen.spalte.assignee}">Sichtbar für</th>
+                        <th style="text-align:center; padding:0.75rem 1rem;" th:text="#{aufgabenDefinitionen.spalte.aktiv}">Aktiv</th>
+                        <th style="text-align:right; padding:0.75rem 1rem;" th:text="#{aufgabenDefinitionen.spalte.aktion}">Aktion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="d : ${definitionen}" style="border-top:1px solid #e5e7eb;">
+                        <td style="padding:0.75rem 1rem; font-weight:600;">
+                            <span th:text="${d.titel()}">Titel</span>
+                            <span th:if="${d.systemDefinition()}" class="app-muted"
+                                  style="font-size:0.75rem; margin-left:0.5rem; padding:0.1rem 0.4rem; background:#e5e7eb; border-radius:3px;"
+                                  th:text="#{aufgabenDefinitionen.system}">System</span>
+                        </td>
+                        <td style="padding:0.75rem 1rem;" class="app-muted">
+                            <code th:text="${d.triggerEntityTyp()} + ':' + ${d.triggerStatus()}">ORG:PENDING</code>
+                        </td>
+                        <td style="padding:0.75rem 1rem;" class="app-muted">
+                            <code th:if="${d.zielStatus() != null}" th:text="${d.zielStatus()}">VERIFIED</code>
+                            <span th:unless="${d.zielStatus() != null}">—</span>
+                        </td>
+                        <td style="padding:0.75rem 1rem;" class="app-muted" th:text="${d.assigneeRegel()}">PLATFORM_ADMIN</td>
+                        <td style="padding:0.75rem 1rem; text-align:center;">
+                            <span th:if="${d.aktiv()}" style="color:#16a34a;" th:text="#{aufgabenDefinitionen.aktiv.ja}">Ja</span>
+                            <span th:unless="${d.aktiv()}" class="app-muted" th:text="#{aufgabenDefinitionen.aktiv.nein}">Nein</span>
+                        </td>
+                        <td style="padding:0.75rem 1rem; text-align:right;">
+                            <a th:href="@{|/admin/aufgaben-definitionen/${d.id()}/bearbeiten|}"
+                               class="app-btn app-btn-small" th:text="#{aufgabenDefinitionen.bearbeiten}">Bearbeiten</a>
+                            <form th:unless="${d.systemDefinition()}"
+                                  th:action="@{|/admin/aufgaben-definitionen/${d.id()}/loeschen|}"
+                                  method="post" style="display:inline;"
+                                  onsubmit="return confirm('Wirklich löschen?');">
+                                <button type="submit" class="app-btn app-btn-small app-btn-danger"
+                                        th:text="#{aufgabenDefinitionen.loeschen}">Löschen</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+</body>
+</html>

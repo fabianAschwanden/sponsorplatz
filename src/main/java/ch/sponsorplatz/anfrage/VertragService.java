@@ -2,6 +2,7 @@ package ch.sponsorplatz.anfrage;
 
 import ch.sponsorplatz.audit.AuditAktion;
 import ch.sponsorplatz.audit.AuditService;
+import ch.sponsorplatz.aufgabe.AufgabenEngine;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.shared.exception.NotFoundException;
@@ -41,15 +42,18 @@ public class VertragService {
      * stornieren. Lazy-Proxy → keine Eager-Initialisierung.
      */
     private final RechnungService rechnungService;
+    private final AufgabenEngine aufgabenEngine;
 
     public VertragService(VertragRepository repository,
                           SponsoringAnfrageRepository anfrageRepository,
                           AuditService auditService,
-                          @Lazy RechnungService rechnungService) {
+                          @Lazy RechnungService rechnungService,
+                          AufgabenEngine aufgabenEngine) {
         this.repository = repository;
         this.anfrageRepository = anfrageRepository;
         this.auditService = auditService;
         this.rechnungService = rechnungService;
+        this.aufgabenEngine = aufgabenEngine;
     }
 
     /**
@@ -121,6 +125,7 @@ public class VertragService {
                         + ", verein=" + gespeichert.getOrgName()
                         + ", erstellt_von=" + erstelltVon);
 
+        aufgabenEngine.onVertragStatusWechsel(gespeichert);
         return gespeichert;
     }
 
@@ -186,6 +191,7 @@ public class VertragService {
                 gespeichert.getId(), "Vertrag",
                 "unterzeichnet_von=" + unterzeichnetVon);
 
+        aufgabenEngine.onVertragStatusWechsel(gespeichert);
         return gespeichert;
     }
 
@@ -229,6 +235,7 @@ public class VertragService {
                 gespeichert.getId(), "Vertrag",
                 "grund=" + (grund == null ? "" : grund));
 
+        aufgabenEngine.onVertragStatusWechsel(gespeichert);
         return gespeichert;
     }
 

@@ -337,6 +337,22 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **SR-06** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` mit Validierungsfehler → bleibt auf Formular |
 | **SR-07** | `SponsorRegistrierungControllerTest` | POST `/sponsor/registrieren` doppelte E-Mail → Fehlermeldung auf Formular |
 
+### Aufgaben-Engine (AUFG-ENG) — Phase 12
+
+Generische Task-Engine reagiert auf Status-Wechsel der überwachten Aggregate
+(ORG, ANFRAGE, VERTRAG, RECHNUNG) und hält die `aufgabe`-Tabelle synchron.
+Customizing via `aufgaben_definition` ist im Admin-UI editierbar.
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **AUFG-ENG-01** | `AufgabenEngineTest` | Neue PENDING-Org + aktive PLATFORM_ADMIN-Definition → Aufgabe mit `nurPlatformAdmin=true`, kein Assignee-Org |
+| **AUFG-ENG-02** | `AufgabenEngineTest` | Org wechselt auf `ziel_status` der Definition → offene Aufgabe wird ERLEDIGT + erledigtAm gesetzt |
+| **AUFG-ENG-03** | `AufgabenEngineTest` | Anfrage wechselt auf alternativen Status (z.B. ABGELEHNT statt ANGENOMMEN) → Aufgabe wird ENTFALLEN |
+| **AUFG-ENG-04** | `AufgabenEngineTest` | Vertrag ENTWURF mit zwei aktiven Definitions (Verein + Sponsor) → zwei Aufgaben mit korrekt aufgelösten Assignee-Orgs |
+| **AUFG-ENG-05** | `AufgabenEngineTest` | Doppelter Trigger-Aufruf → kein zweites Save (Idempotenz via `existsByDefinitionIdAndEntityIdAndStatus`) |
+| **AUFG-ENG-06** | `AufgabenEngineTest` | Keine aktive Definition für den Status → kein Save, keine Exception |
+| **AUFG-ENG-07** | `AufgabenEngineTest` | Assignee-Regel kann auf der Entity nicht aufgelöst werden (z.B. `EMPFAENGER_ORG`=null) → Aufgabe übersprungen, kein Crash |
+
 ### Admin-Benachrichtigung bei neuer Org-Registrierung (ADMIN-NOTIF)
 
 Jede Self-Service-Registrierung (Verein oder Sponsor) pusht eine In-App-Notification

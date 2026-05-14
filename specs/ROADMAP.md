@@ -406,6 +406,40 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 
 ---
 
+## Phase 12 — Customizable Task-Engine ✓
+
+> **Paket 5.** Generische Aufgaben-Verwaltung mit Admin-Customizing — User sehen
+> ihre offenen Aufgaben (Verein freigeben, Anfrage bearbeiten, Vertrag prüfen,
+> Rechnung versenden) auf `/aufgaben`, und Admins definieren neue Tasktypen
+> ohne Code-Änderung auf `/admin/aufgaben-definitionen`.
+
+### 12.1 — Datenmodell + Engine
+
+- [x] Migration V36 (`aufgaben_definition` + `aufgabe`) mit CHECK-Constraints auf `trigger_entity_typ`, `assignee_regel`, `status`. Fünf System-Seed-Definitionen für die Initial-Use-Cases (Org-Freigabe, Anfrage, Vertrag Verein+Sponsor, Rechnung).
+- [x] Entities `Aufgabe` + `AufgabenDefinition` mit polymorpher Entity-Referenz (`entityTyp` + `entityId` — kein FK, weil typunabhängig). Enums `AufgabenStatus`, `TriggerEntityTyp`, `AssigneeRegel`. Bounded Context unter `ch.sponsorplatz.aufgabe`.
+- [x] `AufgabenEngine.on<Entity>StatusWechsel(entity)` für ORG / ANFRAGE / VERTRAG / RECHNUNG. Kern: (1) offene Aufgaben für die Entity evaluieren — Definition.zielStatus erreicht → ERLEDIGT, Trigger-Status verlassen → ENTFALLEN; (2) aktive Definitions mit passendem Trigger laden, idempotent neue Aufgaben anlegen (existsByDefinitionIdAndEntityIdAndStatus-Guard verhindert Duplikate).
+- [x] `AssigneeKontext` (Record) hält pro Entity die relevanten Org-Referenzen (Verein-Seite, Sponsor-Seite, Empfänger, Anfragender). Die Engine löst die `AssigneeRegel` damit auf — kein zusätzlicher Repo-Roundtrip.
+
+### 12.2 — Trigger-Verkabelung
+
+- [x] `OrganisationService.erstelle` / `verifiziere` / `suspendiere` → `onOrgStatusWechsel`
+- [x] `SponsoringAnfrageService.erstelle` / `erstelleKontaktAnfrage` / `annehme` / `lehneAb` → `onAnfrageStatusWechsel`
+- [x] `VertragService.erstelle` / `markiereUnterzeichnet` / `kuendige` → `onVertragStatusWechsel`
+- [x] `RechnungService.erstelle` / `markiereBezahlt` / `markiereAlsBezahltViaWebhook` / `stornieren` → `onRechnungStatusWechsel`
+
+### 12.3 — User-UI + Admin-UI
+
+- [x] `GET /aufgaben` — „Meine Aufgaben" (Sidebar-Nav-Item für alle eingeloggten User). Zeigt offene Aufgaben des Users, abgeleitet aus Org-Mitgliedschaften (alle Rollen) + Platform-Admin-Status. Manuelles Abhaken via `POST /aufgaben/{id}/erledigen`.
+- [x] `GET /admin/aufgaben-definitionen` — Liste aller Definitions, mit System-Badge + Aktiv-Toggle. Form auf `/admin/aufgaben-definitionen/{neu|/{id}/bearbeiten}` für CRUD. Trigger-Felder sind bei System-Definitionen gesperrt (fieldset disabled), damit die Engine-Verkabelung intakt bleibt.
+- [x] i18n in DE/EN/FR/IT (40 Keys).
+
+### 12.4 — Tests
+
+- [x] AUFG-ENG-01..07: Engine-Lifecycle (Erzeugung, Auto-Erledigung, Idempotenz, mehrere Assignees pro Status-Wechsel, fehlende Org-Auflösung).
+- [x] Bestehende Service-Tests (OrganisationServiceTest, SponsoringAnfrageServiceTest, VertragServiceTest, RechnungServiceTest) um `AufgabenEngine`-Mock erweitert — 502 Tests gesamt.
+
+---
+
 ## Phase 10 — Production-Readiness & Pilot-Launch ⏳
 
 > **Paket 4.** Plattform ist produktiv betreibbar in OCI Cloud mit Monitoring, DSG-Compliance und Error-Tracking.

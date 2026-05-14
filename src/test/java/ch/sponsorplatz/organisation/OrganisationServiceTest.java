@@ -1,5 +1,6 @@
 package ch.sponsorplatz.organisation;
 import ch.sponsorplatz.admin.AdminBenachrichtigungService;
+import ch.sponsorplatz.aufgabe.AufgabenEngine;
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.shared.util.SlugGenerator;
@@ -25,6 +26,7 @@ class OrganisationServiceTest {
     private MitgliedschaftRepository mitgliedschaftRepository;
     private AppUserRepository appUserRepository;
     private AdminBenachrichtigungService adminBenachrichtigungService;
+    private AufgabenEngine aufgabenEngine;
     private OrganisationService service;
 
     @BeforeEach
@@ -33,8 +35,10 @@ class OrganisationServiceTest {
         mitgliedschaftRepository = mock(MitgliedschaftRepository.class);
         appUserRepository = mock(AppUserRepository.class);
         adminBenachrichtigungService = mock(AdminBenachrichtigungService.class);
+        aufgabenEngine = mock(AufgabenEngine.class);
         service = new OrganisationService(repository, new SlugGenerator(),
-                mitgliedschaftRepository, appUserRepository, adminBenachrichtigungService);
+                mitgliedschaftRepository, appUserRepository,
+                adminBenachrichtigungService, aufgabenEngine);
     }
 
     /** ORG-05: Erstellen mit Auto-Slug aus dem Namen. */

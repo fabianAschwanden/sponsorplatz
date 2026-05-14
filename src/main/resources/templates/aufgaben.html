@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{aufgaben.titel} + ' — Sponsorplatz'">Meine Aufgaben — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('aufgaben', ${anzahlOffeneAnfragen})}"></aside>
+    <main class="app-main">
+        <div class="app-page-head">
+            <h1 th:text="#{aufgaben.titel}">Meine Aufgaben</h1>
+        </div>
+
+        <div th:if="${erfolgsMeldung}" class="app-flash app-flash-success"
+             th:text="${erfolgsMeldung}">OK</div>
+
+        <div th:if="${#lists.isEmpty(aufgaben)}" class="app-empty"
+             style="text-align:center; padding:3rem 1rem; background:#f9fafb; border-radius:0.5rem;">
+            <strong th:text="#{aufgaben.empty.titel}">Keine offenen Aufgaben</strong>
+            <p style="margin:0.5rem 0 0;" th:text="#{aufgaben.empty.text}">
+                Sobald eine Aufgabe ausgelöst wird, erscheint sie hier.
+            </p>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(aufgaben)}" class="app-card" style="padding:0;">
+            <table class="app-table" style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#f3f4f6;">
+                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{aufgaben.spalte.titel}">Aufgabe</th>
+                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{aufgaben.spalte.zugewiesen}">Zugewiesen an</th>
+                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{aufgaben.spalte.erstellt}">Erstellt</th>
+                        <th style="text-align:right; padding:0.75rem 1rem;" th:text="#{aufgaben.spalte.aktion}">Aktion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="a : ${aufgaben}" style="border-top:1px solid #e5e7eb;">
+                        <td style="padding:0.75rem 1rem;">
+                            <a th:if="${a.link() != null}" th:href="${a.link()}" th:text="${a.titel()}"
+                               style="font-weight:600; color:var(--dash-violet); text-decoration:none;">Titel</a>
+                            <span th:unless="${a.link() != null}" th:text="${a.titel()}"
+                                  style="font-weight:600;">Titel</span>
+                        </td>
+                        <td style="padding:0.75rem 1rem;" class="app-muted">
+                            <span th:if="${a.nurPlatformAdmin()}" th:text="#{aufgaben.zugewiesen.admin}">Plattform-Admin</span>
+                            <span th:unless="${a.nurPlatformAdmin()}" th:text="${a.assigneeOrgName()}">Org-Name</span>
+                        </td>
+                        <td style="padding:0.75rem 1rem;" class="app-muted"
+                            th:text="${#temporals.format(a.erstelltAm(), 'dd.MM.yyyy')}">01.01.2026</td>
+                        <td style="padding:0.75rem 1rem; text-align:right;">
+                            <form th:action="@{|/aufgaben/${a.id()}/erledigen|}" method="post" style="display:inline;">
+                                <button type="submit" class="app-btn app-btn-small"
+                                        th:text="#{aufgaben.aktion.erledigen}">Erledigt</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+</body>
+</html>

@@ -38,15 +38,18 @@ public class RechnungService {
     private final VertragService vertragService;
     private final RechnungsnummerGenerator rechnungsnummerGenerator;
     private final AuditService auditService;
+    private final ch.sponsorplatz.aufgabe.AufgabenEngine aufgabenEngine;
 
     public RechnungService(RechnungRepository repository,
                            VertragService vertragService,
                            RechnungsnummerGenerator rechnungsnummerGenerator,
-                           AuditService auditService) {
+                           AuditService auditService,
+                           ch.sponsorplatz.aufgabe.AufgabenEngine aufgabenEngine) {
         this.repository = repository;
         this.vertragService = vertragService;
         this.rechnungsnummerGenerator = rechnungsnummerGenerator;
         this.auditService = auditService;
+        this.aufgabenEngine = aufgabenEngine;
     }
 
     /**
@@ -115,6 +118,7 @@ public class RechnungService {
                         + ", betrag=" + gespeichert.getBetragChf()
                         + ", erstellt_von=" + erstelltVon);
 
+        aufgabenEngine.onRechnungStatusWechsel(gespeichert);
         return gespeichert;
     }
 
@@ -150,6 +154,7 @@ public class RechnungService {
                         + ", bezahlt_von=" + bezahltVon
                         + ", quelle=MANUELL");
 
+        aufgabenEngine.onRechnungStatusWechsel(gespeichert);
         return gespeichert;
     }
 
@@ -177,6 +182,8 @@ public class RechnungService {
                 gespeichert.getId(), "Rechnung",
                 "rechnungsnummer=" + gespeichert.getRechnungsnummer()
                         + ", quelle=WEBHOOK_DATATRANS");
+
+        aufgabenEngine.onRechnungStatusWechsel(gespeichert);
     }
 
     /**
@@ -201,6 +208,7 @@ public class RechnungService {
                         + ", vorheriger_status=" + vorher
                         + ", grund=" + (grund == null ? "" : grund));
 
+        aufgabenEngine.onRechnungStatusWechsel(gespeichert);
         return gespeichert;
     }
 
