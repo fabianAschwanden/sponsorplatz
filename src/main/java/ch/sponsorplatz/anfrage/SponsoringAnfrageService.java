@@ -46,6 +46,20 @@ public class SponsoringAnfrageService {
         this.aufgabenEngine = aufgabenEngine;
     }
 
+    /**
+     * Lookup einer Anfrage über die ID — Komfort-Methode für Controller (ARCH-01),
+     * die {@link SponsoringAnfrageRepository} nicht direkt injizieren sollen.
+     *
+     * @throws ch.sponsorplatz.shared.exception.NotFoundException wenn die ID
+     *         keiner existierenden Anfrage zugeordnet ist
+     */
+    @Transactional(readOnly = true)
+    public SponsoringAnfrage findeNachId(UUID id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
+                        "Anfrage nicht gefunden: " + id));
+    }
+
     @Transactional(readOnly = true)
     public List<SponsoringAnfrage> findeEingehende(UUID empfaengerOrgId) {
         return repository.findByEmpfaengerOrgIdOrderByCreatedAtDesc(empfaengerOrgId);

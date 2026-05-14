@@ -26,7 +26,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import ch.sponsorplatz.organisation.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.MitgliedschaftService;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.shared.config.SecurityConfig;
@@ -44,9 +44,9 @@ class OnboardingControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private AppUserRepository appUserRepository;
+    private AppUserService appUserService;
     @MockitoBean
-    private MitgliedschaftRepository mitgliedschaftRepository;
+    private MitgliedschaftService mitgliedschaftService;
     @MockitoBean
     private OrganisationService organisationService;
     @MockitoBean
@@ -65,16 +65,15 @@ class OnboardingControllerTest {
     void ohneOrgZeigtOnboarding() throws Exception {
         AppUser user = testUser();
         user.setOnboardingGesehen(false);
-        when(appUserRepository.findByEmail("neu@test.ch")).thenReturn(Optional.of(user));
-        when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of());
+        when(appUserService.findeNachEmail("neu@test.ch")).thenReturn(Optional.of(user));
+        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId())).thenReturn(List.of());
 
         mockMvc.perform(get("/onboarding"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("onboarding"))
                 .andExpect(model().attributeExists("vereinForm", "branchen"));
 
-        org.assertj.core.api.Assertions.assertThat(user.isOnboardingGesehen()).isTrue();
-        verify(appUserRepository).save(user);
+        verify(appUserService).markiereOnboardingGesehen(user.getId());
     }
 
     @Test
@@ -85,14 +84,14 @@ class OnboardingControllerTest {
         admin.setEmail("admin@test.ch");
         admin.setPlatformRolle(PlatformRolle.PLATFORM_ADMIN);
         admin.setOnboardingGesehen(false);
-        when(appUserRepository.findByEmail("admin@test.ch")).thenReturn(Optional.of(admin));
+        when(appUserService.findeNachEmail("admin@test.ch")).thenReturn(Optional.of(admin));
 
         mockMvc.perform(get("/onboarding"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/dashboard"));
 
         org.assertj.core.api.Assertions.assertThat(admin.isOnboardingGesehen()).isFalse();
-        org.mockito.Mockito.verify(appUserRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
+        org.mockito.Mockito.verify(appUserService, org.mockito.Mockito.never()).markiereOnboardingGesehen(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
@@ -102,14 +101,14 @@ class OnboardingControllerTest {
         AppUser user = testUser();
         user.setEmail("zurueck@test.ch");
         user.setOnboardingGesehen(true);
-        when(appUserRepository.findByEmail("zurueck@test.ch")).thenReturn(Optional.of(user));
-        when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of());
+        when(appUserService.findeNachEmail("zurueck@test.ch")).thenReturn(Optional.of(user));
+        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId())).thenReturn(List.of());
 
         mockMvc.perform(get("/onboarding"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("onboarding"));
 
-        org.mockito.Mockito.verify(appUserRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
+        org.mockito.Mockito.verify(appUserService, org.mockito.Mockito.never()).markiereOnboardingGesehen(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
@@ -117,8 +116,8 @@ class OnboardingControllerTest {
     @DisplayName("ONB-03: /onboarding mit Mitgliedschaften → Redirect auf Dashboard")
     void mitOrgRedirectAufDashboard() throws Exception {
         AppUser user = testUser();
-        when(appUserRepository.findByEmail("alt@test.ch")).thenReturn(Optional.of(user));
-        when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId()))
+        when(appUserService.findeNachEmail("alt@test.ch")).thenReturn(Optional.of(user));
+        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId()))
                 .thenReturn(List.of(UUID.randomUUID()));
 
         mockMvc.perform(get("/onboarding"))
@@ -131,7 +130,8 @@ class OnboardingControllerTest {
     @DisplayName("ONB-04: POST /onboarding/verein-erstellen erstellt Org + Redirect auf Dashboard")
     void vereinErstellenErfolgreich() throws Exception {
         AppUser user = testUser();
-        when(appUserRepository.findByEmail("neu@test.ch")).thenReturn(Optional.of(user));
+        when(appUserService.findeNachEmail("neu@test.ch")).thenReturn(Optional.of(user));
+        when(appUserService.findeIdNachEmail("neu@test.ch")).thenReturn(user.getId());
 
         Organisation org = new Organisation();
         org.setId(UUID.randomUUID());
@@ -154,8 +154,8 @@ class OnboardingControllerTest {
     @DisplayName("ONB-05: POST /onboarding/verein-erstellen ohne Name → Validierungsfehler")
     void vereinOhneNameZeigtFehler() throws Exception {
         AppUser user = testUser();
-        when(appUserRepository.findByEmail("neu@test.ch")).thenReturn(Optional.of(user));
-        when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of());
+        when(appUserService.findeNachEmail("neu@test.ch")).thenReturn(Optional.of(user));
+        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId())).thenReturn(List.of());
 
         mockMvc.perform(post("/onboarding/verein-erstellen")
                 .param("vereinName", "")

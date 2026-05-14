@@ -1,10 +1,10 @@
 package ch.sponsorplatz.anfrage;
 
 import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.organisation.Mitgliedschaft;
-import ch.sponsorplatz.organisation.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.MitgliedschaftService;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationService;
@@ -57,21 +57,21 @@ public class MeineAnfragenController {
     private static final Set<Rolle> EDIT_ROLLEN = Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR);
 
     private final SponsoringAnfrageService anfrageService;
-    private final AppUserRepository appUserRepository;
-    private final MitgliedschaftRepository mitgliedschaftRepository;
+    private final AppUserService appUserService;
+    private final MitgliedschaftService mitgliedschaftService;
     private final AccessControl accessControl;
     private final SponsoringPaketService paketService;
     private final OrganisationService organisationService;
 
     public MeineAnfragenController(SponsoringAnfrageService anfrageService,
-                                   AppUserRepository appUserRepository,
-                                   MitgliedschaftRepository mitgliedschaftRepository,
+                                   AppUserService appUserService,
+                                   MitgliedschaftService mitgliedschaftService,
                                    AccessControl accessControl,
                                    SponsoringPaketService paketService,
                                    OrganisationService organisationService) {
         this.anfrageService = anfrageService;
-        this.appUserRepository = appUserRepository;
-        this.mitgliedschaftRepository = mitgliedschaftRepository;
+        this.appUserService = appUserService;
+        this.mitgliedschaftService = mitgliedschaftService;
         this.accessControl = accessControl;
         this.paketService = paketService;
         this.organisationService = organisationService;
@@ -79,7 +79,7 @@ public class MeineAnfragenController {
 
     @GetMapping("/anfragen")
     public String meineAnfragen(Authentication auth, Model model) {
-        AppUser user = appUserRepository.findByEmail(auth.getName())
+        AppUser user = appUserService.findeNachEmail(auth.getName())
                 .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
 
         List<Mitgliedschaft> mitgliedschaften = ladeMitgliedschaften(auth);
@@ -144,7 +144,7 @@ public class MeineAnfragenController {
 
         List<OrganisationView> sponsoren = OrganisationView.von(
                 organisationService.findeAktiveSponsoren());
-        AppUser user = appUserRepository.findByEmail(auth.getName())
+        AppUser user = appUserService.findeNachEmail(auth.getName())
                 .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
 
         KontaktAnfrageFormDto form = new KontaktAnfrageFormDto();
@@ -192,7 +192,7 @@ public class MeineAnfragenController {
             return "anfrage-kontakt-neu";
         }
 
-        UUID erstelltVonUserId = appUserRepository.findByEmail(auth.getName())
+        UUID erstelltVonUserId = appUserService.findeNachEmail(auth.getName())
                 .map(AppUser::getId)
                 .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
         anfrageService.erstelleKontaktAnfrage(anfragenderOrg, empfaengerOrg,
@@ -243,7 +243,7 @@ public class MeineAnfragenController {
                             + "und die Org darf nicht der Empfänger sein.");
         }
 
-        AppUser user = appUserRepository.findByEmail(auth.getName())
+        AppUser user = appUserService.findeNachEmail(auth.getName())
                 .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
 
         AnfrageFormDto form = new AnfrageFormDto();
@@ -296,7 +296,7 @@ public class MeineAnfragenController {
         Organisation anfragenderOrg = organisationService.findeNachId(anfragenderOrgId)
                 .orElseThrow(() -> new NotFoundException("Org nicht gefunden: " + anfragenderOrgId));
 
-        UUID erstelltVonUserId = appUserRepository.findByEmail(auth.getName())
+        UUID erstelltVonUserId = appUserService.findeNachEmail(auth.getName())
                 .map(AppUser::getId)
                 .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
         anfrageService.erstelle(paket, anfragenderOrg, empfaengerOrg,
@@ -328,10 +328,10 @@ public class MeineAnfragenController {
      * (Verein → ausgehende sehen, Unternehmen → nur eingehende).
      */
     private List<Mitgliedschaft> ladeMitgliedschaften(Authentication auth) {
-        AppUser user = appUserRepository.findByEmail(auth.getName())
+        AppUser user = appUserService.findeNachEmail(auth.getName())
                 .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
         // Alle Rollen — auch VIEWER, da auch Viewer eingehende Anfragen sehen sollen.
-        return mitgliedschaftRepository.findByUserIdAndRolleInMitOrg(
+        return mitgliedschaftService.findeMitgliedschaftenVonUser(
                 user.getId(), Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR, Rolle.ORG_VIEWER));
     }
 
@@ -340,9 +340,9 @@ public class MeineAnfragenController {
      * Picker und die Berechtigungs-Logik.
      */
     private List<OrganisationView> ladeVereinsOrgs(Authentication auth) {
-        AppUser user = appUserRepository.findByEmail(auth.getName())
+        AppUser user = appUserService.findeNachEmail(auth.getName())
                 .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
-        return mitgliedschaftRepository
+        return mitgliedschaftService
                 .findByUserIdAndRolleInMitOrg(user.getId(), EDIT_ROLLEN)
                 .stream()
                 .map(Mitgliedschaft::getOrg)
@@ -357,10 +357,10 @@ public class MeineAnfragenController {
      * damit das Template Name/Slug ohne LazyInit anzeigen kann.
      */
     private List<OrganisationView> ladeAnfragerOrgs(Authentication auth, UUID empfaengerOrgId) {
-        AppUser user = appUserRepository.findByEmail(auth.getName())
+        AppUser user = appUserService.findeNachEmail(auth.getName())
                 .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
         List<Mitgliedschaft> mitgliedschaften =
-                mitgliedschaftRepository.findByUserIdAndRolleInMitOrg(user.getId(), EDIT_ROLLEN);
+                mitgliedschaftService.findeMitgliedschaftenVonUser(user.getId(), EDIT_ROLLEN);
         return mitgliedschaften.stream()
                 .map(Mitgliedschaft::getOrg)
                 .filter(o -> !o.getId().equals(empfaengerOrgId))

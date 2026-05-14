@@ -2,7 +2,7 @@ package ch.sponsorplatz.projekt;
 
 import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.organisation.OrganisationRepository;
+import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import org.springframework.security.core.Authentication;
@@ -22,14 +22,14 @@ import java.util.UUID;
 public class EventController {
 
     private final EventService eventService;
-    private final OrganisationRepository orgRepository;
+    private final OrganisationService organisationService;
     private final AccessControl accessControl;
 
     public EventController(EventService eventService,
-                           OrganisationRepository orgRepository,
+                           OrganisationService organisationService,
                            AccessControl accessControl) {
         this.eventService = eventService;
-        this.orgRepository = orgRepository;
+        this.organisationService = organisationService;
         this.accessControl = accessControl;
     }
 
@@ -76,7 +76,7 @@ public class EventController {
     }
 
     private Organisation ladeOrg(String slug) {
-        return orgRepository.findBySlug(slug)
+        return organisationService.findeNachSlug(slug)
                 .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
     }
 }

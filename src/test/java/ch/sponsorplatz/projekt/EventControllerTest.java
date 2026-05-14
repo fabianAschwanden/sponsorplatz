@@ -2,7 +2,7 @@ package ch.sponsorplatz.projekt;
 
 import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.organisation.OrganisationRepository;
+import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ class EventControllerTest {
 
     @Autowired private MockMvc mockMvc;
     @MockitoBean private EventService eventService;
-    @MockitoBean private OrganisationRepository orgRepository;
+    @MockitoBean private OrganisationService organisationService;
     @MockitoBean private AccessControl accessControl;
 
     @Test
@@ -40,7 +40,7 @@ class EventControllerTest {
         Organisation org = new Organisation();
         org.setId(UUID.randomUUID());
         org.setSlug("fc-test");
-        when(orgRepository.findBySlug("fc-test")).thenReturn(Optional.of(org));
+        when(organisationService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
         when(accessControl.kannOrgEditieren(any(), any())).thenReturn(false);
 
         mockMvc.perform(post("/organisationen/fc-test/events/speichern")
@@ -57,7 +57,7 @@ class EventControllerTest {
         Organisation org = new Organisation();
         org.setId(UUID.randomUUID());
         org.setSlug("fc-test");
-        when(orgRepository.findBySlug("fc-test")).thenReturn(Optional.of(org));
+        when(organisationService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
         when(accessControl.kannOrgEditieren(any(), any())).thenReturn(true);
 
         mockMvc.perform(post("/organisationen/fc-test/events/speichern")

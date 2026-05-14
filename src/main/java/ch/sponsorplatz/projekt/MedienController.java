@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.shared.exception.NotFoundException;
@@ -33,20 +33,20 @@ public class MedienController {
     private final ProjektService projektService;
     private final OrganisationService organisationService;
     private final AccessControl accessControl;
-    private final AppUserRepository appUserRepository;
+    private final AppUserService appUserService;
 
     public MedienController(MedienAssetService medienAssetService,
             StorageService storageService,
             ProjektService projektService,
             OrganisationService organisationService,
             AccessControl accessControl,
-            AppUserRepository appUserRepository) {
+            AppUserService appUserService) {
         this.medienAssetService = medienAssetService;
         this.storageService = storageService;
         this.projektService = projektService;
         this.organisationService = organisationService;
         this.accessControl = accessControl;
-        this.appUserRepository = appUserRepository;
+        this.appUserService = appUserService;
     }
 
     /** Öffentliche Auslieferung eines Medien-Assets. Bilder inline, Dokumente als Download. */
@@ -136,7 +136,7 @@ public class MedienController {
                     .map(p -> accessControl.kannOrgEditieren(p.getOrg().getId(), auth))
                     .orElse(false);
             // USER-Assets (Profilbild) darf nur der User selbst löschen.
-            case USER -> appUserRepository.findByEmail(auth.getName())
+            case USER -> appUserService.findeNachEmail(auth.getName())
                     .map(u -> u.getId().equals(asset.getEntityId()))
                     .orElse(false);
         };

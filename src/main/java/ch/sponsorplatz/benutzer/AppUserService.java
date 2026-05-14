@@ -4,6 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -64,6 +65,56 @@ public class AppUserService {
      * @throws ch.sponsorplatz.shared.exception.NotFoundException wenn die Email
      *         keinem User zugeordnet ist
      */
+    /**
+     * Alle User für das Admin-UI, neueste Registrierungen zuerst — Komfort-
+     * Methode für Controller (ARCH-01).
+     */
+    @Transactional(readOnly = true)
+    public List<AppUser> findeAlleNeuesteZuerst() {
+        return repository.findAllByOrderByRegistriertAmDesc();
+    }
+
+    /**
+     * Setzt das {@code aktiv}-Flag eines Users und speichert. Wird vom
+     * Admin-UI ({@code /admin/benutzer/{id}/{sperren,entsperren}}) genutzt.
+     *
+     * @return die zugehörige Email-Adresse (für Audit-Log + Flash-Message)
+     */
+    public AppUser setzeAktiv(UUID userId, boolean aktiv) {
+        AppUser user = repository.findById(userId)
+                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
+                        "Benutzer nicht gefunden: " + userId));
+        user.setAktiv(aktiv);
+        return repository.save(user);
+    }
+
+    /**
+     * Setzt oder entfernt (null) die Plattform-Rolle eines Users — Admin-Aktion.
+     *
+     * @return den aktualisierten User (für Audit-Log + Flash-Message)
+     */
+    public AppUser setzePlatformRolle(UUID userId, PlatformRolle rolle) {
+        AppUser user = repository.findById(userId)
+                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
+                        "Benutzer nicht gefunden: " + userId));
+        user.setPlatformRolle(rolle);
+        return repository.save(user);
+    }
+
+    /**
+     * Markiert das Onboarding für einen User als gesehen — idempotent.
+     * Wird vom Onboarding-Controller einmal beim ersten Anzeigen aufgerufen,
+     * damit Folge-Logins nicht erneut auf das Wizard umleiten.
+     */
+    public void markiereOnboardingGesehen(UUID userId) {
+        repository.findById(userId).ifPresent(user -> {
+            if (!user.isOnboardingGesehen()) {
+                user.setOnboardingGesehen(true);
+                repository.save(user);
+            }
+        });
+    }
+
     @Transactional(readOnly = true)
     public UUID findeIdNachEmail(String email) {
         return repository.findByEmail(email)

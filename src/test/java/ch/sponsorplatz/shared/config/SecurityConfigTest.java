@@ -48,10 +48,7 @@ class SecurityConfigTest {
     private ch.sponsorplatz.organisation.OrgHierarchieService hierarchieService;
 
     @MockitoBean
-    private ch.sponsorplatz.benutzer.AppUserRepository appUserRepository;
-
-    @MockitoBean
-    private ch.sponsorplatz.organisation.MitgliedschaftRepository mitgliedschaftRepository;
+    private ch.sponsorplatz.organisation.MitgliedschaftService mitgliedschaftService;
 
     /** SEC-01: GET /login → 200. */
     @Test

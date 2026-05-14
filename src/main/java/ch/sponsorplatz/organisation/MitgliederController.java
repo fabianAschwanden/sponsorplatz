@@ -3,7 +3,6 @@ package ch.sponsorplatz.organisation;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.einladung.EinladungsService;
 import org.springframework.security.access.AccessDeniedException;
@@ -28,20 +27,17 @@ public class MitgliederController {
     private final OrganisationService organisationService;
     private final MitgliedschaftService mitgliedschaftService;
     private final AppUserService appUserService;
-    private final AppUserRepository appUserRepository;
     private final EinladungsService einladungsService;
     private final AccessControl accessControl;
 
     public MitgliederController(OrganisationService organisationService,
                                 MitgliedschaftService mitgliedschaftService,
                                 AppUserService appUserService,
-                                AppUserRepository appUserRepository,
                                 EinladungsService einladungsService,
                                 AccessControl accessControl) {
         this.organisationService = organisationService;
         this.mitgliedschaftService = mitgliedschaftService;
         this.appUserService = appUserService;
-        this.appUserRepository = appUserRepository;
         this.einladungsService = einladungsService;
         this.accessControl = accessControl;
     }
@@ -77,9 +73,7 @@ public class MitgliederController {
         // der Eingeladene landet via /einladung/annehmen auf /registrieren mit
         // pre-filled E-Mail.
         if (user.isEmpty()) {
-            UUID eingeladenVonId = appUserRepository.findByEmail(auth.getName())
-                    .map(AppUser::getId)
-                    .orElseThrow(() -> new NotFoundException("Angemeldeter User nicht gefunden"));
+            UUID eingeladenVonId = appUserService.findeIdNachEmail(auth.getName());
             try {
                 einladungsService.erstelleEinladung(org.getId(), normalisierteEmail, rolle, eingeladenVonId);
                 redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,

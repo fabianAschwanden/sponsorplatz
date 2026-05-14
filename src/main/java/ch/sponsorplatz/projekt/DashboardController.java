@@ -10,11 +10,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.PlatformRolle;
 import ch.sponsorplatz.einladung.EinladungsService;
-import ch.sponsorplatz.organisation.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.MitgliedschaftService;
 
 /**
  * Dashboard für angemeldete Benutzer — zeigt persönliche Übersicht
@@ -36,23 +35,20 @@ public class DashboardController {
     private final MatchingService matchingService;
     private final ProjektService projektService;
     private final AppUserService appUserService;
-    private final AppUserRepository appUserRepository;
-    private final MitgliedschaftRepository mitgliedschaftRepository;
+    private final MitgliedschaftService mitgliedschaftService;
     private final EinladungsService einladungsService;
 
     public DashboardController(DashboardService dashboardService,
             MatchingService matchingService,
             ProjektService projektService,
             AppUserService appUserService,
-            AppUserRepository appUserRepository,
-            MitgliedschaftRepository mitgliedschaftRepository,
+            MitgliedschaftService mitgliedschaftService,
             EinladungsService einladungsService) {
         this.dashboardService = dashboardService;
         this.matchingService = matchingService;
         this.projektService = projektService;
         this.appUserService = appUserService;
-        this.appUserRepository = appUserRepository;
-        this.mitgliedschaftRepository = mitgliedschaftRepository;
+        this.mitgliedschaftService = mitgliedschaftService;
         this.einladungsService = einladungsService;
     }
 
@@ -63,11 +59,11 @@ public class DashboardController {
         // - Plattform-Admins werden nie umgeleitet.
         // - User, die das Onboarding bereits gesehen haben, ebenfalls nicht
         //   (auch ohne Org bleiben sie dann auf dem Dashboard).
-        AppUser user = appUserRepository.findByEmail(auth.getName()).orElse(null);
+        AppUser user = appUserService.findeNachEmail(auth.getName()).orElse(null);
         if (user != null
                 && user.getPlatformRolle() != PlatformRolle.PLATFORM_ADMIN
                 && !user.isOnboardingGesehen()
-                && mitgliedschaftRepository.findOrgIdsByUserId(user.getId()).isEmpty()) {
+                && mitgliedschaftService.findeOrgIdsVonUser(user.getId()).isEmpty()) {
             return "redirect:/onboarding";
         }
 
@@ -86,7 +82,7 @@ public class DashboardController {
         // Für Org-lose User bleibt die Liste leer (Template versteckt die Sektion).
         List<ProjektView> meineProjekte = List.of();
         if (user != null) {
-            List<java.util.UUID> orgIds = mitgliedschaftRepository.findOrgIdsByUserId(user.getId());
+            List<java.util.UUID> orgIds = mitgliedschaftService.findeOrgIdsVonUser(user.getId());
             if (!orgIds.isEmpty()) {
                 meineProjekte = projektService.findeNachOrgIds(orgIds).stream()
                         .limit(MAX_AKTIVE_PROJEKTE_AUF_DASHBOARD)

@@ -36,9 +36,6 @@ class EinstellungenControllerTest {
     private DatenExportService datenExportService;
 
     @MockitoBean
-    private AppUserRepository appUserRepository;
-
-    @MockitoBean
     private AppUserService appUserService;
 
     @MockitoBean
@@ -55,7 +52,7 @@ class EinstellungenControllerTest {
         user.setId(UUID.randomUUID());
         user.setEmail("max@example.com");
 
-        when(appUserRepository.findByEmail("max@example.com")).thenReturn(Optional.of(user));
+        when(appUserService.findeNachEmail("max@example.com")).thenReturn(Optional.of(user));
         when(datenExportService.exportiere(user.getId()))
                 .thenReturn(Map.of("benutzer", Map.of("email", "max@example.com")));
 
@@ -80,7 +77,7 @@ class EinstellungenControllerTest {
         AppUser user = new AppUser();
         user.setId(UUID.randomUUID());
         user.setEmail("max@example.com");
-        when(appUserRepository.findByEmail("max@example.com")).thenReturn(Optional.of(user));
+        when(appUserService.findeNachEmail("max@example.com")).thenReturn(Optional.of(user));
 
         mockMvc.perform(post("/einstellungen/passwort")
                         .param("altesPasswort", "alt123456")

@@ -23,12 +23,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.PlatformRolle;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import ch.sponsorplatz.einladung.EinladungsService;
-import ch.sponsorplatz.organisation.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.MitgliedschaftService;
 import ch.sponsorplatz.shared.config.SecurityConfig;
 
 @WebMvcTest(controllers = DashboardController.class)
@@ -55,10 +54,7 @@ class DashboardControllerTest {
     private AppUserService appUserService;
 
     @MockitoBean
-    private AppUserRepository appUserRepository;
-
-    @MockitoBean
-    private MitgliedschaftRepository mitgliedschaftRepository;
+    private MitgliedschaftService mitgliedschaftService;
 
     @MockitoBean
     private EinladungsService einladungsService;
@@ -71,8 +67,8 @@ class DashboardControllerTest {
         AppUser user = new AppUser();
         user.setId(UUID.randomUUID());
         user.setEmail(email);
-        when(appUserRepository.findByEmail(email)).thenReturn(Optional.of(user));
-        when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId()))
+        when(appUserService.findeNachEmail(email)).thenReturn(Optional.of(user));
+        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId()))
                 .thenReturn(List.of(UUID.randomUUID()));
     }
 
@@ -146,8 +142,8 @@ class DashboardControllerTest {
         user.setId(UUID.randomUUID());
         user.setEmail("neu@test.ch");
         user.setOnboardingGesehen(false);
-        when(appUserRepository.findByEmail("neu@test.ch")).thenReturn(Optional.of(user));
-        when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of());
+        when(appUserService.findeNachEmail("neu@test.ch")).thenReturn(Optional.of(user));
+        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId())).thenReturn(List.of());
 
         mockMvc.perform(get("/dashboard"))
                 .andExpect(status().is3xxRedirection())
@@ -162,8 +158,8 @@ class DashboardControllerTest {
         user.setId(UUID.randomUUID());
         user.setEmail("zurueck@test.ch");
         user.setOnboardingGesehen(true);
-        when(appUserRepository.findByEmail("zurueck@test.ch")).thenReturn(Optional.of(user));
-        when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of());
+        when(appUserService.findeNachEmail("zurueck@test.ch")).thenReturn(Optional.of(user));
+        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId())).thenReturn(List.of());
         when(dashboardService.ladeDashboardDaten(anyString())).thenReturn(DashboardDaten.leer());
         when(appUserService.findeNachEmail(anyString())).thenReturn(Optional.empty());
 
@@ -181,8 +177,8 @@ class DashboardControllerTest {
         admin.setEmail("admin@test.ch");
         admin.setPlatformRolle(PlatformRolle.PLATFORM_ADMIN);
         admin.setOnboardingGesehen(false);
-        when(appUserRepository.findByEmail("admin@test.ch")).thenReturn(Optional.of(admin));
-        when(mitgliedschaftRepository.findOrgIdsByUserId(admin.getId())).thenReturn(List.of());
+        when(appUserService.findeNachEmail("admin@test.ch")).thenReturn(Optional.of(admin));
+        when(mitgliedschaftService.findeOrgIdsVonUser(admin.getId())).thenReturn(List.of());
         when(dashboardService.ladeDashboardDaten(anyString())).thenReturn(DashboardDaten.leer());
         when(appUserService.findeNachEmail(anyString())).thenReturn(Optional.empty());
 

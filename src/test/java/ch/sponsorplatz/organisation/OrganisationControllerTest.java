@@ -46,10 +46,10 @@ class OrganisationControllerTest {
     private OrgHierarchieService hierarchieService;
 
     @MockitoBean
-    private ch.sponsorplatz.benutzer.AppUserRepository appUserRepository;
+    private ch.sponsorplatz.benutzer.AppUserService appUserService;
 
     @MockitoBean
-    private MitgliedschaftRepository mitgliedschaftRepository;
+    private MitgliedschaftService mitgliedschaftService;
 
     /** ORG-08: GET /organisationen → 200 + Liste. */
     @Test
@@ -70,7 +70,7 @@ class OrganisationControllerTest {
         ch.sponsorplatz.benutzer.AppUser user = new ch.sponsorplatz.benutzer.AppUser();
         user.setId(UUID.randomUUID());
         user.setEmail("verein@test.ch");
-        when(appUserRepository.findByEmail("verein@test.ch")).thenReturn(Optional.of(user));
+        when(appUserService.findeNachEmail("verein@test.ch")).thenReturn(Optional.of(user));
         when(service.erstelleMitEigentuemer(any(), eq(user.getId()))).thenReturn(gespeichert);
 
         mockMvc.perform(post("/organisationen")

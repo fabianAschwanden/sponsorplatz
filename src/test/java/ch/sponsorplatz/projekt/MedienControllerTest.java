@@ -42,7 +42,7 @@ class MedienControllerTest {
     @MockitoBean
     private AccessControl accessControl;
     @MockitoBean
-    private ch.sponsorplatz.benutzer.AppUserRepository appUserRepository;
+    private ch.sponsorplatz.benutzer.AppUserService appUserService;
     @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
 

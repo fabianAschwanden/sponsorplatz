@@ -34,16 +34,13 @@ import java.util.Map;
 public class EinstellungenController {
 
     private final DatenExportService datenExportService;
-    private final AppUserRepository appUserRepository;
     private final AppUserService appUserService;
     private final MedienAssetService medienAssetService;
 
     public EinstellungenController(DatenExportService datenExportService,
-                                   AppUserRepository appUserRepository,
                                    AppUserService appUserService,
                                    MedienAssetService medienAssetService) {
         this.datenExportService = datenExportService;
-        this.appUserRepository = appUserRepository;
         this.appUserService = appUserService;
         this.medienAssetService = medienAssetService;
     }
@@ -126,7 +123,7 @@ public class EinstellungenController {
     }
 
     private AppUser ladeUser(Authentication auth) {
-        return appUserRepository.findByEmail(auth.getName())
+        return appUserService.findeNachEmail(auth.getName())
                 .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
     }
 

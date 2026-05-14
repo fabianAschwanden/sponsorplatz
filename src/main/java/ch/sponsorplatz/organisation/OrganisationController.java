@@ -1,6 +1,6 @@
 package ch.sponsorplatz.organisation;
 
-import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import jakarta.validation.Valid;
@@ -26,18 +26,18 @@ public class OrganisationController {
     private final OrganisationService service;
     private final AccessControl accessControl;
     private final OrgHierarchieService hierarchieService;
-    private final AppUserRepository appUserRepository;
-    private final MitgliedschaftRepository mitgliedschaftRepository;
+    private final AppUserService appUserService;
+    private final MitgliedschaftService mitgliedschaftService;
 
     public OrganisationController(OrganisationService service, AccessControl accessControl,
                                   OrgHierarchieService hierarchieService,
-                                  AppUserRepository appUserRepository,
-                                  MitgliedschaftRepository mitgliedschaftRepository) {
+                                  AppUserService appUserService,
+                                  MitgliedschaftService mitgliedschaftService) {
         this.service = service;
         this.accessControl = accessControl;
         this.hierarchieService = hierarchieService;
-        this.appUserRepository = appUserRepository;
-        this.mitgliedschaftRepository = mitgliedschaftRepository;
+        this.appUserService = appUserService;
+        this.mitgliedschaftService = mitgliedschaftService;
     }
 
     /**
@@ -64,9 +64,9 @@ public class OrganisationController {
         if (!eingeloggt || istPlattformAdmin(auth)) {
             return service.alle();
         }
-        return appUserRepository.findByEmail(auth.getName())
-                .map(user -> mitgliedschaftRepository
-                        .findByUserIdAndRolleInMitOrg(
+        return appUserService.findeNachEmail(auth.getName())
+                .map(user -> mitgliedschaftService
+                        .findeMitgliedschaftenVonUser(
                                 user.getId(),
                                 java.util.Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR, Rolle.ORG_VIEWER))
                         .stream()
@@ -123,7 +123,7 @@ public class OrganisationController {
         try {
             Organisation neu;
             if (auth != null && auth.isAuthenticated()) {
-                var userId = appUserRepository.findByEmail(auth.getName())
+                var userId = appUserService.findeNachEmail(auth.getName())
                         .map(ch.sponsorplatz.benutzer.AppUser::getId)
                         .orElse(null);
                 if (userId != null) {

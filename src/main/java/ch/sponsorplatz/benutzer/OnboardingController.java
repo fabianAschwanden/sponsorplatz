@@ -22,12 +22,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import ch.sponsorplatz.organisation.Branche;
-import ch.sponsorplatz.organisation.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.MitgliedschaftService;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.OrganisationFormDto;
 import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.shared.exception.NotFoundException;
 
 /**
  * Onboarding-Wizard — erscheint nach der ersten Anmeldung, wenn der User
@@ -51,21 +50,21 @@ public class OnboardingController {
      */
     private static final Pattern TOKEN_PATTERN = Pattern.compile("^[A-Za-z0-9_-]{16,128}$");
 
-    private final AppUserRepository appUserRepository;
-    private final MitgliedschaftRepository mitgliedschaftRepository;
+    private final AppUserService appUserService;
+    private final MitgliedschaftService mitgliedschaftService;
     private final OrganisationService organisationService;
 
-    public OnboardingController(AppUserRepository appUserRepository,
-            MitgliedschaftRepository mitgliedschaftRepository,
+    public OnboardingController(AppUserService appUserService,
+            MitgliedschaftService mitgliedschaftService,
             OrganisationService organisationService) {
-        this.appUserRepository = appUserRepository;
-        this.mitgliedschaftRepository = mitgliedschaftRepository;
+        this.appUserService = appUserService;
+        this.mitgliedschaftService = mitgliedschaftService;
         this.organisationService = organisationService;
     }
 
     @GetMapping
     public String startseite(Authentication auth, Model model) {
-        Optional<AppUser> userOpt = appUserRepository.findByEmail(auth.getName());
+        Optional<AppUser> userOpt = appUserService.findeNachEmail(auth.getName());
         // Plattform-Admins sehen das Onboarding nie.
         // User mit Mitgliedschaften brauchen kein Onboarding → Dashboard.
         if (userOpt.isPresent()) {
@@ -73,15 +72,14 @@ public class OnboardingController {
             if (user.getPlatformRolle() == PlatformRolle.PLATFORM_ADMIN) {
                 return "redirect:/dashboard";
             }
-            if (!mitgliedschaftRepository.findOrgIdsByUserId(user.getId()).isEmpty()) {
+            if (!mitgliedschaftService.findeOrgIdsVonUser(user.getId()).isEmpty()) {
                 return "redirect:/dashboard";
             }
             // Wizard wird angezeigt — Flag setzen, damit künftige Logins nicht
             // erneut hierher umgeleitet werden, auch wenn der User keinen
             // Verein anlegt oder den Wizard abbricht.
             if (!user.isOnboardingGesehen()) {
-                user.setOnboardingGesehen(true);
-                appUserRepository.save(user);
+                appUserService.markiereOnboardingGesehen(user.getId());
             }
         }
 
@@ -104,9 +102,7 @@ public class OnboardingController {
             return "onboarding";
         }
 
-        UUID userId = appUserRepository.findByEmail(auth.getName())
-                .map(AppUser::getId)
-                .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
+        UUID userId = appUserService.findeIdNachEmail(auth.getName());
 
         try {
             OrganisationFormDto orgDto = new OrganisationFormDto();

@@ -31,18 +31,18 @@ public class NachrichtController {
 
     private final NachrichtService nachrichtService;
     private final OrganisationService organisationService;
-    private final SponsoringAnfrageRepository anfrageRepository;
+    private final SponsoringAnfrageService anfrageService;
     private final AppUserService appUserService;
     private final AccessControl accessControl;
 
     public NachrichtController(NachrichtService nachrichtService,
                                OrganisationService organisationService,
-                               SponsoringAnfrageRepository anfrageRepository,
+                               SponsoringAnfrageService anfrageService,
                                AppUserService appUserService,
                                AccessControl accessControl) {
         this.nachrichtService = nachrichtService;
         this.organisationService = organisationService;
-        this.anfrageRepository = anfrageRepository;
+        this.anfrageService = anfrageService;
         this.appUserService = appUserService;
         this.accessControl = accessControl;
     }
@@ -100,8 +100,7 @@ public class NachrichtController {
     }
 
     private SponsoringAnfrage ladeAnfrage(UUID id) {
-        return anfrageRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Anfrage nicht gefunden: " + id));
+        return anfrageService.findeNachId(id);
     }
 
     private void pruefeEditRecht(String slug, Authentication auth) {

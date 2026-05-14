@@ -8,9 +8,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.organisation.MitgliedschaftRepository;
+import ch.sponsorplatz.benutzer.AppUserService;
+import ch.sponsorplatz.organisation.MitgliedschaftService;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 
 /**
@@ -22,27 +21,24 @@ import ch.sponsorplatz.shared.config.ModelAttributeNames;
 @Controller
 public class MeineProjekteController {
 
-    private final AppUserRepository appUserRepository;
-    private final MitgliedschaftRepository mitgliedschaftRepository;
+    private final AppUserService appUserService;
+    private final MitgliedschaftService mitgliedschaftService;
     private final ProjektService projektService;
 
-    public MeineProjekteController(AppUserRepository appUserRepository,
-            MitgliedschaftRepository mitgliedschaftRepository,
+    public MeineProjekteController(AppUserService appUserService,
+            MitgliedschaftService mitgliedschaftService,
             ProjektService projektService) {
-        this.appUserRepository = appUserRepository;
-        this.mitgliedschaftRepository = mitgliedschaftRepository;
+        this.appUserService = appUserService;
+        this.mitgliedschaftService = mitgliedschaftService;
         this.projektService = projektService;
     }
 
     @GetMapping("/meine-projekte")
     @PreAuthorize("isAuthenticated()")
     public String meineProjekte(Authentication auth, Model model) {
-        List<ProjektView> projekte = appUserRepository.findByEmail(auth.getName())
-                .map(AppUser::getId)
-                .map(mitgliedschaftRepository::findOrgIdsByUserId)
-                .map(projektService::findeNachOrgIds)
-                .orElse(List.of())
-                .stream()
+        var userId = appUserService.findeIdNachEmail(auth.getName());
+        var orgIds = mitgliedschaftService.findeOrgIdsVonUser(userId);
+        List<ProjektView> projekte = projektService.findeNachOrgIds(orgIds).stream()
                 .map(ProjektView::von)
                 .toList();
 

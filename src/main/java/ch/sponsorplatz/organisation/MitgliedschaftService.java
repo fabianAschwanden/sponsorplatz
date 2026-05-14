@@ -69,7 +69,26 @@ public class MitgliedschaftService {
         return mitgliedschaftRepository.findByOrgId(orgId);
     }
 
+    /**
+     * Org-IDs aller Mitgliedschaften eines Users — Komfort-Methode für
+     * Controller, damit sie {@link MitgliedschaftRepository} nicht direkt
+     * injizieren müssen (ARCH-01).
+     */
     @Transactional(readOnly = true)
+    public List<UUID> findeOrgIdsVonUser(UUID userId) {
+        return mitgliedschaftRepository.findOrgIdsByUserId(userId);
+    }
+
+    /**
+     * Mitgliedschaften eines Users mit konkreten Rollen, mit eager-geladener
+     * Org (für Controller-Listen ohne LazyInit-Risiko).
+     */
+    @Transactional(readOnly = true)
+    public List<Mitgliedschaft> findeMitgliedschaftenVonUser(UUID userId,
+            java.util.Set<Rolle> rollen) {
+        return mitgliedschaftRepository.findByUserIdAndRolleInMitOrg(userId, rollen);
+    }
+
     public boolean existierenMitgliedschaftenFuerOrg(UUID orgId) {
         return mitgliedschaftRepository.existsByOrgId(orgId);
     }

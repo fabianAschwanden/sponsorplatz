@@ -23,9 +23,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
-import ch.sponsorplatz.organisation.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.MitgliedschaftService;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.shared.config.SecurityConfig;
 
@@ -45,10 +45,10 @@ class MeineProjekteControllerTest {
     private SponsorplatzUserDetailsService userDetailsService;
 
     @MockitoBean
-    private AppUserRepository appUserRepository;
+    private AppUserService appUserService;
 
     @MockitoBean
-    private MitgliedschaftRepository mitgliedschaftRepository;
+    private MitgliedschaftService mitgliedschaftService;
 
     @MockitoBean
     private ProjektService projektService;
@@ -70,8 +70,8 @@ class MeineProjekteControllerTest {
         user.setEmail("user@test.ch");
         UUID orgA = UUID.randomUUID();
         UUID orgB = UUID.randomUUID();
-        when(appUserRepository.findByEmail("user@test.ch")).thenReturn(Optional.of(user));
-        when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId()))
+        when(appUserService.findeNachEmail("user@test.ch")).thenReturn(Optional.of(user));
+        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId()))
                 .thenReturn(List.of(orgA, orgB));
 
         Organisation org = new Organisation();
@@ -101,8 +101,8 @@ class MeineProjekteControllerTest {
         AppUser user = new AppUser();
         user.setId(UUID.randomUUID());
         user.setEmail("ohne@test.ch");
-        when(appUserRepository.findByEmail("ohne@test.ch")).thenReturn(Optional.of(user));
-        when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of());
+        when(appUserService.findeNachEmail("ohne@test.ch")).thenReturn(Optional.of(user));
+        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId())).thenReturn(List.of());
         when(projektService.findeNachOrgIds(anyList())).thenReturn(List.of());
 
         mockMvc.perform(get("/meine-projekte"))

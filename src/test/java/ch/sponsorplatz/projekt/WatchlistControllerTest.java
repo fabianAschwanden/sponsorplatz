@@ -3,7 +3,7 @@ import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +40,7 @@ class WatchlistControllerTest {
     private ProjektService projektService;
 
     @MockitoBean
-    private AppUserRepository appUserRepository;
+    private AppUserService appUserService;
 
     @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
@@ -57,7 +57,7 @@ class WatchlistControllerTest {
     @WithMockUser(username = "test@example.com")
     void listeIst200() throws Exception {
         AppUser user = testUser();
-        when(appUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(appUserService.findeNachEmail("test@example.com")).thenReturn(Optional.of(user));
         when(watchlistService.findeNachUser(user.getId())).thenReturn(List.of());
 
         mockMvc.perform(get("/watchlist"))
@@ -76,7 +76,7 @@ class WatchlistControllerTest {
         projekt.setName("Sommerfest");
         projekt.setSlug("sommerfest");
 
-        when(appUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(appUserService.findeNachEmail("test@example.com")).thenReturn(Optional.of(user));
         when(projektService.findeNachSlug("sommerfest")).thenReturn(Optional.of(projekt));
         when(watchlistService.hinzufuegen(any(), any())).thenReturn(new WatchlistEintrag());
 
@@ -95,7 +95,7 @@ class WatchlistControllerTest {
         projekt.setName("Sommerfest");
         projekt.setSlug("sommerfest");
 
-        when(appUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(appUserService.findeNachEmail("test@example.com")).thenReturn(Optional.of(user));
         when(projektService.findeNachSlug("sommerfest")).thenReturn(Optional.of(projekt));
 
         mockMvc.perform(post("/watchlist/entfernen/sommerfest").with(csrf()))

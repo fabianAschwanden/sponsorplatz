@@ -52,7 +52,7 @@ class NachrichtControllerTest {
     @MockitoBean
     private OrganisationService organisationService;
     @MockitoBean
-    private SponsoringAnfrageRepository anfrageRepository;
+    private SponsoringAnfrageService anfrageService;
     @MockitoBean
     private AppUserService appUserService;
     @MockitoBean
@@ -96,7 +96,7 @@ class NachrichtControllerTest {
     void threadAnzeigen_mitRecht() throws Exception {
         when(accessControl.kannOrgEditierenNachSlug(eq(ORG_SLUG), any())).thenReturn(true);
         when(organisationService.findeNachSlug(ORG_SLUG)).thenReturn(Optional.of(testOrg()));
-        when(anfrageRepository.findById(ANFRAGE_ID)).thenReturn(Optional.of(testAnfrage()));
+        when(anfrageService.findeNachId(ANFRAGE_ID)).thenReturn(testAnfrage());
         when(nachrichtService.findeNachAnfrage(ANFRAGE_ID)).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/organisationen/" + ORG_SLUG + "/anfragen/" + ANFRAGE_ID + "/nachrichten"))

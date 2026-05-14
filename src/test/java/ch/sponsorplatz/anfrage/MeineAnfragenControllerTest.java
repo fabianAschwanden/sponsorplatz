@@ -1,10 +1,10 @@
 package ch.sponsorplatz.anfrage;
 
 import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.organisation.Mitgliedschaft;
-import ch.sponsorplatz.organisation.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.MitgliedschaftService;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationService;
@@ -51,8 +51,8 @@ class MeineAnfragenControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean private SponsoringAnfrageService anfrageService;
-    @MockitoBean private AppUserRepository appUserRepository;
-    @MockitoBean private MitgliedschaftRepository mitgliedschaftRepository;
+    @MockitoBean private AppUserService appUserService;
+    @MockitoBean private MitgliedschaftService mitgliedschaftService;
     @MockitoBean private AccessControl accessControl;
     @MockitoBean private SponsoringPaketService paketService;
     @MockitoBean private OrganisationService organisationService;
@@ -74,10 +74,10 @@ class MeineAnfragenControllerTest {
         AppUser user = new AppUser();
         user.setId(UUID.randomUUID());
         user.setEmail("test@sp.ch");
-        when(appUserRepository.findByEmail("test@sp.ch")).thenReturn(Optional.of(user));
+        when(appUserService.findeNachEmail("test@sp.ch")).thenReturn(Optional.of(user));
 
         UUID orgId = UUID.randomUUID();
-        when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of(orgId));
+        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId())).thenReturn(List.of(orgId));
         when(anfrageService.findeAlleEingehenden(any())).thenReturn(List.of());
         when(anfrageService.zaehleNeue(anyCollection())).thenReturn(0L);
 
@@ -94,10 +94,10 @@ class MeineAnfragenControllerTest {
         AppUser user = new AppUser();
         user.setId(UUID.randomUUID());
         user.setEmail("test@sp.ch");
-        when(appUserRepository.findByEmail("test@sp.ch")).thenReturn(Optional.of(user));
+        when(appUserService.findeNachEmail("test@sp.ch")).thenReturn(Optional.of(user));
 
         UUID orgId = UUID.randomUUID();
-        when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of(orgId));
+        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId())).thenReturn(List.of(orgId));
         when(anfrageService.findeAlleEingehenden(any())).thenReturn(List.of());
         when(anfrageService.zaehleNeue(anyCollection())).thenReturn(5L);
 
@@ -120,9 +120,9 @@ class MeineAnfragenControllerTest {
         Organisation sponsorOrg = neueOrg(sponsorOrgId, "ACME AG", "acme", OrgTyp.UNTERNEHMEN);
         SponsoringPaket paket = neuesPaket(paketId, empfaenger);
 
-        when(appUserRepository.findByEmail("sponsor@sp.ch")).thenReturn(Optional.of(user));
+        when(appUserService.findeNachEmail("sponsor@sp.ch")).thenReturn(Optional.of(user));
         when(paketService.findeNachIdMitProjektUndOrg(paketId)).thenReturn(Optional.of(paket));
-        when(mitgliedschaftRepository.findByUserIdAndRolleInMitOrg(eq(userId), any()))
+        when(mitgliedschaftService.findeMitgliedschaftenVonUser(eq(userId), any()))
                 .thenReturn(List.of(neueMitgliedschaft(user, sponsorOrg, Rolle.ORG_OWNER)));
 
         mockMvc.perform(get("/anfragen/neu").param("paketId", paketId.toString()))
@@ -146,7 +146,7 @@ class MeineAnfragenControllerTest {
         Organisation sponsorOrg = neueOrg(sponsorOrgId, "ACME AG", "acme", OrgTyp.UNTERNEHMEN);
         SponsoringPaket paket = neuesPaket(paketId, empfaenger);
 
-        when(appUserRepository.findByEmail("sponsor@sp.ch")).thenReturn(Optional.of(user));
+        when(appUserService.findeNachEmail("sponsor@sp.ch")).thenReturn(Optional.of(user));
         when(paketService.findeNachIdMitProjektUndOrg(paketId)).thenReturn(Optional.of(paket));
         when(accessControl.kannOrgEditieren(eq(sponsorOrgId), any())).thenReturn(true);
         when(organisationService.findeNachId(sponsorOrgId)).thenReturn(Optional.of(sponsorOrg));
@@ -178,10 +178,10 @@ class MeineAnfragenControllerTest {
         Organisation empfaenger = neueOrg(empfaengerId, "FC Verein", "fc-verein", OrgTyp.VEREIN);
         SponsoringPaket paket = neuesPaket(paketId, empfaenger);
 
-        when(appUserRepository.findByEmail("sponsor@sp.ch")).thenReturn(Optional.of(user));
+        when(appUserService.findeNachEmail("sponsor@sp.ch")).thenReturn(Optional.of(user));
         when(paketService.findeNachIdMitProjektUndOrg(paketId)).thenReturn(Optional.of(paket));
         when(accessControl.kannOrgEditieren(eq(empfaengerId), any())).thenReturn(true);
-        when(mitgliedschaftRepository.findByUserIdAndRolleInMitOrg(eq(userId), any()))
+        when(mitgliedschaftService.findeMitgliedschaftenVonUser(eq(userId), any()))
                 .thenReturn(List.of(neueMitgliedschaft(user, empfaenger, Rolle.ORG_OWNER)));
 
         mockMvc.perform(post("/anfragen/erstellen")
@@ -204,8 +204,8 @@ class MeineAnfragenControllerTest {
 
         AppUser user = neuerUser(userId, "editor@verein.ch", "Editor");
         Organisation vereinsOrg = neueOrg(vereinsOrgId, "FC Test", "fc-test", OrgTyp.VEREIN);
-        when(appUserRepository.findByEmail("editor@verein.ch")).thenReturn(Optional.of(user));
-        when(mitgliedschaftRepository.findByUserIdAndRolleInMitOrg(eq(userId), any()))
+        when(appUserService.findeNachEmail("editor@verein.ch")).thenReturn(Optional.of(user));
+        when(mitgliedschaftService.findeMitgliedschaftenVonUser(eq(userId), any()))
                 .thenReturn(List.of(neueMitgliedschaft(user, vereinsOrg, Rolle.ORG_EDITOR)));
 
         SponsoringAnfrage meineAnfrage = new SponsoringAnfrage();

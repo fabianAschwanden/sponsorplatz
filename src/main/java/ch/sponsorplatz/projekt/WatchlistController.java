@@ -3,7 +3,7 @@ package ch.sponsorplatz.projekt;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,14 +21,14 @@ public class WatchlistController {
 
     private final WatchlistService watchlistService;
     private final ProjektService projektService;
-    private final AppUserRepository appUserRepository;
+    private final AppUserService appUserService;
 
     public WatchlistController(WatchlistService watchlistService,
                                ProjektService projektService,
-                               AppUserRepository appUserRepository) {
+                               AppUserService appUserService) {
         this.watchlistService = watchlistService;
         this.projektService = projektService;
-        this.appUserRepository = appUserRepository;
+        this.appUserService = appUserService;
     }
 
     @GetMapping
@@ -67,8 +67,7 @@ public class WatchlistController {
     }
 
     private AppUser ladeUser(Authentication auth) {
-        return appUserRepository.findByEmail(auth.getName())
+        return appUserService.findeNachEmail(auth.getName())
                 .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
     }
 }
-

@@ -17,13 +17,12 @@ import ch.sponsorplatz.audit.AuditAktion;
 import ch.sponsorplatz.audit.AuditService;
 import ch.sponsorplatz.benutzer.AdminBenutzerView;
 import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.PlatformRolle;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.organisation.OrganisationView;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.shared.exception.NotFoundException;
 
 /**
  * Admin-Bereich: Benutzer- und Organisations-Verwaltung.
@@ -33,14 +32,14 @@ import ch.sponsorplatz.shared.exception.NotFoundException;
 @PreAuthorize("hasRole('PLATFORM_ADMIN')")
 public class AdminBenutzerController {
 
-    private final AppUserRepository userRepository;
+    private final AppUserService appUserService;
     private final OrganisationService organisationService;
     private final AuditService auditService;
 
-    public AdminBenutzerController(AppUserRepository userRepository,
+    public AdminBenutzerController(AppUserService appUserService,
             OrganisationService organisationService,
             AuditService auditService) {
-        this.userRepository = userRepository;
+        this.appUserService = appUserService;
         this.organisationService = organisationService;
         this.auditService = auditService;
     }
@@ -49,7 +48,7 @@ public class AdminBenutzerController {
 
     @GetMapping("/benutzer")
     public String benutzerListe(Model model) {
-        List<AppUser> users = userRepository.findAllByOrderByRegistriertAmDesc();
+        List<AppUser> users = appUserService.findeAlleNeuesteZuerst();
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "admin");
         model.addAttribute("benutzer", AdminBenutzerView.von(users));
         model.addAttribute("rollen", PlatformRolle.values());
@@ -58,9 +57,7 @@ public class AdminBenutzerController {
 
     @PostMapping("/benutzer/{id}/sperren")
     public String benutzerSperren(@PathVariable UUID id, RedirectAttributes redirect) {
-        AppUser user = findeUser(id);
-        user.setAktiv(false);
-        userRepository.save(user);
+        AppUser user = appUserService.setzeAktiv(id, false);
         auditService.protokolliere(AuditAktion.GESPERRT, "BENUTZER", id, "AppUser", user.getEmail());
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                 "Benutzer «" + user.getAnzeigename() + "» wurde gesperrt.");
@@ -69,9 +66,7 @@ public class AdminBenutzerController {
 
     @PostMapping("/benutzer/{id}/entsperren")
     public String benutzerEntsperren(@PathVariable UUID id, RedirectAttributes redirect) {
-        AppUser user = findeUser(id);
-        user.setAktiv(true);
-        userRepository.save(user);
+        AppUser user = appUserService.setzeAktiv(id, true);
         auditService.protokolliere(AuditAktion.ENTSPERRT, "BENUTZER", id, "AppUser", user.getEmail());
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                 "Benutzer «" + user.getAnzeigename() + "» wurde entsperrt.");
@@ -82,14 +77,12 @@ public class AdminBenutzerController {
     public String rolleAendern(@PathVariable UUID id,
             @RequestParam(required = false) String rolle,
             RedirectAttributes redirect) {
-        AppUser user = findeUser(id);
-        String alteRolle = user.getPlatformRolle() != null ? user.getPlatformRolle().name() : "KEINE";
-        if (rolle == null || rolle.isBlank()) {
-            user.setPlatformRolle(null);
-        } else {
-            user.setPlatformRolle(PlatformRolle.valueOf(rolle));
-        }
-        userRepository.save(user);
+        PlatformRolle neueRolle = (rolle == null || rolle.isBlank())
+                ? null
+                : PlatformRolle.valueOf(rolle);
+        AppUser vorher = appUserService.findeNachId(id).orElseThrow();
+        String alteRolle = vorher.getPlatformRolle() != null ? vorher.getPlatformRolle().name() : "KEINE";
+        AppUser user = appUserService.setzePlatformRolle(id, neueRolle);
         auditService.protokolliere(AuditAktion.ROLLE_GEAENDERT, "BENUTZER", id, "AppUser",
                 alteRolle + " → " + (rolle != null ? rolle : "KEINE"));
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
@@ -123,10 +116,5 @@ public class AdminBenutzerController {
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                 "Organisation «" + org.getName() + "» suspendiert.");
         return "redirect:/admin/organisationen";
-    }
-
-    private AppUser findeUser(UUID id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Benutzer nicht gefunden: " + id));
     }
 }

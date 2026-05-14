@@ -2,7 +2,6 @@ package ch.sponsorplatz.organisation;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import ch.sponsorplatz.einladung.EinladungsService;
@@ -46,9 +45,6 @@ class MitgliederControllerTest {
 
     @MockitoBean
     private AppUserService appUserService;
-
-    @MockitoBean
-    private AppUserRepository appUserRepository;
 
     @MockitoBean
     private EinladungsService einladungsService;
@@ -143,7 +139,7 @@ class MitgliederControllerTest {
         AppUser owner = new AppUser();
         owner.setId(UUID.randomUUID());
         owner.setEmail("owner@example.com");
-        when(appUserRepository.findByEmail("owner@example.com")).thenReturn(Optional.of(owner));
+        when(appUserService.findeIdNachEmail("owner@example.com")).thenReturn(owner.getId());
 
         mockMvc.perform(post("/organisationen/fc-test/mitglieder/hinzufuegen")
                 .with(csrf())
