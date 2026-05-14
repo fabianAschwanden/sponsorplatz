@@ -20,7 +20,18 @@
                 <p class="app-page-rubrik" th:text="${org.typ}">VEREIN</p>
                 <h1 th:text="${org.name}">Name</h1>
             </div>
-            <div style="display:flex; gap:0.5rem;">
+            <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                <!-- Admin-Direkt-Aktion: PENDING-Org verifizieren, ohne über /admin/verifizierungen zu gehen.
+                     Sichtbar nur für PLATFORM_ADMIN, wenn der Status PENDING ist. -->
+                <th:block sec:authorize="hasRole('PLATFORM_ADMIN')" th:if="${org.status == T(ch.sponsorplatz.organisation.OrgStatus).PENDING}">
+                    <form th:action="@{/admin/verifizierungen/{id}/verifizieren(id=${org.id})}" method="post" style="margin:0;">
+                        <button type="submit" class="app-btn" th:text="#{orgDetail.aktion.verifizieren}">✓ Verifizieren</button>
+                    </form>
+                    <form th:action="@{/admin/verifizierungen/{id}/ablehnen(id=${org.id})}" method="post" style="margin:0;"
+                          onsubmit="return confirm('Diese Organisation wirklich ablehnen?');">
+                        <button type="submit" class="app-btn app-btn-danger" th:text="#{orgDetail.aktion.ablehnen}">Ablehnen</button>
+                    </form>
+                </th:block>
                 <a th:href="@{/organisationen/{slug}/mitglieder(slug=${org.slug})}" class="app-btn-secondary app-btn"
                    th:text="#{orgDetail.aktion.mitglieder}">Mitglieder</a>
                 <a th:href="@{/organisationen/{slug}/projekte(slug=${org.slug})}" class="app-btn-secondary app-btn"

@@ -20,6 +20,9 @@ import java.util.UUID;
  * Admin-UI: pflegt {@link AufgabenDefinition}en — Custom-Tasktypen erstellen,
  * vorhandene aktivieren/deaktivieren, Titel/Beschreibung/Link anpassen.
  * System-Seeds (V36) sind nicht löschbar, behalten ihre Trigger-Felder.
+ *
+ * <p>Controller berührt niemals die JPA-Entity direkt — Service liefert
+ * Form-DTOs und Views (CLAUDE.md View-Pflicht / ARCH-02).
  */
 @Controller
 @RequestMapping("/admin/aufgaben-definitionen")
@@ -54,9 +57,9 @@ public class AdminAufgabenDefinitionController {
             return "admin/aufgaben-definition-form";
         }
         try {
-            AufgabenDefinition def = service.erstelle(dto, auth.getName());
+            service.erstelle(dto, auth.getName());
             redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                    "Aufgaben-Definition \"" + def.getTitel() + "\" erstellt.");
+                    "Aufgaben-Definition \"" + dto.getTitel() + "\" erstellt.");
             return "redirect:/admin/aufgaben-definitionen";
         } catch (IllegalArgumentException ex) {
             model.addAttribute(ModelAttributeNames.FEHLERMELDUNG, ex.getMessage());
@@ -67,8 +70,7 @@ public class AdminAufgabenDefinitionController {
 
     @GetMapping("/{id}/bearbeiten")
     public String bearbeitenFormular(@PathVariable UUID id, Model model) {
-        AufgabenDefinition def = service.findeNachId(id);
-        zeigeFormular(model, inForm(def), id, def.isSystemDefinition());
+        zeigeFormular(model, service.findeFormular(id), id, service.istSystemDefinition(id));
         return "admin/aufgaben-definition-form";
     }
 
@@ -76,14 +78,14 @@ public class AdminAufgabenDefinitionController {
     public String aktualisiere(@PathVariable UUID id,
                                 @Valid @ModelAttribute("defForm") AufgabenDefinitionFormDto dto,
                                 BindingResult br, Model model, RedirectAttributes redirect) {
-        AufgabenDefinition vorhanden = service.findeNachId(id);
+        boolean systemSchutz = service.istSystemDefinition(id);
         if (br.hasErrors()) {
-            zeigeFormular(model, dto, id, vorhanden.isSystemDefinition());
+            zeigeFormular(model, dto, id, systemSchutz);
             return "admin/aufgaben-definition-form";
         }
-        AufgabenDefinition def = service.aktualisiere(id, dto);
+        service.aktualisiere(id, dto);
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                "Aufgaben-Definition \"" + def.getTitel() + "\" aktualisiert.");
+                "Aufgaben-Definition \"" + dto.getTitel() + "\" aktualisiert.");
         return "redirect:/admin/aufgaben-definitionen";
     }
 
@@ -107,18 +109,5 @@ public class AdminAufgabenDefinitionController {
         model.addAttribute("systemSchutz", systemSchutz);
         model.addAttribute("entityTypen", TriggerEntityTyp.values());
         model.addAttribute("assigneeRegeln", AssigneeRegel.values());
-    }
-
-    private static AufgabenDefinitionFormDto inForm(AufgabenDefinition def) {
-        AufgabenDefinitionFormDto dto = new AufgabenDefinitionFormDto();
-        dto.setTitel(def.getTitel());
-        dto.setBeschreibung(def.getBeschreibung());
-        dto.setTriggerEntityTyp(def.getTriggerEntityTyp());
-        dto.setTriggerStatus(def.getTriggerStatus());
-        dto.setZielStatus(def.getZielStatus());
-        dto.setAssigneeRegel(def.getAssigneeRegel());
-        dto.setLinkTemplate(def.getLinkTemplate());
-        dto.setAktiv(def.isAktiv());
-        return dto;
     }
 }

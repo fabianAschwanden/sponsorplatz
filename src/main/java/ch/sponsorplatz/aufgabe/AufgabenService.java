@@ -59,9 +59,10 @@ public class AufgabenService {
     /**
      * Manuelles Erledigen — z.B. wenn der User die Aufgabe nicht über den
      * Standard-Workflow abschließt (Notiz: das automatische Erledigen läuft
-     * über {@link AufgabenEngine}).
+     * über {@link AufgabenEngine}). Rückgabe ist ein View-DTO, damit der
+     * Controller keine Entity ans Template gibt (CLAUDE.md View-Pflicht).
      */
-    public Aufgabe markiereErledigt(UUID aufgabeId, String email) {
+    public AufgabeView markiereErledigt(UUID aufgabeId, String email) {
         AppUser user = appUserRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User nicht gefunden: " + email));
         Aufgabe a = aufgabeRepository.findById(aufgabeId)
@@ -71,12 +72,12 @@ public class AufgabenService {
             throw new AccessDeniedException("Aufgabe gehört nicht zur Sichtbarkeit des Users");
         }
         if (a.getStatus() != AufgabenStatus.OFFEN) {
-            return a; // Idempotent — bereits erledigt
+            return AufgabeView.von(a); // Idempotent — bereits erledigt
         }
         a.setStatus(AufgabenStatus.ERLEDIGT);
         a.setErledigtAm(Instant.now());
         a.setErledigtVon(user);
-        return aufgabeRepository.save(a);
+        return AufgabeView.von(aufgabeRepository.save(a));
     }
 
     private Sichtbarkeit sichtbarkeit(String email) {

@@ -14,6 +14,9 @@ public interface VertragRepository extends JpaRepository<Vertrag, UUID> {
 
     Optional<Vertrag> findByAnfrageId(UUID anfrageId);
 
+    /** Alle Verträge in einem bestimmten Status — für den Aufgaben-Backfill beim App-Start. */
+    List<Vertrag> findByStatus(VertragsStatus status);
+
     List<Vertrag> findByOrgIdOrderByErstelltAmDesc(UUID orgId);
 
     List<Vertrag> findByOrgIdAndStatusOrderByErstelltAmDesc(UUID orgId, VertragsStatus status);

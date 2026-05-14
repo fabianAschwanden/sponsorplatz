@@ -13,6 +13,9 @@ public interface RechnungRepository extends JpaRepository<Rechnung, UUID> {
 
     Optional<Rechnung> findByVertragId(UUID vertragId);
 
+    /** Alle Rechnungen in einem bestimmten Status — für den Aufgaben-Backfill beim App-Start. */
+    List<Rechnung> findByStatus(RechnungsStatus status);
+
     List<Rechnung> findByOrgIdOrderByErstelltAmDesc(UUID orgId);
 
     long countByOrgId(UUID orgId);

@@ -34,18 +34,40 @@ public class AufgabenDefinitionService {
                 .orElseThrow(() -> new NotFoundException("Aufgaben-Definition nicht gefunden: " + id));
     }
 
-    public AufgabenDefinition erstelle(AufgabenDefinitionFormDto dto, String erstelltVon) {
+    /** Form-DTO für das Bearbeiten-UI — Controller bekommt so keine Entity. */
+    @Transactional(readOnly = true)
+    public AufgabenDefinitionFormDto findeFormular(UUID id) {
+        AufgabenDefinition def = findeNachId(id);
+        AufgabenDefinitionFormDto dto = new AufgabenDefinitionFormDto();
+        dto.setTitel(def.getTitel());
+        dto.setBeschreibung(def.getBeschreibung());
+        dto.setTriggerEntityTyp(def.getTriggerEntityTyp());
+        dto.setTriggerStatus(def.getTriggerStatus());
+        dto.setZielStatus(def.getZielStatus());
+        dto.setAssigneeRegel(def.getAssigneeRegel());
+        dto.setLinkTemplate(def.getLinkTemplate());
+        dto.setAktiv(def.isAktiv());
+        return dto;
+    }
+
+    /** Boolean-Helper für das Form-Fieldset-Locking — Controller braucht nicht die Entity. */
+    @Transactional(readOnly = true)
+    public boolean istSystemDefinition(UUID id) {
+        return findeNachId(id).isSystemDefinition();
+    }
+
+    public void erstelle(AufgabenDefinitionFormDto dto, String erstelltVon) {
         AufgabenDefinition def = new AufgabenDefinition();
         wendeFormAn(def, dto, false);
         def.setSystemDefinition(false);
         def.setErstelltVon(erstelltVon);
-        return repository.save(def);
+        repository.save(def);
     }
 
-    public AufgabenDefinition aktualisiere(UUID id, AufgabenDefinitionFormDto dto) {
+    public void aktualisiere(UUID id, AufgabenDefinitionFormDto dto) {
         AufgabenDefinition def = findeNachId(id);
         wendeFormAn(def, dto, def.isSystemDefinition());
-        return repository.save(def);
+        repository.save(def);
     }
 
     public void loesche(UUID id) {

@@ -39,9 +39,9 @@ public class AufgabenController {
     @PostMapping("/aufgaben/{id}/erledigen")
     @PreAuthorize("isAuthenticated()")
     public String erledige(@PathVariable UUID id, Authentication auth, RedirectAttributes redirect) {
-        Aufgabe a = aufgabenService.markiereErledigt(id, auth.getName());
+        AufgabeView v = aufgabenService.markiereErledigt(id, auth.getName());
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                "Aufgabe \"" + a.getTitel() + "\" als erledigt markiert.");
+                "Aufgabe \"" + v.titel() + "\" als erledigt markiert.");
         return "redirect:/aufgaben";
     }
 }
