@@ -125,6 +125,41 @@ class MarktplatzControllerTest {
         assertThat(hauptliste).extracting(ProjektView::id).containsExactly(alt.getId());
     }
 
+    /**
+     * MKT-02c: Edge-Case zum MKT-02b-Fix — wenn die Plattform nur 1–3 Projekte
+     * hat, landen ALLE in `neueste` und `projekte` ist nach Dedup leer.
+     * Der „Keine Projekte gefunden"-Empty-State darf dann NICHT erscheinen,
+     * weil die Neueste-Preview die Projekte ja zeigt.
+     */
+    @Test
+    void neuesteProjekteNonLeer_aberHauptlisteLeer_keinEmptyState() throws Exception {
+        Projekt einziges = testProjekt();
+        when(projektService.findeOeffentliche()).thenReturn(java.util.List.of(einziges));
+        when(projektService.findeNeuesteOeffentliche(3)).thenReturn(java.util.List.of(einziges));
+
+        org.springframework.test.web.servlet.MvcResult result = mockMvc.perform(get("/marktplatz"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        @SuppressWarnings("unchecked")
+        java.util.List<ProjektView> hauptliste = (java.util.List<ProjektView>)
+                result.getModelAndView().getModel().get("projekte");
+        @SuppressWarnings("unchecked")
+        java.util.List<ProjektView> neueste = (java.util.List<ProjektView>)
+                result.getModelAndView().getModel().get("neueste");
+
+        assertThat(hauptliste).as("nach Dedup leer").isEmpty();
+        assertThat(neueste).as("Preview zeigt das einzige Projekt").hasSize(1);
+
+        // Template-Smoke-Check: Empty-State-Text darf NICHT im gerenderten
+        // HTML stehen, wenn die Neueste-Preview Projekte enthält.
+        String html = result.getResponse().getContentAsString();
+        assertThat(html)
+                .as("Empty-State darf nicht erscheinen, wenn Neueste-Preview gefüllt ist")
+                .doesNotContain("Keine Projekte gefunden")
+                .doesNotContain("keineGefunden");
+    }
+
     /** MKT-03: Filter nach Kategorie. */
     @Test
     void filterNachKategorie() throws Exception {

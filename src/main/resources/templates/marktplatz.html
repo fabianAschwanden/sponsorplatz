@@ -119,7 +119,11 @@
         </a>
     </section>
 
-    <div th:if="${projekte.isEmpty()}" class="app-empty">
+    <!-- Empty-State NUR wenn BEIDE Listen leer sind. Bei wenigen Projekten
+         (1–3) landen sie komplett in `neueste` und werden aus `projekte`
+         ausgefiltert — dann zeigt die Neueste-Preview Karten, ohne dass
+         dies hier widersprochen wird. -->
+    <div th:if="${projekte.isEmpty() and (neueste == null or neueste.isEmpty())}" class="app-empty">
         <strong th:text="#{marktplatz.keineGefunden.titel}">Keine Projekte gefunden.</strong>
         <span th:text="#{marktplatz.keineGefunden.text}">Aktuell sind keine veröffentlichten Projekte verfügbar.</span>
     </div>
