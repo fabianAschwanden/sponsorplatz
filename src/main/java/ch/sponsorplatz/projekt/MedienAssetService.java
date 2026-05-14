@@ -46,6 +46,11 @@ public class MedienAssetService {
      *
      * @throws IllegalArgumentException bei ungültigem Content-Type, zu grosser Datei, oder Limit erreicht
      */
+    /** Wrapper für Controller — gibt nur die neue Asset-ID zurück (ARCH-02). */
+    public UUID speichereUndGibId(MultipartFile datei, EntityTyp entityTyp, UUID entityId, AssetTyp assetTyp) {
+        return speichere(datei, entityTyp, entityId, assetTyp).getId();
+    }
+
     public MedienAsset speichere(MultipartFile datei, EntityTyp entityTyp, UUID entityId, AssetTyp assetTyp) {
         validiereUpload(datei, entityTyp, entityId);
 

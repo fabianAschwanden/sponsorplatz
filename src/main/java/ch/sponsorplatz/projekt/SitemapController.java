@@ -1,14 +1,11 @@
 package ch.sponsorplatz.projekt;
 
-import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.util.List;
 
 /**
  * Generiert eine XML-Sitemap für Suchmaschinen.
@@ -40,16 +37,14 @@ public class SitemapController {
         fuegeUrlHinzu(xml, "/", "1.0", "daily");
         fuegeUrlHinzu(xml, "/marktplatz", "0.9", "daily");
 
-        // Öffentliche Projekte
-        List<Projekt> projekte = projektService.findeOeffentliche();
-        for (Projekt p : projekte) {
-            fuegeUrlHinzu(xml, "/marktplatz/" + p.getSlug(), "0.8", "weekly");
+        // Öffentliche Projekte (Slugs)
+        for (String slug : projektService.findeOeffentlicheSlugs()) {
+            fuegeUrlHinzu(xml, "/marktplatz/" + slug, "0.8", "weekly");
         }
 
-        // Vereinsprofile
-        List<Organisation> orgs = organisationService.alle();
-        for (Organisation org : orgs) {
-            fuegeUrlHinzu(xml, "/vereine/" + org.getSlug(), "0.7", "weekly");
+        // Vereinsprofile (Slugs)
+        for (String slug : organisationService.alleSlugs()) {
+            fuegeUrlHinzu(xml, "/vereine/" + slug, "0.7", "weekly");
         }
 
         xml.append("</urlset>");
@@ -64,4 +59,3 @@ public class SitemapController {
         xml.append("  </url>\n");
     }
 }
-

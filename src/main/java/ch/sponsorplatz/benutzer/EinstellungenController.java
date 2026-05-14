@@ -1,6 +1,5 @@
 package ch.sponsorplatz.benutzer;
 
-import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.projekt.AssetTyp;
 import ch.sponsorplatz.projekt.EntityTyp;
 import ch.sponsorplatz.audit.DatenExportService;
@@ -25,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Einstellungen — Profil, Passwort, DSG-Datenexport und Profilbild-Upload.
@@ -47,10 +47,9 @@ public class EinstellungenController {
 
     @GetMapping
     public String einstellungen(Authentication auth, Model model) {
-        AppUser user = ladeUser(auth);
         model.addAttribute("aktiveSeite", "einstellungen");
-        model.addAttribute("profil", ProfilView.von(user));
-        model.addAttribute("profilForm", erstelleFormVonUser(user));
+        model.addAttribute("profil", appUserService.findeProfilViewNachEmail(auth.getName()));
+        model.addAttribute("profilForm", appUserService.findeProfilFormularNachEmail(auth.getName()));
         model.addAttribute("sprachen", VERFUEGBARE_SPRACHEN);
         return "einstellungen";
     }
@@ -63,16 +62,15 @@ public class EinstellungenController {
                                    HttpServletResponse response,
                                    RedirectAttributes redirect) {
         if (br.hasErrors()) {
-            AppUser user = ladeUser(auth);
             model.addAttribute("aktiveSeite", "einstellungen");
-            model.addAttribute("profil", ProfilView.von(user));
+            model.addAttribute("profil", appUserService.findeProfilViewNachEmail(auth.getName()));
             model.addAttribute("sprachen", VERFUEGBARE_SPRACHEN);
             return "einstellungen";
         }
 
-        AppUser user = ladeUser(auth);
+        UUID userId = appUserService.findeIdNachEmail(auth.getName());
         try {
-            appUserService.aktualisiereProfil(user.getId(), dto);
+            appUserService.aktualisiereProfil(userId, dto);
             synchronisiereSprache(dto.getSprache(), response);
             redirect.addFlashAttribute("erfolgsMeldung", "Profil gespeichert");
         } catch (IllegalArgumentException e) {
@@ -85,10 +83,10 @@ public class EinstellungenController {
     public String profilbildHochladen(@RequestParam("datei") MultipartFile datei,
                                        Authentication auth,
                                        RedirectAttributes redirect) {
-        AppUser user = ladeUser(auth);
+        UUID userId = appUserService.findeIdNachEmail(auth.getName());
         try {
-            var asset = medienAssetService.speichere(datei, EntityTyp.USER, user.getId(), AssetTyp.PROFILBILD);
-            appUserService.setzeProfilbild(user.getId(), asset.getId());
+            UUID assetId = medienAssetService.speichereUndGibId(datei, EntityTyp.USER, userId, AssetTyp.PROFILBILD);
+            appUserService.setzeProfilbild(userId, assetId);
             redirect.addFlashAttribute("erfolgsMeldung", "Profilbild aktualisiert");
         } catch (Exception e) {
             redirect.addFlashAttribute("fehlermeldung", "Upload fehlgeschlagen: " + e.getMessage());
@@ -99,8 +97,8 @@ public class EinstellungenController {
     @GetMapping("/datenexport")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> datenExport(Authentication auth) {
-        AppUser user = ladeUser(auth);
-        Map<String, Object> export = datenExportService.exportiere(user.getId());
+        UUID userId = appUserService.findeIdNachEmail(auth.getName());
+        Map<String, Object> export = datenExportService.exportiere(userId);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"sponsorplatz-export.json\"")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -112,31 +110,14 @@ public class EinstellungenController {
                                    @RequestParam String neuesPasswort,
                                    Authentication auth,
                                    RedirectAttributes redirectAttributes) {
-        AppUser user = ladeUser(auth);
+        UUID userId = appUserService.findeIdNachEmail(auth.getName());
         try {
-            appUserService.aenderePasswort(user.getId(), altesPasswort, neuesPasswort);
+            appUserService.aenderePasswort(userId, altesPasswort, neuesPasswort);
             redirectAttributes.addFlashAttribute("erfolgsMeldung", "Passwort erfolgreich geändert");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("fehlermeldung", e.getMessage());
         }
         return "redirect:/einstellungen";
-    }
-
-    private AppUser ladeUser(Authentication auth) {
-        return appUserService.findeNachEmail(auth.getName())
-                .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
-    }
-
-    private ProfilFormDto erstelleFormVonUser(AppUser user) {
-        ProfilFormDto dto = new ProfilFormDto();
-        dto.setAnzeigename(user.getAnzeigename());
-        dto.setSprache(user.getSprache());
-        dto.setTelefon(user.getTelefon());
-        dto.setBio(user.getBio());
-        dto.setOrt(user.getOrt());
-        dto.setWebsiteUrl(user.getWebsiteUrl());
-        dto.setPositionTitel(user.getPositionTitel());
-        return dto;
     }
 
     private static final Map<String, String> VERFUEGBARE_SPRACHEN = Map.of(
@@ -161,4 +142,3 @@ public class EinstellungenController {
         }
     }
 }
-

@@ -66,6 +66,12 @@ public class ProjektService {
         return findeNachOrgIds(orgIds).stream().map(ProjektView::von).toList();
     }
 
+    /** Slugs aller öffentlichen Projekte — für Sitemap, ohne Entity-Touch (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<String> findeOeffentlicheSlugs() {
+        return findeOeffentliche().stream().map(Projekt::getSlug).toList();
+    }
+
     @Transactional(readOnly = true)
     public List<Projekt> findeOeffentliche() {
         return repository.findBySichtbarkeitOrderByVeroeffentlichtAmDesc(Sichtbarkeit.OEFFENTLICH);

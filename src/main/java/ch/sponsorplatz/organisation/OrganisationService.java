@@ -56,6 +56,12 @@ public class OrganisationService {
         return OrganisationView.von(repository.findAllByOrderByNameAsc());
     }
 
+    /** Slugs aller Orgs — für Sitemap, ohne Entity-Touch (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<String> alleSlugs() {
+        return repository.findAllByOrderByNameAsc().stream().map(Organisation::getSlug).toList();
+    }
+
     /** Untergeordnete Orgs als View — für Detail-Seite (ARCH-02). */
     @Transactional(readOnly = true)
     public List<OrganisationView> findeUntergeordneteViews(UUID elternId) {
@@ -115,6 +121,17 @@ public class OrganisationService {
                 .map(Organisation::getId)
                 .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
     }
+
+    /** Lookup ID + Name für Controller-Listen-Headers (ARCH-02). */
+    @Transactional(readOnly = true)
+    public OrgKopf findeKopfNachSlug(String slug) {
+        return findeNachSlug(slug)
+                .map(o -> new OrgKopf(o.getId(), o.getName()))
+                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
+    }
+
+    /** Mini-Snapshot ID + Name — wird vom Controller gelesen, keine Entity-Touch. */
+    public record OrgKopf(UUID id, String name) {}
 
     /**
      * Direkte Untergeordnete einer Org — für Detail-Anzeige + Hierarchie-Navigation.

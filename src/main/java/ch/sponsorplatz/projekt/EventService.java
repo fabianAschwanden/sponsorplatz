@@ -105,6 +105,12 @@ public class EventService {
         return repository.findByOrgIdOrderByDatumAsc(orgId);
     }
 
+    /** View-Variante — Controller braucht keine Entity-Liste (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<EventView> findeViewsNachOrg(UUID orgId) {
+        return EventView.von(findeNachOrg(orgId));
+    }
+
     /**
      * Kommende Events fuer die angegebenen Orgs, sortiert nach Datum aufsteigend.
      * Wird vom DashboardService verwendet.

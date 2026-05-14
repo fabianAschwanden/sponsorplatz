@@ -96,6 +96,34 @@ public class AppUserService {
     public record OnboardingSnapshot(UUID userId, boolean istPlatformAdmin, boolean onboardingGesehen) {}
 
     /**
+     * Profile-View für die /einstellungen-Seite — Controller berührt keine
+     * Entity (ARCH-02).
+     */
+    @Transactional(readOnly = true)
+    public ProfilView findeProfilViewNachEmail(String email) {
+        return ProfilView.von(repository.findByEmail(email)
+                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
+                        "User nicht gefunden: " + email)));
+    }
+
+    /** Form-Pre-Fill für /einstellungen — Controller berührt keine Entity (ARCH-02). */
+    @Transactional(readOnly = true)
+    public ProfilFormDto findeProfilFormularNachEmail(String email) {
+        AppUser user = repository.findByEmail(email)
+                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
+                        "User nicht gefunden: " + email));
+        ProfilFormDto dto = new ProfilFormDto();
+        dto.setAnzeigename(user.getAnzeigename());
+        dto.setSprache(user.getSprache());
+        dto.setTelefon(user.getTelefon());
+        dto.setBio(user.getBio());
+        dto.setOrt(user.getOrt());
+        dto.setWebsiteUrl(user.getWebsiteUrl());
+        dto.setPositionTitel(user.getPositionTitel());
+        return dto;
+    }
+
+    /**
      * Liefert die User-UUID anhand der Email — Komfort-Methode für Controller,
      * damit sie {@link AppUserRepository} nicht direkt injizieren müssen
      * (ARCH-01: Controller → Service, nicht → Repository).

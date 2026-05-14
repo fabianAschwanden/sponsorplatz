@@ -14,7 +14,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
@@ -52,7 +51,7 @@ class EinstellungenControllerTest {
         user.setId(UUID.randomUUID());
         user.setEmail("max@example.com");
 
-        when(appUserService.findeNachEmail("max@example.com")).thenReturn(Optional.of(user));
+        when(appUserService.findeIdNachEmail("max@example.com")).thenReturn(user.getId());
         when(datenExportService.exportiere(user.getId()))
                 .thenReturn(Map.of("benutzer", Map.of("email", "max@example.com")));
 
@@ -77,7 +76,7 @@ class EinstellungenControllerTest {
         AppUser user = new AppUser();
         user.setId(UUID.randomUUID());
         user.setEmail("max@example.com");
-        when(appUserService.findeNachEmail("max@example.com")).thenReturn(Optional.of(user));
+        when(appUserService.findeIdNachEmail("max@example.com")).thenReturn(user.getId());
 
         mockMvc.perform(post("/einstellungen/passwort")
                         .param("altesPasswort", "alt123456")

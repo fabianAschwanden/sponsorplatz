@@ -1,10 +1,8 @@
 package ch.sponsorplatz.projekt;
 
 import ch.sponsorplatz.organisation.AccessControl;
-import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.shared.exception.NotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,11 +33,11 @@ public class EventController {
 
     @GetMapping
     public String liste(@PathVariable String slug, Model model) {
-        Organisation org = ladeOrg(slug);
+        OrganisationService.OrgKopf kopf = organisationService.findeKopfNachSlug(slug);
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "events");
         model.addAttribute("orgSlug", slug);
-        model.addAttribute("orgName", org.getName());
-        model.addAttribute("events", EventView.von(eventService.findeNachOrg(org.getId())));
+        model.addAttribute("orgName", kopf.name());
+        model.addAttribute("events", eventService.findeViewsNachOrg(kopf.id()));
         return "event-liste";
     }
 
@@ -52,11 +50,11 @@ public class EventController {
                             @RequestParam(required = false) String datumEnde,
                             @RequestParam(required = false) Integer kapazitaet,
                             Authentication auth) {
-        Organisation org = ladeOrg(slug);
-        if (!accessControl.kannOrgEditieren(org.getId(), auth)) {
+        UUID orgId = organisationService.findeIdNachSlug(slug);
+        if (!accessControl.kannOrgEditieren(orgId, auth)) {
             throw new org.springframework.security.access.AccessDeniedException("Keine Edit-Berechtigung");
         }
-        eventService.erstelle(org.getId(), name, beschreibung, ort,
+        eventService.erstelle(orgId, name, beschreibung, ort,
                 LocalDate.parse(datum),
                 datumEnde != null && !datumEnde.isBlank() ? LocalDate.parse(datumEnde) : null,
                 kapazitaet);
@@ -67,17 +65,11 @@ public class EventController {
     public String loeschen(@PathVariable String slug,
                            @PathVariable UUID eventId,
                            Authentication auth) {
-        Organisation org = ladeOrg(slug);
-        if (!accessControl.kannOrgEditieren(org.getId(), auth)) {
+        UUID orgId = organisationService.findeIdNachSlug(slug);
+        if (!accessControl.kannOrgEditieren(orgId, auth)) {
             throw new org.springframework.security.access.AccessDeniedException("Keine Edit-Berechtigung");
         }
         eventService.loesche(eventId);
         return "redirect:/organisationen/" + slug + "/events";
     }
-
-    private Organisation ladeOrg(String slug) {
-        return organisationService.findeNachSlug(slug)
-                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
-    }
 }
-
