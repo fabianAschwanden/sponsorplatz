@@ -77,8 +77,23 @@ public class AppUserService {
                 .map(u -> new UserSnapshot(u.getId(), u.getAnzeigename()));
     }
 
+    /**
+     * Onboarding-Snapshot — der Wizard prüft, ob der User Admin ist und ob
+     * das Onboarding schon gesehen wurde, ohne die Entity zu berühren.
+     */
+    @Transactional(readOnly = true)
+    public Optional<OnboardingSnapshot> findeOnboardingSnapshotNachEmail(String email) {
+        return repository.findByEmail(email)
+                .map(u -> new OnboardingSnapshot(
+                        u.getId(),
+                        u.getPlatformRolle() == PlatformRolle.PLATFORM_ADMIN,
+                        u.isOnboardingGesehen()));
+    }
+
     /** Minimales Read-only Snapshot — kein Entity-Touch im Aufrufer. */
     public record UserSnapshot(UUID id, String anzeigename) {}
+
+    public record OnboardingSnapshot(UUID userId, boolean istPlatformAdmin, boolean onboardingGesehen) {}
 
     /**
      * Liefert die User-UUID anhand der Email — Komfort-Methode für Controller,

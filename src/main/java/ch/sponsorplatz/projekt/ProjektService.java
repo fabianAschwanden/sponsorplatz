@@ -60,6 +60,12 @@ public class ProjektService {
         return repository.findByOrgIdInOrderByCreatedAtDesc(orgIds);
     }
 
+    /** View-Variante — Controller braucht keine Entity-Liste (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<ProjektView> findeViewsNachOrgIds(Collection<UUID> orgIds) {
+        return findeNachOrgIds(orgIds).stream().map(ProjektView::von).toList();
+    }
+
     @Transactional(readOnly = true)
     public List<Projekt> findeOeffentliche() {
         return repository.findBySichtbarkeitOrderByVeroeffentlichtAmDesc(Sichtbarkeit.OEFFENTLICH);

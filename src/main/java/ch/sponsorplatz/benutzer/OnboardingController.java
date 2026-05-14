@@ -64,22 +64,23 @@ public class OnboardingController {
 
     @GetMapping
     public String startseite(Authentication auth, Model model) {
-        Optional<AppUser> userOpt = appUserService.findeNachEmail(auth.getName());
-        // Plattform-Admins sehen das Onboarding nie.
-        // User mit Mitgliedschaften brauchen kein Onboarding → Dashboard.
-        if (userOpt.isPresent()) {
-            AppUser user = userOpt.get();
-            if (user.getPlatformRolle() == PlatformRolle.PLATFORM_ADMIN) {
+        Optional<AppUserService.OnboardingSnapshot> snap =
+                appUserService.findeOnboardingSnapshotNachEmail(auth.getName());
+        if (snap.isPresent()) {
+            AppUserService.OnboardingSnapshot s = snap.get();
+            // Plattform-Admins sehen das Onboarding nie.
+            if (s.istPlatformAdmin()) {
                 return "redirect:/dashboard";
             }
-            if (!mitgliedschaftService.findeOrgIdsVonUser(user.getId()).isEmpty()) {
+            // User mit Mitgliedschaften brauchen kein Onboarding → Dashboard.
+            if (!mitgliedschaftService.findeOrgIdsVonUser(s.userId()).isEmpty()) {
                 return "redirect:/dashboard";
             }
             // Wizard wird angezeigt — Flag setzen, damit künftige Logins nicht
             // erneut hierher umgeleitet werden, auch wenn der User keinen
             // Verein anlegt oder den Wizard abbricht.
-            if (!user.isOnboardingGesehen()) {
-                appUserService.markiereOnboardingGesehen(user.getId());
+            if (!s.onboardingGesehen()) {
+                appUserService.markiereOnboardingGesehen(s.userId());
             }
         }
 
@@ -112,10 +113,10 @@ public class OnboardingController {
             orgDto.setOrt(dto.getOrt());
             orgDto.setBeschreibung(dto.getBeschreibung());
 
-            var org = organisationService.erstelleMitEigentuemer(orgDto, userId);
+            var org = organisationService.erstelleMitEigentuemerAlsView(orgDto, userId);
 
             redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                    "Willkommen! Ihr Verein \"" + org.getName() + "\" wurde erstellt. Sie können ihn jetzt verwalten.");
+                    "Willkommen! Ihr Verein \"" + org.name() + "\" wurde erstellt. Sie können ihn jetzt verwalten.");
             return "redirect:/dashboard";
         } catch (IllegalArgumentException ex) {
             model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "onboarding");

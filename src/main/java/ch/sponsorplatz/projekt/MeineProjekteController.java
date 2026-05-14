@@ -1,7 +1,5 @@
 package ch.sponsorplatz.projekt;
 
-import java.util.List;
-
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -38,12 +36,8 @@ public class MeineProjekteController {
     public String meineProjekte(Authentication auth, Model model) {
         var userId = appUserService.findeIdNachEmail(auth.getName());
         var orgIds = mitgliedschaftService.findeOrgIdsVonUser(userId);
-        List<ProjektView> projekte = projektService.findeNachOrgIds(orgIds).stream()
-                .map(ProjektView::von)
-                .toList();
-
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
-        model.addAttribute("projekte", projekte);
+        model.addAttribute("projekte", projektService.findeViewsNachOrgIds(orgIds));
         return "meine-projekte";
     }
 }

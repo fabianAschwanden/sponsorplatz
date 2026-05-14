@@ -64,8 +64,8 @@ class OnboardingControllerTest {
     @DisplayName("ONB-02: /onboarding ohne Mitgliedschaften → zeigt Onboarding-Seite und markiert es als gesehen")
     void ohneOrgZeigtOnboarding() throws Exception {
         AppUser user = testUser();
-        user.setOnboardingGesehen(false);
-        when(appUserService.findeNachEmail("neu@test.ch")).thenReturn(Optional.of(user));
+        when(appUserService.findeOnboardingSnapshotNachEmail("neu@test.ch"))
+                .thenReturn(Optional.of(new AppUserService.OnboardingSnapshot(user.getId(), false, false)));
         when(mitgliedschaftService.findeOrgIdsVonUser(user.getId())).thenReturn(List.of());
 
         mockMvc.perform(get("/onboarding"))
@@ -81,16 +81,13 @@ class OnboardingControllerTest {
     @DisplayName("ONB-06: Plattform-Admin → /onboarding redirected aufs Dashboard, ohne Flag-Update")
     void plattformAdminWirdAufDashboardUmgeleitet() throws Exception {
         AppUser admin = testUser();
-        admin.setEmail("admin@test.ch");
-        admin.setPlatformRolle(PlatformRolle.PLATFORM_ADMIN);
-        admin.setOnboardingGesehen(false);
-        when(appUserService.findeNachEmail("admin@test.ch")).thenReturn(Optional.of(admin));
+        when(appUserService.findeOnboardingSnapshotNachEmail("admin@test.ch"))
+                .thenReturn(Optional.of(new AppUserService.OnboardingSnapshot(admin.getId(), true, false)));
 
         mockMvc.perform(get("/onboarding"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/dashboard"));
 
-        org.assertj.core.api.Assertions.assertThat(admin.isOnboardingGesehen()).isFalse();
         org.mockito.Mockito.verify(appUserService, org.mockito.Mockito.never()).markiereOnboardingGesehen(org.mockito.ArgumentMatchers.any());
     }
 
@@ -99,9 +96,8 @@ class OnboardingControllerTest {
     @DisplayName("ONB-07: User mit Flag=true und ohne Org darf /onboarding manuell erneut aufrufen — kein zweites save")
     void onboardingErneutOhneFlagUpdate() throws Exception {
         AppUser user = testUser();
-        user.setEmail("zurueck@test.ch");
-        user.setOnboardingGesehen(true);
-        when(appUserService.findeNachEmail("zurueck@test.ch")).thenReturn(Optional.of(user));
+        when(appUserService.findeOnboardingSnapshotNachEmail("zurueck@test.ch"))
+                .thenReturn(Optional.of(new AppUserService.OnboardingSnapshot(user.getId(), false, true)));
         when(mitgliedschaftService.findeOrgIdsVonUser(user.getId())).thenReturn(List.of());
 
         mockMvc.perform(get("/onboarding"))
@@ -116,7 +112,8 @@ class OnboardingControllerTest {
     @DisplayName("ONB-03: /onboarding mit Mitgliedschaften → Redirect auf Dashboard")
     void mitOrgRedirectAufDashboard() throws Exception {
         AppUser user = testUser();
-        when(appUserService.findeNachEmail("alt@test.ch")).thenReturn(Optional.of(user));
+        when(appUserService.findeOnboardingSnapshotNachEmail("alt@test.ch"))
+                .thenReturn(Optional.of(new AppUserService.OnboardingSnapshot(user.getId(), false, true)));
         when(mitgliedschaftService.findeOrgIdsVonUser(user.getId()))
                 .thenReturn(List.of(UUID.randomUUID()));
 
@@ -130,14 +127,14 @@ class OnboardingControllerTest {
     @DisplayName("ONB-04: POST /onboarding/verein-erstellen erstellt Org + Redirect auf Dashboard")
     void vereinErstellenErfolgreich() throws Exception {
         AppUser user = testUser();
-        when(appUserService.findeNachEmail("neu@test.ch")).thenReturn(Optional.of(user));
         when(appUserService.findeIdNachEmail("neu@test.ch")).thenReturn(user.getId());
 
         Organisation org = new Organisation();
         org.setId(UUID.randomUUID());
         org.setName("FC Test");
         org.setSlug("fc-test");
-        when(organisationService.erstelleMitEigentuemer(any(), eq(user.getId()))).thenReturn(org);
+        when(organisationService.erstelleMitEigentuemerAlsView(any(), eq(user.getId())))
+                .thenReturn(ch.sponsorplatz.organisation.OrganisationView.von(org));
 
         mockMvc.perform(post("/onboarding/verein-erstellen")
                 .param("vereinName", "FC Test")
@@ -146,7 +143,7 @@ class OnboardingControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/dashboard"));
 
-        verify(organisationService).erstelleMitEigentuemer(any(), eq(user.getId()));
+        verify(organisationService).erstelleMitEigentuemerAlsView(any(), eq(user.getId()));
     }
 
     @Test

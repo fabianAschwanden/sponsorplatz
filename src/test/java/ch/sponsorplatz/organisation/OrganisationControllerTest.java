@@ -54,7 +54,7 @@ class OrganisationControllerTest {
     /** ORG-08: GET /organisationen → 200 + Liste. */
     @Test
     void listeWirdAngezeigt() throws Exception {
-        when(service.alle()).thenReturn(List.of(testOrg()));
+        when(service.alleViews()).thenReturn(List.of(OrganisationView.von(testOrg())));
 
         mockMvc.perform(get("/organisationen"))
             .andExpect(status().isOk())
@@ -70,8 +70,8 @@ class OrganisationControllerTest {
         ch.sponsorplatz.benutzer.AppUser user = new ch.sponsorplatz.benutzer.AppUser();
         user.setId(UUID.randomUUID());
         user.setEmail("verein@test.ch");
-        when(appUserService.findeNachEmail("verein@test.ch")).thenReturn(Optional.of(user));
-        when(service.erstelleMitEigentuemer(any(), eq(user.getId()))).thenReturn(gespeichert);
+        when(appUserService.findeOptionalIdNachEmail("verein@test.ch")).thenReturn(Optional.of(user.getId()));
+        when(service.erstelleMitEigentuemerAlsView(any(), eq(user.getId()))).thenReturn(OrganisationView.von(gespeichert));
 
         mockMvc.perform(post("/organisationen")
                 .param("typ", "VEREIN")
@@ -88,7 +88,7 @@ class OrganisationControllerTest {
     void aktualisierenMitRechtRedirected() throws Exception {
         when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
         Organisation gespeichert = testOrg();
-        when(service.aktualisiere(eq("fc-test"), any())).thenReturn(gespeichert);
+        when(service.aktualisiereAlsView(eq("fc-test"), any())).thenReturn(OrganisationView.von(gespeichert));
 
         mockMvc.perform(post("/organisationen/fc-test")
                 .param("typ", "VEREIN")
@@ -116,7 +116,7 @@ class OrganisationControllerTest {
     @Test
     void detailWirdAngezeigt() throws Exception {
         Organisation org = testOrg();
-        when(service.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
+        when(service.findeViewNachSlug("fc-test")).thenReturn(Optional.of(OrganisationView.von(org)));
 
         mockMvc.perform(get("/organisationen/fc-test"))
             .andExpect(status().isOk())
@@ -127,7 +127,7 @@ class OrganisationControllerTest {
     /** ORG-16: GET /organisationen/{slug} mit unbekanntem Slug → 404 (nicht 400). */
     @Test
     void detailFuerUnbekanntenSlugIst404() throws Exception {
-        when(service.findeNachSlug("unbekannt")).thenReturn(Optional.empty());
+        when(service.findeViewNachSlug("unbekannt")).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/organisationen/unbekannt"))
             .andExpect(status().isNotFound());
@@ -180,7 +180,11 @@ class OrganisationControllerTest {
     @WithMockUser
     void bearbeitenFormularMitRechtIst200() throws Exception {
         when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
-        when(service.findeNachSlug("fc-test")).thenReturn(Optional.of(testOrg()));
+        OrganisationFormDto form = new OrganisationFormDto();
+        form.setTyp(OrgTyp.VEREIN);
+        form.setName("Test-Verein");
+        form.setBranche(Branche.SPORT);
+        when(service.findeFormularNachSlug("fc-test")).thenReturn(form);
 
         mockMvc.perform(get("/organisationen/fc-test/bearbeiten"))
             .andExpect(status().isOk())
@@ -196,10 +200,11 @@ class OrganisationControllerTest {
     @WithMockUser
     void editFormZeigtBrancheSelectFuerVerein() throws Exception {
         when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
-        Organisation verein = testOrg();
-        verein.setTyp(OrgTyp.VEREIN);
-        verein.setBranche(Branche.SPORT);
-        when(service.findeNachSlug("fc-test")).thenReturn(Optional.of(verein));
+        OrganisationFormDto form = new OrganisationFormDto();
+        form.setTyp(OrgTyp.VEREIN);
+        form.setName("Test-Verein");
+        form.setBranche(Branche.SPORT);
+        when(service.findeFormularNachSlug("fc-test")).thenReturn(form);
 
         mockMvc.perform(get("/organisationen/fc-test/bearbeiten"))
             .andExpect(status().isOk())
@@ -214,15 +219,11 @@ class OrganisationControllerTest {
     @WithMockUser
     void editFormZeigtIndustrieSelectFuerUnternehmen() throws Exception {
         when(accessControl.kannOrgEditierenNachSlug(eq("css"), any())).thenReturn(true);
-        Organisation sponsor = new Organisation();
-        sponsor.setId(UUID.randomUUID());
-        sponsor.setName("CSS Versicherung");
-        sponsor.setSlug("css");
-        sponsor.setTyp(OrgTyp.UNTERNEHMEN);
-        sponsor.setSponsorBranche(SponsorBranche.VERSICHERUNG);
-        sponsor.setStatus(OrgStatus.VERIFIED);
-        sponsor.setRegistriertAm(Instant.now());
-        when(service.findeNachSlug("css")).thenReturn(Optional.of(sponsor));
+        OrganisationFormDto form = new OrganisationFormDto();
+        form.setTyp(OrgTyp.UNTERNEHMEN);
+        form.setName("CSS Versicherung");
+        form.setSponsorBranche(SponsorBranche.VERSICHERUNG);
+        when(service.findeFormularNachSlug("css")).thenReturn(form);
 
         mockMvc.perform(get("/organisationen/css/bearbeiten"))
             .andExpect(status().isOk())
@@ -237,7 +238,11 @@ class OrganisationControllerTest {
     @WithMockUser
     void editFormZeigtHierarchieSelect() throws Exception {
         when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
-        when(service.findeNachSlug("fc-test")).thenReturn(Optional.of(testOrg()));
+        OrganisationFormDto form = new OrganisationFormDto();
+        form.setTyp(OrgTyp.VEREIN);
+        form.setName("Test-Verein");
+        form.setBranche(Branche.SPORT);
+        when(service.findeFormularNachSlug("fc-test")).thenReturn(form);
 
         mockMvc.perform(get("/organisationen/fc-test/bearbeiten"))
             .andExpect(status().isOk())
@@ -277,9 +282,9 @@ class OrganisationControllerTest {
         sub.setStatus(OrgStatus.VERIFIED);
         sub.setRegistriertAm(Instant.now());
 
-        when(service.findeNachSlug("tochter")).thenReturn(Optional.of(tochter));
-        when(service.findeUntergeordnete(tochter.getId())).thenReturn(List.of(sub));
-        when(hierarchieService.findeElternkette(tochter)).thenReturn(List.of(
+        when(service.findeViewNachSlug("tochter")).thenReturn(Optional.of(OrganisationView.von(tochter)));
+        when(service.findeUntergeordneteViews(tochter.getId())).thenReturn(List.of(OrganisationView.von(sub)));
+        when(hierarchieService.findeElternketteNachSlug("tochter")).thenReturn(List.of(
                 new OrgHierarchieService.BrotkrumenEintrag("Konzern AG", "konzern-ag"),
                 new OrgHierarchieService.BrotkrumenEintrag("Tochter GmbH", "tochter")
         ));
@@ -298,7 +303,7 @@ class OrganisationControllerTest {
     @WithMockUser
     void loeschenMitRechtRedirected() throws Exception {
         when(accessControl.kannOrgVerwaltenNachSlug(eq("fc-test"), any())).thenReturn(true);
-        when(service.findeNachSlug("fc-test")).thenReturn(Optional.of(testOrg()));
+        when(service.loescheNachSlug("fc-test")).thenReturn("Test-Verein");
 
         mockMvc.perform(post("/organisationen/fc-test/loeschen").with(csrf()))
             .andExpect(status().is3xxRedirection())

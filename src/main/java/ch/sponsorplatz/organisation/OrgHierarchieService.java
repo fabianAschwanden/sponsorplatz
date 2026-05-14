@@ -72,6 +72,14 @@ public class OrgHierarchieService {
      * Gibt die Elternkette zurück (von Wurzel bis zur aktuellen Org, inkl. der Org selbst).
      * Für Breadcrumb-Navigation.
      */
+    /** Controller-Variante: Lookup via Slug, damit kein Entity-Touch nötig ist (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<BrotkrumenEintrag> findeElternketteNachSlug(String slug) {
+        return repository.findBySlug(slug)
+                .map(this::findeElternkette)
+                .orElseGet(List::of);
+    }
+
     @Transactional(readOnly = true)
     public List<BrotkrumenEintrag> findeElternkette(Organisation org) {
         List<BrotkrumenEintrag> kette = new ArrayList<>();

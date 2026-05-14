@@ -1,8 +1,6 @@
 package ch.sponsorplatz.projekt;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -13,30 +11,26 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/watchlist")
 public class WatchlistController {
 
     private final WatchlistService watchlistService;
-    private final ProjektService projektService;
     private final AppUserService appUserService;
 
     public WatchlistController(WatchlistService watchlistService,
-                               ProjektService projektService,
                                AppUserService appUserService) {
         this.watchlistService = watchlistService;
-        this.projektService = projektService;
         this.appUserService = appUserService;
     }
 
     @GetMapping
     public String liste(Authentication auth, Model model) {
-        AppUser user = ladeUser(auth);
-        List<WatchlistEintrag> eintraege = watchlistService.findeNachUser(user.getId());
+        UUID userId = appUserService.findeIdNachEmail(auth.getName());
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "watchlist");
-        model.addAttribute("eintraege", WatchlistEintragView.von(eintraege));
+        model.addAttribute("eintraege", watchlistService.findeViewsNachUser(userId));
         return "watchlist";
     }
 
@@ -44,12 +38,10 @@ public class WatchlistController {
     public String hinzufuegen(@PathVariable String projektSlug,
                               Authentication auth,
                               RedirectAttributes redirect) {
-        AppUser user = ladeUser(auth);
-        Projekt projekt = projektService.findeNachSlug(projektSlug)
-                .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + projektSlug));
-        watchlistService.hinzufuegen(user, projekt);
+        UUID userId = appUserService.findeIdNachEmail(auth.getName());
+        String projektName = watchlistService.hinzufuegenNachSlug(userId, projektSlug);
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                "\"" + projekt.getName() + "\" zur Watchlist hinzugefügt.");
+                "\"" + projektName + "\" zur Watchlist hinzugefügt.");
         return "redirect:/marktplatz/" + projektSlug;
     }
 
@@ -57,17 +49,10 @@ public class WatchlistController {
     public String entfernen(@PathVariable String projektSlug,
                             Authentication auth,
                             RedirectAttributes redirect) {
-        AppUser user = ladeUser(auth);
-        Projekt projekt = projektService.findeNachSlug(projektSlug)
-                .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + projektSlug));
-        watchlistService.entferne(user.getId(), projekt.getId());
+        UUID userId = appUserService.findeIdNachEmail(auth.getName());
+        String projektName = watchlistService.entfernenNachSlug(userId, projektSlug);
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                "\"" + projekt.getName() + "\" von der Watchlist entfernt.");
+                "\"" + projektName + "\" von der Watchlist entfernt.");
         return "redirect:/watchlist";
-    }
-
-    private AppUser ladeUser(Authentication auth) {
-        return appUserService.findeNachEmail(auth.getName())
-                .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
     }
 }

@@ -22,7 +22,9 @@ class WatchlistServiceTest {
     @BeforeEach
     void setUp() {
         repository = mock(WatchlistRepository.class);
-        service = new WatchlistService(repository);
+        service = new WatchlistService(repository,
+                mock(ch.sponsorplatz.benutzer.AppUserRepository.class),
+                mock(ProjektRepository.class));
     }
 
     /** WL-01: Projekt zur Watchlist hinzufügen. */

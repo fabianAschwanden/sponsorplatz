@@ -50,6 +50,32 @@ public class OrganisationService {
         return repository.findAllByOrderByNameAsc();
     }
 
+    /** View-Variante — Controller braucht keine Entity-Liste (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<OrganisationView> alleViews() {
+        return OrganisationView.von(repository.findAllByOrderByNameAsc());
+    }
+
+    /** Untergeordnete Orgs als View — für Detail-Seite (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<OrganisationView> findeUntergeordneteViews(UUID elternId) {
+        return OrganisationView.von(repository.findByUebergeordneteOrgIdOrderByNameAsc(elternId));
+    }
+
+    /** View-Variante des Lookup-Mitgliedschaft-Pfads (Controller-Sortierung). */
+    @Transactional(readOnly = true)
+    public List<OrganisationView> findeViewsFuerUserMitgliedschaften(UUID userId) {
+        return mitgliedschaftRepository
+                .findByUserIdAndRolleInMitOrg(userId,
+                        java.util.Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR, Rolle.ORG_VIEWER))
+                .stream()
+                .map(Mitgliedschaft::getOrg)
+                .distinct()
+                .sorted(java.util.Comparator.comparing(Organisation::getName, String.CASE_INSENSITIVE_ORDER))
+                .map(OrganisationView::von)
+                .toList();
+    }
+
     /**
      * Aktive Sponsor-Orgs (Typ UNTERNEHMEN, Status VERIFIED oder ACTIVE) —
      * für den Sponsor-Picker im Verein→Sponsor-Anfrage-Flow. PENDING und
@@ -110,6 +136,52 @@ public class OrganisationService {
         Organisation gespeichert = repository.save(org);
         aufgabenEngine.onOrgStatusWechsel(gespeichert);
         return gespeichert;
+    }
+
+    /** View-Variante — Controller braucht keine Entity (ARCH-02). */
+    public OrganisationView erstelleAlsView(OrganisationFormDto dto) {
+        return OrganisationView.von(erstelle(dto));
+    }
+
+    public OrganisationView erstelleMitEigentuemerAlsView(OrganisationFormDto dto, UUID eigentuemerUserId) {
+        return OrganisationView.von(erstelleMitEigentuemer(dto, eigentuemerUserId));
+    }
+
+    public OrganisationView aktualisiereAlsView(String slug, OrganisationFormDto dto) {
+        return OrganisationView.von(aktualisiere(slug, dto));
+    }
+
+    /** Form-Pre-Fill: lädt die Org und mappt auf das Form-DTO — kein Entity-Touch im Controller. */
+    @Transactional(readOnly = true)
+    public OrganisationFormDto findeFormularNachSlug(String slug) {
+        Organisation org = repository.findBySlug(slug)
+                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
+        OrganisationFormDto dto = new OrganisationFormDto();
+        dto.setTyp(org.getTyp());
+        dto.setName(org.getName());
+        dto.setSlug(org.getSlug());
+        dto.setRechtsform(org.getRechtsform());
+        dto.setBranche(org.getBranche());
+        dto.setSponsorBranche(org.getSponsorBranche());
+        dto.setBeschreibung(org.getBeschreibung());
+        dto.setWebsiteUrl(org.getWebsiteUrl());
+        dto.setIban(org.getIban());
+        dto.setStrasse(org.getStrasse());
+        dto.setPostleitzahl(org.getPostleitzahl());
+        dto.setOrt(org.getOrt());
+        if (org.getUebergeordneteOrg() != null) {
+            dto.setUebergeordneteOrgId(org.getUebergeordneteOrg().getId());
+        }
+        return dto;
+    }
+
+    /** Löscht via Slug — Controller braucht keine Entity-ID-Lookup (ARCH-02). */
+    public String loescheNachSlug(String slug) {
+        Organisation org = repository.findBySlug(slug)
+                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
+        String name = org.getName();
+        loesche(org.getId());
+        return name;
     }
 
     /**
