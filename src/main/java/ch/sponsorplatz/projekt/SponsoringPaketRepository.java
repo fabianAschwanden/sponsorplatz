@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,5 +29,14 @@ public interface SponsoringPaketRepository extends JpaRepository<SponsoringPaket
              where p.id = :id
             """)
     Optional<SponsoringPaket> findByIdMitProjektUndOrg(@Param("id") UUID id);
+
+    /** Anzahl aktive Pakete über mehrere Verein-Orgs — für Verein-Statistik. */
+    @Query("""
+            select count(p)
+              from SponsoringPaket p
+             where p.projekt.org.id in :orgIds
+               and p.aktiv = true
+            """)
+    long zaehleAktiveByOrgIds(@Param("orgIds") Collection<UUID> orgIds);
 }
 

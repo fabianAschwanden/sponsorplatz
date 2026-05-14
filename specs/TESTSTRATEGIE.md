@@ -403,7 +403,11 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **VTR-08b** | `VertragServiceTest` | `kuendige` ohne Rechnung läuft sauber durch (einfacher Pfad) |
 | **VTR-08c** | `VertragServiceTest` | `kuendige` bei Status ENTWURF wirft (nur aus UNTERZEICHNET erlaubt) |
 
-### Sponsor-Statistik (STAT) — Phase 5.C
+### Sponsor- und Vereins-Statistik (STAT) — Phase 5.C
+
+`/statistiken` liefert je nach Mitgliedschaft Sponsor-, Vereins- oder beide Sektionen
+(siehe `statistik.html`). Vereins-User sehen ausdrücklich nicht die Sponsor-Sicht
+— diese Trennung war ein konkreter Bug-Report.
 
 | ID | Test-Klasse | Beschreibung |
 |---|---|---|
@@ -415,9 +419,18 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **STAT-06** | `SponsorStatistikServiceTest` | Unbekannte User-E-Mail → `NotFoundException` |
 | **STAT-07** | `SponsorStatistikServiceTest` | `conversionRateProzent` rechnet `angenommen / (angenommen + abgelehnt) * 100` |
 | **STAT-07b** | `SponsorStatistikServiceTest` | `conversionRateProzent` ohne Antworten → 0 (kein Division-by-Zero) |
+| **STAT-VEREIN-01** | `VereinStatistikServiceTest` | User ohne VEREIN-Org-Mitgliedschaft → `VereinStatistik.leer()` |
+| **STAT-VEREIN-02** | `VereinStatistikServiceTest` | User mit Verein-Org → DTO enthält Org-Name, Projekt-/Paket-/Vertrag-Counter, Einnahmen |
+| **STAT-VEREIN-03** | `VereinStatistikServiceTest` | User mit mehreren Verein-Orgs → distinct listet beide Namen |
+| **STAT-VEREIN-04** | `VereinStatistikServiceTest` | `summePreisChfByOrg` liefert `null` → DTO mappt auf `BigDecimal.ZERO` |
+| **STAT-VEREIN-05** | `VereinStatistikServiceTest` | Eingehende (empfaengerOrg) und ausgehende (anfragenderOrg) Anfragen werden getrennt aggregiert |
+| **STAT-VEREIN-06** | `VereinStatistikServiceTest` | Unbekannte User-E-Mail → `NotFoundException` |
+| **STAT-VEREIN-07** | `VereinStatistikServiceTest` | `conversionRateEingehendProzent` rechnet `angenommen / (angenommen + abgelehnt) * 100` |
+| **STAT-VEREIN-07b** | `VereinStatistikServiceTest` | Conversion-Raten ohne Antworten → 0 (kein Division-by-Zero) |
 | **STAT-CTRL-01** | `SponsorStatistikControllerTest` | GET `/statistiken` anonym → Redirect auf /login |
-| **STAT-CTRL-02** | `SponsorStatistikControllerTest` | User ohne Sponsor-Org → 200 + leeres DTO (Template zeigt Empty-State) |
-| **STAT-CTRL-03** | `SponsorStatistikControllerTest` | User mit Sponsor-Org → 200 + DTO mit Kennzahlen |
+| **STAT-CTRL-02** | `SponsorStatistikControllerTest` | User ohne Org → beide DTOs leer, View `statistik` (Template zeigt Empty-State) |
+| **STAT-CTRL-03** | `SponsorStatistikControllerTest` | User mit Sponsor-Org → `sponsorStatistik` gefüllt, `vereinStatistik` leer |
+| **STAT-CTRL-04** | `SponsorStatistikControllerTest` | User mit Verein-Org → `vereinStatistik` gefüllt, `sponsorStatistik` leer (Bug-Fix) |
 | **VTR-09** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage (paket=null): Verein-Org wird via `OrgTyp.VEREIN`-Check als `v.org` gemappt, Sponsor als `v.sponsorOrg` — unabhängig von Anfrage-Richtung. Siehe [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md) |
 | **VTR-10** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage ohne Wunsch-Betrag: `betreff` wird zu `paketName`, `nachricht` zu `paketBeschreibung`, `preisChf = 0` |
 | **VTR-10b** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage mit `wunschBetragChf=5000`: Vertrag startet mit `preisChf=5000` (Initial-Preis aus Anfrage-Wunsch). Siehe V33 + [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md) |

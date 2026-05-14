@@ -23,6 +23,23 @@ public interface VertragRepository extends JpaRepository<Vertrag, UUID> {
     /** Anzahl Verträge in einem Status für eine Menge Sponsor-Orgs. */
     long countBySponsorOrgIdInAndStatus(Collection<UUID> sponsorOrgIds, VertragsStatus status);
 
+    /** Anzahl Verträge in einem Status für eine Menge Verein-Orgs (Vereins-Statistik). */
+    long countByOrgIdInAndStatus(Collection<UUID> orgIds, VertragsStatus status);
+
+    /**
+     * Summe der Vertragspreise in einem Status — für „Einnahmen-Volumen" auf
+     * der Vereins-Statistik. Liefert {@code null}, wenn keine Verträge
+     * existieren; Service mappt auf {@link BigDecimal#ZERO}.
+     */
+    @Query("""
+            select coalesce(sum(v.preisChf), 0)
+              from Vertrag v
+             where v.org.id in :orgIds
+               and v.status = :status
+            """)
+    BigDecimal summePreisChfByOrg(@Param("orgIds") Collection<UUID> orgIds,
+                                   @Param("status") VertragsStatus status);
+
     /** Anzahl Verträge insgesamt für eine Menge Sponsor-Orgs (alle Statūs). */
     long countBySponsorOrgIdIn(Collection<UUID> sponsorOrgIds);
 

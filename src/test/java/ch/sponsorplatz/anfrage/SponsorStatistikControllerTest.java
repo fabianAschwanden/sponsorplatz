@@ -26,7 +26,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Tests für {@link SponsorStatistikController}.
- * Test-IDs: STAT-CTRL-01..03.
+ * Test-IDs: STAT-CTRL-01..04.
+ *
+ * <p>Der Controller bedient seit Phase 5.C beide Sichten in einem Endpoint
+ * {@code /statistiken} — Template {@code statistik.html} rendert die zur
+ * Mitgliedschaft passende Sektion (Verein, Sponsor oder beide).
  */
 @WebMvcTest(controllers = SponsorStatistikController.class)
 @Import(SecurityConfig.class)
@@ -36,7 +40,8 @@ class SponsorStatistikControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean private SponsorStatistikService statistikService;
+    @MockitoBean private SponsorStatistikService sponsorStatistikService;
+    @MockitoBean private VereinStatistikService vereinStatistikService;
     @MockitoBean private SponsorplatzUserDetailsService userDetailsService;
 
     @Test
@@ -48,31 +53,54 @@ class SponsorStatistikControllerTest {
     }
 
     @Test
-    @WithMockUser("nicht-sponsor@test.ch")
-    @DisplayName("STAT-CTRL-02: User ohne Sponsor-Org → 200 + leeres DTO (Empty-State im Template)")
-    void ohneSponsorOrgLiefertLeeresDto() throws Exception {
-        when(statistikService.fuerUser(anyString())).thenReturn(SponsorStatistik.leer());
+    @WithMockUser("ohne-org@test.ch")
+    @DisplayName("STAT-CTRL-02: User ohne Org → beide DTOs leer, View statistik (Template zeigt Empty-State)")
+    void ohneOrgLiefertLeereDtos() throws Exception {
+        when(sponsorStatistikService.fuerUser(anyString())).thenReturn(SponsorStatistik.leer());
+        when(vereinStatistikService.fuerUser(anyString())).thenReturn(VereinStatistik.leer());
 
         mockMvc.perform(get("/statistiken"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("sponsor-statistik"))
-                .andExpect(model().attributeExists("statistik"));
+                .andExpect(view().name("statistik"))
+                .andExpect(model().attributeExists("sponsorStatistik"))
+                .andExpect(model().attributeExists("vereinStatistik"));
     }
 
     @Test
     @WithMockUser("sponsor@css.test")
-    @DisplayName("STAT-CTRL-03: User mit Sponsor-Org → DTO mit Org-Namen + Kennzahlen")
-    void mitSponsorOrgLiefertKennzahlen() throws Exception {
+    @DisplayName("STAT-CTRL-03: User mit Sponsor-Org → sponsorStatistik gefüllt, vereinStatistik leer")
+    void mitSponsorOrgLiefertSponsorStatistik() throws Exception {
         SponsorStatistik stat = new SponsorStatistik(
                 1, 5, 0, new BigDecimal("25000.00"),
                 3, 8, 2,
                 4, 12, 1,
                 Map.of(), List.of("CSS Versicherung"));
-        when(statistikService.fuerUser("sponsor@css.test")).thenReturn(stat);
+        when(sponsorStatistikService.fuerUser("sponsor@css.test")).thenReturn(stat);
+        when(vereinStatistikService.fuerUser("sponsor@css.test")).thenReturn(VereinStatistik.leer());
 
         mockMvc.perform(get("/statistiken"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("sponsor-statistik"))
-                .andExpect(model().attribute("statistik", stat));
+                .andExpect(view().name("statistik"))
+                .andExpect(model().attribute("sponsorStatistik", stat));
+    }
+
+    @Test
+    @WithMockUser("vorstand@verein.test")
+    @DisplayName("STAT-CTRL-04: User mit Verein-Org → vereinStatistik gefüllt, sponsorStatistik leer (Bug-Fix)")
+    void mitVereinOrgLiefertVereinStatistik() throws Exception {
+        VereinStatistik vereinStat = new VereinStatistik(
+                3, 5,
+                2, 8, 1,
+                0, 1, 0,
+                1, 4, 0, new BigDecimal("12000.00"),
+                2, 6, 0,
+                List.of("FC Beispiel"));
+        when(sponsorStatistikService.fuerUser("vorstand@verein.test")).thenReturn(SponsorStatistik.leer());
+        when(vereinStatistikService.fuerUser("vorstand@verein.test")).thenReturn(vereinStat);
+
+        mockMvc.perform(get("/statistiken"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("statistik"))
+                .andExpect(model().attribute("vereinStatistik", vereinStat));
     }
 }

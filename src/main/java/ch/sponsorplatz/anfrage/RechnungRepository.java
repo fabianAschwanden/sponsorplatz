@@ -46,4 +46,11 @@ public interface RechnungRepository extends JpaRepository<Rechnung, UUID> {
             """)
     long zaehleProSponsorOrgUndStatus(@Param("sponsorOrgIds") Collection<UUID> sponsorOrgIds,
                                        @Param("status") RechnungsStatus status);
+
+    /**
+     * Verein-zentrischer Rechnungs-Counter pro Status (für Vereins-Statistik).
+     * Rechnungen sind direkt an {@code rechnung.org} (= Verein) gehängt —
+     * kein Join nötig.
+     */
+    long countByOrgIdInAndStatus(Collection<UUID> orgIds, RechnungsStatus status);
 }

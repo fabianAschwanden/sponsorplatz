@@ -382,15 +382,19 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 - [x] **State-Machine-Sauber-Iteration**: `VertragService.kuendige(id, grund)` mit BEZAHLT-Check (wirft) + OFFEN-Auto-Storno + Audit-Event `VERTRAG_GEKUENDIGT`. `markiereUnterzeichnet` prüft `preisChf > 0 OR leistungVerein/Sponsor gepflegt` (verhindert versehentliche Standardwert-Unterzeichnung; Naturalien-Sponsoring explizit erlaubt). Migration V35 (`gekuendigt_am`, `kuendigungs_grund`). VertragService↔RechnungService-Cycle via `@Lazy`-Proxy gelöst. Tests VTR-05b/c, VTR-07/08/08b/08c — 468 Tests gesamt.
 - [ ] **Mahnwesen** (Spec §7, V36) — nächste Iteration: `mahnstufe`/`letzte_mahnung_am`-Spalten, `MahnungsCronJob` täglich 06:00, Tests MAHN-01..04.
 
-### 11.12 — Sponsor-Statistik-Dashboard (5.C)
+### 11.12 — Statistik-Dashboard für Sponsor + Verein (5.C)
 
-- [x] `/statistiken`-Route für eingeloggte User mit UNTERNEHMEN-Org-Mitgliedschaft.
-- [x] `SponsorStatistikService` aggregiert über alle Sponsor-Orgs des Users (4 Repo-Count-Queries + 1 Sum-Query + 1 Branche-Group-By).
-- [x] Kennzahlen: aktive Engagements (UNTERZEICHNETe Verträge), Sponsoring-Volumen, Anfragen-Pipeline (NEU/ANGENOMMEN/ABGELEHNT) mit Conversion-Rate, Rechnungs-Status (OFFEN/BEZAHLT/STORNIERT), Branchen-Verteilung als horizontale Balken, Vertrags-Statūs-Verteilung.
-- [x] Vereins-only-User landen auf Empty-State mit Sponsor-Registrierungs-Hinweis statt 403/404.
-- [x] Sidebar-Nav-Item "Statistiken" für eingeloggte User (Empty-State erklärt Vereins-Sicht).
-- [x] i18n DE/EN/FR/IT (28 Keys).
-- [x] Tests STAT-01..07b (Service, 8 Tests) + STAT-CTRL-01..03 (Controller, 3 Tests) — 480 Tests gesamt.
+- [x] `/statistiken`-Route für alle eingeloggten User — Template `statistik.html` rendert je nach Mitgliedschaft die passende Sektion.
+- [x] `SponsorStatistikService` aggregiert über alle UNTERNEHMEN-Orgs des Users (4 Repo-Count-Queries + 1 Sum-Query + 1 Branche-Group-By).
+- [x] `VereinStatistikService` aggregiert über alle VEREIN-Orgs des Users — eigene Sicht mit Projekt-/Paket-Counter, eingehenden + ausgehenden Anfragen, Einnahmen (`Vertrag.org`-Seite), Rechnungs-Liquidität.
+- [x] Sponsor-Kennzahlen: aktive Engagements (UNTERZEICHNETe Verträge), Sponsoring-Volumen, Anfragen-Pipeline (NEU/ANGENOMMEN/ABGELEHNT) mit Conversion-Rate, Rechnungs-Status, Branchen-Verteilung als horizontale Balken, Vertrags-Status-Verteilung.
+- [x] Verein-Kennzahlen: veröffentlichte Projekte + aktive Pakete, Sponsoring-Einnahmen (UNTERZEICHNETe Verträge), Eingehende Anfragen + Ausgehende Kontakt-Anfragen je mit Conversion-Rate, Rechnungs-Status (rechnungsstellende Org), Vertrags-Status.
+- [x] Multi-Role-User (Mitglied von VEREIN UND UNTERNEHMEN) sieht beide Sektionen untereinander; weder noch → einheitlicher Empty-State.
+- [x] **Bug-Fix:** Vereins-Mitglieder sahen vorher die Sponsor-Statistik — jetzt strikte Trennung über `hatVereinOrgs()` / `hatSponsorOrgs()` im Template.
+- [x] **Bug-Fix:** Typo `Vertrags-Statūs` (Macron-u) → `Vertrags-Status` in DE-Locale.
+- [x] Sidebar-Nav-Item "Statistiken" für eingeloggte User.
+- [x] i18n DE/EN/FR/IT (39 Keys — 28 Sponsor + 11 Verein/Statistik-Container).
+- [x] Tests STAT-01..07b (Sponsor-Service, 8) + STAT-VEREIN-01..07b (Verein-Service, 8) + STAT-CTRL-01..04 (Controller, 4) — 489 Tests gesamt.
 
 ---
 
