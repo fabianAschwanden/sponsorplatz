@@ -58,6 +58,29 @@ public class AppUserService {
     }
 
     /**
+     * Optional-Variante von {@link #findeIdNachEmail(String)} — wirft nicht,
+     * damit Controller den Fall „User existiert nicht" sauber handeln können
+     * ohne die Entity selbst zu berühren (ARCH-02).
+     */
+    @Transactional(readOnly = true)
+    public Optional<UUID> findeOptionalIdNachEmail(String email) {
+        return repository.findByEmail(email).map(AppUser::getId);
+    }
+
+    /**
+     * Snapshot für Mitglied-Hinzufügen-Flow: User-ID + Anzeigename, falls
+     * vorhanden. Controller braucht keine Entity (ARCH-02).
+     */
+    @Transactional(readOnly = true)
+    public Optional<UserSnapshot> findeUserSnapshotNachEmail(String email) {
+        return repository.findByEmail(email)
+                .map(u -> new UserSnapshot(u.getId(), u.getAnzeigename()));
+    }
+
+    /** Minimales Read-only Snapshot — kein Entity-Touch im Aufrufer. */
+    public record UserSnapshot(UUID id, String anzeigename) {}
+
+    /**
      * Liefert die User-UUID anhand der Email — Komfort-Methode für Controller,
      * damit sie {@link AppUserRepository} nicht direkt injizieren müssen
      * (ARCH-01: Controller → Service, nicht → Repository).
@@ -65,6 +88,14 @@ public class AppUserService {
      * @throws ch.sponsorplatz.shared.exception.NotFoundException wenn die Email
      *         keinem User zugeordnet ist
      */
+    @Transactional(readOnly = true)
+    public UUID findeIdNachEmail(String email) {
+        return repository.findByEmail(email)
+                .map(AppUser::getId)
+                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
+                        "User nicht gefunden: " + email));
+    }
+
     /**
      * Alle User für das Admin-UI, neueste Registrierungen zuerst — Komfort-
      * Methode für Controller (ARCH-01).
@@ -135,14 +166,6 @@ public class AppUserService {
                 repository.save(user);
             }
         });
-    }
-
-    @Transactional(readOnly = true)
-    public UUID findeIdNachEmail(String email) {
-        return repository.findByEmail(email)
-                .map(AppUser::getId)
-                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
-                        "User nicht gefunden: " + email));
     }
 
     @Transactional(readOnly = true)

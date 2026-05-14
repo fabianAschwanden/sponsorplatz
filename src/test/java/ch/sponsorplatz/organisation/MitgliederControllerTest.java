@@ -107,12 +107,14 @@ class MitgliederControllerTest {
     void hinzufuegenMitExistierenderEmail() throws Exception {
         when(accessControl.kannOrgVerwaltenNachSlug(eq("fc-test"), any())).thenReturn(true);
         Organisation org = testOrg();
-        when(organisationService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
+        when(organisationService.findeViewNachSlug("fc-test")).thenReturn(Optional.of(OrganisationView.von(org)));
         AppUser eingeladener = new AppUser();
         eingeladener.setId(UUID.randomUUID());
         eingeladener.setEmail("user@example.com");
         eingeladener.setAnzeigename("User");
-        when(appUserService.findeNachEmail("user@example.com")).thenReturn(Optional.of(eingeladener));
+        when(appUserService.findeUserSnapshotNachEmail("user@example.com"))
+                .thenReturn(Optional.of(new ch.sponsorplatz.benutzer.AppUserService.UserSnapshot(
+                        eingeladener.getId(), eingeladener.getAnzeigename())));
 
         mockMvc.perform(post("/organisationen/fc-test/mitglieder/hinzufuegen")
                 .with(csrf())
@@ -134,8 +136,8 @@ class MitgliederControllerTest {
     void hinzufuegenMitUnbekannterEmailErzeugtEinladung() throws Exception {
         when(accessControl.kannOrgVerwaltenNachSlug(eq("fc-test"), any())).thenReturn(true);
         Organisation org = testOrg();
-        when(organisationService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
-        when(appUserService.findeNachEmail("neu@example.com")).thenReturn(Optional.empty());
+        when(organisationService.findeViewNachSlug("fc-test")).thenReturn(Optional.of(OrganisationView.von(org)));
+        when(appUserService.findeUserSnapshotNachEmail("neu@example.com")).thenReturn(Optional.empty());
         AppUser owner = new AppUser();
         owner.setId(UUID.randomUUID());
         owner.setEmail("owner@example.com");

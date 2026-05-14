@@ -3,7 +3,6 @@ package ch.sponsorplatz.anfrage;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.organisation.OrganisationView;
 import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.organisation.OrganisationService;
 import org.springframework.security.access.AccessDeniedException;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
 import java.util.UUID;
 
 @Controller
@@ -39,12 +37,12 @@ public class AnfragenController {
     @GetMapping
     public String liste(@PathVariable String orgSlug, Authentication auth, Model model) {
         pruefeEditRecht(orgSlug, auth);
-        Organisation org = ladeOrg(orgSlug);
+        OrganisationView org = orgService.findeViewNachSlug(orgSlug)
+                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + orgSlug));
 
-        List<SponsoringAnfrage> eingehende = anfrageService.findeEingehende(org.getId());
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "anfragen");
-        model.addAttribute("org", OrganisationView.von(org));
-        model.addAttribute("anfragen", AnfrageView.von(eingehende));
+        model.addAttribute("org", org);
+        model.addAttribute("anfragen", anfrageService.findeEingehendeViews(org.id()));
         return "anfragen-liste";
     }
 
@@ -72,15 +70,9 @@ public class AnfragenController {
         return "redirect:/organisationen/" + orgSlug + "/anfragen";
     }
 
-    private Organisation ladeOrg(String slug) {
-        return orgService.findeNachSlug(slug)
-                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
-    }
-
     private void pruefeEditRecht(String slug, Authentication auth) {
         if (!accessControl.kannOrgEditierenNachSlug(slug, auth)) {
             throw new AccessDeniedException("Keine Berechtigung für Anfragen von Org: " + slug);
         }
     }
 }
-

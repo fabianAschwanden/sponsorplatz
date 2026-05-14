@@ -3,8 +3,6 @@ package ch.sponsorplatz.anfrage;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.organisation.OrganisationView;
 import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.organisation.OrganisationService;
@@ -19,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -53,23 +50,18 @@ public class NachrichtController {
                          Authentication auth,
                          Model model) {
         pruefeEditRecht(orgSlug, auth);
-        Organisation org = ladeOrg(orgSlug);
-        SponsoringAnfrage anfrage = ladeAnfrage(anfrageId);
-
-        List<Nachricht> nachrichten = nachrichtService.findeNachAnfrage(anfrageId);
-
-        // aktuellerUserId fürs Template — damit der Bubble-Style (eigen vs.
-        // eingehend) per UUID-Vergleich entscheiden kann, anstatt UUID gegen
-        // Authentication-Email zu vergleichen (was nie matchte).
-        UUID aktuellerUserId = appUserService.findeNachEmail(auth.getName())
-                .map(AppUser::getId)
-                .orElse(null);
+        OrganisationView org = organisationService.findeViewNachSlug(orgSlug)
+                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + orgSlug));
+        AnfrageView anfrage = anfrageService.findeViewNachId(anfrageId);
 
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "anfragen");
-        model.addAttribute("org", OrganisationView.von(org));
-        model.addAttribute("anfrage", AnfrageView.von(anfrage));
-        model.addAttribute("nachrichten", NachrichtView.von(nachrichten));
-        model.addAttribute("aktuellerUserId", aktuellerUserId);
+        model.addAttribute("org", org);
+        model.addAttribute("anfrage", anfrage);
+        model.addAttribute("nachrichten", NachrichtView.von(nachrichtService.findeNachAnfrage(anfrageId)));
+        // aktuellerUserId fürs Template — Bubble-Style entscheidet per UUID-
+        // Vergleich (Authentication.email matched nie gegen UUID).
+        model.addAttribute("aktuellerUserId",
+                appUserService.findeOptionalIdNachEmail(auth.getName()).orElse(null));
         return "nachrichten-thread";
     }
 
@@ -81,11 +73,10 @@ public class NachrichtController {
                         RedirectAttributes redirect) {
         pruefeEditRecht(orgSlug, auth);
 
-        AppUser user = appUserService.findeNachEmail(auth.getName())
-                .orElseThrow(() -> new NotFoundException("Benutzer nicht gefunden"));
+        UUID userId = appUserService.findeIdNachEmail(auth.getName());
 
         try {
-            nachrichtService.sendeNachricht(anfrageId, user.getId(), text);
+            nachrichtService.sendeNachricht(anfrageId, userId, text);
             redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG, "Nachricht gesendet.");
         } catch (IllegalArgumentException ex) {
             redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG, ex.getMessage());
@@ -94,19 +85,9 @@ public class NachrichtController {
         return "redirect:/organisationen/" + orgSlug + "/anfragen/" + anfrageId + "/nachrichten";
     }
 
-    private Organisation ladeOrg(String slug) {
-        return organisationService.findeNachSlug(slug)
-                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
-    }
-
-    private SponsoringAnfrage ladeAnfrage(UUID id) {
-        return anfrageService.findeNachId(id);
-    }
-
     private void pruefeEditRecht(String slug, Authentication auth) {
         if (!accessControl.kannOrgEditierenNachSlug(slug, auth)) {
             throw new AccessDeniedException("Keine Berechtigung für Nachrichten von Org: " + slug);
         }
     }
 }
-

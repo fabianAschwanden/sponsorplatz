@@ -69,6 +69,12 @@ public class MitgliedschaftService {
         return mitgliedschaftRepository.findByOrgId(orgId);
     }
 
+    /** View-Variante — Controller braucht keine Entity-Liste (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<MitgliedView> findeViewsNachOrg(UUID orgId) {
+        return MitgliedView.von(mitgliedschaftRepository.findByOrgId(orgId));
+    }
+
     /**
      * Org-IDs aller Mitgliedschaften eines Users — Komfort-Methode für
      * Controller, damit sie {@link MitgliedschaftRepository} nicht direkt

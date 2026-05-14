@@ -63,8 +63,9 @@ class AnfragenControllerTest {
     void listeMitRechtIst200() throws Exception {
         Organisation org = testOrg();
         when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
-        when(orgService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
-        when(anfrageService.findeEingehende(org.getId())).thenReturn(List.of());
+        when(orgService.findeViewNachSlug("fc-test"))
+                .thenReturn(Optional.of(ch.sponsorplatz.organisation.OrganisationView.von(org)));
+        when(anfrageService.findeEingehendeViews(org.getId())).thenReturn(List.of());
 
         mockMvc.perform(get("/organisationen/fc-test/anfragen"))
                 .andExpect(status().isOk())

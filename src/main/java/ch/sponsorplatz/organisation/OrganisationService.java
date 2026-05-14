@@ -76,6 +76,20 @@ public class OrganisationService {
         return repository.findBySlug(slug);
     }
 
+    /** View-Variante — Controller braucht keine Entity (ARCH-02). */
+    @Transactional(readOnly = true)
+    public Optional<OrganisationView> findeViewNachSlug(String slug) {
+        return findeNachSlug(slug).map(OrganisationView::von);
+    }
+
+    /** Lookup nur die ID — Controller braucht oft nur die UUID (ARCH-02). */
+    @Transactional(readOnly = true)
+    public UUID findeIdNachSlug(String slug) {
+        return findeNachSlug(slug)
+                .map(Organisation::getId)
+                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
+    }
+
     /**
      * Direkte Untergeordnete einer Org — für Detail-Anzeige + Hierarchie-Navigation.
      */

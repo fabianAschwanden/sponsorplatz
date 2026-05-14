@@ -95,8 +95,9 @@ class NachrichtControllerTest {
     @DisplayName("MSG-05: GET nachrichten mit Edit-Recht → 200 + Thread-Ansicht")
     void threadAnzeigen_mitRecht() throws Exception {
         when(accessControl.kannOrgEditierenNachSlug(eq(ORG_SLUG), any())).thenReturn(true);
-        when(organisationService.findeNachSlug(ORG_SLUG)).thenReturn(Optional.of(testOrg()));
-        when(anfrageService.findeNachId(ANFRAGE_ID)).thenReturn(testAnfrage());
+        when(organisationService.findeViewNachSlug(ORG_SLUG))
+                .thenReturn(Optional.of(ch.sponsorplatz.organisation.OrganisationView.von(testOrg())));
+        when(anfrageService.findeViewNachId(ANFRAGE_ID)).thenReturn(AnfrageView.von(testAnfrage()));
         when(nachrichtService.findeNachAnfrage(ANFRAGE_ID)).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/organisationen/" + ORG_SLUG + "/anfragen/" + ANFRAGE_ID + "/nachrichten"))

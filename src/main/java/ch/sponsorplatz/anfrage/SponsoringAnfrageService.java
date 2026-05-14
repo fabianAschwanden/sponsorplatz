@@ -60,6 +60,18 @@ public class SponsoringAnfrageService {
                         "Anfrage nicht gefunden: " + id));
     }
 
+    /** View-Variante — Controller braucht keine Entity (ARCH-02). */
+    @Transactional(readOnly = true)
+    public AnfrageView findeViewNachId(UUID id) {
+        return AnfrageView.von(findeNachId(id));
+    }
+
+    /** View-Variante — Controller braucht keine Entity (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<AnfrageView> findeEingehendeViews(UUID empfaengerOrgId) {
+        return AnfrageView.von(findeEingehende(empfaengerOrgId));
+    }
+
     @Transactional(readOnly = true)
     public List<SponsoringAnfrage> findeEingehende(UUID empfaengerOrgId) {
         return repository.findByEmpfaengerOrgIdOrderByCreatedAtDesc(empfaengerOrgId);
