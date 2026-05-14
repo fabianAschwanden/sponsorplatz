@@ -62,9 +62,11 @@ public class AdminBacklogController {
             return "redirect:/admin/backlog";
         }
         String erstellt = auth != null && auth.getName() != null ? auth.getName() : "system";
-        var item = service.erstelle(form.getTitel(), form.getBeschreibung(), form.getPrioritaet(), erstellt);
+        // Titel direkt aus dem FormDto — kein Entity-Lookup, hält Controller
+        // ARCH-02-konform (kein @Entity-Touch).
+        service.erstelle(form.getTitel(), form.getBeschreibung(), form.getPrioritaet(), erstellt);
         redirect.addFlashAttribute("erfolgsMeldung",
-                "Item «" + item.getTitel() + "» angelegt.");
+                "Item «" + form.getTitel() + "» angelegt.");
         return "redirect:/admin/backlog";
     }
 

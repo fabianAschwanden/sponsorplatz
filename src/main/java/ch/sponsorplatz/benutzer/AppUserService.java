@@ -75,30 +75,52 @@ public class AppUserService {
     }
 
     /**
+     * Admin-Views aller User, neueste zuerst — Controller braucht keine
+     * Entity-Liste mehr ans Template zu geben (ARCH-02).
+     */
+    @Transactional(readOnly = true)
+    public List<AdminBenutzerView> findeAlleAdminViews() {
+        return AdminBenutzerView.von(repository.findAllByOrderByRegistriertAmDesc());
+    }
+
+    /**
      * Setzt das {@code aktiv}-Flag eines Users und speichert. Wird vom
      * Admin-UI ({@code /admin/benutzer/{id}/{sperren,entsperren}}) genutzt.
      *
-     * @return die zugehörige Email-Adresse (für Audit-Log + Flash-Message)
+     * @return Admin-View-Snapshot — Controller braucht Email + Anzeigename für
+     *         Audit-Log und Flash-Message, ohne die Entity selbst anzufassen
+     *         (ARCH-02).
      */
-    public AppUser setzeAktiv(UUID userId, boolean aktiv) {
+    public AdminBenutzerView setzeAktiv(UUID userId, boolean aktiv) {
         AppUser user = repository.findById(userId)
                 .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
                         "Benutzer nicht gefunden: " + userId));
         user.setAktiv(aktiv);
-        return repository.save(user);
+        return AdminBenutzerView.von(repository.save(user));
     }
 
     /**
      * Setzt oder entfernt (null) die Plattform-Rolle eines Users — Admin-Aktion.
-     *
-     * @return den aktualisierten User (für Audit-Log + Flash-Message)
+     * Rückgabe ist ein Admin-View-Snapshot (siehe {@link #setzeAktiv}).
      */
-    public AppUser setzePlatformRolle(UUID userId, PlatformRolle rolle) {
+    public AdminBenutzerView setzePlatformRolle(UUID userId, PlatformRolle rolle) {
         AppUser user = repository.findById(userId)
                 .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
                         "Benutzer nicht gefunden: " + userId));
         user.setPlatformRolle(rolle);
-        return repository.save(user);
+        return AdminBenutzerView.von(repository.save(user));
+    }
+
+    /**
+     * Admin-View des Users — wird vom Admin-UI für „aktuelle Rolle"-Vergleich
+     * vor einer Rollen-Änderung gelesen. Reicht ein DTO ohne Entity-Touch.
+     */
+    @Transactional(readOnly = true)
+    public AdminBenutzerView findeAdminViewNachId(UUID userId) {
+        return repository.findById(userId)
+                .map(AdminBenutzerView::von)
+                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
+                        "Benutzer nicht gefunden: " + userId));
     }
 
     /**

@@ -16,10 +16,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ch.sponsorplatz.audit.AuditAktion;
 import ch.sponsorplatz.audit.AuditService;
 import ch.sponsorplatz.benutzer.AdminBenutzerView;
-import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.PlatformRolle;
-import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.organisation.OrganisationView;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
@@ -48,28 +46,27 @@ public class AdminBenutzerController {
 
     @GetMapping("/benutzer")
     public String benutzerListe(Model model) {
-        List<AppUser> users = appUserService.findeAlleNeuesteZuerst();
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "admin");
-        model.addAttribute("benutzer", AdminBenutzerView.von(users));
+        model.addAttribute("benutzer", appUserService.findeAlleAdminViews());
         model.addAttribute("rollen", PlatformRolle.values());
         return "admin/benutzer";
     }
 
     @PostMapping("/benutzer/{id}/sperren")
     public String benutzerSperren(@PathVariable UUID id, RedirectAttributes redirect) {
-        AppUser user = appUserService.setzeAktiv(id, false);
-        auditService.protokolliere(AuditAktion.GESPERRT, "BENUTZER", id, "AppUser", user.getEmail());
+        AdminBenutzerView v = appUserService.setzeAktiv(id, false);
+        auditService.protokolliere(AuditAktion.GESPERRT, "BENUTZER", id, "AppUser", v.email());
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                "Benutzer «" + user.getAnzeigename() + "» wurde gesperrt.");
+                "Benutzer «" + v.anzeigename() + "» wurde gesperrt.");
         return "redirect:/admin/benutzer";
     }
 
     @PostMapping("/benutzer/{id}/entsperren")
     public String benutzerEntsperren(@PathVariable UUID id, RedirectAttributes redirect) {
-        AppUser user = appUserService.setzeAktiv(id, true);
-        auditService.protokolliere(AuditAktion.ENTSPERRT, "BENUTZER", id, "AppUser", user.getEmail());
+        AdminBenutzerView v = appUserService.setzeAktiv(id, true);
+        auditService.protokolliere(AuditAktion.ENTSPERRT, "BENUTZER", id, "AppUser", v.email());
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                "Benutzer «" + user.getAnzeigename() + "» wurde entsperrt.");
+                "Benutzer «" + v.anzeigename() + "» wurde entsperrt.");
         return "redirect:/admin/benutzer";
     }
 
@@ -80,13 +77,13 @@ public class AdminBenutzerController {
         PlatformRolle neueRolle = (rolle == null || rolle.isBlank())
                 ? null
                 : PlatformRolle.valueOf(rolle);
-        AppUser vorher = appUserService.findeNachId(id).orElseThrow();
-        String alteRolle = vorher.getPlatformRolle() != null ? vorher.getPlatformRolle().name() : "KEINE";
-        AppUser user = appUserService.setzePlatformRolle(id, neueRolle);
+        AdminBenutzerView vorher = appUserService.findeAdminViewNachId(id);
+        String alteRolle = vorher.platformRolle() != null ? vorher.platformRolle().name() : "KEINE";
+        AdminBenutzerView v = appUserService.setzePlatformRolle(id, neueRolle);
         auditService.protokolliere(AuditAktion.ROLLE_GEAENDERT, "BENUTZER", id, "AppUser",
                 alteRolle + " → " + (rolle != null ? rolle : "KEINE"));
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                "Rolle von «" + user.getAnzeigename() + "» geändert.");
+                "Rolle von «" + v.anzeigename() + "» geändert.");
         return "redirect:/admin/benutzer";
     }
 
@@ -94,27 +91,26 @@ public class AdminBenutzerController {
 
     @GetMapping("/organisationen")
     public String orgListe(Model model) {
-        List<Organisation> orgs = organisationService.alle();
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "admin");
-        model.addAttribute("organisationen", OrganisationView.von(orgs));
+        model.addAttribute("organisationen", OrganisationView.von(organisationService.alle()));
         return "admin/organisationen";
     }
 
     @PostMapping("/organisationen/{id}/verifizieren")
     public String orgVerifizieren(@PathVariable UUID id, RedirectAttributes redirect) {
-        Organisation org = organisationService.verifiziere(id);
-        auditService.protokolliere(AuditAktion.VERIFIZIERT, "ORGANISATION", id, "Organisation", org.getName());
+        OrganisationView v = OrganisationView.von(organisationService.verifiziere(id));
+        auditService.protokolliere(AuditAktion.VERIFIZIERT, "ORGANISATION", id, "Organisation", v.name());
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                "Organisation «" + org.getName() + "» verifiziert.");
+                "Organisation «" + v.name() + "» verifiziert.");
         return "redirect:/admin/organisationen";
     }
 
     @PostMapping("/organisationen/{id}/suspendieren")
     public String orgSuspendieren(@PathVariable UUID id, RedirectAttributes redirect) {
-        Organisation org = organisationService.suspendiere(id);
-        auditService.protokolliere(AuditAktion.SUSPENDIERT, "ORGANISATION", id, "Organisation", org.getName());
+        OrganisationView v = OrganisationView.von(organisationService.suspendiere(id));
+        auditService.protokolliere(AuditAktion.SUSPENDIERT, "ORGANISATION", id, "Organisation", v.name());
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                "Organisation «" + org.getName() + "» suspendiert.");
+                "Organisation «" + v.name() + "» suspendiert.");
         return "redirect:/admin/organisationen";
     }
 }

@@ -1,6 +1,6 @@
 package ch.sponsorplatz.admin;
 
-import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungen;
+import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungenService.MailKonfigurationsSnapshot;
 
 /**
  * View-DTO für die Mail-Einstellungs-Seite.
@@ -24,25 +24,24 @@ public record MailEinstellungenView(
         boolean liveModus,
         boolean konfiguriert) {
     /**
-     * Baut die View aus DB-Entity + den effektiven Werten aus dem MailService.
-     * Passwort wird nur als Boolean (gesetzt/leer) exponiert — Klartext bleibt in
-     * der DB.
+     * Baut die View aus dem Service-Snapshot + den effektiven Werten aus dem
+     * MailService. Controller bekommt keine Entity (ARCH-02).
      */
-    public static MailEinstellungenView von(PlattformEinstellungen e,
+    public static MailEinstellungenView von(MailKonfigurationsSnapshot s,
             String effektiverHost,
             String effektiverAbsender,
             String effektiverTestEmpfaenger,
             boolean liveModus,
             boolean konfiguriert) {
         return new MailEinstellungenView(
-                e.getSmtpHost(),
-                e.getSmtpPort(),
-                e.getSmtpUser(),
-                e.getSmtpPassword() != null && !e.getSmtpPassword().isBlank(),
-                e.isSmtpAuth(),
-                e.isSmtpStarttls(),
-                e.getMailAbsender(),
-                e.getMailTestEmpfaenger(),
+                s.smtpHost(),
+                s.smtpPort(),
+                s.smtpUser(),
+                s.smtpPasswordGesetzt(),
+                s.smtpAuth(),
+                s.smtpStarttls(),
+                s.mailAbsender(),
+                s.mailTestEmpfaenger(),
                 effektiverHost,
                 effektiverAbsender,
                 effektiverTestEmpfaenger,

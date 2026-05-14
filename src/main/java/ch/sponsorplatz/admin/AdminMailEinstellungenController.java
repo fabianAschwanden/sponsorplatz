@@ -1,8 +1,8 @@
 package ch.sponsorplatz.admin;
 
-import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungen;
-import ch.sponsorplatz.shared.mail.MailService;
 import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungenService;
+import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungenService.MailKonfigurationsSnapshot;
+import ch.sponsorplatz.shared.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,9 +43,9 @@ public class AdminMailEinstellungenController {
 
     @GetMapping
     public String anzeigen(Model model) {
-        PlattformEinstellungen e = einstellungenService.lade();
+        MailKonfigurationsSnapshot snapshot = einstellungenService.ladeMailKonfig();
         model.addAttribute("einstellungen", MailEinstellungenView.von(
-                e,
+                snapshot,
                 mailService.effektiverHost(),
                 mailService.effektiverAbsender(),
                 mailService.effektiverTestEmpfaenger(),
@@ -54,14 +54,14 @@ public class AdminMailEinstellungenController {
         ));
         if (!model.containsAttribute("form")) {
             MailEinstellungenFormDto form = new MailEinstellungenFormDto();
-            form.setSmtpHost(e.getSmtpHost());
-            form.setSmtpPort(e.getSmtpPort());
-            form.setSmtpUser(e.getSmtpUser());
+            form.setSmtpHost(snapshot.smtpHost());
+            form.setSmtpPort(snapshot.smtpPort());
+            form.setSmtpUser(snapshot.smtpUser());
             // smtpPassword bewusst nicht ins Form — Klartext bleibt in DB
-            form.setSmtpAuth(e.isSmtpAuth());
-            form.setSmtpStarttls(e.isSmtpStarttls());
-            form.setMailAbsender(e.getMailAbsender());
-            form.setMailTestEmpfaenger(e.getMailTestEmpfaenger());
+            form.setSmtpAuth(snapshot.smtpAuth());
+            form.setSmtpStarttls(snapshot.smtpStarttls());
+            form.setMailAbsender(snapshot.mailAbsender());
+            form.setMailTestEmpfaenger(snapshot.mailTestEmpfaenger());
             model.addAttribute("form", form);
         }
         return "admin/mail-einstellungen";
@@ -71,18 +71,11 @@ public class AdminMailEinstellungenController {
     public String speichern(@ModelAttribute("form") MailEinstellungenFormDto form,
                             Authentication auth,
                             RedirectAttributes redirect) {
-        PlattformEinstellungen e = einstellungenService.lade();
-        e.setSmtpHost(blankToNull(form.getSmtpHost()));
-        e.setSmtpPort(form.getSmtpPort());
-        e.setSmtpUser(blankToNull(form.getSmtpUser()));
-        if (form.getSmtpPassword() != null && !form.getSmtpPassword().isBlank()) {
-            e.setSmtpPassword(form.getSmtpPassword());
-        }
-        e.setSmtpAuth(form.isSmtpAuth());
-        e.setSmtpStarttls(form.isSmtpStarttls());
-        e.setMailAbsender(blankToNull(form.getMailAbsender()));
-        e.setMailTestEmpfaenger(blankToNull(form.getMailTestEmpfaenger()));
-        einstellungenService.speichere(e, auth.getName());
+        einstellungenService.aktualisiereMailKonfig(
+                form.getSmtpHost(), form.getSmtpPort(), form.getSmtpUser(),
+                form.getSmtpPassword(), form.isSmtpAuth(), form.isSmtpStarttls(),
+                form.getMailAbsender(), form.getMailTestEmpfaenger(),
+                auth.getName());
 
         log.info("Mail-Einstellungen aktualisiert von {}", auth.getName());
         redirect.addFlashAttribute("erfolgsMeldung", "Mail-Einstellungen gespeichert.");
@@ -103,9 +96,5 @@ public class AdminMailEinstellungenController {
                     "Test-Mail-Versand fehlgeschlagen: " + e.getMessage());
         }
         return "redirect:/admin/mail-einstellungen";
-    }
-
-    private static String blankToNull(String s) {
-        return (s == null || s.isBlank()) ? null : s.trim();
     }
 }
