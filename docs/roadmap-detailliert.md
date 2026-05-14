@@ -667,11 +667,16 @@ Nicht-priorisierte Liste; jede Sub-Phase ist eine eigenständige Mini-Roadmap.
 | 5.D | Mehrsprachigkeit FR/IT (Public-Layer) | 2 Wochen |
 | 5.E | Mehrsprachigkeit EN | 1 Woche |
 | 5.F | Vertrags-Generator (PDF aus Word-Template — re-use Serienbrief) | 1 Woche |
-| 5.G | Digitale Signatur (Skribble/DocuSign) | 2 Wochen |
 | 5.H | Zahlungs-Integration (Datatrans / Stripe / TWINT) | 4–6 Wochen |
 | 5.I | Mobile-PWA-Optimierung | 2 Wochen |
 | 5.J | API für Verbände (REST) | 3 Wochen |
 | 5.K | KI-Matching (Embedding-basiert) | 4 Wochen |
+
+**Backlog (nach Pilot-Volumen-Validierung):**
+
+| ID | Feature | Aufwand-Schätzung | Begründung Backlog |
+|---|---|---|---|
+| 5.G | Digitale Signatur (Skribble/DocuSign) | 2 Wochen | Phase 0/Pilot: physische Unterzeichnung über PDF-Export ist ausreichend. Die Plattform speichert nur die Vertrags-Eckdaten (Parteien, Paket, Preis, Laufzeit, Status); der „Als unterzeichnet markieren"-Button bestätigt die offline erfolgte physische Unterschrift. Digitale Signatur lohnt sich erst, wenn das Volumen einen ROI rechtfertigt (Skribble-Lizenz + QES-Setup). |
 
 ---
 
