@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,4 +32,18 @@ public interface RechnungRepository extends JpaRepository<Rechnung, UUID> {
                and r.rechnungsnummer like :praefix
             """)
     Integer findeMaxLfdNr(@Param("orgId") UUID orgId, @Param("praefix") String praefix);
+
+    /**
+     * Sponsor-zentrischer Rechnungs-Counter pro Status. Rechnungen sind an
+     * {@code vertrag.sponsorOrg} gehängt — der Join läuft also über den
+     * Vertrag. Für das Sponsor-Statistik-Dashboard (Liquiditäts-Sicht).
+     */
+    @Query("""
+            select count(r)
+              from Rechnung r
+             where r.vertrag.sponsorOrg.id in :sponsorOrgIds
+               and r.status = :status
+            """)
+    long zaehleProSponsorOrgUndStatus(@Param("sponsorOrgIds") Collection<UUID> sponsorOrgIds,
+                                       @Param("status") RechnungsStatus status);
 }

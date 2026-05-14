@@ -402,6 +402,22 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **VTR-08** | `VertragServiceTest` | `kuendige` mit offener Rechnung storniert diese mit Grund-Hinweis (Audit-Trail) |
 | **VTR-08b** | `VertragServiceTest` | `kuendige` ohne Rechnung läuft sauber durch (einfacher Pfad) |
 | **VTR-08c** | `VertragServiceTest` | `kuendige` bei Status ENTWURF wirft (nur aus UNTERZEICHNET erlaubt) |
+
+### Sponsor-Statistik (STAT) — Phase 5.C
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **STAT-01** | `SponsorStatistikServiceTest` | User ohne UNTERNEHMEN-Org-Mitgliedschaft → `SponsorStatistik.leer()` |
+| **STAT-02** | `SponsorStatistikServiceTest` | User mit Sponsor-Org → DTO enthält Org-Name + Counter aus Repository |
+| **STAT-03** | `SponsorStatistikServiceTest` | User mit mehreren Sponsor-Orgs → alle Namen distinct in der Liste |
+| **STAT-04** | `SponsorStatistikServiceTest` | `summePreisChf` liefert `null` → DTO mappt auf `BigDecimal.ZERO` (kein NPE) |
+| **STAT-05** | `SponsorStatistikServiceTest` | Branchen-Verteilung: `Object[]`-Tupel aus JPQL-`group by` → `Map<Branche, Long>` |
+| **STAT-06** | `SponsorStatistikServiceTest` | Unbekannte User-E-Mail → `NotFoundException` |
+| **STAT-07** | `SponsorStatistikServiceTest` | `conversionRateProzent` rechnet `angenommen / (angenommen + abgelehnt) * 100` |
+| **STAT-07b** | `SponsorStatistikServiceTest` | `conversionRateProzent` ohne Antworten → 0 (kein Division-by-Zero) |
+| **STAT-CTRL-01** | `SponsorStatistikControllerTest` | GET `/statistiken` anonym → Redirect auf /login |
+| **STAT-CTRL-02** | `SponsorStatistikControllerTest` | User ohne Sponsor-Org → 200 + leeres DTO (Template zeigt Empty-State) |
+| **STAT-CTRL-03** | `SponsorStatistikControllerTest` | User mit Sponsor-Org → 200 + DTO mit Kennzahlen |
 | **VTR-09** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage (paket=null): Verein-Org wird via `OrgTyp.VEREIN`-Check als `v.org` gemappt, Sponsor als `v.sponsorOrg` — unabhängig von Anfrage-Richtung. Siehe [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md) |
 | **VTR-10** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage ohne Wunsch-Betrag: `betreff` wird zu `paketName`, `nachricht` zu `paketBeschreibung`, `preisChf = 0` |
 | **VTR-10b** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage mit `wunschBetragChf=5000`: Vertrag startet mit `preisChf=5000` (Initial-Preis aus Anfrage-Wunsch). Siehe V33 + [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md) |

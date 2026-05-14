@@ -64,6 +64,19 @@
                   th:if="${badgeAnfragen != null and badgeAnfragen > 0}"
                   th:text="${badgeAnfragen}">3</span>
         </a>
+        <!-- Statistiken — sichtbar für alle eingeloggten User. Vereins-only
+             User landen auf einer Empty-Page mit Sponsor-Hinweis. Sponsor-
+             Sichtbarkeits-Filter wäre ein zusätzlicher Repo-Roundtrip pro
+             Sidebar-Render — bewusst nicht. -->
+        <a sec:authorize="isAuthenticated()" th:href="@{/statistiken}" class="dash-nav-item"
+           th:classappend="${aktiv == 'statistiken'} ? 'aktiv'">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="20" x2="12" y2="10"/>
+                <line x1="18" y1="20" x2="18" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="16"/>
+            </svg>
+            <span th:text="#{sidebar.statistiken}">Statistiken</span>
+        </a>
 
         <!-- Admin-Bereich (nur für PLATFORM_ADMIN) -->
         <div sec:authorize="hasRole('PLATFORM_ADMIN')" style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1);">

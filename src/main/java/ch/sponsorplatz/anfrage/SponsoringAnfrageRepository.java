@@ -75,6 +75,16 @@ public interface SponsoringAnfrageRepository extends JpaRepository<SponsoringAnf
     /** Aggregat-Count für Dashboard: Anfragen mehrerer Orgs nach Status filtern. */
     long countByEmpfaengerOrgIdInAndStatus(Collection<UUID> empfaengerOrgIds, AnfrageStatus status);
 
+    /**
+     * Sponsor-zentrische Aggregat-Counter: Anfragen-Pipeline der Sponsor-Orgs.
+     * Zählt alle Anfragen, die von der Sponsor-Seite ausgehen — d.h. klassische
+     * Paket-Anfragen an Vereine, die der Sponsor gestellt hat.
+     */
+    long countByAnfragenderOrgIdInAndStatus(Collection<UUID> anfragenderOrgIds, AnfrageStatus status);
+
+    /** Aggregat-Count Anfragen einer Sponsor-Org-Menge insgesamt (alle Statūs). */
+    long countByAnfragenderOrgIdIn(Collection<UUID> anfragenderOrgIds);
+
     /** Alle eingehenden Anfragen über mehrere Orgs — für persönliche Anfragen-Übersicht. */
     @Query("""
             select a from SponsoringAnfrage a
