@@ -806,11 +806,50 @@ Registrierungs-Services; der Versand selbst ist im
 - **MON-W3C (Roadmap)**: Migration von proprietärem `X-Trace-ID` zu W3C-`traceparent` (OpenTelemetry-kompatibel),
   sobald Distributed-Tracing-Backend (Tempo/Jaeger) eingeführt wird.
 
+### Architektur-Verifikation (ARCH) — Schicht 1 mit ArchUnit
+
+> **Ziel:** Statische Architektur-Verifikation, damit die in `CLAUDE.md` und
+> `.instructions.md` formulierten Disziplin-Regeln **automatisch durchgesetzt**
+> werden statt nur dokumentiert. Verstoss → roter Build → Architektur-Zerfall
+> beim Feature-Wachstum wird verhindert.
+>
+> **Implementation:** `ch.sponsorplatz.architektur.ArchitekturRegelnTest` mit
+> `archunit-junit5` (Dependency in pom.xml).
+>
+> **Pflicht beim Erweitern:**
+> - Neue Regel → erst Test-ID hier pflegen, dann Regel im Test ergänzen
+> - Bewusste Ausnahmen über `.as("...")` dokumentieren, niemals stillschweigend
+> - Eine Regel wird nicht gelöscht, sondern kommentiert mit Begründung + ADR-Link
+
+| ID | Regel | Begründung |
+|---|---|---|
+| **ARCH-01** | Controller dürfen keine Repository-Klassen / `@Repository`-Beans direkt referenzieren | H1-Layer-Disziplin — Controller → Service → Repository |
+| **ARCH-02** | Controller dürfen keine `@Entity`-Klassen referenzieren | View-DTO-Pflicht aus CLAUDE.md — Entities verlassen den Service-Layer nicht |
+| **ARCH-03** | Top-Level-Klassen mit Suffix `*View` (ausserhalb `shared/`, `architektur/`) sind Records | Immutability + Defense in depth |
+| **ARCH-04** | `@Service`-Klassen liegen in einem Feature-Folder oder `shared/` | Kein verstreuter Service-Code |
+| **ARCH-05** | Klassen mit Suffix `*Repository` (Top-Level) sind Interfaces | Spring-Data-Pattern, keine Klassen-Repos |
+| **ARCH-06** | Feature-Folder dürfen nicht im Kreis abhängen | Modul-Boundary-Disziplin (Slices-Rule) |
+| **ARCH-07** | `shared/` darf nichts aus Feature-Foldern importieren | Querschnitt kennt Feature nie — nur umgekehrt |
+| **ARCH-08** | Custom-Exceptions extenden `RuntimeException` | GlobalExceptionHandler-Mapping setzt RuntimeException voraus |
+| **ARCH-09** | `@Controller`-Klassen, deren `@RequestMapping` mit `/admin` startet, tragen `@PreAuthorize` | Sicherheits-Boundary — kein versehentlich offener Admin-Endpoint |
+| **ARCH-10** | `@Entity`-Klassen sind public | Hibernate-Proxy-Anforderung |
+| **ARCH-11** | Records haben keine `@Autowired`-Felder | Records sind Datenträger, keine Spring-Beans |
+| **ARCH-12** | `@Controller`/`@RestController`-Klassen tragen Suffix `Controller` | Naming-Konvention |
+| **ARCH-13** | *(informativ)* Tests liegen im gleichen Paket wie SUT | Durch PR-Template/Code-Review durchgesetzt, nicht durch ArchUnit |
+
+**Spätere Regel-Kandidaten:**
+
+- **ARCH-14** (TBD): `model.addAttribute(...)` darf nicht direkt mit JPA-Entity aufgerufen werden — heute mit ArchUnit schwer messbar, Workaround via ARCH-02
+- **ARCH-15** (TBD): Migrationen sind additiv — keine `DROP COLUMN` / `DROP TABLE` ohne `IF EXISTS`-Guard (statische SQL-Analyse, nicht ArchUnit)
+- **ARCH-16** (TBD): Jeder `@RestController` hat `@CrossOrigin`-Policy explizit deklariert
+- **ARCH-17** (TBD): Migration-Test gegen prod-Schema-Snapshot (Spring Modulith oder Testcontainers + Flyway-Validate)
+
 ## CI
 
 - Bei jedem Push und PR auf `main`: `mvn -B clean verify` + Docker-Build-Smoke
 - JaCoCo-Coverage als Artifact pro Run
 - Surefire-Reports als Artifact pro Run
+- **Architektur-Tests laufen automatisch in `mvn test` mit** — siehe ARCH-01..13
 
 ## Smoke-Test-Checkliste (manuell vor Release)
 

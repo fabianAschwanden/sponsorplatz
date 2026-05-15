@@ -1,0 +1,43 @@
+# =============================================================================
+# Sponsorplatz — CODEOWNERS
+# =============================================================================
+# GitHub blockt Merges für die hier gelisteten Pfade, bis ein Owner-Review
+# stattgefunden hat. Schutz für architektur-, sicherheits- und compliance-
+# kritische Files.
+#
+# Syntax: <pfad-pattern> <owner1> <owner2> ...
+# Letzte passende Regel gewinnt.
+# =============================================================================
+
+# Default-Owner für alles (greift, wenn keine spezifischere Regel passt)
+*                                                       @fabianaschwanden
+
+# --- Security & Auth ---
+src/main/java/ch/sponsorplatz/shared/config/SecurityConfig.java        @fabianaschwanden
+src/main/java/ch/sponsorplatz/organisation/AccessControl.java          @fabianaschwanden
+src/main/java/ch/sponsorplatz/benutzer/SponsorplatzUserDetailsService.java  @fabianaschwanden
+src/main/java/ch/sponsorplatz/benutzer/LoginBruteForceSchutz.java      @fabianaschwanden
+src/main/java/ch/sponsorplatz/benutzer/Login*Filter.java               @fabianaschwanden
+src/main/java/ch/sponsorplatz/benutzer/Login*Handler.java              @fabianaschwanden
+
+# --- Datenbank-Migrationen (additiv, nicht-destruktiv) ---
+src/main/resources/db/migration/                                       @fabianaschwanden
+src/main/resources/db/migration_postgres/                              @fabianaschwanden
+
+# --- Zahlungs-Fluss (Compliance + Buchhaltung) ---
+src/main/java/ch/sponsorplatz/anfrage/Vertrag*.java                    @fabianaschwanden
+src/main/java/ch/sponsorplatz/anfrage/Rechnung*.java                   @fabianaschwanden
+src/main/java/ch/sponsorplatz/anfrage/Payment*.java                    @fabianaschwanden
+
+# --- Architektur-Verifikation ---
+src/test/java/ch/sponsorplatz/architektur/                             @fabianaschwanden
+
+# --- Specs (Architektur-Vertrag) ---
+specs/                                                                  @fabianaschwanden
+docs/adr/                                                               @fabianaschwanden
+
+# --- Dependencies & Build ---
+pom.xml                                                                 @fabianaschwanden
+Dockerfile                                                              @fabianaschwanden
+docker-compose.yml                                                      @fabianaschwanden
+.github/                                                                @fabianaschwanden

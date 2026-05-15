@@ -142,6 +142,12 @@ model.addAttribute("anfragen", AnfrageView.von(anfragen));
 - AssertJ statt Hamcrest, Mockito für Mocks
 - **Jeder neue View-DTO** braucht einen `<Name>ViewTest` mit `VIEW-NN`-Test-ID
 
+### Architektur-Verifikation (Schicht 1)
+
+Die in CLAUDE.md und `.instructions.md` formulierten Regeln werden **automatisch** durch `ArchitekturRegelnTest` (ArchUnit) durchgesetzt — bricht eine PR die Disziplin, ist der Build rot. Test-IDs `ARCH-01..13` in `specs/TESTSTRATEGIE.md`.
+
+**Vor jedem Refactoring:** `mvn test -Dtest=ArchitekturRegelnTest` lokal laufen lassen. Wenn eine Regel bewusst gelockert werden soll, neue Test-ID pflegen und Ausnahme dokumentieren — niemals stillschweigend ändern.
+
 ### Migrationen
 
 - **Additiv, niemals destruktiv ändern.** Neue Spalte → Backfill → alte Spalte droppen erst in nächster V-Nummer.
@@ -230,6 +236,7 @@ rm -rf data/
 
 | Suchen | Datei |
 |---|---|
+| **Architektur-Entscheidungen + Warum** | [`docs/adr/README.md`](docs/adr/README.md) (ADR-Index) |
 | Was ist Sponsorplatz | [`specs/PROJEKT_INFO.md`](specs/PROJEKT_INFO.md) |
 | Stack & Routen | [`specs/TECHNISCHE_SPEZIFIKATION.md`](specs/TECHNISCHE_SPEZIFIKATION.md) |
 | Datenbank-Schema | [`specs/DATENMODELL.md`](specs/DATENMODELL.md) |
