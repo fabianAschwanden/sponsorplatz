@@ -1,5 +1,6 @@
 package ch.sponsorplatz.projekt;
 
+import ch.sponsorplatz.organisation.OrganisationView;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +37,36 @@ public class SponsoringPaketService {
         return repository.findByIdMitProjektUndOrg(paketId);
     }
 
+    /**
+     * Snapshot für die Anfrage-Erstellungs-Form: Paket-Stammdaten + Projekt-Kopf +
+     * Empfänger-Org als View. Controller braucht keine Entity (ARCH-02).
+     */
+    @Transactional(readOnly = true)
+    public PaketAnfrageInfo findePaketAnfrageInfo(UUID paketId) {
+        SponsoringPaket paket = repository.findByIdMitProjektUndOrg(paketId)
+                .orElseThrow(() -> new NotFoundException("Paket nicht gefunden: " + paketId));
+        Projekt projekt = paket.getProjekt();
+        return new PaketAnfrageInfo(
+                paket.getId(),
+                paket.getName(),
+                paket.getPreisChf(),
+                projekt.getName(),
+                projekt.getSlug(),
+                OrganisationView.von(projekt.getOrg()));
+    }
+
+    /**
+     * Datenpaket für die Anfrage-Erstellungs-Form — Paket + Projekt-Kopf +
+     * Empfänger-Org-View ohne dass der Controller die Entity-Kette berühren muss.
+     */
+    public record PaketAnfrageInfo(
+            UUID paketId,
+            String paketName,
+            BigDecimal paketPreisChf,
+            String projektName,
+            String projektSlug,
+            OrganisationView empfaengerOrg) {}
+
     @Transactional(readOnly = true)
     public List<SponsoringPaket> findeNachProjekt(UUID projektId) {
         return repository.findByProjektIdOrderBySortierungAsc(projektId);
@@ -57,6 +88,12 @@ public class SponsoringPaketService {
     @Transactional(readOnly = true)
     public List<SponsoringPaket> findeAktiveNachProjekt(UUID projektId) {
         return repository.findByProjektIdAndAktivTrueOrderBySortierungAsc(projektId);
+    }
+
+    /** View-Variante — Controller braucht keine Entity-Liste (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<SponsoringPaketView> findeAktiveViewsNachProjekt(UUID projektId) {
+        return SponsoringPaketView.von(findeAktiveNachProjekt(projektId));
     }
 
     public SponsoringPaket erstelle(Projekt projekt, String name, String beschreibung, BigDecimal preisChf) {

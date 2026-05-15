@@ -20,7 +20,9 @@ import ch.sponsorplatz.aufgabe.AufgabenEngine;
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.OrganisationRepository;
 import ch.sponsorplatz.projekt.SponsoringPaket;
+import ch.sponsorplatz.projekt.SponsoringPaketRepository;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 
 class SponsoringAnfrageServiceTest {
@@ -31,6 +33,8 @@ class SponsoringAnfrageServiceTest {
     private MitgliedschaftRepository mitgliedschaftRepository;
     private AppUserRepository appUserRepository;
     private AufgabenEngine aufgabenEngine;
+    private OrganisationRepository organisationRepository;
+    private SponsoringPaketRepository sponsoringPaketRepository;
     private SponsoringAnfrageService service;
 
     private UUID erstellerUserId;
@@ -43,8 +47,11 @@ class SponsoringAnfrageServiceTest {
         mitgliedschaftRepository = mock(MitgliedschaftRepository.class);
         appUserRepository = mock(AppUserRepository.class);
         aufgabenEngine = mock(AufgabenEngine.class);
+        organisationRepository = mock(OrganisationRepository.class);
+        sponsoringPaketRepository = mock(SponsoringPaketRepository.class);
         service = new SponsoringAnfrageService(repository, benachrichtigungsService,
-                notificationService, mitgliedschaftRepository, appUserRepository, aufgabenEngine);
+                notificationService, mitgliedschaftRepository, appUserRepository, aufgabenEngine,
+                organisationRepository, sponsoringPaketRepository);
         when(mitgliedschaftRepository.findByOrgId(any())).thenReturn(Collections.emptyList());
         erstellerUserId = UUID.randomUUID();
         AppUser ersteller = new AppUser();

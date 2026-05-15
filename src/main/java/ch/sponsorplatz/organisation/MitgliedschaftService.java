@@ -95,6 +95,75 @@ public class MitgliedschaftService {
         return mitgliedschaftRepository.findByUserIdAndRolleInMitOrg(userId, rollen);
     }
 
+    /**
+     * Org-IDs aller Mitgliedschaften eines Users mit beliebiger Rolle aus der
+     * Menge — Controller braucht keine Entity-Liste (ARCH-02).
+     */
+    @Transactional(readOnly = true)
+    public List<UUID> findeOrgIdsVonUserMitRollen(UUID userId, java.util.Set<Rolle> rollen) {
+        return findeMitgliedschaftenVonUser(userId, rollen).stream()
+                .map(m -> m.getOrg().getId())
+                .toList();
+    }
+
+    /**
+     * Aggregat-Snapshot für die /anfragen-Seite — bündelt die wiederkehrenden
+     * Berechnungen (alle Org-IDs, Vereins-Org-IDs mit Edit-Recht, Vereins-Org-
+     * Namen) in einem Datenobjekt, damit der Controller keine Entity-Streams
+     * mehr selbst aufmacht (ARCH-02).
+     */
+    @Transactional(readOnly = true)
+    public AnfragenSeitenDaten findeAnfragenSeitenDaten(UUID userId) {
+        java.util.Set<Rolle> alle = java.util.Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR, Rolle.ORG_VIEWER);
+        java.util.Set<Rolle> editRollen = java.util.Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR);
+        List<Mitgliedschaft> mitgliedschaften = findeMitgliedschaftenVonUser(userId, alle);
+        List<UUID> alleOrgIds = mitgliedschaften.stream()
+                .map(m -> m.getOrg().getId()).toList();
+        List<Mitgliedschaft> mitEdit = mitgliedschaften.stream()
+                .filter(m -> editRollen.contains(m.getRolle()))
+                .filter(m -> m.getOrg().getTyp() == OrgTyp.VEREIN)
+                .toList();
+        List<UUID> vereinsOrgIds = mitEdit.stream()
+                .map(m -> m.getOrg().getId()).toList();
+        List<String> vereinsOrgNamen = mitEdit.stream()
+                .map(m -> m.getOrg().getName()).toList();
+        return new AnfragenSeitenDaten(alleOrgIds, vereinsOrgIds, vereinsOrgNamen);
+    }
+
+    /** Datenpaket für die /anfragen-Seite. */
+    public record AnfragenSeitenDaten(
+            List<UUID> alleOrgIds,
+            List<UUID> vereinsOrgIds,
+            List<String> vereinsOrgNamen) {}
+
+    /**
+     * Vereins-Orgs eines Users mit Edit-Recht als View — für den
+     * Sponsor-Picker im Kontakt-Anfrage-Formular (ARCH-02).
+     */
+    @Transactional(readOnly = true)
+    public List<OrganisationView> findeMeineVereinsOrgViews(UUID userId) {
+        java.util.Set<Rolle> editRollen = java.util.Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR);
+        return findeMitgliedschaftenVonUser(userId, editRollen).stream()
+                .map(Mitgliedschaft::getOrg)
+                .filter(o -> o.getTyp() == OrgTyp.VEREIN)
+                .map(OrganisationView::von)
+                .toList();
+    }
+
+    /**
+     * Edit-fähige Orgs eines Users abzüglich der angegebenen Empfänger-Org —
+     * für den Anfrage-Form-Picker (ARCH-02).
+     */
+    @Transactional(readOnly = true)
+    public List<OrganisationView> findeMeineOrgsAusser(UUID userId, UUID empfaengerOrgId) {
+        java.util.Set<Rolle> editRollen = java.util.Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR);
+        return findeMitgliedschaftenVonUser(userId, editRollen).stream()
+                .map(Mitgliedschaft::getOrg)
+                .filter(o -> !o.getId().equals(empfaengerOrgId))
+                .map(OrganisationView::von)
+                .toList();
+    }
+
     public boolean existierenMitgliedschaftenFuerOrg(UUID orgId) {
         return mitgliedschaftRepository.existsByOrgId(orgId);
     }

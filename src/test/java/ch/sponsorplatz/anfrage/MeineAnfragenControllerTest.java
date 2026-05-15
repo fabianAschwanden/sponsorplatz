@@ -1,16 +1,10 @@
 package ch.sponsorplatz.anfrage;
 
-import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.organisation.AccessControl;
-import ch.sponsorplatz.organisation.Mitgliedschaft;
 import ch.sponsorplatz.organisation.MitgliedschaftService;
-import ch.sponsorplatz.organisation.OrgTyp;
-import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationService;
-import ch.sponsorplatz.organisation.Rolle;
-import ch.sponsorplatz.projekt.Projekt;
-import ch.sponsorplatz.projekt.SponsoringPaket;
+import ch.sponsorplatz.organisation.OrganisationView;
 import ch.sponsorplatz.projekt.SponsoringPaketService;
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import org.junit.jupiter.api.DisplayName;
@@ -23,8 +17,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -71,14 +65,14 @@ class MeineAnfragenControllerTest {
     @WithMockUser("test@sp.ch")
     @DisplayName("MANF-02: /anfragen mit Auth → 200 + Template meine-anfragen")
     void mitAuthZeigtListe() throws Exception {
-        AppUser user = new AppUser();
-        user.setId(UUID.randomUUID());
-        user.setEmail("test@sp.ch");
-        when(appUserService.findeNachEmail("test@sp.ch")).thenReturn(Optional.of(user));
-
+        UUID userId = UUID.randomUUID();
         UUID orgId = UUID.randomUUID();
-        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId())).thenReturn(List.of(orgId));
-        when(anfrageService.findeAlleEingehenden(any())).thenReturn(List.of());
+
+        when(appUserService.findeIdNachEmail("test@sp.ch")).thenReturn(userId);
+        when(mitgliedschaftService.findeAnfragenSeitenDaten(userId))
+                .thenReturn(new MitgliedschaftService.AnfragenSeitenDaten(
+                        List.of(orgId), List.of(), List.of()));
+        when(anfrageService.findeAlleEingehendenViews(any())).thenReturn(List.of());
         when(anfrageService.zaehleNeue(anyCollection())).thenReturn(0L);
 
         mockMvc.perform(get("/anfragen"))
@@ -91,14 +85,14 @@ class MeineAnfragenControllerTest {
     @WithMockUser("test@sp.ch")
     @DisplayName("MANF-03: /anfragen zeigt offene Zählung korrekt an")
     void zeigtOffeneAnfragen() throws Exception {
-        AppUser user = new AppUser();
-        user.setId(UUID.randomUUID());
-        user.setEmail("test@sp.ch");
-        when(appUserService.findeNachEmail("test@sp.ch")).thenReturn(Optional.of(user));
-
+        UUID userId = UUID.randomUUID();
         UUID orgId = UUID.randomUUID();
-        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId())).thenReturn(List.of(orgId));
-        when(anfrageService.findeAlleEingehenden(any())).thenReturn(List.of());
+
+        when(appUserService.findeIdNachEmail("test@sp.ch")).thenReturn(userId);
+        when(mitgliedschaftService.findeAnfragenSeitenDaten(userId))
+                .thenReturn(new MitgliedschaftService.AnfragenSeitenDaten(
+                        List.of(orgId), List.of(), List.of()));
+        when(anfrageService.findeAlleEingehendenViews(any())).thenReturn(List.of());
         when(anfrageService.zaehleNeue(anyCollection())).thenReturn(5L);
 
         mockMvc.perform(get("/anfragen"))
@@ -115,15 +109,18 @@ class MeineAnfragenControllerTest {
         UUID empfaengerId = UUID.randomUUID();
         UUID sponsorOrgId = UUID.randomUUID();
 
-        AppUser user = neuerUser(userId, "sponsor@sp.ch", "Sponsorin");
-        Organisation empfaenger = neueOrg(empfaengerId, "FC Verein", "fc-verein", OrgTyp.VEREIN);
-        Organisation sponsorOrg = neueOrg(sponsorOrgId, "ACME AG", "acme", OrgTyp.UNTERNEHMEN);
-        SponsoringPaket paket = neuesPaket(paketId, empfaenger);
+        OrganisationView empfaengerView = neueOrgView(empfaengerId, "FC Verein", "fc-verein");
+        OrganisationView sponsorView = neueOrgView(sponsorOrgId, "ACME AG", "acme");
 
-        when(appUserService.findeNachEmail("sponsor@sp.ch")).thenReturn(Optional.of(user));
-        when(paketService.findeNachIdMitProjektUndOrg(paketId)).thenReturn(Optional.of(paket));
-        when(mitgliedschaftService.findeMitgliedschaftenVonUser(eq(userId), any()))
-                .thenReturn(List.of(neueMitgliedschaft(user, sponsorOrg, Rolle.ORG_OWNER)));
+        when(appUserService.findeIdNachEmail("sponsor@sp.ch")).thenReturn(userId);
+        when(appUserService.findeKontaktSnapshotNachEmail("sponsor@sp.ch"))
+                .thenReturn(new AppUserService.KontaktSnapshot(userId, "Sponsorin", "sponsor@sp.ch"));
+        when(paketService.findePaketAnfrageInfo(paketId))
+                .thenReturn(new SponsoringPaketService.PaketAnfrageInfo(
+                        paketId, "Gold", new BigDecimal("500"),
+                        "Sommerfest 2026", "sommerfest-2026", empfaengerView));
+        when(mitgliedschaftService.findeMeineOrgsAusser(userId, empfaengerId))
+                .thenReturn(List.of(sponsorView));
 
         mockMvc.perform(get("/anfragen/neu").param("paketId", paketId.toString()))
                 .andExpect(status().isOk())
@@ -141,15 +138,14 @@ class MeineAnfragenControllerTest {
         UUID empfaengerId = UUID.randomUUID();
         UUID sponsorOrgId = UUID.randomUUID();
 
-        AppUser user = neuerUser(userId, "sponsor@sp.ch", "Sponsorin");
-        Organisation empfaenger = neueOrg(empfaengerId, "FC Verein", "fc-verein", OrgTyp.VEREIN);
-        Organisation sponsorOrg = neueOrg(sponsorOrgId, "ACME AG", "acme", OrgTyp.UNTERNEHMEN);
-        SponsoringPaket paket = neuesPaket(paketId, empfaenger);
+        OrganisationView empfaengerView = neueOrgView(empfaengerId, "FC Verein", "fc-verein");
 
-        when(appUserService.findeNachEmail("sponsor@sp.ch")).thenReturn(Optional.of(user));
-        when(paketService.findeNachIdMitProjektUndOrg(paketId)).thenReturn(Optional.of(paket));
+        when(appUserService.findeIdNachEmail("sponsor@sp.ch")).thenReturn(userId);
+        when(paketService.findePaketAnfrageInfo(paketId))
+                .thenReturn(new SponsoringPaketService.PaketAnfrageInfo(
+                        paketId, "Gold", new BigDecimal("500"),
+                        "Sommerfest 2026", "sommerfest-2026", empfaengerView));
         when(accessControl.kannOrgEditieren(eq(sponsorOrgId), any())).thenReturn(true);
-        when(organisationService.findeNachId(sponsorOrgId)).thenReturn(Optional.of(sponsorOrg));
 
         mockMvc.perform(post("/anfragen/erstellen")
                         .param("paketId", paketId.toString())
@@ -161,7 +157,7 @@ class MeineAnfragenControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/anfragen"));
 
-        verify(anfrageService).erstelle(eq(paket), eq(sponsorOrg), eq(empfaenger),
+        verify(anfrageService).erstelleNachIds(eq(paketId), eq(sponsorOrgId),
                 eq("Wir haben grosses Interesse am Sommerfest 2026."),
                 eq("Sponsorin"), eq("sponsor@sp.ch"), eq(userId));
     }
@@ -174,15 +170,16 @@ class MeineAnfragenControllerTest {
         UUID paketId = UUID.randomUUID();
         UUID empfaengerId = UUID.randomUUID();
 
-        AppUser user = neuerUser(userId, "sponsor@sp.ch", "Sponsorin");
-        Organisation empfaenger = neueOrg(empfaengerId, "FC Verein", "fc-verein", OrgTyp.VEREIN);
-        SponsoringPaket paket = neuesPaket(paketId, empfaenger);
+        OrganisationView empfaengerView = neueOrgView(empfaengerId, "FC Verein", "fc-verein");
 
-        when(appUserService.findeNachEmail("sponsor@sp.ch")).thenReturn(Optional.of(user));
-        when(paketService.findeNachIdMitProjektUndOrg(paketId)).thenReturn(Optional.of(paket));
+        when(appUserService.findeIdNachEmail("sponsor@sp.ch")).thenReturn(userId);
+        when(paketService.findePaketAnfrageInfo(paketId))
+                .thenReturn(new SponsoringPaketService.PaketAnfrageInfo(
+                        paketId, "Gold", new BigDecimal("500"),
+                        "Sommerfest 2026", "sommerfest-2026", empfaengerView));
         when(accessControl.kannOrgEditieren(eq(empfaengerId), any())).thenReturn(true);
-        when(mitgliedschaftService.findeMitgliedschaftenVonUser(eq(userId), any()))
-                .thenReturn(List.of(neueMitgliedschaft(user, empfaenger, Rolle.ORG_OWNER)));
+        when(mitgliedschaftService.findeMeineOrgsAusser(userId, empfaengerId))
+                .thenReturn(List.of(empfaengerView));
 
         mockMvc.perform(post("/anfragen/erstellen")
                         .param("paketId", paketId.toString())
@@ -192,7 +189,7 @@ class MeineAnfragenControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("anfrage-neu"));
 
-        verify(anfrageService, never()).erstelle(any(), any(), any(), any(), any(), any(), any());
+        verify(anfrageService, never()).erstelleNachIds(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -202,35 +199,22 @@ class MeineAnfragenControllerTest {
         UUID userId = UUID.randomUUID();
         UUID vereinsOrgId = UUID.randomUUID();
 
-        AppUser user = neuerUser(userId, "editor@verein.ch", "Editor");
-        Organisation vereinsOrg = neueOrg(vereinsOrgId, "FC Test", "fc-test", OrgTyp.VEREIN);
-        when(appUserService.findeNachEmail("editor@verein.ch")).thenReturn(Optional.of(user));
-        when(mitgliedschaftService.findeMitgliedschaftenVonUser(eq(userId), any()))
-                .thenReturn(List.of(neueMitgliedschaft(user, vereinsOrg, Rolle.ORG_EDITOR)));
-
-        SponsoringAnfrage meineAnfrage = new SponsoringAnfrage();
-        meineAnfrage.setId(UUID.randomUUID());
-        meineAnfrage.setAnfragenderOrg(vereinsOrg);
-        meineAnfrage.setEmpfaengerOrg(vereinsOrg);
-        meineAnfrage.setStatus(AnfrageStatus.NEU);
-
-        SponsoringAnfrage orgAnfrage = new SponsoringAnfrage();
-        orgAnfrage.setId(UUID.randomUUID());
-        orgAnfrage.setAnfragenderOrg(vereinsOrg);
-        orgAnfrage.setEmpfaengerOrg(vereinsOrg);
-        orgAnfrage.setStatus(AnfrageStatus.NEU);
-
-        when(anfrageService.findeAusgehendeVonUser(userId)).thenReturn(List.of(meineAnfrage));
-        when(anfrageService.findeAusgehendeMeinerOrgsOhneUser(eq(List.of(vereinsOrgId)), eq(userId)))
-                .thenReturn(List.of(orgAnfrage));
+        when(appUserService.findeIdNachEmail("editor@verein.ch")).thenReturn(userId);
+        when(mitgliedschaftService.findeAnfragenSeitenDaten(userId))
+                .thenReturn(new MitgliedschaftService.AnfragenSeitenDaten(
+                        List.of(vereinsOrgId), List.of(vereinsOrgId), List.of("FC Test")));
+        when(anfrageService.findeAlleEingehendenViews(any())).thenReturn(List.of());
+        when(anfrageService.findeAusgehendeVonUserViews(userId)).thenReturn(List.of());
+        when(anfrageService.findeAusgehendeMeinerOrgsOhneUserViews(eq(List.of(vereinsOrgId)), eq(userId)))
+                .thenReturn(List.of());
 
         mockMvc.perform(get("/anfragen"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("meineAusgehendeAnfragen", "orgAusgehendeAnfragen", "meineOrgNamen"))
                 .andExpect(model().attribute("kannKontaktanfrageStellen", true));
 
-        verify(anfrageService).findeAusgehendeVonUser(userId);
-        verify(anfrageService).findeAusgehendeMeinerOrgsOhneUser(List.of(vereinsOrgId), userId);
+        verify(anfrageService).findeAusgehendeVonUserViews(userId);
+        verify(anfrageService).findeAusgehendeMeinerOrgsOhneUserViews(List.of(vereinsOrgId), userId);
     }
 
     @Test
@@ -251,42 +235,10 @@ class MeineAnfragenControllerTest {
 
     // -------- Helpers --------
 
-    private AppUser neuerUser(UUID id, String email, String anzeigename) {
-        AppUser u = new AppUser();
-        u.setId(id);
-        u.setEmail(email);
-        u.setAnzeigename(anzeigename);
-        return u;
-    }
-
-    private Organisation neueOrg(UUID id, String name, String slug, OrgTyp typ) {
-        Organisation o = new Organisation();
-        o.setId(id);
-        o.setName(name);
-        o.setSlug(slug);
-        o.setTyp(typ);
-        return o;
-    }
-
-    private SponsoringPaket neuesPaket(UUID id, Organisation empfaengerOrg) {
-        Projekt projekt = new Projekt();
-        projekt.setId(UUID.randomUUID());
-        projekt.setName("Sommerfest 2026");
-        projekt.setSlug("sommerfest-2026");
-        projekt.setOrg(empfaengerOrg);
-
-        SponsoringPaket p = new SponsoringPaket();
-        p.setId(id);
-        p.setName("Gold");
-        p.setProjekt(projekt);
-        return p;
-    }
-
-    private Mitgliedschaft neueMitgliedschaft(AppUser user, Organisation org, Rolle rolle) {
-        Mitgliedschaft m = new Mitgliedschaft();
-        m.setUser(user);
-        m.setOrg(org);
-        m.setRolle(rolle);
-        return m;
+    private OrganisationView neueOrgView(UUID id, String name, String slug) {
+        return new OrganisationView(id, name, slug,
+                null, null, null, null, null,
+                null, null, null, null,
+                null, null, null);
     }
 }

@@ -95,10 +95,41 @@ public class OrganisationService {
                 List.of(OrgStatus.VERIFIED, OrgStatus.ACTIVE));
     }
 
+    /** View-Variante — Controller braucht keine Entity-Liste (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<OrganisationView> findeAktiveSponsorenAlsViews() {
+        return OrganisationView.von(findeAktiveSponsoren());
+    }
+
     @Transactional(readOnly = true)
     public Optional<Organisation> findeNachId(UUID id) {
         return repository.findById(id);
     }
+
+    /** View-Variante — Controller braucht keine Entity (ARCH-02). */
+    @Transactional(readOnly = true)
+    public Optional<OrganisationView> findeViewNachId(UUID id) {
+        return findeNachId(id).map(OrganisationView::von);
+    }
+
+    /** Typ-Lookup für Authorization-Checks ohne Entity-Touch (ARCH-02). */
+    @Transactional(readOnly = true)
+    public OrgTyp findeTypNachId(UUID id) {
+        return repository.findById(id)
+                .map(Organisation::getTyp)
+                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + id));
+    }
+
+    /** Lookup ID + Name + Typ — Controller braucht alle drei für Anfrage-Flows ohne Entity (ARCH-02). */
+    @Transactional(readOnly = true)
+    public OrgInfo findeInfoNachId(UUID id) {
+        return repository.findById(id)
+                .map(o -> new OrgInfo(o.getId(), o.getName(), o.getSlug(), o.getTyp()))
+                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + id));
+    }
+
+    /** Mini-Snapshot ID + Name + Slug + Typ — wird vom Controller gelesen, keine Entity-Touch. */
+    public record OrgInfo(UUID id, String name, String slug, OrgTyp typ) {}
 
     @Transactional(readOnly = true)
     public Optional<Organisation> findeNachSlug(String slug) {

@@ -96,6 +96,21 @@ public class AppUserService {
     public record OnboardingSnapshot(UUID userId, boolean istPlatformAdmin, boolean onboardingGesehen) {}
 
     /**
+     * Kontakt-Snapshot für Form-Pre-Fills (Kontakt-Anfrage, Anfrage-Formular):
+     * Anzeigename + Email, ohne dass der Controller die Entity berühren muss
+     * (ARCH-02).
+     */
+    @Transactional(readOnly = true)
+    public KontaktSnapshot findeKontaktSnapshotNachEmail(String email) {
+        return repository.findByEmail(email)
+                .map(u -> new KontaktSnapshot(u.getId(), u.getAnzeigename(), u.getEmail()))
+                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
+                        "User nicht gefunden: " + email));
+    }
+
+    public record KontaktSnapshot(UUID userId, String anzeigename, String email) {}
+
+    /**
      * Profile-View für die /einstellungen-Seite — Controller berührt keine
      * Entity (ARCH-02).
      */

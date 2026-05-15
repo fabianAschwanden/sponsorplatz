@@ -16,7 +16,10 @@ import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.OrganisationRepository;
 import ch.sponsorplatz.projekt.SponsoringPaket;
+import ch.sponsorplatz.projekt.SponsoringPaketRepository;
+import ch.sponsorplatz.shared.exception.NotFoundException;
 
 @Service
 @Transactional
@@ -31,19 +34,25 @@ public class SponsoringAnfrageService {
     private final MitgliedschaftRepository mitgliedschaftRepository;
     private final AppUserRepository appUserRepository;
     private final AufgabenEngine aufgabenEngine;
+    private final OrganisationRepository organisationRepository;
+    private final SponsoringPaketRepository sponsoringPaketRepository;
 
     public SponsoringAnfrageService(SponsoringAnfrageRepository repository,
             BenachrichtigungsService benachrichtigungsService,
             NotificationService notificationService,
             MitgliedschaftRepository mitgliedschaftRepository,
             AppUserRepository appUserRepository,
-            AufgabenEngine aufgabenEngine) {
+            AufgabenEngine aufgabenEngine,
+            OrganisationRepository organisationRepository,
+            SponsoringPaketRepository sponsoringPaketRepository) {
         this.repository = repository;
         this.benachrichtigungsService = benachrichtigungsService;
         this.notificationService = notificationService;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
         this.appUserRepository = appUserRepository;
         this.aufgabenEngine = aufgabenEngine;
+        this.organisationRepository = organisationRepository;
+        this.sponsoringPaketRepository = sponsoringPaketRepository;
     }
 
     /**
@@ -105,6 +114,12 @@ public class SponsoringAnfrageService {
         return repository.countByEmpfaengerOrgIdInAndStatus(empfaengerOrgIds, AnfrageStatus.NEU);
     }
 
+    /** View-Variante — Controller braucht keine Entity-Liste (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<AnfrageView> findeAlleEingehendenViews(Collection<UUID> empfaengerOrgIds) {
+        return AnfrageView.von(findeAlleEingehenden(empfaengerOrgIds));
+    }
+
     /** Alle eingehenden Anfragen über alle Orgs eines Users — für die persönliche Übersicht. */
     @Transactional(readOnly = true)
     public List<SponsoringAnfrage> findeAlleEingehenden(Collection<UUID> empfaengerOrgIds) {
@@ -121,6 +136,19 @@ public class SponsoringAnfrageService {
             return List.of();
         }
         return repository.findByAnfragenderOrgIdInOrderByCreatedAtDesc(anfragenderOrgIds);
+    }
+
+    /** View-Variante von {@link #findeAusgehendeVonUser}. */
+    @Transactional(readOnly = true)
+    public List<AnfrageView> findeAusgehendeVonUserViews(UUID userId) {
+        return AnfrageView.von(findeAusgehendeVonUser(userId));
+    }
+
+    /** View-Variante von {@link #findeAusgehendeMeinerOrgsOhneUser}. */
+    @Transactional(readOnly = true)
+    public List<AnfrageView> findeAusgehendeMeinerOrgsOhneUserViews(
+            Collection<UUID> anfragenderOrgIds, UUID userId) {
+        return AnfrageView.von(findeAusgehendeMeinerOrgsOhneUser(anfragenderOrgIds, userId));
     }
 
     /**
@@ -146,6 +174,50 @@ public class SponsoringAnfrageService {
             return List.of();
         }
         return repository.findOrgAusgehendNichtVonUser(anfragenderOrgIds, userId);
+    }
+
+    /**
+     * ID-basierte Variante von {@link #erstelle} — Controller braucht keine
+     * Entities anfassen (ARCH-02). Liefert direkt einen {@link AnfrageView}
+     * zurück, weil der Controller den Empfänger-Org-Namen für die Flash-Meldung
+     * braucht. Empfänger-Org wird vom Paket abgeleitet (Client kann sie nicht
+     * manipulieren).
+     */
+    public AnfrageView erstelleNachIds(UUID paketId,
+            UUID anfragenderOrgId,
+            String nachricht,
+            String kontaktName,
+            String kontaktEmail,
+            UUID erstelltVonUserId) {
+        SponsoringPaket paket = sponsoringPaketRepository.findByIdMitProjektUndOrg(paketId)
+                .orElseThrow(() -> new NotFoundException("Paket nicht gefunden: " + paketId));
+        Organisation anfragenderOrg = organisationRepository.findById(anfragenderOrgId)
+                .orElseThrow(() -> new NotFoundException("Org nicht gefunden: " + anfragenderOrgId));
+        Organisation empfaengerOrg = paket.getProjekt().getOrg();
+        return AnfrageView.von(erstelle(paket, anfragenderOrg, empfaengerOrg,
+                nachricht, kontaktName, kontaktEmail, erstelltVonUserId));
+    }
+
+    /**
+     * ID-basierte Variante von {@link #erstelleKontaktAnfrage} — Controller
+     * braucht keine Entities (ARCH-02). Liefert {@link AnfrageView} für die
+     * Flash-Meldung.
+     */
+    public AnfrageView erstelleKontaktAnfrageNachIds(UUID anfragenderOrgId,
+            UUID empfaengerOrgId,
+            String betreff,
+            String nachricht,
+            String kontaktName,
+            String kontaktEmail,
+            java.math.BigDecimal wunschBetragChf,
+            UUID erstelltVonUserId) {
+        Organisation anfragenderOrg = organisationRepository.findById(anfragenderOrgId)
+                .orElseThrow(() -> new NotFoundException("Eigene Org nicht gefunden: " + anfragenderOrgId));
+        Organisation empfaengerOrg = organisationRepository.findById(empfaengerOrgId)
+                .orElseThrow(() -> new NotFoundException("Sponsor nicht gefunden: " + empfaengerOrgId));
+        return AnfrageView.von(erstelleKontaktAnfrage(anfragenderOrg, empfaengerOrg,
+                betreff, nachricht, kontaktName, kontaktEmail,
+                wunschBetragChf, erstelltVonUserId));
     }
 
     public SponsoringAnfrage erstelle(SponsoringPaket paket,
