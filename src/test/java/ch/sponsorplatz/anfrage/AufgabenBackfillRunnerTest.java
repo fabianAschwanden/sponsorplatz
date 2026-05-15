@@ -1,20 +1,14 @@
 package ch.sponsorplatz.anfrage;
 
-import ch.sponsorplatz.aufgabe.AufgabenEngine;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
-import ch.sponsorplatz.anfrage.AnfrageStatus;
-import ch.sponsorplatz.anfrage.RechnungRepository;
-import ch.sponsorplatz.anfrage.RechnungsStatus;
-import ch.sponsorplatz.anfrage.SponsoringAnfrage;
-import ch.sponsorplatz.anfrage.SponsoringAnfrageRepository;
-import ch.sponsorplatz.anfrage.Vertrag;
-import ch.sponsorplatz.anfrage.VertragRepository;
-import ch.sponsorplatz.anfrage.VertragsStatus;
-import ch.sponsorplatz.anfrage.Rechnung;
-import ch.sponsorplatz.organisation.OrgStatus;
-import ch.sponsorplatz.organisation.OrgTyp;
-import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.organisation.OrganisationRepository;
+import java.util.List;
+import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,14 +16,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.UUID;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import ch.sponsorplatz.aufgabe.AufgabenEngine;
+import ch.sponsorplatz.organisation.OrgStatus;
+import ch.sponsorplatz.organisation.OrgTyp;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.OrganisationRepository;
 
 /**
  * Tests für {@link AufgabenBackfillRunner}.
@@ -38,11 +29,16 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AufgabenBackfillRunnerTest {
 
-    @Mock private OrganisationRepository organisationRepository;
-    @Mock private SponsoringAnfrageRepository anfrageRepository;
-    @Mock private VertragRepository vertragRepository;
-    @Mock private RechnungRepository rechnungRepository;
-    @Mock private AufgabenEngine aufgabenEngine;
+    @Mock
+    private OrganisationRepository organisationRepository;
+    @Mock
+    private SponsoringAnfrageRepository anfrageRepository;
+    @Mock
+    private VertragRepository vertragRepository;
+    @Mock
+    private RechnungRepository rechnungRepository;
+    @Mock
+    private AufgabenEngine aufgabenEngine;
 
     private AufgabenBackfillRunner runner;
 
@@ -77,10 +73,14 @@ class AufgabenBackfillRunnerTest {
 
         runner.backfillen();
 
-        verify(aufgabenEngine).onOrgStatusWechsel(new ch.sponsorplatz.organisation.OrgStatusGewechseltEvent(pendingOrg));
-        verify(aufgabenEngine).onStatusWechsel(eq(ch.sponsorplatz.aufgabe.TriggerEntityTyp.ANFRAGE), eq(neueAnfrage.getId()), eq(neueAnfrage.getStatus().name()), any());
-        verify(aufgabenEngine).onStatusWechsel(eq(ch.sponsorplatz.aufgabe.TriggerEntityTyp.VERTRAG), eq(entwurf.getId()), eq(entwurf.getStatus().name()), any());
-        verify(aufgabenEngine).onStatusWechsel(eq(ch.sponsorplatz.aufgabe.TriggerEntityTyp.RECHNUNG), eq(offen.getId()), eq(offen.getStatus().name()), any());
+        verify(aufgabenEngine)
+                .onOrgStatusWechsel(new ch.sponsorplatz.organisation.OrgStatusGewechseltEvent(pendingOrg));
+        verify(aufgabenEngine).onStatusWechsel(eq(ch.sponsorplatz.aufgabe.TriggerEntityTyp.ANFRAGE),
+                eq(neueAnfrage.getId()), eq(neueAnfrage.getStatus().name()), any());
+        verify(aufgabenEngine).onStatusWechsel(eq(ch.sponsorplatz.aufgabe.TriggerEntityTyp.VERTRAG),
+                eq(entwurf.getId()), eq(entwurf.getStatus().name()), any());
+        verify(aufgabenEngine).onStatusWechsel(eq(ch.sponsorplatz.aufgabe.TriggerEntityTyp.RECHNUNG), eq(offen.getId()),
+                eq(offen.getStatus().name()), any());
     }
 
     @Test

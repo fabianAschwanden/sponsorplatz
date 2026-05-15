@@ -1,21 +1,15 @@
 package ch.sponsorplatz.anfrage;
 
-import ch.sponsorplatz.aufgabe.AufgabenEngine;
-
-import ch.sponsorplatz.anfrage.AnfrageStatus;
-import ch.sponsorplatz.anfrage.RechnungRepository;
-import ch.sponsorplatz.anfrage.RechnungsStatus;
-import ch.sponsorplatz.anfrage.SponsoringAnfrageRepository;
-import ch.sponsorplatz.anfrage.VertragRepository;
-import ch.sponsorplatz.anfrage.VertragsStatus;
-import ch.sponsorplatz.organisation.OrgStatus;
-import ch.sponsorplatz.organisation.OrganisationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import ch.sponsorplatz.aufgabe.AufgabenEngine;
+import ch.sponsorplatz.organisation.OrgStatus;
+import ch.sponsorplatz.organisation.OrganisationRepository;
 
 /**
  * Beim App-Start einmal alle offenen Trigger-Stati durchlaufen und die Engine
@@ -37,10 +31,10 @@ public class AufgabenBackfillRunner {
     private final AufgabenEngine aufgabenEngine;
 
     public AufgabenBackfillRunner(OrganisationRepository organisationRepository,
-                                   SponsoringAnfrageRepository anfrageRepository,
-                                   VertragRepository vertragRepository,
-                                   RechnungRepository rechnungRepository,
-                                   AufgabenEngine aufgabenEngine) {
+            SponsoringAnfrageRepository anfrageRepository,
+            VertragRepository vertragRepository,
+            RechnungRepository rechnungRepository,
+            AufgabenEngine aufgabenEngine) {
         this.organisationRepository = organisationRepository;
         this.anfrageRepository = anfrageRepository;
         this.vertragRepository = vertragRepository;
@@ -58,19 +52,25 @@ public class AufgabenBackfillRunner {
             orgs++;
         }
         for (var a : anfrageRepository.findByStatus(AnfrageStatus.NEU)) {
-            aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.ANFRAGE, a.getId(), a.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausAnfrageOrgs(a.getEmpfaengerOrg(), a.getAnfragenderOrg()));
+            aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.ANFRAGE, a.getId(),
+                    a.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausAnfrageOrgs(a.getEmpfaengerOrg(),
+                            a.getAnfragenderOrg()));
             anfragen++;
         }
         for (var v : vertragRepository.findByStatus(VertragsStatus.ENTWURF)) {
-            aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.VERTRAG, v.getId(), v.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausVertragOrgs(v.getOrg(), v.getSponsorOrg()));
+            aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.VERTRAG, v.getId(),
+                    v.getStatus().name(),
+                    ch.sponsorplatz.aufgabe.AssigneeKontext.ausVertragOrgs(v.getOrg(), v.getSponsorOrg()));
             vertraege++;
         }
         for (var r : rechnungRepository.findByStatus(RechnungsStatus.OFFEN)) {
-            aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.RECHNUNG, r.getId(), r.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausRechnungOrg(r.getOrg()));
+            aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.RECHNUNG, r.getId(),
+                    r.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausRechnungOrg(r.getOrg()));
             rechnungen++;
         }
 
-        log.info("AufgabenBackfill durchlaufen: {} PENDING-Orgs, {} NEU-Anfragen, {} ENTWURF-Verträge, {} OFFEN-Rechnungen — Engine-Idempotenz schützt vor Duplikaten",
+        log.info(
+                "AufgabenBackfill durchlaufen: {} PENDING-Orgs, {} NEU-Anfragen, {} ENTWURF-Verträge, {} OFFEN-Rechnungen — Engine-Idempotenz schützt vor Duplikaten",
                 orgs, anfragen, vertraege, rechnungen);
     }
 }

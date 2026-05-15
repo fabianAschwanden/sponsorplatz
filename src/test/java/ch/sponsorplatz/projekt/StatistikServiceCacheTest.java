@@ -1,29 +1,26 @@
 package ch.sponsorplatz.projekt;
 
-import  ch.sponsorplatz.organisation.Branche;
-
-import ch.sponsorplatz.organisation.OrganisationRepository;
-
-import ch.sponsorplatz.projekt.ProjektRepository;
-import ch.sponsorplatz.projekt.Sichtbarkeit;
-import ch.sponsorplatz.shared.config.CacheConfig;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.cache.CacheManager;
-import org.springframework.test.context.ActiveProfiles;
-
-import java.util.List;
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Map;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import ch.sponsorplatz.organisation.Branche;
+import ch.sponsorplatz.organisation.OrganisationRepository;
+import ch.sponsorplatz.shared.config.CacheConfig;
 
 /**
  * MARK-07: Verifiziert dass {@link StatistikService} mit {@code @Cacheable}
@@ -52,7 +49,8 @@ class StatistikServiceCacheTest {
     void cachesLeeren() {
         cacheManager.getCacheNames().forEach(name -> {
             var cache = cacheManager.getCache(name);
-            if (cache != null) cache.clear();
+            if (cache != null)
+                cache.clear();
         });
     }
 
@@ -60,8 +58,7 @@ class StatistikServiceCacheTest {
     @DisplayName("MARK-07a: zweiter Aufruf vereineProBranche trifft Repo nicht (Cache-Hit)")
     void vereineProBrancheCachedZweitenAufruf() {
         when(organisationRepository.zaehleVereineNachBranche(any())).thenReturn(List.<Object[]>of(
-                new Object[]{Branche.SPORT, 3L}
-        ));
+                new Object[] { Branche.SPORT, 3L }));
 
         Map<Branche, Long> erst = statistikService.vereineProBranche();
         Map<Branche, Long> zweit = statistikService.vereineProBranche();
@@ -88,6 +85,6 @@ class StatistikServiceCacheTest {
     void cacheRegionsExistieren() {
         assertThat(cacheManager.getCacheNames())
                 .contains(CacheConfig.STATISTIK_VEREINE_PRO_BRANCHE,
-                          CacheConfig.STATISTIK_ANZAHL_PROJEKTE);
+                        CacheConfig.STATISTIK_ANZAHL_PROJEKTE);
     }
 }

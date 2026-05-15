@@ -1,37 +1,38 @@
 package ch.sponsorplatz.projekt;
 
-import ch.sponsorplatz.organisation.Branche;
-import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.organisation.OrganisationView;
-import ch.sponsorplatz.organisation.OrgTyp;
-
-import ch.sponsorplatz.organisation.OrganisationService;
-import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
-
-import ch.sponsorplatz.shared.config.SecurityConfig;
-import ch.sponsorplatz.projekt.ProjektService;
-import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.organisation.Branche;
+import ch.sponsorplatz.organisation.OrgTyp;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.OrganisationService;
+import ch.sponsorplatz.organisation.OrganisationView;
+import ch.sponsorplatz.shared.config.SecurityConfig;
+import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
 
 @WebMvcTest(controllers = VereinProfilController.class)
-@Import({SecurityConfig.class, GlobalExceptionHandler.class})
+@Import({ SecurityConfig.class, GlobalExceptionHandler.class })
 @ActiveProfiles("dev")
 class VereinProfilControllerTest {
 
@@ -74,7 +75,9 @@ class VereinProfilControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    /** VP-03: Branche-Chip wird im Model als Teil der OrganisationView gerendert. */
+    /**
+     * VP-03: Branche-Chip wird im Model als Teil der OrganisationView gerendert.
+     */
     @Test
     void brancheChipImProfil() throws Exception {
         Organisation org = new Organisation();
@@ -155,7 +158,8 @@ class VereinProfilControllerTest {
     /**
      * VP-06: Render-Assertion — Branche erscheint NICHT mehr doppelt in der
      * &lt;dl&gt;-Detail-Liste. Verhindert, dass jemand die alte
-     * {@code <dt>Branche</dt>}-Zeile versehentlich wieder einfügt.
+     * {@code
+     * <dt>Branche</dt>}-Zeile versehentlich wieder einfügt.
      */
     @Test
     void brancheNichtDoppeltImDetail() throws Exception {
@@ -174,4 +178,3 @@ class VereinProfilControllerTest {
                 .andExpect(content().string(not(containsString("<dt>Branche</dt>"))));
     }
 }
-
