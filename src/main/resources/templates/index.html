@@ -1,114 +1,120 @@
 <!DOCTYPE html>
-<html lang="de-CH"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="#{index.title}">Sponsorplatz — Wo Vereine und die CSS zueinander finden</title>
-    <meta name="description" th:content="#{index.metaDescription}" content="Sponsorplatz ist die kuratierte Plattform für Schweizer Sport- und Health-Vereine und das CSS Sponsoring-Team.">
-    <meta name="keywords" content="CSS Sponsoring, Sportverein Sponsoring, Gesundheits-Sponsoring Schweiz, Mental Health, Bewegung, Reha, Ernährung">
-    <link rel="stylesheet" th:href="@{/css/main.css}">
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
-    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="#{index.title}">Sponsorplatz — Wo Vereine und die CSS zueinander finden</title>
+  <meta name="description" th:content="#{index.metaDescription}"
+    content="Sponsorplatz ist die kuratierte Plattform für Schweizer Sport- und Health-Vereine und das CSS Sponsoring-Team.">
+  <meta name="keywords"
+    content="CSS Sponsoring, Sportverein Sponsoring, Gesundheits-Sponsoring Schweiz, Mental Health, Bewegung, Reha, Ernährung">
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+  <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
+
 <body class="public-body">
 
-<div th:if="${demoModus}" class="demo-disclaimer" th:text="#{demo.disclaimer}">
+  <div th:if="${demoModus}" class="demo-disclaimer" th:text="#{demo.disclaimer}">
     ⚠️ DEMO — Beispieldaten. Keine echten Vereine oder Sponsoren.
-</div>
+  </div>
 
-<header class="public-topbar">
+  <header class="public-topbar">
     <div class="public-topbar-inner">
-        <a class="public-logo" th:href="@{/}">
-            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
-            <span>Sponsorplatz</span>
-        </a>
-        <nav class="public-nav">
-            <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
-            <a sec:authorize="!isAuthenticated()" th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
-            <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn"
-               th:text="#{navigation.registrieren}">Registrieren</a>
-            <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}" class="app-btn"
-               th:text="#{topbar.zumDashboard}">Zum Dashboard</a>
-        </nav>
+      <a class="public-logo" th:href="@{/}">
+        <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
+        <span>Sponsorplatz</span>
+      </a>
+      <nav class="public-nav">
+        <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+        <a sec:authorize="!isAuthenticated()" th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
+        <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn"
+          th:text="#{navigation.registrieren}">Registrieren</a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}" class="app-btn"
+          th:text="#{topbar.zumDashboard}">Zum Dashboard</a>
+      </nav>
     </div>
-</header>
+  </header>
 
-<main class="public-main">
+  <main class="public-main">
     <section class="public-hero">
-        <p class="public-hero-rubrik" th:text="#{index.hero.rubrik}">CSS Sponsoring-Hub · Sport und Gesundheit · Schweiz</p>
-        <h1>
-            <span th:text="#{index.hero.h1.line1}">Wo Vereine und die CSS</span><br>
-            <span th:text="#{index.hero.h1.line2}">zueinander finden.</span>
-        </h1>
-        <p class="public-hero-claim" th:text="#{index.hero.claim}">
-            Eine Plattform. Vier Akteure. Eine Mission. ...
-        </p>
+      <p class="public-hero-rubrik" th:text="#{index.hero.rubrik}">CSS Sponsoring-Hub · Sport und Gesundheit · Schweiz
+      </p>
+      <h1>
+        <span th:text="#{index.hero.h1.line1}">Wo Vereine und die CSS</span><br>
+        <span th:text="#{index.hero.h1.line2}">zueinander finden.</span>
+      </h1>
+      <p class="public-hero-claim" th:text="#{index.hero.claim}">
+        Eine Plattform. Vier Akteure. Eine Mission. ...
+      </p>
 
-        <div class="public-hero-cta">
-            <a th:href="@{/marktplatz}" class="app-btn" th:text="#{index.hero.cta.marktplatz}">Marktplatz entdecken</a>
-            <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}"
-               class="app-btn app-btn-secondary" th:text="#{index.hero.cta.registrieren}">Verein registrieren</a>
-        </div>
+      <div class="public-hero-cta">
+        <a th:href="@{/marktplatz}" class="app-btn" th:text="#{index.hero.cta.marktplatz}">Marktplatz entdecken</a>
+        <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn app-btn-secondary"
+          th:text="#{index.hero.cta.registrieren}">Verein registrieren</a>
+      </div>
 
-        <!-- Vier Akteure aus dem Zielbild — 2×2-Layout über die bestehende Subclaim-Grid -->
-        <div class="public-hero-subclaims">
-            <div class="public-hero-subclaim">
-                <strong th:text="#{index.hero.akteur.verein.title}">Verein.</strong>
-                <span th:text="#{index.hero.akteur.verein.text}">…</span>
-            </div>
-            <div class="public-hero-subclaim">
-                <strong th:text="#{index.hero.akteur.css.title}">CSS.</strong>
-                <span th:text="#{index.hero.akteur.css.text}">…</span>
-            </div>
-            <div class="public-hero-subclaim">
-                <strong th:text="#{index.hero.akteur.agentur.title}">Agentur.</strong>
-                <span th:text="#{index.hero.akteur.agentur.text}">…</span>
-            </div>
-            <div class="public-hero-subclaim">
-                <strong th:text="#{index.hero.akteur.versicherte.title}">Versicherte.</strong>
-                <span th:text="#{index.hero.akteur.versicherte.text}">…</span>
-            </div>
+      <!-- Vier Akteure aus dem Zielbild — 2×2-Layout über die bestehende Subclaim-Grid -->
+      <div class="public-hero-subclaims">
+        <div class="public-hero-subclaim">
+          <strong th:text="#{index.hero.akteur.verein.title}">Verein.</strong>
+          <span th:text="#{index.hero.akteur.verein.text}">…</span>
         </div>
+        <div class="public-hero-subclaim">
+          <strong th:text="#{index.hero.akteur.css.title}">CSS.</strong>
+          <span th:text="#{index.hero.akteur.css.text}">…</span>
+        </div>
+        <div class="public-hero-subclaim">
+          <strong th:text="#{index.hero.akteur.agentur.title}">Agentur.</strong>
+          <span th:text="#{index.hero.akteur.agentur.text}">…</span>
+        </div>
+        <div class="public-hero-subclaim">
+          <strong th:text="#{index.hero.akteur.versicherte.title}">Versicherte.</strong>
+          <span th:text="#{index.hero.akteur.versicherte.text}">…</span>
+        </div>
+      </div>
 
-        <div class="public-hero-fokus">
-            <span class="public-hero-fokus-label" th:text="#{index.hero.fokus.label}">Unser Fokus:</span>
-            <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.sport}">Sport</span>
-            <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.bewegung}">Bewegung</span>
-            <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.reha}">Reha</span>
-            <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.mental}">Mental Health</span>
-            <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.ernaehrung}">Ernährung</span>
-            <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.praevention}">Prävention</span>
-            <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.selbsthilfe}">Selbsthilfe</span>
-        </div>
+      <div class="public-hero-fokus">
+        <span class="public-hero-fokus-label" th:text="#{index.hero.fokus.label}">Unser Fokus:</span>
+        <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.sport}">Sport</span>
+        <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.bewegung}">Bewegung</span>
+        <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.reha}">Reha</span>
+        <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.mental}">Mental Health</span>
+        <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.ernaehrung}">Ernährung</span>
+        <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.praevention}">Prävention</span>
+        <span class="public-hero-fokus-tag" th:text="#{index.hero.fokus.tag.selbsthilfe}">Selbsthilfe</span>
+      </div>
     </section>
 
     <section class="app-card" style="max-width: 720px; margin: 2rem auto;">
-        <p style="margin: 0 0 0.5rem;"><strong th:text="#{index.aufbau.title}">Phase 0 — In Aufbau.</strong></p>
-        <p style="margin: 0 0 0.5rem;" th:text="#{index.aufbau.text}">…</p>
-        <p style="margin: 0;">
-            <span th:text="#{index.aufbau.kontakt}">Du willst Pilot-Verein werden?</span>
-            <a href="mailto:hallo@sponsorplatz.ch" style="color: var(--dash-violet-dark); font-weight: 600;">hallo@sponsorplatz.ch</a>
-        </p>
+      <p style="margin: 0 0 0.5rem;"><strong th:text="#{index.aufbau.title}">Phase 0 — In Aufbau.</strong></p>
+      <p style="margin: 0 0 0.5rem;" th:text="#{index.aufbau.text}">…</p>
+      <p style="margin: 0;">
+        <span th:text="#{index.aufbau.kontakt}">Du willst Pilot-Verein werden?</span>
+        <a href="mailto:fabian.aschwanden@css.ch"
+          style="color: var(--dash-violet-dark); font-weight: 600;">fabian.aschwanden@css.ch</a>
+      </p>
     </section>
-</main>
+  </main>
 
-<footer class="public-footer">
+  <footer class="public-footer">
     <div class="public-footer-inner">
-        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz · Schweiz</p>
-        <nav>
-            <a th:href="@{/impressum}" th:text="#{footer.impressum}">Impressum</a>
-            <a th:href="@{/datenschutz}" th:text="#{footer.datenschutz}">Datenschutz</a>
-            <span class="lang-switch">
-                <a th:href="@{/(lang=de)}">DE</a>
-                <a th:href="@{/(lang=fr)}">FR</a>
-                <a th:href="@{/(lang=it)}">IT</a>
-                <a th:href="@{/(lang=en)}">EN</a>
-            </span>
-        </nav>
+      <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz · Schweiz
+      </p>
+      <nav>
+        <a th:href="@{/impressum}" th:text="#{footer.impressum}">Impressum</a>
+        <a th:href="@{/datenschutz}" th:text="#{footer.datenschutz}">Datenschutz</a>
+        <span class="lang-switch">
+          <a th:href="@{/(lang=de)}">DE</a>
+          <a th:href="@{/(lang=fr)}">FR</a>
+          <a th:href="@{/(lang=it)}">IT</a>
+          <a th:href="@{/(lang=en)}">EN</a>
+        </span>
+      </nav>
     </div>
-</footer>
+  </footer>
 
 </body>
+
 </html>
