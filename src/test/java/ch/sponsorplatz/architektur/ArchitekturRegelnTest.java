@@ -106,6 +106,7 @@ class ArchitekturRegelnTest {
                     "ch.sponsorplatz.dashboard..",
                     "ch.sponsorplatz.einladung..",
                     "ch.sponsorplatz.home..",
+                    "ch.sponsorplatz.kontakt..",
                     "ch.sponsorplatz.ops..",
                     "ch.sponsorplatz.organisation..",
                     "ch.sponsorplatz.projekt..",
@@ -157,6 +158,7 @@ class ArchitekturRegelnTest {
                     "ch.sponsorplatz.benutzer..",
                     "ch.sponsorplatz.einladung..",
                     "ch.sponsorplatz.home..",
+                    "ch.sponsorplatz.kontakt..",
                     "ch.sponsorplatz.ops..",
                     "ch.sponsorplatz.organisation..",
                     "ch.sponsorplatz.projekt..")

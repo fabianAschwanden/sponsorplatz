@@ -57,11 +57,12 @@ class SecurityConfigTest {
                 .andExpect(status().isOk());
     }
 
-    /** SEC-02: GET /organisationen ohne Login → 200 (public). */
+    /** SEC-02: GET /organisationen ohne Login → Redirect zu /login (nur Home + /kontakt + Auth-Flows sind public). */
     @Test
-    void organisationenListeIstPublic() throws Exception {
+    void organisationenListeErfordertLogin() throws Exception {
         mockMvc.perform(get("/organisationen"))
-                .andExpect(status().isOk());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
     }
 
     /** SEC-03: GET /organisationen/{slug}/bearbeiten ohne Login → Redirect zu /login. */

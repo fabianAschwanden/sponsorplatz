@@ -30,10 +30,12 @@ import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.organisation.OrganisationView;
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
+import org.springframework.security.test.context.support.WithMockUser;
 
 @WebMvcTest(controllers = VereinProfilController.class)
 @Import({ SecurityConfig.class, GlobalExceptionHandler.class })
 @ActiveProfiles("dev")
+@WithMockUser
 class VereinProfilControllerTest {
 
     @Autowired

@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = EngagementController.class)
 @Import(SecurityConfig.class)
 @ActiveProfiles("dev")
+@org.springframework.security.test.context.support.WithMockUser
 class EngagementControllerTest {
 
     @Autowired private MockMvc mockMvc;

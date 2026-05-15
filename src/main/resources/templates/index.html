@@ -27,7 +27,8 @@
         <span>Sponsorplatz</span>
       </a>
       <nav class="public-nav">
-        <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+        <a sec:authorize="!isAuthenticated()" th:href="@{/kontakt}" th:text="#{navigation.kontakt}">Kontakt</a>
         <a sec:authorize="!isAuthenticated()" th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
         <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn"
           th:text="#{navigation.registrieren}">Registrieren</a>
@@ -50,7 +51,10 @@
       </p>
 
       <div class="public-hero-cta">
-        <a th:href="@{/marktplatz}" class="app-btn" th:text="#{index.hero.cta.marktplatz}">Marktplatz entdecken</a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/marktplatz}" class="app-btn"
+          th:text="#{index.hero.cta.marktplatz}">Marktplatz entdecken</a>
+        <a sec:authorize="!isAuthenticated()" th:href="@{/kontakt}" class="app-btn"
+          th:text="#{index.hero.cta.kontakt}">Anfrage stellen</a>
         <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn app-btn-secondary"
           th:text="#{index.hero.cta.registrieren}">Verein registrieren</a>
       </div>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{kontakt.titel} + ' — Sponsorplatz'">Kontakt — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="public-body">
+
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
+            <span>Sponsorplatz</span>
+        </a>
+        <nav class="public-nav">
+            <a th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
+        </nav>
+    </div>
+</header>
+
+<main class="public-main">
+    <section class="public-auth-card">
+        <h1 th:text="#{kontakt.titel}">Kontakt</h1>
+
+        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+
+        <p style="margin-bottom:1.5rem; color:var(--dash-muted, #6b7280);"
+           th:text="#{kontakt.intro}">Erzähle uns kurz, worum es geht — wir melden uns innert ein bis zwei Werktagen.</p>
+
+        <form th:action="@{/kontakt}" th:object="${kontaktForm}" method="post" class="app-form">
+            <div class="app-form-group">
+                <label for="name" th:text="#{kontakt.name}">Name</label>
+                <input type="text" id="name" th:field="*{name}" required autofocus maxlength="120">
+                <p class="app-form-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+            </div>
+            <div class="app-form-group">
+                <label for="email" th:text="#{kontakt.email}">E-Mail</label>
+                <input type="email" id="email" th:field="*{email}" required maxlength="255">
+                <p class="app-form-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+            </div>
+            <div class="app-form-group">
+                <label for="betreff" th:text="#{kontakt.betreff}">Betreff</label>
+                <input type="text" id="betreff" th:field="*{betreff}" required maxlength="200">
+                <p class="app-form-error" th:if="${#fields.hasErrors('betreff')}" th:errors="*{betreff}"></p>
+            </div>
+            <div class="app-form-group">
+                <label for="nachricht" th:text="#{kontakt.nachricht}">Nachricht</label>
+                <textarea id="nachricht" th:field="*{nachricht}" rows="6" required maxlength="4000"></textarea>
+                <p class="app-form-error" th:if="${#fields.hasErrors('nachricht')}" th:errors="*{nachricht}"></p>
+            </div>
+            <!-- Honeypot: für Menschen unsichtbar, Bots füllen alles aus. -->
+            <div style="position:absolute; left:-9999px;" aria-hidden="true">
+                <label>Homepage</label>
+                <input type="text" th:field="*{homepage}" tabindex="-1" autocomplete="off">
+            </div>
+            <div class="app-form-actions">
+                <button type="submit" class="app-btn" style="width: 100%; justify-content: center;"
+                        th:text="#{kontakt.btn}">Anfrage senden</button>
+            </div>
+        </form>
+
+        <p class="public-auth-foot">
+            <a th:href="@{/}" th:text="#{kontakt.zurueck}">Zurück zur Startseite</a>
+        </p>
+    </section>
+</main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz</p>
+    </div>
+</footer>
+
+</body>
+</html>

@@ -95,22 +95,21 @@ public class SecurityConfig {
             ObjectProvider<OAuth2UserService<OidcUserRequest, OidcUser>> oidcUserService) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+                        // Öffentlich für anonyme Besucher: Home + Kontakt-Formular + Auth-Flows.
+                        // Marktplatz, Vereine, Marken-Landing, Org-Listing, Sponsor-Self-Reg
+                        // erfordern jetzt Login — die /kontakt-Seite ist der einzige Anfrage-Funnel.
                         .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
                         .requestMatchers("/impressum", "/datenschutz").permitAll()
+                        .requestMatchers("/kontakt").permitAll()
                         .requestMatchers("/login", "/registrieren", "/verifizieren").permitAll()
                         .requestMatchers("/passwort-vergessen", "/passwort-reset").permitAll()
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
-                        .requestMatchers("/sponsor/**").permitAll()
                         .requestMatchers("/einladung/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/organisationen").permitAll()
-                        .requestMatchers("/organisationen/{slug}").permitAll()
-                        .requestMatchers("/marktplatz/**").permitAll()
+                        // /medien/** + /og/** bleiben öffentlich aus technischen Gründen
+                        // (OpenGraph-Crawler, Mail-Bilder), /payment/webhook/** für Stripe.
                         .requestMatchers("/medien/**").permitAll()
-                        .requestMatchers("/vereine/**").permitAll()
-                        .requestMatchers("/fuer-marken").permitAll()
-                        .requestMatchers("/marken/*/engagements").permitAll()
                         .requestMatchers("/og/**").permitAll()
                         .requestMatchers("/payment/webhook/**").permitAll()
                         .anyRequest().authenticated())
@@ -143,12 +142,15 @@ public class SecurityConfig {
             ObjectProvider<OAuth2UserService<OidcUserRequest, OidcUser>> oidcUserService) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+                        // Öffentlich für anonyme Besucher: Home + Kontakt-Formular + Auth-Flows.
+                        // Marktplatz, Vereine, Marken-Landing, Org-Listing, Sponsor-Self-Reg
+                        // erfordern jetzt Login — die /kontakt-Seite ist der einzige Anfrage-Funnel.
                         .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
                         .requestMatchers("/impressum", "/datenschutz").permitAll()
+                        .requestMatchers("/kontakt").permitAll()
                         .requestMatchers("/login", "/registrieren", "/verifizieren").permitAll()
                         .requestMatchers("/passwort-vergessen", "/passwort-reset").permitAll()
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
-                        .requestMatchers("/sponsor/**").permitAll()
                         .requestMatchers("/einladung/**").permitAll()
                         // Actuator: nur die K8s-Probes + info sind öffentlich auf
                         // dem Application-Port. /actuator/prometheus wandert in prod
@@ -163,13 +165,9 @@ public class SecurityConfig {
                                 "/actuator/health/liveness",
                                 "/actuator/health/readiness",
                                 "/actuator/info").permitAll()
-                        .requestMatchers("/organisationen").permitAll()
-                        .requestMatchers("/organisationen/{slug}").permitAll()
-                        .requestMatchers("/marktplatz/**").permitAll()
+                        // /medien/** + /og/** bleiben öffentlich aus technischen Gründen
+                        // (OpenGraph-Crawler, Mail-Bilder), /payment/webhook/** für Stripe.
                         .requestMatchers("/medien/**").permitAll()
-                        .requestMatchers("/vereine/**").permitAll()
-                        .requestMatchers("/fuer-marken").permitAll()
-                        .requestMatchers("/marken/*/engagements").permitAll()
                         .requestMatchers("/og/**").permitAll()
                         .requestMatchers("/payment/webhook/**").permitAll()
                         .anyRequest().authenticated())

@@ -25,10 +25,12 @@ import org.springframework.web.servlet.ModelAndView;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import ch.sponsorplatz.organisation.Branche;
 import ch.sponsorplatz.shared.config.SecurityConfig;
+import org.springframework.security.test.context.support.WithMockUser;
 
 @WebMvcTest(controllers = MarktplatzController.class)
 @Import(SecurityConfig.class)
 @ActiveProfiles("dev")
+@WithMockUser
 class MarktplatzControllerTest {
 
     @Autowired

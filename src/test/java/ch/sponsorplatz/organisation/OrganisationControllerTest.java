@@ -53,6 +53,7 @@ class OrganisationControllerTest {
 
     /** ORG-08: GET /organisationen → 200 + Liste. */
     @Test
+    @WithMockUser
     void listeWirdAngezeigt() throws Exception {
         when(service.alleViews()).thenReturn(List.of(OrganisationView.von(testOrg())));
 
@@ -114,6 +115,7 @@ class OrganisationControllerTest {
 
     /** ORG-10: GET /organisationen/{slug} → 200 + Detail. */
     @Test
+    @WithMockUser
     void detailWirdAngezeigt() throws Exception {
         Organisation org = testOrg();
         when(service.findeViewNachSlug("fc-test")).thenReturn(Optional.of(OrganisationView.von(org)));
@@ -126,6 +128,7 @@ class OrganisationControllerTest {
 
     /** ORG-16: GET /organisationen/{slug} mit unbekanntem Slug → 404 (nicht 400). */
     @Test
+    @WithMockUser
     void detailFuerUnbekanntenSlugIst404() throws Exception {
         when(service.findeViewNachSlug("unbekannt")).thenReturn(Optional.empty());
 
@@ -266,6 +269,7 @@ class OrganisationControllerTest {
      * h-knoten / h-aktiv sind sichtbar im DOM.
      */
     @Test
+    @WithMockUser
     void hierarchieTreeRendert() throws Exception {
         Organisation tochter = testOrg();
         tochter.setName("Tochter GmbH");

@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = SponsorRegistrierungController.class)
 @Import(SecurityConfig.class)
 @ActiveProfiles("dev")
+@org.springframework.security.test.context.support.WithMockUser
 class SponsorRegistrierungControllerTest {
 
     @Autowired
