@@ -19,7 +19,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.organisation.OrganisationService;
-import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.shared.storage.StorageService;
 
 /**
@@ -52,21 +51,20 @@ public class MedienController {
     /** Öffentliche Auslieferung eines Medien-Assets. Bilder inline, Dokumente als Download. */
     @GetMapping("/medien/{id}")
     public ResponseEntity<Resource> ausliefern(@PathVariable UUID id) {
-        MedienAsset asset = medienAssetService.findeNachId(id)
-                .orElseThrow(() -> new NotFoundException("Medien-Asset nicht gefunden"));
+        MedienAssetService.AuslieferungsSnapshot snap = medienAssetService.findeAuslieferungsSnapshot(id);
 
-        Resource resource = storageService.ladeAlsResource(asset.getStoragePfad());
+        Resource resource = storageService.ladeAlsResource(snap.storagePfad());
 
         // Spring's ContentDisposition.builder() encoded den Filename gemäss
         // RFC 5987 (UTF-8) und filtert Quotes/Newlines — schützt gegen
         // Header-Injection durch user-uploaded Dateinamen.
-        boolean istBild = asset.getContentType() != null && asset.getContentType().startsWith("image/");
+        boolean istBild = snap.contentType() != null && snap.contentType().startsWith("image/");
         ContentDisposition disposition = istBild
                 ? ContentDisposition.inline().build()
-                : ContentDisposition.attachment().filename(asset.getDateiname()).build();
+                : ContentDisposition.attachment().filename(snap.dateiname()).build();
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_TYPE, asset.getContentType())
+                .header(HttpHeaders.CONTENT_TYPE, snap.contentType())
                 .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
                 .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400")
                 .body(resource);
@@ -83,12 +81,9 @@ public class MedienController {
         if (!accessControl.kannOrgEditierenNachSlug(orgSlug, auth)) {
             throw new AccessDeniedException("Keine Berechtigung");
         }
-
-        var projekt = projektService.findeNachSlug(projektSlug)
-                .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + projektSlug));
-
+        ProjektView projekt = projektService.findeViewNachSlugOderWirf(projektSlug);
         AssetTyp assetTyp = AssetTyp.valueOf(assetTypStr);
-        medienAssetService.speichere(datei, EntityTyp.PROJEKT, projekt.getId(), assetTyp);
+        medienAssetService.speichere(datei, EntityTyp.PROJEKT, projekt.id(), assetTyp);
 
         redirectAttributes.addFlashAttribute("erfolgsMeldung", "Bild hochgeladen");
         return "redirect:/organisationen/" + orgSlug + "/projekte/" + projektSlug;
@@ -104,12 +99,9 @@ public class MedienController {
         if (!accessControl.kannOrgEditierenNachSlug(slug, auth)) {
             throw new AccessDeniedException("Keine Berechtigung");
         }
-
-        var org = organisationService.findeNachSlug(slug)
-                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
-
+        UUID orgId = organisationService.findeIdNachSlug(slug);
         AssetTyp assetTyp = AssetTyp.valueOf(assetTypStr);
-        medienAssetService.speichere(datei, EntityTyp.ORGANISATION, org.getId(), assetTyp);
+        medienAssetService.speichere(datei, EntityTyp.ORGANISATION, orgId, assetTyp);
 
         redirectAttributes.addFlashAttribute("erfolgsMeldung", "Bild hochgeladen");
         return "redirect:/organisationen/" + slug;
@@ -125,19 +117,17 @@ public class MedienController {
     public String loeschen(@PathVariable UUID id,
             Authentication auth,
             @RequestParam(value = "redirect", defaultValue = "/dashboard") String redirect) {
-        MedienAsset asset = medienAssetService.findeNachId(id)
-                .orElseThrow(() -> new NotFoundException("Asset nicht gefunden"));
+        MedienAssetService.BerechtigungsSnapshot snap = medienAssetService.findeBerechtigungsSnapshot(id);
 
-        boolean erlaubt = switch (asset.getEntityTyp()) {
-            case ORGANISATION -> organisationService.findeNachId(asset.getEntityId())
-                    .map(org -> accessControl.kannOrgEditierenNachSlug(org.getSlug(), auth))
+        boolean erlaubt = switch (snap.entityTyp()) {
+            case ORGANISATION -> organisationService.findeSlugNachId(snap.entityId())
+                    .map(slug -> accessControl.kannOrgEditierenNachSlug(slug, auth))
                     .orElse(false);
-            case PROJEKT -> projektService.findeNachId(asset.getEntityId())
-                    .map(p -> accessControl.kannOrgEditieren(p.getOrg().getId(), auth))
+            case PROJEKT -> projektService.findeOrgIdNachProjektId(snap.entityId())
+                    .map(orgId -> accessControl.kannOrgEditieren(orgId, auth))
                     .orElse(false);
-            // USER-Assets (Profilbild) darf nur der User selbst löschen.
-            case USER -> appUserService.findeNachEmail(auth.getName())
-                    .map(u -> u.getId().equals(asset.getEntityId()))
+            case USER -> appUserService.findeOptionalIdNachEmail(auth.getName())
+                    .map(uid -> uid.equals(snap.entityId()))
                     .orElse(false);
         };
         if (!erlaubt) {

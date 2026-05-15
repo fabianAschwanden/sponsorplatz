@@ -133,6 +133,12 @@ public class OrganisationService {
     /** Mini-Snapshot ID + Name — wird vom Controller gelesen, keine Entity-Touch. */
     public record OrgKopf(UUID id, String name) {}
 
+    /** Slug einer Org anhand der ID — für Berechtigungs-Checks (ARCH-02). */
+    @Transactional(readOnly = true)
+    public Optional<String> findeSlugNachId(UUID orgId) {
+        return repository.findById(orgId).map(Organisation::getSlug);
+    }
+
     /**
      * Direkte Untergeordnete einer Org — für Detail-Anzeige + Hierarchie-Navigation.
      */

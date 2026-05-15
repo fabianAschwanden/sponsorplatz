@@ -137,6 +137,13 @@ public class ProjektService {
      * dem Punkt aber detached, und die Setter sind silent No-Ops. Die
      * Felder gingen ohne Fehler verloren.
      */
+    /** Org-ID eines Projekts — für Berechtigungs-Checks ohne Entity-Touch (ARCH-02). */
+    @Transactional(readOnly = true)
+    public Optional<UUID> findeOrgIdNachProjektId(UUID projektId) {
+        return repository.findById(projektId)
+                .map(p -> p.getOrg() != null ? p.getOrg().getId() : null);
+    }
+
     /** View-Variante mit Lookup via orgId — Controller braucht keine Entity (ARCH-02). */
     public ProjektView erstelleAusFormAlsView(UUID orgId, String name, String beschreibung,
                                               String kategorie, String ort,

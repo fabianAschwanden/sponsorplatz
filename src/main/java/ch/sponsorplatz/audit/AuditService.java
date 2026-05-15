@@ -64,6 +64,12 @@ public class AuditService {
         return repository.findTop100ByOrderByZeitpunktDesc();
     }
 
+    /** View-Variante — Controller braucht keine Entity-Liste (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<AuditLogView> letzteEintraegeViews() {
+        return AuditLogView.von(letzteEintraege());
+    }
+
     /**
      * Gibt Einträge für einen bestimmten Bereich zurück.
      */

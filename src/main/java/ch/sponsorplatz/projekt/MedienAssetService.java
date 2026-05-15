@@ -106,6 +106,28 @@ public class MedienAssetService {
     /** Tuple aus den beiden Asset-Typ-Listen, die der ProjektController braucht. */
     public record BilderUndAnhaenge(List<MedienAssetView> bilder, List<MedienAssetView> anhaenge) {}
 
+    /** Asset-Daten für die HTTP-Auslieferung — Controller braucht keine Entity (ARCH-02). */
+    @Transactional(readOnly = true)
+    public AuslieferungsSnapshot findeAuslieferungsSnapshot(UUID id) {
+        return repository.findById(id)
+                .map(a -> new AuslieferungsSnapshot(a.getStoragePfad(), a.getContentType(), a.getDateiname()))
+                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
+                        "Medien-Asset nicht gefunden: " + id));
+    }
+
+    public record AuslieferungsSnapshot(String storagePfad, String contentType, String dateiname) {}
+
+    /** Berechtigungs-Snapshot für den Lösch-Endpoint (ARCH-02). */
+    @Transactional(readOnly = true)
+    public BerechtigungsSnapshot findeBerechtigungsSnapshot(UUID id) {
+        return repository.findById(id)
+                .map(a -> new BerechtigungsSnapshot(a.getEntityTyp(), a.getEntityId()))
+                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
+                        "Medien-Asset nicht gefunden: " + id));
+    }
+
+    public record BerechtigungsSnapshot(EntityTyp entityTyp, UUID entityId) {}
+
     @Transactional(readOnly = true)
     public Optional<MedienAsset> findeCover(EntityTyp entityTyp, UUID entityId) {
         return repository.findFirstByEntityTypAndEntityIdAndAssetTypOrderBySortierungAsc(

@@ -5,7 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -50,12 +49,9 @@ class MedienControllerTest {
     @Test
     void ausliefernGibtBildMitContentType() throws Exception {
         UUID id = UUID.randomUUID();
-        MedienAsset asset = new MedienAsset();
-        asset.setId(id);
-        asset.setContentType("image/png");
-        asset.setStoragePfad("projekt/123/bild.png");
-
-        when(medienAssetService.findeNachId(id)).thenReturn(Optional.of(asset));
+        when(medienAssetService.findeAuslieferungsSnapshot(id))
+                .thenReturn(new MedienAssetService.AuslieferungsSnapshot(
+                        "projekt/123/bild.png", "image/png", "bild.png"));
         when(storageService.ladeAlsResource("projekt/123/bild.png"))
                 .thenReturn(new ByteArrayResource(new byte[] { 1, 2, 3 }));
 
@@ -69,7 +65,8 @@ class MedienControllerTest {
     @Test
     void ausliefernUnbekannteIdGibt404() throws Exception {
         UUID id = UUID.randomUUID();
-        when(medienAssetService.findeNachId(id)).thenReturn(Optional.empty());
+        when(medienAssetService.findeAuslieferungsSnapshot(id))
+                .thenThrow(new ch.sponsorplatz.shared.exception.NotFoundException("nicht gefunden"));
 
         mockMvc.perform(get("/medien/{id}", id))
                 .andExpect(status().isNotFound());

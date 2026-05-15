@@ -1,8 +1,6 @@
 package ch.sponsorplatz.admin;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.audit.AuditLogView;
-import ch.sponsorplatz.audit.AuditLog;
 import ch.sponsorplatz.audit.AuditService;
 import ch.sponsorplatz.backup.BackupRestoreService;
 import ch.sponsorplatz.backup.BackupService;
@@ -50,9 +48,8 @@ public class AdminAuditController {
 
     @GetMapping("/audit")
     public String auditLog(Model model) {
-        List<AuditLog> eintraege = auditService.letzteEintraege();
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "admin");
-        model.addAttribute("auditLogs", AuditLogView.von(eintraege));
+        model.addAttribute("auditLogs", auditService.letzteEintraegeViews());
         return "admin/audit";
     }
 
