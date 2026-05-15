@@ -14,9 +14,12 @@ import java.util.UUID;
 public class SponsoringPaketService {
 
     private final SponsoringPaketRepository repository;
+    private final ProjektRepository projektRepository;
 
-    public SponsoringPaketService(SponsoringPaketRepository repository) {
+    public SponsoringPaketService(SponsoringPaketRepository repository,
+                                   ProjektRepository projektRepository) {
         this.repository = repository;
+        this.projektRepository = projektRepository;
     }
 
     @Transactional(readOnly = true)
@@ -36,6 +39,19 @@ public class SponsoringPaketService {
     @Transactional(readOnly = true)
     public List<SponsoringPaket> findeNachProjekt(UUID projektId) {
         return repository.findByProjektIdOrderBySortierungAsc(projektId);
+    }
+
+    /** View-Variante — Controller braucht keine Entity-Liste (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<SponsoringPaketView> findeViewsNachProjekt(UUID projektId) {
+        return SponsoringPaketView.von(findeNachProjekt(projektId));
+    }
+
+    /** Erstellt ein Paket via Projekt-Slug statt Entity (ARCH-02). */
+    public void erstelleNachProjektSlug(String projektSlug, String name, String beschreibung, BigDecimal preisChf) {
+        Projekt projekt = projektRepository.findBySlug(projektSlug)
+                .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + projektSlug));
+        erstelle(projekt, name, beschreibung, preisChf);
     }
 
     @Transactional(readOnly = true)

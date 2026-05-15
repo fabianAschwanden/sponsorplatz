@@ -78,7 +78,7 @@ class ProjektControllerTest {
     void listeWirdAngezeigt() throws Exception {
         Organisation org = testOrg();
         when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
-        when(orgService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
+        when(orgService.findeViewNachSlug("fc-test")).thenReturn(Optional.of(ch.sponsorplatz.organisation.OrganisationView.von(org)));
         when(projektService.findeNachOrg(org.getId())).thenReturn(List.of());
 
         mockMvc.perform(get("/organisationen/fc-test/projekte"))
@@ -93,7 +93,7 @@ class ProjektControllerTest {
     void neuesFormularWirdAngezeigt() throws Exception {
         Organisation org = testOrg();
         when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
-        when(orgService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
+        when(orgService.findeViewNachSlug("fc-test")).thenReturn(Optional.of(ch.sponsorplatz.organisation.OrganisationView.von(org)));
 
         mockMvc.perform(get("/organisationen/fc-test/projekte/neu"))
                 .andExpect(status().isOk())
@@ -108,9 +108,9 @@ class ProjektControllerTest {
         Organisation org = testOrg();
         Projekt projekt = testProjekt(org);
         when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
-        when(orgService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
-        when(projektService.erstelleAusForm(any(), eq("Sommerfest 2026"), any(), any(), any(), any(), any()))
-                .thenReturn(projekt);
+        when(orgService.findeViewNachSlug("fc-test")).thenReturn(Optional.of(ch.sponsorplatz.organisation.OrganisationView.von(org)));
+        when(projektService.erstelleAusFormAlsView(any(), eq("Sommerfest 2026"), any(), any(), any(), any(), any()))
+                .thenReturn(ProjektView.von(projekt));
 
         mockMvc.perform(post("/organisationen/fc-test/projekte/speichern")
                         .with(csrf())
@@ -127,9 +127,11 @@ class ProjektControllerTest {
         Organisation org = testOrg();
         Projekt projekt = testProjekt(org);
         when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
-        when(orgService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
-        when(projektService.findeNachSlug("sommerfest-2026")).thenReturn(Optional.of(projekt));
-        when(paketService.findeNachProjekt(projekt.getId())).thenReturn(List.of());
+        when(orgService.findeViewNachSlug("fc-test")).thenReturn(Optional.of(ch.sponsorplatz.organisation.OrganisationView.von(org)));
+        when(projektService.findeViewNachSlugOderWirf("sommerfest-2026")).thenReturn(ProjektView.von(projekt));
+        when(paketService.findeViewsNachProjekt(projekt.getId())).thenReturn(List.of());
+        when(medienAssetService.findeBilderUndAnhaengeViews(EntityTyp.PROJEKT, projekt.getId()))
+                .thenReturn(new MedienAssetService.BilderUndAnhaenge(List.of(), List.of()));
 
         mockMvc.perform(get("/organisationen/fc-test/projekte/sommerfest-2026"))
                 .andExpect(status().isOk())
@@ -143,7 +145,7 @@ class ProjektControllerTest {
     void speichernMitFehlerZeigtFormular() throws Exception {
         Organisation org = testOrg();
         when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
-        when(orgService.findeNachSlug("fc-test")).thenReturn(Optional.of(org));
+        when(orgService.findeViewNachSlug("fc-test")).thenReturn(Optional.of(ch.sponsorplatz.organisation.OrganisationView.von(org)));
 
         mockMvc.perform(post("/organisationen/fc-test/projekte/speichern")
                         .with(csrf())

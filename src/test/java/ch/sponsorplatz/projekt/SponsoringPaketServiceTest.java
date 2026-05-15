@@ -23,7 +23,7 @@ class SponsoringPaketServiceTest {
     @BeforeEach
     void setUp() {
         repository = mock(SponsoringPaketRepository.class);
-        service = new SponsoringPaketService(repository);
+        service = new SponsoringPaketService(repository, mock(ProjektRepository.class));
     }
 
     /** SP-01: Paket erstellen mit gültigem Namen und Preis. */

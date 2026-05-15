@@ -88,6 +88,24 @@ public class MedienAssetService {
         return repository.findByEntityTypAndEntityIdOrderBySortierungAsc(entityTyp, entityId);
     }
 
+    /**
+     * Splittet die Assets einer Entity in Bilder (Cover/Galerie/Profilbild/…)
+     * und Anhänge (PDFs/Office-Dokumente) — Controller braucht keine
+     * Entity-Liste mehr durchzustreamen (ARCH-02).
+     */
+    @Transactional(readOnly = true)
+    public BilderUndAnhaenge findeBilderUndAnhaengeViews(EntityTyp entityTyp, UUID entityId) {
+        List<MedienAsset> alle = findeNachEntity(entityTyp, entityId);
+        List<MedienAssetView> bilder = MedienAssetView.von(alle.stream()
+                .filter(m -> m.getAssetTyp() != AssetTyp.ANHANG).toList());
+        List<MedienAssetView> anhaenge = MedienAssetView.von(alle.stream()
+                .filter(m -> m.getAssetTyp() == AssetTyp.ANHANG).toList());
+        return new BilderUndAnhaenge(bilder, anhaenge);
+    }
+
+    /** Tuple aus den beiden Asset-Typ-Listen, die der ProjektController braucht. */
+    public record BilderUndAnhaenge(List<MedienAssetView> bilder, List<MedienAssetView> anhaenge) {}
+
     @Transactional(readOnly = true)
     public Optional<MedienAsset> findeCover(EntityTyp entityTyp, UUID entityId) {
         return repository.findFirstByEntityTypAndEntityIdAndAssetTypOrderBySortierungAsc(

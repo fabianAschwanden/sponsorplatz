@@ -19,13 +19,16 @@ public class ProjektService {
     private final ProjektRepository repository;
     private final SlugGenerator slugGenerator;
     private final VolltextSucheService volltextSuche;
+    private final ch.sponsorplatz.organisation.OrganisationRepository orgRepository;
 
     public ProjektService(ProjektRepository repository,
                           SlugGenerator slugGenerator,
-                          VolltextSucheService volltextSuche) {
+                          VolltextSucheService volltextSuche,
+                          ch.sponsorplatz.organisation.OrganisationRepository orgRepository) {
         this.repository = repository;
         this.slugGenerator = slugGenerator;
         this.volltextSuche = volltextSuche;
+        this.orgRepository = orgRepository;
     }
 
     @Transactional(readOnly = true)
@@ -134,6 +137,41 @@ public class ProjektService {
      * dem Punkt aber detached, und die Setter sind silent No-Ops. Die
      * Felder gingen ohne Fehler verloren.
      */
+    /** View-Variante mit Lookup via orgId — Controller braucht keine Entity (ARCH-02). */
+    public ProjektView erstelleAusFormAlsView(UUID orgId, String name, String beschreibung,
+                                              String kategorie, String ort,
+                                              java.time.LocalDate startDatum,
+                                              java.time.LocalDate endDatum) {
+        Organisation org = orgRepository.findById(orgId)
+                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
+                        "Org nicht gefunden: " + orgId));
+        return ProjektView.von(erstelleAusForm(org, name, beschreibung, kategorie, ort, startDatum, endDatum));
+    }
+
+    /** Veröffentlicht über Slug — gibt den Namen für Flash-Message zurück (ARCH-02). */
+    public String veroeffentlicheNachSlug(String slug) {
+        Projekt p = findeNachSlug(slug)
+                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
+                        "Projekt nicht gefunden: " + slug));
+        veroeffentliche(p.getId());
+        return p.getName();
+    }
+
+    /** View-Variante des Slug-Lookups — wirft NotFoundException (ARCH-02). */
+    @Transactional(readOnly = true)
+    public ProjektView findeViewNachSlugOderWirf(String slug) {
+        return findeNachSlug(slug)
+                .map(ProjektView::von)
+                .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(
+                        "Projekt nicht gefunden: " + slug));
+    }
+
+    /** Alle Projekte einer Org als View (Org-interne Liste). */
+    @Transactional(readOnly = true)
+    public List<ProjektView> findeViewsNachOrg(UUID orgId) {
+        return findeNachOrg(orgId).stream().map(ProjektView::von).toList();
+    }
+
     public Projekt erstelleAusForm(Organisation org, String name, String beschreibung,
                                    String kategorie, String ort,
                                    java.time.LocalDate startDatum,

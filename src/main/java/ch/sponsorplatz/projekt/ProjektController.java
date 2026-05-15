@@ -3,7 +3,6 @@ package ch.sponsorplatz.projekt;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.organisation.OrganisationView;
 import ch.sponsorplatz.shared.exception.NotFoundException;
-import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.organisation.OrganisationService;
 import jakarta.validation.Valid;
@@ -18,8 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.util.List;
 
 @Controller
 @RequestMapping("/organisationen/{orgSlug}/projekte")
@@ -46,20 +43,18 @@ public class ProjektController {
     @GetMapping
     public String liste(@PathVariable String orgSlug, Authentication auth, Model model) {
         pruefeEditRecht(orgSlug, auth);
-        Organisation org = ladeOrg(orgSlug);
-        List<Projekt> projekte = projektService.findeNachOrg(org.getId());
+        OrganisationView org = ladeOrgView(orgSlug);
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
-        model.addAttribute("org", OrganisationView.von(org));
-        model.addAttribute("projekte", projekte.stream().map(ProjektView::von).toList());
+        model.addAttribute("org", org);
+        model.addAttribute("projekte", projektService.findeViewsNachOrg(org.id()));
         return "projekt-liste";
     }
 
     @GetMapping("/neu")
     public String neuesFormular(@PathVariable String orgSlug, Authentication auth, Model model) {
         pruefeEditRecht(orgSlug, auth);
-        Organisation org = ladeOrg(orgSlug);
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
-        model.addAttribute("org", OrganisationView.von(org));
+        model.addAttribute("org", ladeOrgView(orgSlug));
         model.addAttribute("projektForm", new ProjektFormDto());
         return "projekt-form";
     }
@@ -72,19 +67,19 @@ public class ProjektController {
                             Model model,
                             RedirectAttributes redirect) {
         pruefeEditRecht(orgSlug, auth);
-        Organisation org = ladeOrg(orgSlug);
+        OrganisationView org = ladeOrgView(orgSlug);
         if (br.hasErrors()) {
             model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
-            model.addAttribute("org", OrganisationView.von(org));
+            model.addAttribute("org", org);
             return "projekt-form";
         }
-        Projekt projekt = projektService.erstelleAusForm(
-                org, dto.getName(), dto.getBeschreibung(),
+        ProjektView projekt = projektService.erstelleAusFormAlsView(
+                org.id(), dto.getName(), dto.getBeschreibung(),
                 dto.getKategorie(), dto.getOrt(),
                 dto.getStartDatum(), dto.getEndDatum());
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                "Projekt \"" + projekt.getName() + "\" erstellt.");
-        return "redirect:/organisationen/" + orgSlug + "/projekte/" + projekt.getSlug();
+                "Projekt \"" + projekt.name() + "\" erstellt.");
+        return "redirect:/organisationen/" + orgSlug + "/projekte/" + projekt.slug();
     }
 
     @GetMapping("/{projektSlug}")
@@ -93,25 +88,16 @@ public class ProjektController {
                          Authentication auth,
                          Model model) {
         pruefeEditRecht(orgSlug, auth);
-        Organisation org = ladeOrg(orgSlug);
-        Projekt projekt = projektService.findeNachSlug(projektSlug)
-                .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + projektSlug));
-        List<SponsoringPaket> pakete = paketService.findeNachProjekt(projekt.getId());
-        // Eine DB-Query, danach im Stream nach Asset-Typ aufsplitten —
-        // spart Round-Trip gegenüber zwei separaten findeAnhaenge/findeNachEntity-Calls.
-        List<MedienAsset> alleAssets = medienAssetService.findeNachEntity(EntityTyp.PROJEKT, projekt.getId());
-        List<MedienAsset> bilder = alleAssets.stream()
-                .filter(m -> m.getAssetTyp() != AssetTyp.ANHANG)
-                .toList();
-        List<MedienAsset> anhaenge = alleAssets.stream()
-                .filter(m -> m.getAssetTyp() == AssetTyp.ANHANG)
-                .toList();
+        OrganisationView org = ladeOrgView(orgSlug);
+        ProjektView projekt = projektService.findeViewNachSlugOderWirf(projektSlug);
+        MedienAssetService.BilderUndAnhaenge medien =
+                medienAssetService.findeBilderUndAnhaengeViews(EntityTyp.PROJEKT, projekt.id());
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
-        model.addAttribute("org", OrganisationView.von(org));
-        model.addAttribute("projekt", ProjektView.von(projekt));
-        model.addAttribute("pakete", pakete.stream().map(SponsoringPaketView::von).toList());
-        model.addAttribute("medien", MedienAssetView.von(bilder));
-        model.addAttribute("anhaenge", MedienAssetView.von(anhaenge));
+        model.addAttribute("org", org);
+        model.addAttribute("projekt", projekt);
+        model.addAttribute("pakete", paketService.findeViewsNachProjekt(projekt.id()));
+        model.addAttribute("medien", medien.bilder());
+        model.addAttribute("anhaenge", medien.anhaenge());
         model.addAttribute("paketForm", new SponsoringPaketFormDto());
         return "projekt-detail";
     }
@@ -122,11 +108,9 @@ public class ProjektController {
                                   Authentication auth,
                                   RedirectAttributes redirect) {
         pruefeEditRecht(orgSlug, auth);
-        Projekt projekt = projektService.findeNachSlug(projektSlug)
-                .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + projektSlug));
-        projektService.veroeffentliche(projekt.getId());
+        String projektName = projektService.veroeffentlicheNachSlug(projektSlug);
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                "Projekt \"" + projekt.getName() + "\" veröffentlicht.");
+                "Projekt \"" + projektName + "\" veröffentlicht.");
         return "redirect:/organisationen/" + orgSlug + "/projekte/" + projektSlug;
     }
 
@@ -139,18 +123,15 @@ public class ProjektController {
                                  Model model,
                                  RedirectAttributes redirect) {
         pruefeEditRecht(orgSlug, auth);
-        Projekt projekt = projektService.findeNachSlug(projektSlug)
-                .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + projektSlug));
         if (br.hasErrors()) {
-            Organisation org = ladeOrg(orgSlug);
-            List<SponsoringPaket> pakete = paketService.findeNachProjekt(projekt.getId());
+            ProjektView projekt = projektService.findeViewNachSlugOderWirf(projektSlug);
             model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
-            model.addAttribute("org", OrganisationView.von(org));
-            model.addAttribute("projekt", ProjektView.von(projekt));
-            model.addAttribute("pakete", pakete.stream().map(SponsoringPaketView::von).toList());
+            model.addAttribute("org", ladeOrgView(orgSlug));
+            model.addAttribute("projekt", projekt);
+            model.addAttribute("pakete", paketService.findeViewsNachProjekt(projekt.id()));
             return "projekt-detail";
         }
-        paketService.erstelle(projekt, dto.getName(), dto.getBeschreibung(), dto.getPreisChf());
+        paketService.erstelleNachProjektSlug(projektSlug, dto.getName(), dto.getBeschreibung(), dto.getPreisChf());
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                 "Paket \"" + dto.getName() + "\" hinzugefügt.");
         return "redirect:/organisationen/" + orgSlug + "/projekte/" + projektSlug;
@@ -162,8 +143,8 @@ public class ProjektController {
         }
     }
 
-    private Organisation ladeOrg(String slug) {
-        return orgService.findeNachSlug(slug)
+    private OrganisationView ladeOrgView(String slug) {
+        return orgService.findeViewNachSlug(slug)
                 .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
     }
 }
