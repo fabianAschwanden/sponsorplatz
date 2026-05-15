@@ -1,4 +1,7 @@
-package ch.sponsorplatz.projekt;
+package ch.sponsorplatz.dashboard;
+import ch.sponsorplatz.projekt.EventView;
+import ch.sponsorplatz.projekt.EventService;
+import ch.sponsorplatz.projekt.ProjektService;
 
 import java.util.List;
 import java.util.UUID;

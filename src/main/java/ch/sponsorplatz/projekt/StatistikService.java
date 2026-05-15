@@ -1,7 +1,8 @@
-package ch.sponsorplatz.organisation;
+package ch.sponsorplatz.projekt;
 
-import ch.sponsorplatz.projekt.ProjektRepository;
-import ch.sponsorplatz.projekt.Sichtbarkeit;
+import ch.sponsorplatz.organisation.Branche;
+import ch.sponsorplatz.organisation.OrgStatus;
+import ch.sponsorplatz.organisation.OrganisationRepository;
 import ch.sponsorplatz.shared.config.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;

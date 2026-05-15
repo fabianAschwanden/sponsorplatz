@@ -5,11 +5,13 @@ import ch.sponsorplatz.benachrichtigung.NotificationService;
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.benutzer.PlatformRolle;
+import ch.sponsorplatz.organisation.NeueOrgRegistrierungEvent;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.shared.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,8 +48,17 @@ public class AdminBenachrichtigungService {
     /**
      * Benachrichtigt alle PLATFORM_ADMINs über eine frisch registrierte
      * (PENDING-)Organisation — In-App-Notification + E-Mail.
+     *
+     * <p>Wird via {@link NeueOrgRegistrierungEvent} aus dem {@code organisation}-
+     * Paket angestossen — Spring-Events brechen die {@code organisation → admin}-
+     * Direktreferenz (ARCH-06).
      */
-    public void benachrichtigeUeberNeueOrgRegistrierung(Organisation org) {
+    @EventListener
+    public void onNeueOrgRegistrierung(NeueOrgRegistrierungEvent event) {
+        benachrichtigeUeberNeueOrgRegistrierung(event.org());
+    }
+
+    void benachrichtigeUeberNeueOrgRegistrierung(Organisation org) {
         List<AppUser> admins = appUserRepository.findByPlatformRolle(PlatformRolle.PLATFORM_ADMIN);
         if (admins.isEmpty()) {
             log.warn("Keine PLATFORM_ADMIN-User vorhanden — Org-Registrierung '{}' bleibt unbenachrichtigt",

@@ -1,7 +1,8 @@
-package ch.sponsorplatz.benutzer;
+package ch.sponsorplatz.seed;
 
 import ch.sponsorplatz.anfrage.SponsoringAnfrage;
 import ch.sponsorplatz.anfrage.SponsoringAnfrageRepository;
+import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.organisation.*;
 import ch.sponsorplatz.projekt.*;
 import org.junit.jupiter.api.DisplayName;

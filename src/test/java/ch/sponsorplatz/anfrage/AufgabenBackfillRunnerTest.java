@@ -1,4 +1,6 @@
-package ch.sponsorplatz.aufgabe;
+package ch.sponsorplatz.anfrage;
+
+import ch.sponsorplatz.aufgabe.AufgabenEngine;
 
 import ch.sponsorplatz.anfrage.AnfrageStatus;
 import ch.sponsorplatz.anfrage.RechnungRepository;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -74,10 +77,10 @@ class AufgabenBackfillRunnerTest {
 
         runner.backfillen();
 
-        verify(aufgabenEngine).onOrgStatusWechsel(pendingOrg);
-        verify(aufgabenEngine).onAnfrageStatusWechsel(neueAnfrage);
-        verify(aufgabenEngine).onVertragStatusWechsel(entwurf);
-        verify(aufgabenEngine).onRechnungStatusWechsel(offen);
+        verify(aufgabenEngine).onOrgStatusWechsel(new ch.sponsorplatz.organisation.OrgStatusGewechseltEvent(pendingOrg));
+        verify(aufgabenEngine).onStatusWechsel(eq(ch.sponsorplatz.aufgabe.TriggerEntityTyp.ANFRAGE), eq(neueAnfrage.getId()), eq(neueAnfrage.getStatus().name()), any());
+        verify(aufgabenEngine).onStatusWechsel(eq(ch.sponsorplatz.aufgabe.TriggerEntityTyp.VERTRAG), eq(entwurf.getId()), eq(entwurf.getStatus().name()), any());
+        verify(aufgabenEngine).onStatusWechsel(eq(ch.sponsorplatz.aufgabe.TriggerEntityTyp.RECHNUNG), eq(offen.getId()), eq(offen.getStatus().name()), any());
     }
 
     @Test

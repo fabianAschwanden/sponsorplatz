@@ -1,5 +1,6 @@
-package ch.sponsorplatz.organisation;
+package ch.sponsorplatz.projekt;
 
+import ch.sponsorplatz.organisation.Branche;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

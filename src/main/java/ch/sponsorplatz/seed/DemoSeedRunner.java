@@ -1,8 +1,11 @@
-package ch.sponsorplatz.benutzer;
+package ch.sponsorplatz.seed;
 
 import ch.sponsorplatz.anfrage.AnfrageStatus;
 import ch.sponsorplatz.anfrage.SponsoringAnfrage;
 import ch.sponsorplatz.anfrage.SponsoringAnfrageRepository;
+import ch.sponsorplatz.benutzer.AppUser;
+import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.PlatformRolle;
 import ch.sponsorplatz.organisation.*;
 import ch.sponsorplatz.projekt.*;
 import org.slf4j.Logger;

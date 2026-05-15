@@ -1,4 +1,5 @@
-package ch.sponsorplatz.projekt;
+package ch.sponsorplatz.dashboard;
+import ch.sponsorplatz.projekt.EventView;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

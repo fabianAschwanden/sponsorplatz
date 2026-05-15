@@ -1,4 +1,6 @@
-package ch.sponsorplatz.aufgabe;
+package ch.sponsorplatz.anfrage;
+
+import ch.sponsorplatz.aufgabe.AufgabenEngine;
 
 import ch.sponsorplatz.anfrage.AnfrageStatus;
 import ch.sponsorplatz.anfrage.RechnungRepository;
@@ -52,19 +54,19 @@ public class AufgabenBackfillRunner {
         int orgs = 0, anfragen = 0, vertraege = 0, rechnungen = 0;
 
         for (var org : organisationRepository.findByStatusOrderByCreatedAtAsc(OrgStatus.PENDING)) {
-            aufgabenEngine.onOrgStatusWechsel(org);
+            aufgabenEngine.onOrgStatusWechsel(new ch.sponsorplatz.organisation.OrgStatusGewechseltEvent(org));
             orgs++;
         }
         for (var a : anfrageRepository.findByStatus(AnfrageStatus.NEU)) {
-            aufgabenEngine.onAnfrageStatusWechsel(a);
+            aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.ANFRAGE, a.getId(), a.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausAnfrageOrgs(a.getEmpfaengerOrg(), a.getAnfragenderOrg()));
             anfragen++;
         }
         for (var v : vertragRepository.findByStatus(VertragsStatus.ENTWURF)) {
-            aufgabenEngine.onVertragStatusWechsel(v);
+            aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.VERTRAG, v.getId(), v.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausVertragOrgs(v.getOrg(), v.getSponsorOrg()));
             vertraege++;
         }
         for (var r : rechnungRepository.findByStatus(RechnungsStatus.OFFEN)) {
-            aufgabenEngine.onRechnungStatusWechsel(r);
+            aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.RECHNUNG, r.getId(), r.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausRechnungOrg(r.getOrg()));
             rechnungen++;
         }
 

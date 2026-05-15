@@ -1,9 +1,9 @@
 package ch.sponsorplatz.organisation;
-import ch.sponsorplatz.admin.AdminBenachrichtigungService;
 import ch.sponsorplatz.benutzer.AppUserService;
 
 import ch.sponsorplatz.benutzer.AppUserFormDto;
 import ch.sponsorplatz.benutzer.AppUser;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,16 +18,16 @@ public class SponsorRegistrierungService {
     private final AppUserService appUserService;
     private final OrganisationService organisationService;
     private final MitgliedschaftService mitgliedschaftService;
-    private final AdminBenachrichtigungService adminBenachrichtigungService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public SponsorRegistrierungService(AppUserService appUserService,
                                         OrganisationService organisationService,
                                         MitgliedschaftService mitgliedschaftService,
-                                        AdminBenachrichtigungService adminBenachrichtigungService) {
+                                        ApplicationEventPublisher eventPublisher) {
         this.appUserService = appUserService;
         this.organisationService = organisationService;
         this.mitgliedschaftService = mitgliedschaftService;
-        this.adminBenachrichtigungService = adminBenachrichtigungService;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -58,7 +58,7 @@ public class SponsorRegistrierungService {
         // 3. Mitgliedschaft als ORG_OWNER
         mitgliedschaftService.fuegeHinzu(org.getId(), user.getId(), Rolle.ORG_OWNER, null);
 
-        adminBenachrichtigungService.benachrichtigeUeberNeueOrgRegistrierung(org);
+        eventPublisher.publishEvent(new NeueOrgRegistrierungEvent(org));
     }
 }
 

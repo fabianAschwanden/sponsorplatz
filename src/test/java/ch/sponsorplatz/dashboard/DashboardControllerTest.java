@@ -1,4 +1,6 @@
-package ch.sponsorplatz.projekt;
+package ch.sponsorplatz.dashboard;
+import ch.sponsorplatz.projekt.ProjektService;
+import ch.sponsorplatz.projekt.MatchingService;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;

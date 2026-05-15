@@ -1,9 +1,5 @@
 package ch.sponsorplatz.benutzer;
 
-import ch.sponsorplatz.projekt.AssetTyp;
-import ch.sponsorplatz.projekt.EntityTyp;
-import ch.sponsorplatz.audit.DatenExportService;
-import ch.sponsorplatz.projekt.MedienAssetService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -33,16 +29,16 @@ import java.util.UUID;
 @RequestMapping("/einstellungen")
 public class EinstellungenController {
 
-    private final DatenExportService datenExportService;
+    private final BenutzerDatenExport datenExport;
     private final AppUserService appUserService;
-    private final MedienAssetService medienAssetService;
+    private final ProfilbildSpeicherung profilbildSpeicherung;
 
-    public EinstellungenController(DatenExportService datenExportService,
+    public EinstellungenController(BenutzerDatenExport datenExport,
                                    AppUserService appUserService,
-                                   MedienAssetService medienAssetService) {
-        this.datenExportService = datenExportService;
+                                   ProfilbildSpeicherung profilbildSpeicherung) {
+        this.datenExport = datenExport;
         this.appUserService = appUserService;
-        this.medienAssetService = medienAssetService;
+        this.profilbildSpeicherung = profilbildSpeicherung;
     }
 
     @GetMapping
@@ -85,7 +81,7 @@ public class EinstellungenController {
                                        RedirectAttributes redirect) {
         UUID userId = appUserService.findeIdNachEmail(auth.getName());
         try {
-            UUID assetId = medienAssetService.speichereUndGibId(datei, EntityTyp.USER, userId, AssetTyp.PROFILBILD);
+            UUID assetId = profilbildSpeicherung.speichereProfilbild(datei, userId);
             appUserService.setzeProfilbild(userId, assetId);
             redirect.addFlashAttribute("erfolgsMeldung", "Profilbild aktualisiert");
         } catch (Exception e) {
@@ -98,7 +94,7 @@ public class EinstellungenController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> datenExport(Authentication auth) {
         UUID userId = appUserService.findeIdNachEmail(auth.getName());
-        Map<String, Object> export = datenExportService.exportiere(userId);
+        Map<String, Object> export = datenExport.exportiere(userId);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"sponsorplatz-export.json\"")
                 .contentType(MediaType.APPLICATION_JSON)

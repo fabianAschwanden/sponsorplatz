@@ -1,6 +1,4 @@
 package ch.sponsorplatz.organisation;
-import ch.sponsorplatz.admin.AdminBenachrichtigungService;
-import ch.sponsorplatz.aufgabe.AufgabenEngine;
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.shared.util.SlugGenerator;
@@ -8,6 +6,7 @@ import ch.sponsorplatz.shared.util.SlugGenerator;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,8 +24,7 @@ class OrganisationServiceTest {
     private OrganisationRepository repository;
     private MitgliedschaftRepository mitgliedschaftRepository;
     private AppUserRepository appUserRepository;
-    private AdminBenachrichtigungService adminBenachrichtigungService;
-    private AufgabenEngine aufgabenEngine;
+    private ApplicationEventPublisher eventPublisher;
     private OrganisationService service;
 
     @BeforeEach
@@ -34,11 +32,10 @@ class OrganisationServiceTest {
         repository = mock(OrganisationRepository.class);
         mitgliedschaftRepository = mock(MitgliedschaftRepository.class);
         appUserRepository = mock(AppUserRepository.class);
-        adminBenachrichtigungService = mock(AdminBenachrichtigungService.class);
-        aufgabenEngine = mock(AufgabenEngine.class);
+        eventPublisher = mock(ApplicationEventPublisher.class);
         service = new OrganisationService(repository, new SlugGenerator(),
                 mitgliedschaftRepository, appUserRepository,
-                adminBenachrichtigungService, aufgabenEngine);
+                eventPublisher);
     }
 
     /** ORG-05: Erstellen mit Auto-Slug aus dem Namen. */
@@ -325,7 +322,7 @@ class OrganisationServiceTest {
 
         Organisation org = service.erstelleMitEigentuemer(neuesDto("Mein Verein", null), userId);
 
-        verify(adminBenachrichtigungService).benachrichtigeUeberNeueOrgRegistrierung(org);
+        verify(eventPublisher).publishEvent(new NeueOrgRegistrierungEvent(org));
     }
 
     /** ORG-32: erstelle ohne Eigentümer (Admin-direkt-Anlage) triggert keine Admin-Benachrichtigung. */
@@ -336,7 +333,8 @@ class OrganisationServiceTest {
 
         service.erstelle(neuesDto("Direkt vom Admin", null));
 
-        org.mockito.Mockito.verifyNoInteractions(adminBenachrichtigungService);
+        org.mockito.Mockito.verify(eventPublisher, org.mockito.Mockito.never())
+                .publishEvent(org.mockito.ArgumentMatchers.any(NeueOrgRegistrierungEvent.class));
     }
 
     private OrganisationFormDto neuesDto(String name, String slug) {

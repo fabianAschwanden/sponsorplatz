@@ -1,4 +1,11 @@
-package ch.sponsorplatz.organisation;
+package ch.sponsorplatz.projekt;
+
+import ch.sponsorplatz.organisation.Branche;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.OrganisationView;
+import ch.sponsorplatz.organisation.OrgTyp;
+
+import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;

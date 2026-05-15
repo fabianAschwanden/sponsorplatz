@@ -20,7 +20,7 @@ import ch.sponsorplatz.projekt.WatchlistRepository;
  */
 @Service
 @Transactional(readOnly = true)
-public class DatenExportService {
+public class DatenExportService implements ch.sponsorplatz.benutzer.BenutzerDatenExport {
 
     private final AppUserRepository appUserRepository;
     private final MitgliedschaftRepository mitgliedschaftRepository;

@@ -251,7 +251,7 @@ public class SponsoringAnfrageService {
                 "Von " + (kontaktName != null ? kontaktName : "Unbekannt"),
                 "/organisationen/" + empfaengerOrg.getSlug() + "/anfragen");
 
-        aufgabenEngine.onAnfrageStatusWechsel(gespeichert);
+        aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.ANFRAGE, gespeichert.getId(), gespeichert.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausAnfrageOrgs(gespeichert.getEmpfaengerOrg(), gespeichert.getAnfragenderOrg()));
         return gespeichert;
     }
 
@@ -301,7 +301,7 @@ public class SponsoringAnfrageService {
                 "Von " + anfragenderOrg.getName() + ": " + betreff.trim(),
                 "/anfragen");
 
-        aufgabenEngine.onAnfrageStatusWechsel(gespeichert);
+        aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.ANFRAGE, gespeichert.getId(), gespeichert.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausAnfrageOrgs(gespeichert.getEmpfaengerOrg(), gespeichert.getAnfragenderOrg()));
         return gespeichert;
     }
 
@@ -322,7 +322,7 @@ public class SponsoringAnfrageService {
                 "Ihre Anfrage wurde angenommen",
                 "/organisationen/" + anfrage.getAnfragenderOrg().getSlug() + "/anfragen");
 
-        aufgabenEngine.onAnfrageStatusWechsel(gespeichert);
+        aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.ANFRAGE, gespeichert.getId(), gespeichert.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausAnfrageOrgs(gespeichert.getEmpfaengerOrg(), gespeichert.getAnfragenderOrg()));
         return gespeichert;
     }
 
@@ -343,7 +343,7 @@ public class SponsoringAnfrageService {
                 "Ihre Anfrage wurde leider abgelehnt",
                 "/organisationen/" + anfrage.getAnfragenderOrg().getSlug() + "/anfragen");
 
-        aufgabenEngine.onAnfrageStatusWechsel(gespeichert);
+        aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.ANFRAGE, gespeichert.getId(), gespeichert.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausAnfrageOrgs(gespeichert.getEmpfaengerOrg(), gespeichert.getAnfragenderOrg()));
         return gespeichert;
     }
 

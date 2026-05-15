@@ -1,4 +1,7 @@
-package ch.sponsorplatz.projekt;
+package ch.sponsorplatz.dashboard;
+import ch.sponsorplatz.projekt.ProjektView;
+import ch.sponsorplatz.projekt.ProjektService;
+import ch.sponsorplatz.projekt.MatchingService;
 
 import java.util.List;
 import java.util.Optional;

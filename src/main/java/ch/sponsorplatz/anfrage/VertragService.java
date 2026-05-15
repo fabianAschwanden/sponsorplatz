@@ -125,7 +125,7 @@ public class VertragService {
                         + ", verein=" + gespeichert.getOrgName()
                         + ", erstellt_von=" + erstelltVon);
 
-        aufgabenEngine.onVertragStatusWechsel(gespeichert);
+        aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.VERTRAG, gespeichert.getId(), gespeichert.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausVertragOrgs(gespeichert.getOrg(), gespeichert.getSponsorOrg()));
         return gespeichert;
     }
 
@@ -231,7 +231,7 @@ public class VertragService {
                 gespeichert.getId(), "Vertrag",
                 "unterzeichnet_von=" + unterzeichnetVon);
 
-        aufgabenEngine.onVertragStatusWechsel(gespeichert);
+        aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.VERTRAG, gespeichert.getId(), gespeichert.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausVertragOrgs(gespeichert.getOrg(), gespeichert.getSponsorOrg()));
         return gespeichert;
     }
 
@@ -275,7 +275,7 @@ public class VertragService {
                 gespeichert.getId(), "Vertrag",
                 "grund=" + (grund == null ? "" : grund));
 
-        aufgabenEngine.onVertragStatusWechsel(gespeichert);
+        aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.VERTRAG, gespeichert.getId(), gespeichert.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausVertragOrgs(gespeichert.getOrg(), gespeichert.getSponsorOrg()));
         return gespeichert;
     }
 

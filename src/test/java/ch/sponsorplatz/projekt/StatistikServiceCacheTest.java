@@ -1,4 +1,8 @@
-package ch.sponsorplatz.organisation;
+package ch.sponsorplatz.projekt;
+
+import  ch.sponsorplatz.organisation.Branche;
+
+import ch.sponsorplatz.organisation.OrganisationRepository;
 
 import ch.sponsorplatz.projekt.ProjektRepository;
 import ch.sponsorplatz.projekt.Sichtbarkeit;

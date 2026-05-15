@@ -1,11 +1,10 @@
 package ch.sponsorplatz.aufgabe;
 
-import ch.sponsorplatz.anfrage.Rechnung;
-import ch.sponsorplatz.anfrage.SponsoringAnfrage;
-import ch.sponsorplatz.anfrage.Vertrag;
+import ch.sponsorplatz.organisation.OrgStatusGewechseltEvent;
 import ch.sponsorplatz.organisation.Organisation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,27 +49,28 @@ public class AufgabenEngine {
 
     // ── Public Trigger-API ────────────────────────────────────────────────
 
-    public void onOrgStatusWechsel(Organisation org) {
+    /**
+     * Listener für Org-Status-Wechsel — Spring Event ersetzt den früheren
+     * Direkt-Call aus {@code OrganisationService}, damit ARCH-06 (Feature-Cycles)
+     * eingehalten wird.
+     */
+    @EventListener
+    public void onOrgStatusWechsel(OrgStatusGewechseltEvent event) {
+        Organisation org = event.org();
         if (org == null || org.getStatus() == null) return;
         handle(TriggerEntityTyp.ORG, org.getId(), org.getStatus().name(), AssigneeKontext.ausOrg(org));
     }
 
-    public void onAnfrageStatusWechsel(SponsoringAnfrage anfrage) {
-        if (anfrage == null || anfrage.getStatus() == null) return;
-        handle(TriggerEntityTyp.ANFRAGE, anfrage.getId(), anfrage.getStatus().name(),
-                AssigneeKontext.ausAnfrage(anfrage));
-    }
-
-    public void onVertragStatusWechsel(Vertrag vertrag) {
-        if (vertrag == null || vertrag.getStatus() == null) return;
-        handle(TriggerEntityTyp.VERTRAG, vertrag.getId(), vertrag.getStatus().name(),
-                AssigneeKontext.ausVertrag(vertrag));
-    }
-
-    public void onRechnungStatusWechsel(Rechnung rechnung) {
-        if (rechnung == null || rechnung.getStatus() == null) return;
-        handle(TriggerEntityTyp.RECHNUNG, rechnung.getId(), rechnung.getStatus().name(),
-                AssigneeKontext.ausRechnung(rechnung));
+    /**
+     * Generischer Trigger-Einstieg für höhere Domains (Anfrage, Vertrag,
+     * Rechnung). Die Aufrufer im jeweiligen Service-Paket bauen den
+     * {@link AssigneeKontext} aus ihren Entities selbst — so muss
+     * {@code aufgabe} keine ihrer Klassen importieren (ARCH-06).
+     */
+    public void onStatusWechsel(TriggerEntityTyp typ, java.util.UUID entityId,
+                                String neuerStatus, AssigneeKontext kontext) {
+        if (typ == null || entityId == null || neuerStatus == null) return;
+        handle(typ, entityId, neuerStatus, kontext != null ? kontext : new AssigneeKontext(null, null, null, null));
     }
 
     // ── Engine-Kern ───────────────────────────────────────────────────────

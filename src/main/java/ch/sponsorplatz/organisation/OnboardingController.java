@@ -1,4 +1,4 @@
-package ch.sponsorplatz.benutzer;
+package ch.sponsorplatz.organisation;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -21,11 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import ch.sponsorplatz.organisation.Branche;
-import ch.sponsorplatz.organisation.MitgliedschaftService;
-import ch.sponsorplatz.organisation.OrgTyp;
-import ch.sponsorplatz.organisation.OrganisationFormDto;
-import ch.sponsorplatz.organisation.OrganisationService;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 
 /**

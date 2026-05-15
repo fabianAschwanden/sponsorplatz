@@ -3,7 +3,6 @@ package ch.sponsorplatz.organisation;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.benutzer.AppUserService;
-import ch.sponsorplatz.einladung.EinladungsService;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -25,13 +24,13 @@ public class MitgliederController {
     private final OrganisationService organisationService;
     private final MitgliedschaftService mitgliedschaftService;
     private final AppUserService appUserService;
-    private final EinladungsService einladungsService;
+    private final MitgliedEinladung einladungsService;
     private final AccessControl accessControl;
 
     public MitgliederController(OrganisationService organisationService,
                                 MitgliedschaftService mitgliedschaftService,
                                 AppUserService appUserService,
-                                EinladungsService einladungsService,
+                                MitgliedEinladung einladungsService,
                                 AccessControl accessControl) {
         this.organisationService = organisationService;
         this.mitgliedschaftService = mitgliedschaftService;

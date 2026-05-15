@@ -1,8 +1,5 @@
 package ch.sponsorplatz.aufgabe;
 
-import ch.sponsorplatz.anfrage.Rechnung;
-import ch.sponsorplatz.anfrage.SponsoringAnfrage;
-import ch.sponsorplatz.anfrage.Vertrag;
 import ch.sponsorplatz.organisation.Organisation;
 
 import java.util.Optional;
@@ -12,6 +9,10 @@ import java.util.Optional;
  * {@link AssigneeRegel} potenziell auflösen kann. Wird im jeweiligen
  * Service-Trigger befüllt — die {@link AufgabenEngine} braucht so kein
  * Repository-Lookup, um z.B. {@code vertrag.getSponsorOrg()} zu erreichen.
+ *
+ * <p>Bewusst nur {@link Organisation} als Feldtyp: höhere Domains (Anfrage,
+ * Vertrag, Rechnung) bauen den Kontext aus ihren eigenen Entities selbst —
+ * so muss {@code aufgabe} keine ihrer Klassen kennen (ARCH-06).
  */
 public record AssigneeKontext(
         Organisation vereinSeite,
@@ -24,16 +25,16 @@ public record AssigneeKontext(
         return new AssigneeKontext(org, null, null, null);
     }
 
-    public static AssigneeKontext ausAnfrage(SponsoringAnfrage anfrage) {
-        return new AssigneeKontext(null, null, anfrage.getEmpfaengerOrg(), anfrage.getAnfragenderOrg());
+    public static AssigneeKontext ausAnfrageOrgs(Organisation empfaengerOrg, Organisation anfragenderOrg) {
+        return new AssigneeKontext(null, null, empfaengerOrg, anfragenderOrg);
     }
 
-    public static AssigneeKontext ausVertrag(Vertrag vertrag) {
-        return new AssigneeKontext(vertrag.getOrg(), vertrag.getSponsorOrg(), null, null);
+    public static AssigneeKontext ausVertragOrgs(Organisation vereinOrg, Organisation sponsorOrg) {
+        return new AssigneeKontext(vereinOrg, sponsorOrg, null, null);
     }
 
-    public static AssigneeKontext ausRechnung(Rechnung rechnung) {
-        return new AssigneeKontext(rechnung.getOrg(), null, null, null);
+    public static AssigneeKontext ausRechnungOrg(Organisation vereinOrg) {
+        return new AssigneeKontext(vereinOrg, null, null, null);
     }
 
     /** Wendet die Regel auf den Kontext an. Leeres Optional bedeutet „kein Assignee auflösbar". */

@@ -2,8 +2,6 @@ package ch.sponsorplatz.benutzer;
 import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
-import ch.sponsorplatz.audit.DatenExportService;
-import ch.sponsorplatz.projekt.MedienAssetService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -32,13 +30,13 @@ class EinstellungenControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private DatenExportService datenExportService;
+    private BenutzerDatenExport datenExport;
 
     @MockitoBean
     private AppUserService appUserService;
 
     @MockitoBean
-    private MedienAssetService medienAssetService;
+    private ProfilbildSpeicherung profilbildSpeicherung;
 
     @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
@@ -52,7 +50,7 @@ class EinstellungenControllerTest {
         user.setEmail("max@example.com");
 
         when(appUserService.findeIdNachEmail("max@example.com")).thenReturn(user.getId());
-        when(datenExportService.exportiere(user.getId()))
+        when(datenExport.exportiere(user.getId()))
                 .thenReturn(Map.of("benutzer", Map.of("email", "max@example.com")));
 
         mockMvc.perform(get("/einstellungen/datenexport"))

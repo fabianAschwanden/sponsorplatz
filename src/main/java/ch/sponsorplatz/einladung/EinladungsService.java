@@ -33,7 +33,7 @@ import ch.sponsorplatz.shared.util.TokenGenerator;
  */
 @Service
 @Transactional
-public class EinladungsService {
+public class EinladungsService implements ch.sponsorplatz.organisation.MitgliedEinladung {
 
     private static final long TOKEN_GUELTIG_TAGE = 7;
 
@@ -73,7 +73,8 @@ public class EinladungsService {
      * @throws IllegalArgumentException bei ungültiger E-Mail oder wenn bereits
      *                                  eingeladen
      */
-    public Einladung erstelleEinladung(UUID orgId, String email, Rolle rolle, UUID eingeladenVonId) {
+    @Override
+    public void erstelleEinladung(UUID orgId, String email, Rolle rolle, UUID eingeladenVonId) {
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("E-Mail darf nicht leer sein");
         }
@@ -109,12 +110,10 @@ public class EinladungsService {
         einladung.setEingeladenVon(eingeladenVon);
         einladung.setGueltigBis(Instant.now().plus(TOKEN_GUELTIG_TAGE, ChronoUnit.DAYS));
 
-        Einladung gespeichert = einladungRepository.save(einladung);
+        einladungRepository.save(einladung);
 
         eventPublisher.publishEvent(new EinladungErstelltEvent(
                 token, normalisiert, org.getName(), eingeladenVon.getAnzeigename(), rolle));
-
-        return gespeichert;
     }
 
     /**

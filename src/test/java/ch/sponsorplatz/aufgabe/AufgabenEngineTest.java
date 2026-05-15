@@ -5,6 +5,7 @@ import ch.sponsorplatz.anfrage.SponsoringAnfrage;
 import ch.sponsorplatz.anfrage.Vertrag;
 import ch.sponsorplatz.anfrage.VertragsStatus;
 import ch.sponsorplatz.organisation.OrgStatus;
+import ch.sponsorplatz.organisation.OrgStatusGewechseltEvent;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,7 +60,7 @@ class AufgabenEngineTest {
                 eq(TriggerEntityTyp.ORG), eq("PENDING")))
                 .thenReturn(List.of(def));
 
-        engine.onOrgStatusWechsel(org);
+        engine.onOrgStatusWechsel(new OrgStatusGewechseltEvent(org));
 
         ArgumentCaptor<Aufgabe> cap = ArgumentCaptor.forClass(Aufgabe.class);
         verify(aufgabeRepository).save(cap.capture());
@@ -83,7 +84,7 @@ class AufgabenEngineTest {
                 eq(TriggerEntityTyp.ORG), eq("VERIFIED")))
                 .thenReturn(List.of());
 
-        engine.onOrgStatusWechsel(org);
+        engine.onOrgStatusWechsel(new OrgStatusGewechseltEvent(org));
 
         assertThat(offene.getStatus()).isEqualTo(AufgabenStatus.ERLEDIGT);
         assertThat(offene.getErledigtAm()).isNotNull();
@@ -103,7 +104,7 @@ class AufgabenEngineTest {
                 eq(TriggerEntityTyp.ANFRAGE), eq("ABGELEHNT")))
                 .thenReturn(List.of());
 
-        engine.onAnfrageStatusWechsel(anfrage);
+        engine.onStatusWechsel(TriggerEntityTyp.ANFRAGE, anfrage.getId(), anfrage.getStatus().name(), AssigneeKontext.ausAnfrageOrgs(anfrage.getEmpfaengerOrg(), anfrage.getAnfragenderOrg()));
 
         assertThat(offene.getStatus()).isEqualTo(AufgabenStatus.ENTFALLEN);
         assertThat(offene.getErledigtAm()).isNotNull();
@@ -126,7 +127,7 @@ class AufgabenEngineTest {
                 eq(TriggerEntityTyp.VERTRAG), eq("ENTWURF")))
                 .thenReturn(List.of(defVerein, defSponsor));
 
-        engine.onVertragStatusWechsel(vertrag);
+        engine.onStatusWechsel(TriggerEntityTyp.VERTRAG, vertrag.getId(), vertrag.getStatus().name(), AssigneeKontext.ausVertragOrgs(vertrag.getOrg(), vertrag.getSponsorOrg()));
 
         ArgumentCaptor<Aufgabe> cap = ArgumentCaptor.forClass(Aufgabe.class);
         verify(aufgabeRepository, org.mockito.Mockito.times(2)).save(cap.capture());
@@ -149,7 +150,7 @@ class AufgabenEngineTest {
                 eq(def.getId()), eq(org.getId()), eq(AufgabenStatus.OFFEN)))
                 .thenReturn(true);
 
-        engine.onOrgStatusWechsel(org);
+        engine.onOrgStatusWechsel(new OrgStatusGewechseltEvent(org));
 
         verify(aufgabeRepository, never()).save(any(Aufgabe.class));
     }
@@ -163,7 +164,7 @@ class AufgabenEngineTest {
         when(definitionRepository.findByAktivTrueAndTriggerEntityTypAndTriggerStatus(any(), any()))
                 .thenReturn(List.of());
 
-        engine.onOrgStatusWechsel(org);
+        engine.onOrgStatusWechsel(new OrgStatusGewechseltEvent(org));
 
         verify(aufgabeRepository, never()).save(any(Aufgabe.class));
     }
@@ -180,7 +181,7 @@ class AufgabenEngineTest {
         when(definitionRepository.findByAktivTrueAndTriggerEntityTypAndTriggerStatus(any(), any()))
                 .thenReturn(List.of(def));
 
-        engine.onAnfrageStatusWechsel(anfrage);
+        engine.onStatusWechsel(TriggerEntityTyp.ANFRAGE, anfrage.getId(), anfrage.getStatus().name(), AssigneeKontext.ausAnfrageOrgs(anfrage.getEmpfaengerOrg(), anfrage.getAnfragenderOrg()));
 
         verify(aufgabeRepository, never()).save(any(Aufgabe.class));
     }

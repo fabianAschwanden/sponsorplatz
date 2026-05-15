@@ -118,7 +118,7 @@ public class RechnungService {
                         + ", betrag=" + gespeichert.getBetragChf()
                         + ", erstellt_von=" + erstelltVon);
 
-        aufgabenEngine.onRechnungStatusWechsel(gespeichert);
+        aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.RECHNUNG, gespeichert.getId(), gespeichert.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausRechnungOrg(gespeichert.getOrg()));
         return gespeichert;
     }
 
@@ -171,7 +171,7 @@ public class RechnungService {
                         + ", bezahlt_von=" + bezahltVon
                         + ", quelle=MANUELL");
 
-        aufgabenEngine.onRechnungStatusWechsel(gespeichert);
+        aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.RECHNUNG, gespeichert.getId(), gespeichert.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausRechnungOrg(gespeichert.getOrg()));
         return gespeichert;
     }
 
@@ -200,7 +200,7 @@ public class RechnungService {
                 "rechnungsnummer=" + gespeichert.getRechnungsnummer()
                         + ", quelle=WEBHOOK_DATATRANS");
 
-        aufgabenEngine.onRechnungStatusWechsel(gespeichert);
+        aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.RECHNUNG, gespeichert.getId(), gespeichert.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausRechnungOrg(gespeichert.getOrg()));
     }
 
     /**
@@ -225,7 +225,7 @@ public class RechnungService {
                         + ", vorheriger_status=" + vorher
                         + ", grund=" + (grund == null ? "" : grund));
 
-        aufgabenEngine.onRechnungStatusWechsel(gespeichert);
+        aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.RECHNUNG, gespeichert.getId(), gespeichert.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausRechnungOrg(gespeichert.getOrg()));
         return gespeichert;
     }
 

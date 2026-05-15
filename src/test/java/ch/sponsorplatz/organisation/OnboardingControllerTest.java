@@ -1,4 +1,4 @@
-package ch.sponsorplatz.benutzer;
+package ch.sponsorplatz.organisation;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -26,9 +26,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import ch.sponsorplatz.organisation.MitgliedschaftService;
-import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.organisation.OrganisationService;
+import ch.sponsorplatz.benutzer.AppUser;
+import ch.sponsorplatz.benutzer.AppUserService;
+import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import ch.sponsorplatz.shared.config.SecurityConfig;
 
 /**

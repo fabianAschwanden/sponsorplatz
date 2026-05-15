@@ -1,4 +1,6 @@
-package ch.sponsorplatz.organisation;
+package ch.sponsorplatz.projekt;
+
+import  ch.sponsorplatz.organisation.Branche;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;

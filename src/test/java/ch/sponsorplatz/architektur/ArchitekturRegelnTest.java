@@ -103,11 +103,13 @@ class ArchitekturRegelnTest {
                     "ch.sponsorplatz.backup..",
                     "ch.sponsorplatz.benachrichtigung..",
                     "ch.sponsorplatz.benutzer..",
+                    "ch.sponsorplatz.dashboard..",
                     "ch.sponsorplatz.einladung..",
                     "ch.sponsorplatz.home..",
                     "ch.sponsorplatz.ops..",
                     "ch.sponsorplatz.organisation..",
                     "ch.sponsorplatz.projekt..",
+                    "ch.sponsorplatz.seed..",
                     "ch.sponsorplatz.shared..")
             .because("ARCH-04: @Service-Klassen gehören in einen Feature-Folder oder nach shared/");
 

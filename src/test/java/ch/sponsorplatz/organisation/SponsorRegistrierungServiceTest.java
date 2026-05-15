@@ -1,5 +1,4 @@
 package ch.sponsorplatz.organisation;
-import ch.sponsorplatz.admin.AdminBenachrichtigungService;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.AppUser;
 
@@ -11,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.UUID;
 
@@ -37,14 +37,14 @@ class SponsorRegistrierungServiceTest {
     private MitgliedschaftService mitgliedschaftService;
 
     @Mock
-    private AdminBenachrichtigungService adminBenachrichtigungService;
+    private ApplicationEventPublisher eventPublisher;
 
     private SponsorRegistrierungService service;
 
     @BeforeEach
     void setUp() {
         service = new SponsorRegistrierungService(appUserService, organisationService,
-                mitgliedschaftService, adminBenachrichtigungService);
+                mitgliedschaftService, eventPublisher);
     }
 
     private SponsorRegistrierungFormDto gueltigesFormular() {
@@ -99,8 +99,8 @@ class SponsorRegistrierungServiceTest {
         // Mitgliedschaft als ORG_OWNER
         verify(mitgliedschaftService).fuegeHinzu(eq(org.getId()), eq(user.getId()), eq(Rolle.ORG_OWNER), eq(null));
 
-        // Admins werden über die neue Registrierung benachrichtigt
-        verify(adminBenachrichtigungService).benachrichtigeUeberNeueOrgRegistrierung(org);
+        // Admins werden über die neue Registrierung benachrichtigt — via Spring-Event
+        verify(eventPublisher).publishEvent(new NeueOrgRegistrierungEvent(org));
     }
 
     @Test

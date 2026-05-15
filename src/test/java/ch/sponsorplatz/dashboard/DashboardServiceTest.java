@@ -1,4 +1,6 @@
-package ch.sponsorplatz.projekt;
+package ch.sponsorplatz.dashboard;
+import ch.sponsorplatz.projekt.EventService;
+import ch.sponsorplatz.projekt.ProjektService;
 import ch.sponsorplatz.anfrage.SponsoringAnfrageService;
 
 import ch.sponsorplatz.benutzer.AppUser;
