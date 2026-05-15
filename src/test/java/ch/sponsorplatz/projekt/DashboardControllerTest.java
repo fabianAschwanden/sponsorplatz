@@ -22,9 +22,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserService;
-import ch.sponsorplatz.benutzer.PlatformRolle;
+import ch.sponsorplatz.benutzer.AppUserService.OnboardingSnapshot;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import ch.sponsorplatz.einladung.EinladungsService;
 import ch.sponsorplatz.organisation.MitgliedschaftService;
@@ -63,13 +62,13 @@ class DashboardControllerTest {
      * Simuliert einen User mit mindestens einer Org — damit kein
      * Onboarding-Redirect greift.
      */
-    private void mockUserMitOrg(String email) {
-        AppUser user = new AppUser();
-        user.setId(UUID.randomUUID());
-        user.setEmail(email);
-        when(appUserService.findeNachEmail(email)).thenReturn(Optional.of(user));
-        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId()))
+    private UUID mockUserMitOrg(String email) {
+        UUID userId = UUID.randomUUID();
+        when(appUserService.findeOnboardingSnapshotNachEmail(email))
+                .thenReturn(Optional.of(new OnboardingSnapshot(userId, false, true)));
+        when(mitgliedschaftService.findeOrgIdsVonUser(userId))
                 .thenReturn(List.of(UUID.randomUUID()));
+        return userId;
     }
 
     /** DASH-01: GET /dashboard anonym → Redirect zu /login. */
@@ -86,7 +85,6 @@ class DashboardControllerTest {
     void dashboardEingeloggtIst200() throws Exception {
         mockUserMitOrg("user@test.ch");
         when(dashboardService.ladeDashboardDaten(anyString())).thenReturn(DashboardDaten.leer());
-        when(appUserService.findeNachEmail(anyString())).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/dashboard"))
                 .andExpect(status().isOk())
@@ -100,7 +98,6 @@ class DashboardControllerTest {
         mockUserMitOrg("user2@test.ch");
         when(dashboardService.ladeDashboardDaten(anyString()))
                 .thenReturn(DashboardDaten.von(3, 5, 12, 4, java.util.List.of()));
-        when(appUserService.findeNachEmail(anyString())).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/dashboard"))
                 .andExpect(model().attributeExists(
@@ -128,7 +125,6 @@ class DashboardControllerTest {
         mockUserMitOrg("test@example.ch");
         when(dashboardService.ladeDashboardDaten("test@example.ch"))
                 .thenReturn(DashboardDaten.leer());
-        when(appUserService.findeNachEmail(anyString())).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/dashboard"))
                 .andExpect(status().isOk());
@@ -138,12 +134,10 @@ class DashboardControllerTest {
     @Test
     @WithMockUser("neu@test.ch")
     void ohneOrgRedirectAufOnboarding() throws Exception {
-        AppUser user = new AppUser();
-        user.setId(UUID.randomUUID());
-        user.setEmail("neu@test.ch");
-        user.setOnboardingGesehen(false);
-        when(appUserService.findeNachEmail("neu@test.ch")).thenReturn(Optional.of(user));
-        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId())).thenReturn(List.of());
+        UUID userId = UUID.randomUUID();
+        when(appUserService.findeOnboardingSnapshotNachEmail("neu@test.ch"))
+                .thenReturn(Optional.of(new OnboardingSnapshot(userId, false, false)));
+        when(mitgliedschaftService.findeOrgIdsVonUser(userId)).thenReturn(List.of());
 
         mockMvc.perform(get("/dashboard"))
                 .andExpect(status().is3xxRedirection())
@@ -154,14 +148,11 @@ class DashboardControllerTest {
     @Test
     @WithMockUser("zurueck@test.ch")
     void ohneOrgAberOnboardingGesehenBleibtAufDashboard() throws Exception {
-        AppUser user = new AppUser();
-        user.setId(UUID.randomUUID());
-        user.setEmail("zurueck@test.ch");
-        user.setOnboardingGesehen(true);
-        when(appUserService.findeNachEmail("zurueck@test.ch")).thenReturn(Optional.of(user));
-        when(mitgliedschaftService.findeOrgIdsVonUser(user.getId())).thenReturn(List.of());
+        UUID userId = UUID.randomUUID();
+        when(appUserService.findeOnboardingSnapshotNachEmail("zurueck@test.ch"))
+                .thenReturn(Optional.of(new OnboardingSnapshot(userId, false, true)));
+        when(mitgliedschaftService.findeOrgIdsVonUser(userId)).thenReturn(List.of());
         when(dashboardService.ladeDashboardDaten(anyString())).thenReturn(DashboardDaten.leer());
-        when(appUserService.findeNachEmail(anyString())).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/dashboard"))
                 .andExpect(status().isOk())
@@ -172,15 +163,11 @@ class DashboardControllerTest {
     @Test
     @WithMockUser("admin@test.ch")
     void plattformAdminOhneOrgBleibtAufDashboard() throws Exception {
-        AppUser admin = new AppUser();
-        admin.setId(UUID.randomUUID());
-        admin.setEmail("admin@test.ch");
-        admin.setPlatformRolle(PlatformRolle.PLATFORM_ADMIN);
-        admin.setOnboardingGesehen(false);
-        when(appUserService.findeNachEmail("admin@test.ch")).thenReturn(Optional.of(admin));
-        when(mitgliedschaftService.findeOrgIdsVonUser(admin.getId())).thenReturn(List.of());
+        UUID adminId = UUID.randomUUID();
+        when(appUserService.findeOnboardingSnapshotNachEmail("admin@test.ch"))
+                .thenReturn(Optional.of(new OnboardingSnapshot(adminId, true, false)));
+        when(mitgliedschaftService.findeOrgIdsVonUser(adminId)).thenReturn(List.of());
         when(dashboardService.ladeDashboardDaten(anyString())).thenReturn(DashboardDaten.leer());
-        when(appUserService.findeNachEmail(anyString())).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/dashboard"))
                 .andExpect(status().isOk())

@@ -35,6 +35,11 @@ public class MatchingService {
         this.projektRepository = projektRepository;
     }
 
+    /** View-Variante — Controller braucht keine Entity-Liste (ARCH-02). */
+    public List<ProjektView> findeEmpfehlungenAlsViews(UUID userId) {
+        return findeEmpfehlungen(userId).stream().map(ProjektView::von).toList();
+    }
+
     /**
      * Findet passende öffentliche Projekte für einen User basierend auf den Branchen
      * seiner Organisationen. Eigene Projekte werden ausgeschlossen.

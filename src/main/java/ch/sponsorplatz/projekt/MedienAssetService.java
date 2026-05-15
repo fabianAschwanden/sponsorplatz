@@ -134,6 +134,28 @@ public class MedienAssetService {
                 entityTyp, entityId, AssetTyp.COVER);
     }
 
+    /**
+     * Liefert den Auslieferungs-Pfad des Cover-Assets — Controller braucht
+     * keinen Entity-Zugriff (ARCH-02). Returns {@code Optional.empty()} wenn
+     * keine Cover-Datei vorhanden.
+     */
+    @Transactional(readOnly = true)
+    public Optional<String> findeCoverUrl(EntityTyp entityTyp, UUID entityId) {
+        return findeCover(entityTyp, entityId).map(a -> "/medien/" + a.getId());
+    }
+
+    /** View-Variante von {@link #findeAnhaenge} (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<MedienAssetView> findeAnhaengeViews(EntityTyp entityTyp, UUID entityId) {
+        return MedienAssetView.von(findeAnhaenge(entityTyp, entityId));
+    }
+
+    /** View-Variante von {@link #findeGalerie} (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<MedienAssetView> findeGalerieViews(EntityTyp entityTyp, UUID entityId) {
+        return MedienAssetView.von(findeGalerie(entityTyp, entityId));
+    }
+
     @Transactional(readOnly = true)
     public Optional<MedienAsset> findeNachId(UUID id) {
         return repository.findById(id);

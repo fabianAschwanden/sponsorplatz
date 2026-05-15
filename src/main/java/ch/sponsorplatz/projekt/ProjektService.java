@@ -84,6 +84,24 @@ public class ProjektService {
         return findeOeffentliche().stream().map(Projekt::getSlug).toList();
     }
 
+    /** View-Variante — Controller braucht keine Entity-Liste (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<ProjektView> findeOeffentlicheAlsViews() {
+        return findeOeffentliche().stream().map(ProjektView::von).toList();
+    }
+
+    /** View-Variante — Controller braucht keine Entity-Liste (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<ProjektView> sucheAlsViews(String suchbegriff) {
+        return suche(suchbegriff).stream().map(ProjektView::von).toList();
+    }
+
+    /** View-Variante — Controller braucht keine Entity-Liste (ARCH-02). */
+    @Transactional(readOnly = true)
+    public List<ProjektView> findeNeuesteOeffentlicheAlsViews(int limit) {
+        return findeNeuesteOeffentliche(limit).stream().map(ProjektView::von).toList();
+    }
+
     @Transactional(readOnly = true)
     public List<Projekt> findeOeffentliche() {
         return repository.findBySichtbarkeitOrderByVeroeffentlichtAmDesc(Sichtbarkeit.OEFFENTLICH);

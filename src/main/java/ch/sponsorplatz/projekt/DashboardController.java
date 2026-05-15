@@ -1,6 +1,8 @@
 package ch.sponsorplatz.projekt;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -9,9 +11,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserService;
-import ch.sponsorplatz.benutzer.PlatformRolle;
+import ch.sponsorplatz.benutzer.AppUserService.OnboardingSnapshot;
 import ch.sponsorplatz.einladung.EinladungsService;
 import ch.sponsorplatz.organisation.MitgliedschaftService;
 
@@ -59,12 +60,15 @@ public class DashboardController {
         // - Plattform-Admins werden nie umgeleitet.
         // - User, die das Onboarding bereits gesehen haben, ebenfalls nicht
         //   (auch ohne Org bleiben sie dann auf dem Dashboard).
-        AppUser user = appUserService.findeNachEmail(auth.getName()).orElse(null);
-        if (user != null
-                && user.getPlatformRolle() != PlatformRolle.PLATFORM_ADMIN
-                && !user.isOnboardingGesehen()
-                && mitgliedschaftService.findeOrgIdsVonUser(user.getId()).isEmpty()) {
-            return "redirect:/onboarding";
+        Optional<OnboardingSnapshot> snapshot =
+                appUserService.findeOnboardingSnapshotNachEmail(auth.getName());
+        if (snapshot.isPresent()) {
+            OnboardingSnapshot s = snapshot.get();
+            if (!s.istPlatformAdmin()
+                    && !s.onboardingGesehen()
+                    && mitgliedschaftService.findeOrgIdsVonUser(s.userId()).isEmpty()) {
+                return "redirect:/onboarding";
+            }
         }
 
         DashboardDaten daten = dashboardService.ladeDashboardDaten(auth.getName());
@@ -81,24 +85,20 @@ public class DashboardController {
         // Aktive Projekte der eigenen Orgs — Top-N fürs Dashboard-Grid.
         // Für Org-lose User bleibt die Liste leer (Template versteckt die Sektion).
         List<ProjektView> meineProjekte = List.of();
-        if (user != null) {
-            List<java.util.UUID> orgIds = mitgliedschaftService.findeOrgIdsVonUser(user.getId());
+        if (snapshot.isPresent()) {
+            List<UUID> orgIds = mitgliedschaftService.findeOrgIdsVonUser(snapshot.get().userId());
             if (!orgIds.isEmpty()) {
-                meineProjekte = projektService.findeNachOrgIds(orgIds).stream()
+                meineProjekte = projektService.findeViewsNachOrgIds(orgIds).stream()
                         .limit(MAX_AKTIVE_PROJEKTE_AUF_DASHBOARD)
-                        .map(ProjektView::von)
                         .toList();
             }
         }
         model.addAttribute("meineProjekte", meineProjekte);
 
         // Matching-Empfehlungen
-        List<ProjektView> empfehlungen = appUserService.findeNachEmail(auth.getName())
-                .map(u -> matchingService.findeEmpfehlungen(u.getId()))
-                .orElse(List.of())
-                .stream()
-                .map(ProjektView::von)
-                .toList();
+        List<ProjektView> empfehlungen = snapshot
+                .map(s -> matchingService.findeEmpfehlungenAlsViews(s.userId()))
+                .orElse(List.of());
         model.addAttribute("empfehlungen", empfehlungen);
 
         // Offene Einladungen für die angemeldete E-Mail — frisch registrierte

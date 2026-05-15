@@ -24,8 +24,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import ch.sponsorplatz.organisation.Branche;
-import ch.sponsorplatz.organisation.OrgTyp;
-import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.shared.config.SecurityConfig;
 
 @WebMvcTest(controllers = MarktplatzController.class)
@@ -50,32 +48,25 @@ class MarktplatzControllerTest {
 
     @BeforeEach
     void setUp() {
-        // Default-Stub: findeNeuesteOeffentliche wird im Controller immer aufgerufen
-        when(projektService.findeNeuesteOeffentliche(3)).thenReturn(List.of());
+        when(projektService.findeNeuesteOeffentlicheAlsViews(3)).thenReturn(List.of());
     }
 
-    private Projekt testProjekt() {
-        Organisation org = new Organisation();
-        org.setId(UUID.randomUUID());
-        org.setName("FC Muster");
-        org.setSlug("fc-muster");
-        org.setTyp(OrgTyp.VEREIN);
+    private ProjektView testProjektView() {
+        return testProjektView(UUID.randomUUID(), "Sommerfest", "sommerfest", "Sport", "Zürich", null);
+    }
 
-        Projekt p = new Projekt();
-        p.setId(UUID.randomUUID());
-        p.setOrg(org);
-        p.setName("Sommerfest");
-        p.setSlug("sommerfest");
-        p.setSichtbarkeit(Sichtbarkeit.OEFFENTLICH);
-        p.setKategorie("Sport");
-        p.setOrt("Zürich");
-        return p;
+    private ProjektView testProjektView(UUID id, String name, String slug,
+                                        String kategorie, String ort, Branche branche) {
+        ProjektView.OrganisationKurzView org = new ProjektView.OrganisationKurzView(
+                UUID.randomUUID(), "FC Muster", "fc-muster", branche);
+        return new ProjektView(id, name, slug, Sichtbarkeit.OEFFENTLICH,
+                kategorie, ort, null, null, null, null, org, null);
     }
 
     /** MKT-01: Marktplatz-Seite ist öffentlich erreichbar. */
     @Test
     void marktplatzIstPublic() throws Exception {
-        when(projektService.findeOeffentliche()).thenReturn(List.of());
+        when(projektService.findeOeffentlicheAlsViews()).thenReturn(List.of());
 
         mockMvc.perform(get("/marktplatz"))
                 .andExpect(status().isOk())
@@ -86,8 +77,8 @@ class MarktplatzControllerTest {
     /** MKT-02: Marktplatz zeigt veröffentlichte Projekte. */
     @Test
     void marktplatzZeigtProjekte() throws Exception {
-        Projekt p = testProjekt();
-        when(projektService.findeOeffentliche()).thenReturn(List.of(p));
+        when(projektService.findeOeffentlicheAlsViews())
+                .thenReturn(List.of(testProjektView()));
 
         mockMvc.perform(get("/marktplatz"))
                 .andExpect(status().isOk())
@@ -101,14 +92,12 @@ class MarktplatzControllerTest {
      */
     @Test
     void neuesteProjekteWerdenAusHauptlisteHerausgefiltert() throws Exception {
-        Projekt neu = testProjekt();
-        Projekt alt = testProjekt();
-        alt.setId(UUID.randomUUID());
-        alt.setName("Älteres Projekt");
-        alt.setSlug("aelteres-projekt");
+        ProjektView neu = testProjektView();
+        ProjektView alt = testProjektView(UUID.randomUUID(), "Älteres Projekt",
+                "aelteres-projekt", "Sport", "Zürich", null);
 
-        when(projektService.findeOeffentliche()).thenReturn(java.util.List.of(neu, alt));
-        when(projektService.findeNeuesteOeffentliche(3)).thenReturn(java.util.List.of(neu));
+        when(projektService.findeOeffentlicheAlsViews()).thenReturn(List.of(neu, alt));
+        when(projektService.findeNeuesteOeffentlicheAlsViews(3)).thenReturn(List.of(neu));
 
         org.springframework.test.web.servlet.MvcResult result = mockMvc.perform(get("/marktplatz"))
                 .andExpect(status().isOk())
@@ -121,8 +110,8 @@ class MarktplatzControllerTest {
         java.util.List<ProjektView> neueste = (java.util.List<ProjektView>)
                 result.getModelAndView().getModel().get("neueste");
 
-        assertThat(neueste).extracting(ProjektView::id).containsExactly(neu.getId());
-        assertThat(hauptliste).extracting(ProjektView::id).containsExactly(alt.getId());
+        assertThat(neueste).extracting(ProjektView::id).containsExactly(neu.id());
+        assertThat(hauptliste).extracting(ProjektView::id).containsExactly(alt.id());
     }
 
     /**
@@ -133,9 +122,9 @@ class MarktplatzControllerTest {
      */
     @Test
     void neuesteProjekteNonLeer_aberHauptlisteLeer_keinEmptyState() throws Exception {
-        Projekt einziges = testProjekt();
-        when(projektService.findeOeffentliche()).thenReturn(java.util.List.of(einziges));
-        when(projektService.findeNeuesteOeffentliche(3)).thenReturn(java.util.List.of(einziges));
+        ProjektView einziges = testProjektView();
+        when(projektService.findeOeffentlicheAlsViews()).thenReturn(List.of(einziges));
+        when(projektService.findeNeuesteOeffentlicheAlsViews(3)).thenReturn(List.of(einziges));
 
         org.springframework.test.web.servlet.MvcResult result = mockMvc.perform(get("/marktplatz"))
                 .andExpect(status().isOk())
@@ -151,8 +140,6 @@ class MarktplatzControllerTest {
         assertThat(hauptliste).as("nach Dedup leer").isEmpty();
         assertThat(neueste).as("Preview zeigt das einzige Projekt").hasSize(1);
 
-        // Template-Smoke-Check: Empty-State-Text darf NICHT im gerenderten
-        // HTML stehen, wenn die Neueste-Preview Projekte enthält.
         String html = result.getResponse().getContentAsString();
         assertThat(html)
                 .as("Empty-State darf nicht erscheinen, wenn Neueste-Preview gefüllt ist")
@@ -163,8 +150,7 @@ class MarktplatzControllerTest {
     /** MKT-03: Filter nach Kategorie. */
     @Test
     void filterNachKategorie() throws Exception {
-        Projekt p = testProjekt();
-        when(projektService.findeOeffentliche()).thenReturn(List.of(p));
+        when(projektService.findeOeffentlicheAlsViews()).thenReturn(List.of(testProjektView()));
 
         mockMvc.perform(get("/marktplatz").param("kategorie", "Sport"))
                 .andExpect(status().isOk())
@@ -178,8 +164,7 @@ class MarktplatzControllerTest {
     /** MKT-04: Filter nach Ort. */
     @Test
     void filterNachOrt() throws Exception {
-        Projekt p = testProjekt();
-        when(projektService.findeOeffentliche()).thenReturn(List.of(p));
+        when(projektService.findeOeffentlicheAlsViews()).thenReturn(List.of(testProjektView()));
 
         mockMvc.perform(get("/marktplatz").param("ort", "Zürich"))
                 .andExpect(status().isOk())
@@ -193,8 +178,12 @@ class MarktplatzControllerTest {
     /** MKT-05: Detail-Seite eines Projekts. */
     @Test
     void detailSeite() throws Exception {
-        Projekt p = testProjekt();
-        when(projektService.findeNachSlug("sommerfest")).thenReturn(Optional.of(p));
+        ProjektView view = testProjektView();
+        when(projektService.findeViewNachSlugOderWirf("sommerfest")).thenReturn(view);
+        when(paketService.findeAktiveViewsNachProjekt(view.id())).thenReturn(List.of());
+        when(medienAssetService.findeAnhaengeViews(EntityTyp.PROJEKT, view.id())).thenReturn(List.of());
+        when(medienAssetService.findeGalerieViews(EntityTyp.PROJEKT, view.id())).thenReturn(List.of());
+        when(medienAssetService.findeCoverUrl(EntityTyp.PROJEKT, view.id())).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/marktplatz/sommerfest"))
                 .andExpect(status().isOk())
@@ -208,39 +197,28 @@ class MarktplatzControllerTest {
      */
     @Test
     void detailSeiteMitMedien() throws Exception {
-        Projekt p = testProjekt();
-        when(projektService.findeNachSlug("sommerfest")).thenReturn(Optional.of(p));
+        ProjektView view = testProjektView();
+        UUID coverId = UUID.randomUUID();
+        UUID galerieId = UUID.randomUUID();
+        UUID anhangId = UUID.randomUUID();
 
-        MedienAsset cover = new MedienAsset();
-        cover.setId(UUID.randomUUID());
-        cover.setDateiname("cover.jpg");
-        cover.setContentType("image/jpeg");
-        cover.setAssetTyp(AssetTyp.COVER);
-        when(medienAssetService.findeCover(EntityTyp.PROJEKT, p.getId()))
-                .thenReturn(Optional.of(cover));
-
-        MedienAsset galerieBild = new MedienAsset();
-        galerieBild.setId(UUID.randomUUID());
-        galerieBild.setDateiname("bild-1.jpg");
-        galerieBild.setContentType("image/jpeg");
-        galerieBild.setAssetTyp(AssetTyp.GALERIE);
-        when(medienAssetService.findeGalerie(EntityTyp.PROJEKT, p.getId()))
-                .thenReturn(List.of(galerieBild));
-
-        MedienAsset anhang = new MedienAsset();
-        anhang.setId(UUID.randomUUID());
-        anhang.setDateiname("pitch.pdf");
-        anhang.setContentType("application/pdf");
-        anhang.setAssetTyp(AssetTyp.ANHANG);
-        when(medienAssetService.findeAnhaenge(EntityTyp.PROJEKT, p.getId()))
-                .thenReturn(List.of(anhang));
+        when(projektService.findeViewNachSlugOderWirf("sommerfest")).thenReturn(view);
+        when(paketService.findeAktiveViewsNachProjekt(view.id())).thenReturn(List.of());
+        when(medienAssetService.findeCoverUrl(EntityTyp.PROJEKT, view.id()))
+                .thenReturn(Optional.of("/medien/" + coverId));
+        when(medienAssetService.findeGalerieViews(EntityTyp.PROJEKT, view.id()))
+                .thenReturn(List.of(new MedienAssetView(galerieId, "bild-1.jpg",
+                        "image/jpeg", AssetTyp.GALERIE.name(), "/medien/" + galerieId, 0L)));
+        when(medienAssetService.findeAnhaengeViews(EntityTyp.PROJEKT, view.id()))
+                .thenReturn(List.of(new MedienAssetView(anhangId, "pitch.pdf",
+                        "application/pdf", AssetTyp.ANHANG.name(), "/medien/" + anhangId, 0L)));
 
         ModelAndView mv = mockMvc.perform(get("/marktplatz/sommerfest"))
                 .andExpect(status().isOk())
                 .andReturn().getModelAndView();
 
         ProjektView projektView = (ProjektView) mv.getModel().get("projekt");
-        assertThat(projektView.coverUrl()).isEqualTo("/medien/" + cover.getId());
+        assertThat(projektView.coverUrl()).isEqualTo("/medien/" + coverId);
 
         @SuppressWarnings("unchecked")
         List<MedienAssetView> galerie = (List<MedienAssetView>) mv.getModel().get("galerie");
@@ -258,8 +236,7 @@ class MarktplatzControllerTest {
      */
     @Test
     void volltextSucheMitParameterQ() throws Exception {
-        Projekt p = testProjekt();
-        when(projektService.suche("Sommer")).thenReturn(List.of(p));
+        when(projektService.sucheAlsViews("Sommer")).thenReturn(List.of(testProjektView()));
 
         mockMvc.perform(get("/marktplatz").param("q", "Sommer"))
                 .andExpect(status().isOk())
@@ -270,7 +247,7 @@ class MarktplatzControllerTest {
     /** MKT-07: Leerer Suchbegriff zeigt alle öffentlichen Projekte. */
     @Test
     void leereSucheZeigtAlle() throws Exception {
-        when(projektService.findeOeffentliche()).thenReturn(List.of());
+        when(projektService.findeOeffentlicheAlsViews()).thenReturn(List.of());
 
         mockMvc.perform(get("/marktplatz").param("q", ""))
                 .andExpect(status().isOk())
@@ -279,24 +256,16 @@ class MarktplatzControllerTest {
 
     // -----------------------------------------------------------------
     // Phase 7.1 — Marktplatz-Branche-Filter (Health-Story sichtbar machen)
-    //
-    // TDD-First: Diese Tests sind initial ROT, bis die Controller-Erweiterung
-    // implementiert ist. Erwartete API:
-    // - @RequestParam(required=false) Set<Branche> branche
-    // - Filter-Logik: behält nur Projekte mit org.branche IN branche-Set
-    // - Model-Attribute: "alleBranchen" (= Branche.values()), "filterBranchen"
-    // (= aktive Auswahl als Set, nie null)
     // -----------------------------------------------------------------
 
-    /**
-     * MKT-08: ?branche=SPORT reduziert die Liste auf Projekte mit
-     * org.branche=SPORT.
-     */
+    /** MKT-08: ?branche=SPORT reduziert die Liste auf Projekte mit org.branche=SPORT. */
     @Test
     void filterNachBranche() throws Exception {
-        Projekt sport = testProjektMitBranche(Branche.SPORT, "Sportverein", "sport-sommerfest");
-        Projekt reha = testProjektMitBranche(Branche.REHA, "Reha-Zentrum", "reha-bewegungstag");
-        when(projektService.findeOeffentliche()).thenReturn(List.of(sport, reha));
+        ProjektView sport = testProjektView(UUID.randomUUID(), "Sportverein",
+                "sport-sommerfest", null, null, Branche.SPORT);
+        ProjektView reha = testProjektView(UUID.randomUUID(), "Reha-Zentrum",
+                "reha-bewegungstag", null, null, Branche.REHA);
+        when(projektService.findeOeffentlicheAlsViews()).thenReturn(List.of(sport, reha));
 
         mockMvc.perform(get("/marktplatz").param("branche", "SPORT"))
                 .andExpect(status().isOk())
@@ -320,15 +289,14 @@ class MarktplatzControllerTest {
                 });
     }
 
-    /**
-     * MKT-09: Ohne branche-Param → Liste unverändert; Model exposed alleBranchen +
-     * leeres filterBranchen.
-     */
+    /** MKT-09: Ohne branche-Param → Liste unverändert; Model exposed alleBranchen + leeres filterBranchen. */
     @Test
     void ohneBrancheZeigtAlleBranchen() throws Exception {
-        Projekt sport = testProjektMitBranche(Branche.SPORT, "Sportverein", "sport");
-        Projekt reha = testProjektMitBranche(Branche.REHA, "Reha", "reha");
-        when(projektService.findeOeffentliche()).thenReturn(List.of(sport, reha));
+        ProjektView sport = testProjektView(UUID.randomUUID(), "Sportverein", "sport",
+                null, null, Branche.SPORT);
+        ProjektView reha = testProjektView(UUID.randomUUID(), "Reha", "reha",
+                null, null, Branche.REHA);
+        when(projektService.findeOeffentlicheAlsViews()).thenReturn(List.of(sport, reha));
 
         mockMvc.perform(get("/marktplatz"))
                 .andExpect(status().isOk())
@@ -358,16 +326,16 @@ class MarktplatzControllerTest {
                 });
     }
 
-    /**
-     * MKT-10: Multi-Select branche=SPORT&branche=REHA — beide aktiv, beide Projekte
-     * erscheinen, State im Modell.
-     */
+    /** MKT-10: Multi-Select branche=SPORT&branche=REHA — beide aktiv, beide Projekte. */
     @Test
     void multiSelectFilterUndStatePersistenz() throws Exception {
-        Projekt sport = testProjektMitBranche(Branche.SPORT, "Sportverein", "sport");
-        Projekt reha = testProjektMitBranche(Branche.REHA, "Reha-Zentrum", "reha");
-        Projekt mental = testProjektMitBranche(Branche.MENTAL_HEALTH, "Mental Health", "mental");
-        when(projektService.findeOeffentliche()).thenReturn(List.of(sport, reha, mental));
+        ProjektView sport = testProjektView(UUID.randomUUID(), "Sportverein", "sport",
+                null, null, Branche.SPORT);
+        ProjektView reha = testProjektView(UUID.randomUUID(), "Reha-Zentrum", "reha",
+                null, null, Branche.REHA);
+        ProjektView mental = testProjektView(UUID.randomUUID(), "Mental Health", "mental",
+                null, null, Branche.MENTAL_HEALTH);
+        when(projektService.findeOeffentlicheAlsViews()).thenReturn(List.of(sport, reha, mental));
 
         mockMvc.perform(get("/marktplatz")
                 .param("branche", "SPORT")
@@ -393,14 +361,12 @@ class MarktplatzControllerTest {
                 });
     }
 
-    /**
-     * MKT-11: Ungefilterte Startseite enthält „neueste" Attribut mit max. 3 Projekten.
-     */
+    /** MKT-11: Ungefilterte Startseite enthält „neueste" Attribut mit max. 3 Projekten. */
     @Test
     void startseitenPreviewZeigtNeueste() throws Exception {
-        Projekt p = testProjekt();
-        when(projektService.findeOeffentliche()).thenReturn(List.of(p));
-        when(projektService.findeNeuesteOeffentliche(3)).thenReturn(List.of(p));
+        ProjektView p = testProjektView();
+        when(projektService.findeOeffentlicheAlsViews()).thenReturn(List.of(p));
+        when(projektService.findeNeuesteOeffentlicheAlsViews(3)).thenReturn(List.of(p));
 
         mockMvc.perform(get("/marktplatz"))
                 .andExpect(status().isOk())
@@ -415,12 +381,10 @@ class MarktplatzControllerTest {
                 });
     }
 
-    /**
-     * MKT-12: Gefilterte Ansicht (z.B. ?q=xyz) zeigt KEINE Preview-Sektion.
-     */
+    /** MKT-12: Gefilterte Ansicht (z.B. ?q=xyz) zeigt KEINE Preview-Sektion. */
     @Test
     void gefilterteAnsichtOhnePreview() throws Exception {
-        when(projektService.suche("Test")).thenReturn(List.of());
+        when(projektService.sucheAlsViews("Test")).thenReturn(List.of());
 
         mockMvc.perform(get("/marktplatz").param("q", "Test"))
                 .andExpect(status().isOk())
@@ -431,26 +395,5 @@ class MarktplatzControllerTest {
                     List<ProjektView> neueste = (List<ProjektView>) mv.getModel().get("neueste");
                     assertThat(neueste).isEmpty();
                 });
-    }
-
-    /**
-     * Helper für Branche-Filter-Tests: erzeugt ein öffentliches Projekt
-     * mit Org einer bestimmten Health-Branche.
-     */
-    private Projekt testProjektMitBranche(Branche branche, String name, String slug) {
-        Organisation org = new Organisation();
-        org.setId(UUID.randomUUID());
-        org.setName("FC " + name);
-        org.setSlug("fc-" + slug);
-        org.setTyp(OrgTyp.VEREIN);
-        org.setBranche(branche);
-
-        Projekt p = new Projekt();
-        p.setId(UUID.randomUUID());
-        p.setOrg(org);
-        p.setName(name);
-        p.setSlug(slug);
-        p.setSichtbarkeit(Sichtbarkeit.OEFFENTLICH);
-        return p;
     }
 }

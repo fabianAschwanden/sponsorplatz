@@ -30,6 +30,13 @@ import org.testcontainers.utility.DockerImageName;
 @Import(E2EPlaywrightConfig.class)
 public class E2ESpringConfig {
 
+    /**
+     * Lifecycle wird vom Testcontainers-JUnit5-Extension via {@code @Testcontainers}
+     * verwaltet — der Container wird vor dem ersten Test gestartet und im JVM-
+     * Shutdown geschlossen. Eclipse-Resource-Tracker sieht diese Annotation
+     * nicht und meldet daher fälschlich einen Leak.
+     */
+    @SuppressWarnings("resource")
     @Container
     @ServiceConnection
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(

@@ -2,7 +2,6 @@ package ch.sponsorplatz.projekt;
 
 import ch.sponsorplatz.organisation.Branche;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.shared.exception.NotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,27 +36,23 @@ public class MarktplatzController {
                         @RequestParam(required = false) String q,
                         @RequestParam(required = false) Set<Branche> branche,
                         Model model) {
-        List<Projekt> projekte;
-
-        if (q != null && !q.isBlank()) {
-            projekte = projektService.suche(q);
-        } else {
-            projekte = projektService.findeOeffentliche();
-        }
+        List<ProjektView> projekte = (q != null && !q.isBlank())
+                ? projektService.sucheAlsViews(q)
+                : projektService.findeOeffentlicheAlsViews();
 
         if (kategorie != null && !kategorie.isBlank()) {
             projekte = projekte.stream()
-                    .filter(p -> kategorie.equalsIgnoreCase(p.getKategorie()))
+                    .filter(p -> kategorie.equalsIgnoreCase(p.kategorie()))
                     .toList();
         }
         if (ort != null && !ort.isBlank()) {
             projekte = projekte.stream()
-                    .filter(p -> ort.equalsIgnoreCase(p.getOrt()))
+                    .filter(p -> ort.equalsIgnoreCase(p.ort()))
                     .toList();
         }
         if (branche != null && !branche.isEmpty()) {
             projekte = projekte.stream()
-                    .filter(p -> p.getOrg() != null && branche.contains(p.getOrg().getBranche()))
+                    .filter(p -> p.org() != null && branche.contains(p.org().branche()))
                     .toList();
         }
 
@@ -78,12 +73,12 @@ public class MarktplatzController {
 
         Set<UUID> neuesteIds = Set.of();
         if (!istGefiltertOderGesucht) {
-            List<Projekt> neuesteEntities = projektService.findeNeuesteOeffentliche(3);
-            neuesteIds = neuesteEntities.stream()
-                    .map(Projekt::getId)
+            List<ProjektView> neuesteViews = projektService.findeNeuesteOeffentlicheAlsViews(3);
+            neuesteIds = neuesteViews.stream()
+                    .map(ProjektView::id)
                     .collect(Collectors.toUnmodifiableSet());
-            model.addAttribute("neueste", neuesteEntities.stream()
-                    .map(this::toViewMitCover)
+            model.addAttribute("neueste", neuesteViews.stream()
+                    .map(this::mitCover)
                     .toList());
         } else {
             model.addAttribute("neueste", List.of());
@@ -91,40 +86,31 @@ public class MarktplatzController {
 
         Set<UUID> idsZumAusblenden = neuesteIds;
         model.addAttribute("projekte", projekte.stream()
-                .filter(p -> !idsZumAusblenden.contains(p.getId()))
-                .map(this::toViewMitCover)
+                .filter(p -> !idsZumAusblenden.contains(p.id()))
+                .map(this::mitCover)
                 .toList());
 
         return "marktplatz";
     }
 
-    /** Holt das Cover-Asset des Projekts (falls vorhanden) und baut die ProjektView. */
-    private ProjektView toViewMitCover(Projekt p) {
-        String coverUrl = medienAssetService.findeCover(EntityTyp.PROJEKT, p.getId())
-                .map(a -> "/medien/" + a.getId())
-                .orElse(null);
-        return ProjektView.von(p, coverUrl);
+    /** Holt das Cover-Asset des Projekts (falls vorhanden) und reichert die ProjektView an. */
+    private ProjektView mitCover(ProjektView view) {
+        String coverUrl = medienAssetService.findeCoverUrl(EntityTyp.PROJEKT, view.id()).orElse(null);
+        return view.mitCoverUrl(coverUrl);
     }
 
     @GetMapping("/{slug}")
     public String detail(@PathVariable String slug, Model model) {
-        Projekt projekt = projektService.findeNachSlug(slug)
-                .orElseThrow(() -> new NotFoundException("Projekt nicht gefunden: " + slug));
-        List<SponsoringPaketView> pakete = SponsoringPaketView.von(
-                paketService.findeAktiveNachProjekt(projekt.getId()));
-        List<MedienAssetView> anhaenge = MedienAssetView.von(
-                medienAssetService.findeAnhaenge(EntityTyp.PROJEKT, projekt.getId()));
-        List<MedienAssetView> galerie = MedienAssetView.von(
-                medienAssetService.findeGalerie(EntityTyp.PROJEKT, projekt.getId()));
-        String coverUrl = medienAssetService.findeCover(EntityTyp.PROJEKT, projekt.getId())
-                .map(a -> "/medien/" + a.getId())
-                .orElse(null);
+        ProjektView projekt = projektService.findeViewNachSlugOderWirf(slug);
+        List<SponsoringPaketView> pakete = paketService.findeAktiveViewsNachProjekt(projekt.id());
+        List<MedienAssetView> anhaenge = medienAssetService.findeAnhaengeViews(EntityTyp.PROJEKT, projekt.id());
+        List<MedienAssetView> galerie = medienAssetService.findeGalerieViews(EntityTyp.PROJEKT, projekt.id());
+        String coverUrl = medienAssetService.findeCoverUrl(EntityTyp.PROJEKT, projekt.id()).orElse(null);
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "marktplatz");
-        model.addAttribute("projekt", ProjektView.von(projekt, coverUrl));
+        model.addAttribute("projekt", projekt.mitCoverUrl(coverUrl));
         model.addAttribute("pakete", pakete);
         model.addAttribute("anhaenge", anhaenge);
         model.addAttribute("galerie", galerie);
         return "marktplatz-detail";
     }
 }
-
