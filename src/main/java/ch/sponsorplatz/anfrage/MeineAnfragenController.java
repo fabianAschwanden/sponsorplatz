@@ -343,7 +343,7 @@ public class MeineAnfragenController {
         AppUser user = appUserService.findeNachEmail(auth.getName())
                 .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
         return mitgliedschaftService
-                .findByUserIdAndRolleInMitOrg(user.getId(), EDIT_ROLLEN)
+                .findeMitgliedschaftenVonUser(user.getId(), EDIT_ROLLEN)
                 .stream()
                 .map(Mitgliedschaft::getOrg)
                 .filter(o -> o.getTyp() == OrgTyp.VEREIN)
