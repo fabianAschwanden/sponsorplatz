@@ -14,40 +14,48 @@
 
     <main class="dash-main">
         <header class="dash-topbar" style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
-            <div style="display:flex; align-items:center; gap:1rem;">
-                <h1 style="font-size:1.3rem; margin:0;">Anfragen</h1>
-                <span class="dash-period-text" th:if="${anzahlOffene > 0}"
-                      th:text="#{meineAnfragen.offenSuffix(${anzahlOffene})}"
-                      style="color:var(--dash-coral, #ef4444); font-weight:600;"></span>
+            <div>
+                <p class="dash-page-rubrik">Übersicht</p>
+                <h1 class="dash-page-title" style="display:flex; align-items:center; gap:0.75rem;">
+                    <span>Anfragen</span>
+                    <span th:if="${anzahlOffene > 0}"
+                          class="anf-badge anf-badge-neu"
+                          th:text="#{meineAnfragen.offenSuffix(${anzahlOffene})}">3 neu</span>
+                </h1>
             </div>
             <a th:if="${kannKontaktanfrageStellen}"
                th:href="@{/anfragen/neu-kontakt}"
-               class="app-btn"
-               style="font-size:0.85rem; padding:0.5rem 1rem;">+ Sponsor anfragen</a>
+               class="app-btn">+ Sponsor anfragen</a>
         </header>
 
         <div th:if="${erfolgsMeldung}" class="alert success" th:text="${erfolgsMeldung}"
              style="margin-top:1rem;"></div>
 
         <!-- ===================== EINGEHENDE ===================== -->
-        <section style="margin-top:1.5rem;">
-            <h2 style="font-size:1rem; font-weight:600; color:#374151; margin:0 0 0.75rem;">
-                <span th:text="#{meineAnfragen.titel}">Eingehende Anfragen</span>
-            </h2>
+        <section class="anf-section">
+            <header class="anf-section-head">
+                <h2 class="anf-section-title">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                    </svg>
+                    <span th:text="#{meineAnfragen.titel}">Eingehende Anfragen</span>
+                </h2>
+                <span class="anf-section-count" th:text="${anfragen.size()}">0</span>
+            </header>
 
-            <div th:if="${anfragen.isEmpty()}" class="empty-state" style="text-align:center; padding:2rem 1rem; background:#f9fafb; border-radius:0.5rem;">
-                <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.3; margin-bottom:0.75rem;">
+            <div th:if="${anfragen.isEmpty()}" class="anf-empty">
+                <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
                 </svg>
-                <p style="color:#6b7280; margin:0;" th:text="#{meineAnfragen.empty}">Noch keine Anfragen erhalten…</p>
+                <p th:text="#{meineAnfragen.empty}">Noch keine Anfragen erhalten…</p>
             </div>
 
-            <div th:unless="${anfragen.isEmpty()}" class="anfragen-liste" style="display:flex; flex-direction:column; gap:1rem;">
-                <div th:each="a : ${anfragen}" class="card" style="padding:1.25rem; border-radius:0.75rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+            <div th:unless="${anfragen.isEmpty()}" class="anf-liste">
+                <article th:each="a : ${anfragen}" class="anf-item">
+                    <div class="anf-item-head">
                         <div>
                             <strong th:text="${a.kontaktName ?: #messages.msg('meineAnfragen.unbekannt')}">Name</strong>
-                            <span th:if="${a.anfragenderOrgName}" style="color:#6b7280; font-size:0.85rem;">
+                            <span th:if="${a.anfragenderOrgName}" class="anf-item-sub">
                                 · <span th:text="${a.anfragenderOrgName}">Org</span>
                             </span>
                         </div>
@@ -56,11 +64,11 @@
                               th:text="#{'status.anfrage.' + ${a.status.name()}}">NEU</span>
                     </div>
 
-                    <p style="font-size:0.85rem; color:#6b7280; margin:0.25rem 0;">
+                    <p class="anf-item-meta">
                         <span th:if="${a.empfaengerOrgName}">
                             <span th:text="#{meineAnfragen.anLabel}">An:</span>
                             <a th:href="@{'/organisationen/' + ${a.empfaengerOrgSlug} + '/anfragen'}"
-                               th:text="${a.empfaengerOrgName}" style="color:var(--dash-violet, #7c3aed);">Org</a> ·
+                               th:text="${a.empfaengerOrgName}" class="anf-link">Org</a> ·
                         </span>
                         <span th:if="${a.istPaketAnfrage()}">
                             <span th:text="#{meineAnfragen.paketLabel}">Paket:</span>
@@ -70,7 +78,6 @@
                             Kontakt-Anfrage: <strong th:text="${a.betreff ?: '–'}">Betreff</strong>
                         </span>
                         <span th:if="${a.kontaktEmail}"> · <span th:text="${a.kontaktEmail}">email</span></span>
-                        <!-- Wunsch-Betrag bei Kontakt-Anfragen, Paket-Preis bei Paket-Anfragen -->
                         <span th:if="${a.istPaketAnfrage() and a.paketPreisChf != null}"> ·
                             <strong th:text="'CHF ' + ${#numbers.formatDecimal(a.paketPreisChf, 0, 'POINT', 2, 'POINT')}">CHF 5'000.00</strong>
                         </span>
@@ -80,71 +87,70 @@
                         </span>
                     </p>
 
-                    <p th:text="${a.nachricht}" style="margin:0.5rem 0;">Nachricht</p>
+                    <p th:text="${a.nachricht}" class="anf-item-nachricht">Nachricht</p>
 
-                    <div th:if="${a.antwort}" style="background:#f9fafb; padding:0.75rem; border-radius:0.5rem; margin-top:0.5rem;">
-                        <strong style="font-size:0.85rem;" th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
+                    <div th:if="${a.antwort}" class="anf-antwort">
+                        <strong th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
                         <span th:text="${a.antwort}">Antwort</span>
                     </div>
 
                     <!-- Aktionen bei ANGENOMMEN (nur Paket-Anfragen → Vertrag) -->
-                    <div th:if="${a.status.name() == 'ANGENOMMEN' and a.istPaketAnfrage()}"
-                         style="margin-top:0.75rem; display:flex; gap:0.5rem;">
+                    <div th:if="${a.status.name() == 'ANGENOMMEN' and a.istPaketAnfrage()}" class="anf-aktionen">
                         <a th:href="@{'/organisationen/' + ${a.empfaengerOrgSlug} + '/anfragen/' + ${a.id} + '/nachrichten'}"
-                           class="btn btn-primary" style="font-size:0.85rem;"
+                           class="btn btn-primary anf-action-btn"
                            th:text="#{meineAnfragen.konversation}">Konversation öffnen</a>
                         <form th:action="@{'/organisationen/' + ${a.empfaengerOrgSlug} + '/anfragen/' + ${a.id} + '/vertrag/erstellen'}"
                               method="post" style="display:inline;">
-                            <button type="submit" class="btn" style="font-size:0.85rem;"
+                            <button type="submit" class="btn anf-action-btn"
                                     th:text="#{meineAnfragen.vertragErstellen}">Vertrag erstellen</button>
                         </form>
                     </div>
 
                     <!-- Aktionen bei NEU -->
-                    <div th:if="${a.status.name() == 'NEU'}" style="margin-top:0.75rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
-                        <form th:action="@{'/anfragen/' + ${a.id} + '/annehmen'}" method="post" style="display:flex; gap:0.25rem;">
+                    <div th:if="${a.status.name() == 'NEU'}" class="anf-aktionen">
+                        <form th:action="@{'/anfragen/' + ${a.id} + '/annehmen'}" method="post" class="anf-aktions-form">
                             <input type="text" name="antwort" th:placeholder="#{meineAnfragen.antwortPlaceholder}"
-                                   placeholder="Antwort (optional)"
-                                   style="font-size:0.85rem; padding:0.4rem 0.5rem; border:1px solid #d1d5db; border-radius:0.375rem;">
-                            <button type="submit" class="btn btn-success" style="font-size:0.85rem;"
+                                   placeholder="Antwort (optional)" class="anf-aktions-input">
+                            <button type="submit" class="btn btn-success anf-action-btn"
                                     th:text="#{meineAnfragen.annehmen}">Annehmen</button>
                         </form>
-                        <form th:action="@{'/anfragen/' + ${a.id} + '/ablehnen'}" method="post" style="display:flex; gap:0.25rem;">
+                        <form th:action="@{'/anfragen/' + ${a.id} + '/ablehnen'}" method="post" class="anf-aktions-form">
                             <input type="text" name="antwort" th:placeholder="#{meineAnfragen.begruendungPlaceholder}"
-                                   placeholder="Begründung (optional)"
-                                   style="font-size:0.85rem; padding:0.4rem 0.5rem; border:1px solid #d1d5db; border-radius:0.375rem;">
-                            <button type="submit" class="btn btn-danger" style="font-size:0.85rem;"
+                                   placeholder="Begründung (optional)" class="anf-aktions-input">
+                            <button type="submit" class="btn btn-danger anf-action-btn"
                                     th:text="#{meineAnfragen.ablehnen}">Ablehnen</button>
                         </form>
                     </div>
-                </div>
+                </article>
             </div>
         </section>
 
         <!-- ===================== MEINE AUSGEHENDEN (selbst gestellt) ===================== -->
-        <section th:if="${kannKontaktanfrageStellen}" style="margin-top:2rem;">
-            <h2 style="font-size:1rem; font-weight:600; color:#374151; margin:0 0 0.75rem;"
-                th:text="#{meineAnfragen.meineAusgehend.titel}">
-                Meine ausgehenden Anfragen
-            </h2>
+        <section th:if="${kannKontaktanfrageStellen}" class="anf-section">
+            <header class="anf-section-head">
+                <h2 class="anf-section-title">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 2L11 13"/>
+                        <path d="M22 2l-7 20-4-9-9-4z"/>
+                    </svg>
+                    <span th:text="#{meineAnfragen.meineAusgehend.titel}">Meine ausgehenden Anfragen</span>
+                </h2>
+                <span class="anf-section-count" th:text="${meineAusgehendeAnfragen.size()}">0</span>
+            </header>
 
-            <div th:if="${meineAusgehendeAnfragen.isEmpty()}" class="empty-state"
-                 style="text-align:center; padding:1.5rem 1rem; background:#f9fafb; border-radius:0.5rem;">
-                <p style="color:#6b7280; margin:0; font-size:0.9rem;"
-                   th:text="#{meineAnfragen.meineAusgehend.empty}">
+            <div th:if="${meineAusgehendeAnfragen.isEmpty()}" class="anf-empty anf-empty-small">
+                <p th:text="#{meineAnfragen.meineAusgehend.empty}">
                     Sie haben selbst noch keine Anfragen gestellt.
                 </p>
             </div>
 
-            <div th:unless="${meineAusgehendeAnfragen.isEmpty()}"
-                 style="display:flex; flex-direction:column; gap:0.75rem;">
-                <div th:each="a : ${meineAusgehendeAnfragen}" class="card"
-                     style="padding:1rem 1.25rem; border-radius:0.75rem; border-left:3px solid var(--dash-violet, #7c3aed);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                        <div style="font-size:0.9rem;">
-                            <span style="color:#6b7280;" th:text="#{meineAnfragen.anLabel}">An:</span>
+            <div th:unless="${meineAusgehendeAnfragen.isEmpty()}" class="anf-liste anf-liste-kompakt">
+                <article th:each="a : ${meineAusgehendeAnfragen}" class="anf-item anf-item-ausgehend">
+                    <div class="anf-item-head">
+                        <div class="anf-item-sub">
+                            <span class="anf-label" th:text="#{meineAnfragen.anLabel}">An:</span>
                             <strong th:text="${a.empfaengerOrgName}">Sponsor</strong>
-                            <span th:if="${a.anfragenderOrgName}" style="color:#6b7280; font-size:0.85rem;">
+                            <span th:if="${a.anfragenderOrgName}" class="anf-item-sub">
                                 · <span th:text="#{meineAnfragen.vonOrgLabel}">von</span>
                                 <span th:text="${a.anfragenderOrgName}">Verein</span>
                             </span>
@@ -153,53 +159,58 @@
                               th:classappend="'badge-' + ${a.status.name().toLowerCase()}"
                               th:text="#{'status.anfrage.' + ${a.status.name()}}">NEU</span>
                     </div>
-                    <div style="font-size:0.85rem; color:#374151; margin-bottom:0.3rem;">
+                    <div class="anf-item-titel">
                         <strong th:text="${a.anzeigeTitel()}">Betreff</strong>
-                        <span th:if="${a.wunschBetragChf != null}" style="margin-left:0.5rem; color:#6b7280; font-weight:normal;">
+                        <span th:if="${a.wunschBetragChf != null}" class="anf-item-sub">
                             · <span th:text="#{meineAnfragen.wunschBetragLabel}">Wunsch-Betrag:</span>
                             <strong th:text="'CHF ' + ${#numbers.formatDecimal(a.wunschBetragChf, 0, 'POINT', 2, 'POINT')}">CHF 5'000.00</strong>
                         </span>
                     </div>
-                    <p th:text="${a.nachricht}" style="margin:0.25rem 0; font-size:0.9rem; color:#4b5563; white-space:pre-line;">Nachricht</p>
-                    <div th:if="${a.antwort}" style="background:#f9fafb; padding:0.6rem 0.75rem; border-radius:0.5rem; margin-top:0.5rem; font-size:0.85rem;">
+                    <p th:text="${a.nachricht}" class="anf-item-nachricht anf-item-nachricht-kompakt">Nachricht</p>
+                    <div th:if="${a.antwort}" class="anf-antwort anf-antwort-kompakt">
                         <strong th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
                         <span th:text="${a.antwort}">Antwort</span>
                     </div>
-                    <!-- Vertrag-Pfad fuer Kontakt-Anfragen: nach Sponsor-Annahme
-                         erstellt der Verein-Owner den Vertrag. Slug ist der
-                         Verein-Slug (anfragenderOrgSlug bei Kontakt-Anfrage). -->
-                    <div th:if="${a.status.name() == 'ANGENOMMEN' and !a.istPaketAnfrage()}"
-                         style="margin-top:0.75rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <div th:if="${a.status.name() == 'ANGENOMMEN' and !a.istPaketAnfrage()}" class="anf-aktionen">
                         <form th:action="@{'/organisationen/' + ${a.vereinSlug()} + '/anfragen/' + ${a.id} + '/vertrag/erstellen'}"
                               method="post" style="display:inline;">
-                            <button type="submit" class="btn" style="font-size:0.85rem;"
+                            <button type="submit" class="btn anf-action-btn"
                                     th:text="#{meineAnfragen.vertragErstellen}">Vertrag erstellen</button>
                         </form>
                     </div>
-                </div>
+                </article>
             </div>
         </section>
 
         <!-- ===================== ORG-AUSGEHENDE (von der Org, nicht von mir) ===================== -->
-        <section th:if="${kannKontaktanfrageStellen and !orgAusgehendeAnfragen.isEmpty()}"
-                 style="margin-top:2rem;">
-            <h2 style="font-size:1rem; font-weight:600; color:#374151; margin:0 0 0.75rem;">
-                <span th:text="#{meineAnfragen.orgAusgehend.titelPrefix}">Ausgehende Anfragen zu</span>
-                <span th:text="${#strings.listJoin(meineOrgNamen, ', ')}">Mein Verein</span>
-            </h2>
+        <section th:if="${kannKontaktanfrageStellen and !orgAusgehendeAnfragen.isEmpty()}" class="anf-section">
+            <header class="anf-section-head">
+                <h2 class="anf-section-title">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="7" r="3"/>
+                        <circle cx="17" cy="9" r="2.5"/>
+                        <path d="M3 20c0-3 2.5-5 6-5s6 2 6 5"/>
+                        <path d="M14 20c0-2 1.5-4 4-4s3 1 3 3"/>
+                    </svg>
+                    <span>
+                        <span th:text="#{meineAnfragen.orgAusgehend.titelPrefix}">Ausgehende Anfragen zu</span>
+                        <span th:text="${#strings.listJoin(meineOrgNamen, ', ')}">Mein Verein</span>
+                    </span>
+                </h2>
+                <span class="anf-section-count" th:text="${orgAusgehendeAnfragen.size()}">0</span>
+            </header>
 
-            <div style="display:flex; flex-direction:column; gap:0.75rem;">
-                <div th:each="a : ${orgAusgehendeAnfragen}" class="card"
-                     style="padding:1rem 1.25rem; border-radius:0.75rem; border-left:3px solid #94a3b8;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                        <div style="font-size:0.9rem;">
-                            <span style="color:#6b7280;" th:text="#{meineAnfragen.anLabel}">An:</span>
+            <div class="anf-liste anf-liste-kompakt">
+                <article th:each="a : ${orgAusgehendeAnfragen}" class="anf-item anf-item-org">
+                    <div class="anf-item-head">
+                        <div class="anf-item-sub">
+                            <span class="anf-label" th:text="#{meineAnfragen.anLabel}">An:</span>
                             <strong th:text="${a.empfaengerOrgName}">Sponsor</strong>
-                            <span th:if="${a.anfragenderOrgName}" style="color:#6b7280; font-size:0.85rem;">
+                            <span th:if="${a.anfragenderOrgName}" class="anf-item-sub">
                                 · <span th:text="#{meineAnfragen.vonOrgLabel}">von</span>
                                 <span th:text="${a.anfragenderOrgName}">Verein</span>
                             </span>
-                            <span th:if="${a.kontaktName}" style="color:#6b7280; font-size:0.85rem;">
+                            <span th:if="${a.kontaktName}" class="anf-item-sub">
                                 · <span th:text="#{meineAnfragen.gestelltVon}">gestellt von</span>
                                 <span th:text="${a.kontaktName}">Kollege</span>
                             </span>
@@ -208,31 +219,215 @@
                               th:classappend="'badge-' + ${a.status.name().toLowerCase()}"
                               th:text="#{'status.anfrage.' + ${a.status.name()}}">NEU</span>
                     </div>
-                    <div style="font-size:0.85rem; color:#374151; margin-bottom:0.3rem;">
+                    <div class="anf-item-titel">
                         <strong th:text="${a.anzeigeTitel()}">Betreff</strong>
-                        <span th:if="${a.wunschBetragChf != null}" style="margin-left:0.5rem; color:#6b7280; font-weight:normal;">
+                        <span th:if="${a.wunschBetragChf != null}" class="anf-item-sub">
                             · <span th:text="#{meineAnfragen.wunschBetragLabel}">Wunsch-Betrag:</span>
                             <strong th:text="'CHF ' + ${#numbers.formatDecimal(a.wunschBetragChf, 0, 'POINT', 2, 'POINT')}">CHF 5'000.00</strong>
                         </span>
                     </div>
-                    <p th:text="${a.nachricht}" style="margin:0.25rem 0; font-size:0.9rem; color:#4b5563; white-space:pre-line;">Nachricht</p>
-                    <div th:if="${a.antwort}" style="background:#f9fafb; padding:0.6rem 0.75rem; border-radius:0.5rem; margin-top:0.5rem; font-size:0.85rem;">
+                    <p th:text="${a.nachricht}" class="anf-item-nachricht anf-item-nachricht-kompakt">Nachricht</p>
+                    <div th:if="${a.antwort}" class="anf-antwort anf-antwort-kompakt">
                         <strong th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
                         <span th:text="${a.antwort}">Antwort</span>
                     </div>
-                    <div th:if="${a.status.name() == 'ANGENOMMEN' and !a.istPaketAnfrage()}"
-                         style="margin-top:0.75rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <div th:if="${a.status.name() == 'ANGENOMMEN' and !a.istPaketAnfrage()}" class="anf-aktionen">
                         <form th:action="@{'/organisationen/' + ${a.vereinSlug()} + '/anfragen/' + ${a.id} + '/vertrag/erstellen'}"
                               method="post" style="display:inline;">
-                            <button type="submit" class="btn" style="font-size:0.85rem;"
+                            <button type="submit" class="btn anf-action-btn"
                                     th:text="#{meineAnfragen.vertragErstellen}">Vertrag erstellen</button>
                         </form>
                     </div>
-                </div>
+                </article>
             </div>
         </section>
     </main>
 </div>
+
+<style>
+    .dash-page-rubrik {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--dash-muted);
+        margin: 0 0 0.3rem;
+        font-weight: 600;
+    }
+    .dash-page-title {
+        font-family: var(--dash-font-head);
+        font-size: 1.5rem;
+        line-height: 1.2;
+        margin: 0;
+        color: var(--dash-text);
+    }
+
+    .anf-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 0.18rem 0.55rem;
+        border-radius: var(--dash-radius-pill);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .anf-badge-neu {
+        background: var(--dash-coral-light);
+        color: var(--dash-coral);
+    }
+
+    /* Section-Rahmen — analog dash-card */
+    .anf-section {
+        background: var(--dash-card);
+        border: 1px solid var(--dash-border);
+        border-radius: var(--dash-radius);
+        padding: 1.25rem 1.5rem 1.5rem;
+        margin-top: 1.5rem;
+    }
+    .anf-section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-bottom: 0.85rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--dash-border);
+    }
+    .anf-section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        font-family: var(--dash-font-head);
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--dash-text);
+        margin: 0;
+    }
+    .anf-section-title svg {
+        color: var(--dash-violet-dark);
+        flex-shrink: 0;
+    }
+    .anf-section-count {
+        display: inline-grid;
+        place-items: center;
+        min-width: 28px;
+        height: 24px;
+        padding: 0 0.5rem;
+        background: var(--dash-bg);
+        color: var(--dash-muted);
+        font-size: 0.8rem;
+        font-weight: 600;
+        border-radius: var(--dash-radius-pill);
+        border: 1px solid var(--dash-border);
+    }
+
+    /* Empty State innerhalb Section */
+    .anf-empty {
+        text-align: center;
+        padding: 2rem 1rem;
+        background: var(--dash-bg);
+        border-radius: var(--dash-radius-sm);
+        color: var(--dash-muted);
+    }
+    .anf-empty svg { opacity: 0.4; margin-bottom: 0.75rem; }
+    .anf-empty p { margin: 0; font-size: 0.92rem; }
+    .anf-empty-small { padding: 1.25rem 1rem; }
+    .anf-empty-small p { font-size: 0.88rem; }
+
+    /* Liste innerhalb Section */
+    .anf-liste {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+    }
+    .anf-liste-kompakt { gap: 0.65rem; }
+
+    /* Einzel-Item (Sub-Card im Section-Rahmen) */
+    .anf-item {
+        background: var(--dash-bg);
+        border: 1px solid var(--dash-border);
+        border-radius: var(--dash-radius-sm);
+        padding: 1rem 1.15rem;
+    }
+    .anf-item-ausgehend {
+        border-left: 3px solid var(--dash-violet);
+    }
+    .anf-item-org {
+        border-left: 3px solid #94a3b8;
+    }
+
+    .anf-item-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.45rem;
+        flex-wrap: wrap;
+    }
+    .anf-item-sub {
+        color: var(--dash-muted);
+        font-size: 0.85rem;
+    }
+    .anf-label {
+        color: var(--dash-muted);
+    }
+    .anf-link {
+        color: var(--dash-violet-dark);
+        text-decoration: none;
+    }
+    .anf-link:hover { text-decoration: underline; }
+
+    .anf-item-meta {
+        font-size: 0.85rem;
+        color: var(--dash-muted);
+        margin: 0.3rem 0;
+    }
+    .anf-item-titel {
+        font-size: 0.9rem;
+        color: var(--dash-text);
+        margin-bottom: 0.3rem;
+    }
+    .anf-item-nachricht {
+        margin: 0.5rem 0 0;
+        color: var(--dash-text);
+        line-height: 1.55;
+        white-space: pre-line;
+    }
+    .anf-item-nachricht-kompakt {
+        font-size: 0.9rem;
+        color: #4b5563;
+        margin: 0.25rem 0 0;
+    }
+
+    .anf-antwort {
+        background: rgba(255, 255, 255, 0.6);
+        padding: 0.75rem 0.9rem;
+        border-radius: var(--dash-radius-sm);
+        margin-top: 0.65rem;
+        font-size: 0.88rem;
+    }
+    .anf-antwort-kompakt { padding: 0.55rem 0.75rem; font-size: 0.85rem; }
+
+    .anf-aktionen {
+        margin-top: 0.85rem;
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    .anf-aktions-form {
+        display: flex;
+        gap: 0.3rem;
+        flex-wrap: wrap;
+    }
+    .anf-aktions-input {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.6rem;
+        border: 1px solid var(--dash-border);
+        border-radius: var(--dash-radius-sm);
+        background: var(--dash-card);
+    }
+    .anf-action-btn { font-size: 0.85rem; padding: 0.45rem 0.85rem; }
+</style>
 </body>
 </html>
-
