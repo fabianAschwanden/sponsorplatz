@@ -6,9 +6,12 @@
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
 </head>
-<body class="dash-layout">
-<div th:replace="~{fragments/sidebar :: app-sidebar('anfragen', null)}"></div>
-<main class="dash-main">
+<body class="dashboard-body">
+<div class="dashboard-layout">
+
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('anfragen', null)}"></aside>
+
+    <main class="dash-main">
     <nav class="breadcrumb">
         <a th:href="@{'/organisationen/' + ${org.slug} + '/anfragen'}" th:text="#{nachrichtenThread.zurueck}">← Anfragen</a>
     </nav>
@@ -75,7 +78,8 @@
     <div th:if="${anfrage.status.name() != 'ANGENOMMEN'}" class="empty-state">
         <p th:text="#{nachrichtenThread.nichtAngenommen}">Nachrichten können nur zu angenommenen Anfragen verfasst werden.</p>
     </div>
-</main>
+    </main>
+</div>
 
 <script>
     // Springt nach dem Laden zur untersten Nachricht — gewünschtes Verhalten

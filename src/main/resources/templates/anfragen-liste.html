@@ -6,9 +6,12 @@
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
 </head>
-<body class="dash-layout">
-<div th:replace="~{fragments/sidebar :: app-sidebar('anfragen', null)}"></div>
-<main class="dash-main">
+<body class="dashboard-body">
+<div class="dashboard-layout">
+
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('anfragen', null)}"></aside>
+
+    <main class="dash-main">
     <h1 th:text="#{anfragenListe.titel}">Eingehende Anfragen</h1>
 
     <div th:if="${erfolgsMeldung}" class="alert success" th:text="${erfolgsMeldung}"></div>
@@ -55,7 +58,8 @@
             </form>
         </div>
     </div>
-</main>
+    </main>
+</div>
 </body>
 </html>
 
