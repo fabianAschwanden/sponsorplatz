@@ -9,10 +9,12 @@
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
-<body class="dash-layout">
-<div th:replace="~{fragments/sidebar :: app-sidebar('organisationen', null)}"></div>
+<body class="dashboard-body">
+<div class="dashboard-layout">
 
-<main class="dash-main">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('organisationen', null)}"></aside>
+
+    <main class="dash-main">
     <header class="dash-page-head" style="margin-bottom:1.5rem;">
         <p class="dash-page-rubrik" th:text="#{orgTyp.schritt}">Schritt 1 von 2</p>
         <h1 class="dash-page-title" th:text="#{orgTyp.h1}">Was für eine Organisation legst du an?</h1>
@@ -85,7 +87,8 @@
             <a th:href="@{/organisationen}" class="app-btn app-btn-secondary" th:text="#{allgemein.abbrechen}">Abbrechen</a>
         </div>
     </section>
-</main>
+    </main>
+</div>
 
 <style>
     /* Typ-Auswahl — Cards für Org-Typ-Wahl */
