@@ -1,6 +1,5 @@
 package ch.sponsorplatz.admin;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
