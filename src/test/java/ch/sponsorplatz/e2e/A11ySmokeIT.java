@@ -71,13 +71,10 @@ class A11ySmokeIT {
      * Bekannte axe-Regel-IDs, die wir aktuell tolerieren — als Baseline für
      * den Pilot-Launch. Wer hier etwas hinzufügt, muss in
      * {@code docs/a11y-bekannt.md} eine Begründung + Plan zur Behebung
-     * dokumentieren.
+     * dokumentieren. Aktuell leer — Coral-Text-Farben wurden auf
+     * accessible {@code --dash-coral-text} umgestellt (≥4.5:1).
      */
-    private static final List<String> ZUGELASSENE_IDS = List.of(
-            // Hero-Subclaim-Text auf dem Coral/Violet-Background hat ~3:1 statt 4.5:1.
-            // Designer-Iteration in Phase 11+. Baseline-Eintrag, bis neue Farb-Tokens da sind.
-            "color-contrast"
-    );
+    private static final List<String> ZUGELASSENE_IDS = List.of();
 
     private Playwright playwright;
     private Browser browser;
@@ -174,7 +171,16 @@ class A11ySmokeIT {
             assertThat(kritisch)
                     .as("Seite %s hat WCAG-2.1-AA-Verstösse (serious/critical) — "
                             + "Screenshot in target/a11y-%s.png", pfad, pfad.replace("/", "_"))
-                    .extracting(v -> v.get("id") + ": " + v.get("description"))
+                    .extracting(v -> {
+                        Object nodes = v.get("nodes");
+                        String target = "?";
+                        if (nodes instanceof List<?> ns && !ns.isEmpty()
+                                && ns.get(0) instanceof Map<?, ?> firstNode) {
+                            Object tg = firstNode.get("target");
+                            if (tg != null) target = tg.toString();
+                        }
+                        return v.get("id") + " @ " + target + ": " + v.get("description");
+                    })
                     .isEmpty();
         }
     }

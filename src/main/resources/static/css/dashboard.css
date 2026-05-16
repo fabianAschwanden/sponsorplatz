@@ -22,6 +22,11 @@
     --dash-violet-dark:   #6E68C2;
     --dash-coral:         #E07A5F;
     --dash-coral-light:   #FBE3DB;
+    /* Accessible Coral-Variante (≥4.5:1 auf weiss) — für Text-Nutzung. Das
+       hellere --dash-coral bleibt für Buttons/Icons/Borders (Dekoration). */
+    --dash-coral-text:    #8B3A1F;
+    /* Sekundärer Text auf hellem Background — ≥4.5:1 auf weiss (#475569 = 7.5:1). */
+    --dash-text-muted:    #475569;
     --dash-success:       #2C7A7B;
 
     --dash-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
@@ -1369,7 +1374,7 @@ body.public-body {
 }
 
 .public-hero-rubrik {
-    color: var(--dash-coral);
+    color: var(--dash-coral-text);
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -1389,7 +1394,7 @@ body.public-body {
 .public-hero-endlich {
     font-family: var(--dash-font-head);
     font-style: italic;
-    color: var(--dash-coral);
+    color: var(--dash-coral-text);
     font-size: 1.5rem;
     margin: 0 0 2.5rem;
 }
@@ -1468,8 +1473,10 @@ body.public-body {
     display: inline-flex;
     align-items: center;
     padding: 0.3rem 0.7rem;
-    background: var(--dash-coral-soft, rgba(224, 122, 95, 0.12));
-    color: var(--dash-coral-dark, #b35a44);
+    /* Background-Tint stärker als die alten 12% — sichert ≥4.5:1 Kontrast
+       für den Text in dash-coral-text auf jedem hellen Hintergrund. */
+    background: var(--dash-coral-soft, rgba(224, 122, 95, 0.18));
+    color: var(--dash-coral-text);
     border-radius: 999px;
     font-size: 0.85rem;
     font-weight: 600;
