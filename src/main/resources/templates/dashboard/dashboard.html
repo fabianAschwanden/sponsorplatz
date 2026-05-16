@@ -290,40 +290,44 @@
 
             <section class="dash-rail-section">
                 <header class="dash-rail-head">
-                    <h3 th:text="#{dashboard.aufgaben.titel}">Aufgaben heute</h3>
-                    <span class="dash-rail-meta" th:text="#{dashboard.aufgaben.faellig}">fällig</span>
+                    <h3 th:text="#{dashboard.aufgaben.titel}">Aufgaben</h3>
+                    <a th:href="@{/aufgaben}" class="dash-rail-meta"
+                       style="text-decoration:none;"
+                       th:text="#{dashboard.aufgaben.alleAnzeigen}">Alle anzeigen →</a>
                 </header>
 
-                <ul class="dash-todos">
-                    <li>
-                        <input type="checkbox" id="t1" checked>
-                        <label for="t1">Pitch-Deck SCA fertigstellen</label>
-                        <span class="dash-todo-time">09:00</span>
-                    </li>
-                    <li>
-                        <input type="checkbox" id="t2">
-                        <label for="t2">Anfrage Bäckerei Müller prüfen</label>
-                        <span class="dash-todo-time">10:00</span>
-                    </li>
-                    <li>
-                        <input type="checkbox" id="t3">
-                        <label for="t3">Vorstand: Pakete-Review</label>
-                        <span class="dash-todo-time">11:00</span>
-                    </li>
-                    <li>
-                        <input type="checkbox" id="t4">
-                        <label for="t4">Sponsor-Mailing versenden</label>
-                        <span class="dash-todo-time">13:00</span>
-                    </li>
-                    <li>
-                        <input type="checkbox" id="t5">
-                        <label for="t5">Rechnung Q2 abschließen</label>
-                        <span class="dash-todo-time">15:00</span>
-                    </li>
-                    <li class="dash-todo-add">
-                        <button type="button" th:text="#{dashboard.aufgaben.hinzufuegen}">+ Aufgabe</button>
+                <ul class="dash-todos" th:if="${!#lists.isEmpty(meineAufgaben)}">
+                    <li th:each="a : ${meineAufgaben}" class="dash-todo-item">
+                        <form th:action="@{|/aufgaben/${a.id()}/erledigen|}" method="post"
+                              class="dash-todo-check-form"
+                              th:title="#{dashboard.aufgaben.erledigen}">
+                            <button type="submit" class="dash-todo-check"
+                                    th:aria-label="#{dashboard.aufgaben.erledigen}">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+                                     stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                     stroke-linejoin="round" aria-hidden="true">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </button>
+                        </form>
+                        <a th:if="${a.link() != null}" th:href="${a.link()}"
+                           class="dash-todo-label" th:text="${a.titel()}">Aufgabe</a>
+                        <span th:unless="${a.link() != null}" class="dash-todo-label"
+                              th:text="${a.titel()}">Aufgabe</span>
+                        <span class="dash-todo-time"
+                              th:if="${a.nurPlatformAdmin()}"
+                              th:text="#{aufgaben.zugewiesen.admin}">Admin</span>
+                        <span class="dash-todo-time"
+                              th:unless="${a.nurPlatformAdmin()}"
+                              th:text="${a.assigneeOrgName()}">Org</span>
                     </li>
                 </ul>
+
+                <p th:if="${#lists.isEmpty(meineAufgaben)}" class="app-muted"
+                   style="margin:0.5rem 0 0; font-size:0.9rem;"
+                   th:text="#{dashboard.aufgaben.empty}">
+                    Keine offenen Aufgaben.
+                </p>
             </section>
 
             <section class="dash-rail-section dash-meeting">

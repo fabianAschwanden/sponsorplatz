@@ -57,6 +57,19 @@ public class AufgabenService {
     }
 
     /**
+     * Offene Aufgaben als Views, optional auf {@code limit} gekappt — für das
+     * Dashboard-Widget. {@code limit <= 0} liefert alle (wie {@link #meineOffenen}).
+     */
+    @Transactional(readOnly = true)
+    public List<AufgabeView> meineOffenenAlsViews(String email, int limit) {
+        List<Aufgabe> alle = meineOffenen(email);
+        if (limit > 0 && alle.size() > limit) {
+            alle = alle.subList(0, limit);
+        }
+        return AufgabeView.von(alle);
+    }
+
+    /**
      * Manuelles Erledigen — z.B. wenn der User die Aufgabe nicht über den
      * Standard-Workflow abschließt (Notiz: das automatische Erledigen läuft
      * über {@link AufgabenEngine}). Rückgabe ist ein View-DTO, damit der

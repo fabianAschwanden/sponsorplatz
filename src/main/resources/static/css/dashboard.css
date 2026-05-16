@@ -835,6 +835,46 @@ body.dashboard-body {
     font-size: 0.78rem;
 }
 
+/* Echte Aufgaben-Liste — die Checkbox ist ein Form-Button (POST /aufgaben/{id}/erledigen). */
+.dash-todo-check-form {
+    margin: 0;
+    line-height: 0;
+}
+
+.dash-todo-check {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 1.5px solid var(--dash-border);
+    border-radius: 4px;
+    background: var(--dash-card);
+    color: transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.dash-todo-check:hover,
+.dash-todo-check:focus-visible {
+    background: var(--dash-violet);
+    border-color: var(--dash-violet);
+    color: var(--dash-card);
+}
+
+.dash-todo-label {
+    color: inherit;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+a.dash-todo-label:hover {
+    text-decoration: underline;
+}
+
 /* Meeting */
 .dash-meeting-time {
     margin: 0 0 0.75rem;

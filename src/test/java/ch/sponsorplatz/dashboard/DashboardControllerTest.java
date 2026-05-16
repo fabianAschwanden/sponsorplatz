@@ -3,6 +3,8 @@ import ch.sponsorplatz.projekt.ProjektService;
 import ch.sponsorplatz.projekt.MatchingService;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -24,6 +26,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import ch.sponsorplatz.aufgabe.AufgabeView;
+import ch.sponsorplatz.aufgabe.AufgabenService;
+import ch.sponsorplatz.aufgabe.AufgabenStatus;
+import ch.sponsorplatz.aufgabe.TriggerEntityTyp;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.AppUserService.OnboardingSnapshot;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
@@ -59,6 +65,9 @@ class DashboardControllerTest {
 
     @MockitoBean
     private EinladungsService einladungsService;
+
+    @MockitoBean
+    private AufgabenService aufgabenService;
 
     /**
      * Simuliert einen User mit mindestens einer Org — damit kein
@@ -113,6 +122,7 @@ class DashboardControllerTest {
                         "empfehlungen",
                         "naechsteEvents",
                         "meineProjekte",
+                        "meineAufgaben",
                         "offeneEinladungen"))
                 .andExpect(model().attribute("anzahlOrganisationen", 3L))
                 .andExpect(model().attribute("anzahlProjekte", 5L))
@@ -159,6 +169,27 @@ class DashboardControllerTest {
         mockMvc.perform(get("/dashboard"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("dashboard/dashboard"));
+    }
+
+    /** DASH-08: Aufgaben-Widget — meineAufgaben kommt aus AufgabenService limitiert auf 6. */
+    @org.junit.jupiter.api.Test
+    @WithMockUser("widget@test.ch")
+    void aufgabenWidgetZeigtBisZuSechsAufgaben() throws Exception {
+        mockUserMitOrg("widget@test.ch");
+        when(dashboardService.ladeDashboardDaten(anyString())).thenReturn(DashboardDaten.leer());
+        AufgabeView eine = new AufgabeView(UUID.randomUUID(), "Verein verifizieren",
+                "/admin/verifizierungen", AufgabenStatus.OFFEN,
+                TriggerEntityTyp.ORG, UUID.randomUUID(),
+                null, true,
+                java.time.Instant.now(), null);
+        when(aufgabenService.meineOffenenAlsViews(eq("widget@test.ch"), eq(6)))
+                .thenReturn(List.of(eine));
+
+        mockMvc.perform(get("/dashboard"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("meineAufgaben", List.of(eine)));
+
+        verify(aufgabenService).meineOffenenAlsViews("widget@test.ch", 6);
     }
 
     /** DASH-07: Plattform-Admin ohne Mitgliedschaften → bleibt auf Dashboard (kein Onboarding-Redirect). */

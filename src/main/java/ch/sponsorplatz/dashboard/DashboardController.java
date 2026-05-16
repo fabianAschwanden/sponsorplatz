@@ -14,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
+import ch.sponsorplatz.aufgabe.AufgabenService;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.AppUserService.OnboardingSnapshot;
 import ch.sponsorplatz.einladung.EinladungsService;
@@ -35,25 +36,34 @@ public class DashboardController {
      */
     private static final int MAX_AKTIVE_PROJEKTE_AUF_DASHBOARD = 8;
 
+    /**
+     * Maximal-Anzahl Aufgaben im Rail-Widget. Mehr scrollen ungünstig im
+     * Sticky-Rail; der „Alle anzeigen"-Link führt auf /aufgaben.
+     */
+    private static final int MAX_AUFGABEN_AUF_DASHBOARD = 6;
+
     private final DashboardService dashboardService;
     private final MatchingService matchingService;
     private final ProjektService projektService;
     private final AppUserService appUserService;
     private final MitgliedschaftService mitgliedschaftService;
     private final EinladungsService einladungsService;
+    private final AufgabenService aufgabenService;
 
     public DashboardController(DashboardService dashboardService,
             MatchingService matchingService,
             ProjektService projektService,
             AppUserService appUserService,
             MitgliedschaftService mitgliedschaftService,
-            EinladungsService einladungsService) {
+            EinladungsService einladungsService,
+            AufgabenService aufgabenService) {
         this.dashboardService = dashboardService;
         this.matchingService = matchingService;
         this.projektService = projektService;
         this.appUserService = appUserService;
         this.mitgliedschaftService = mitgliedschaftService;
         this.einladungsService = einladungsService;
+        this.aufgabenService = aufgabenService;
     }
 
     @GetMapping("/dashboard")
@@ -108,6 +118,11 @@ public class DashboardController {
         // User finden so ihre Einladungen ohne erneutes Anklicken des Mail-Links.
         model.addAttribute("offeneEinladungen",
                 einladungsService.findeOffeneFuerEmail(auth.getName()));
+
+        // Aufgaben-Rail-Widget — Top-N offene Aufgaben des Users. Sponsoren ohne
+        // Org und Anonyme bekommen eine leere Liste (Template zeigt Empty-State).
+        model.addAttribute("meineAufgaben",
+                aufgabenService.meineOffenenAlsViews(auth.getName(), MAX_AUFGABEN_AUF_DASHBOARD));
 
         return "dashboard/dashboard";
     }
