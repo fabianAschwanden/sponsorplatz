@@ -10,6 +10,8 @@ import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Und;
 import io.cucumber.java.de.Wenn;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +45,7 @@ public class SponsorAnfrageZuVertragSteps {
     @Autowired private OrganisationRepository orgRepository;
     @Autowired private SponsoringAnfrageRepository anfrageRepository;
     @Autowired private VertragRepository vertragRepository;
+    @PersistenceContext private EntityManager em;
 
     // -------- Background --------
 
@@ -90,6 +93,8 @@ public class SponsorAnfrageZuVertragSteps {
         if (!page.url().contains("/onboarding")) {
             page.navigate(ctx.getBaseUrl() + "/onboarding");
         }
+        // Option "Verein eintragen" anklicken, damit das Form sichtbar wird
+        page.locator("#optionVerein").click();
         page.locator("#vereinName").fill(vereinName);
         page.locator("#branche").selectOption(branche);
         page.getByRole(AriaRole.BUTTON,
@@ -194,11 +199,11 @@ public class SponsorAnfrageZuVertragSteps {
     @Und("der Vertrag referenziert die Kontakt-Anfrage als Quelle")
     public void vertragReferenziertKontaktAnfrage() {
         UUID anfrageId = ctx.daten("anfrageId");
-        long mitAnfrage = vertragRepository.findAll().stream()
-                .filter(v -> v.getAnfrage() != null
-                        && v.getAnfrage().getId().equals(anfrageId)
-                        && v.getAnfrage().getPaket() == null) // Kontakt-Anfrage = paket-frei
-                .count();
+        long mitAnfrage = em.createQuery(
+                "SELECT COUNT(v) FROM Vertrag v JOIN v.anfrage a "
+                        + "WHERE a.id = :aid AND a.paket IS NULL", Long.class)
+                .setParameter("aid", anfrageId)
+                .getSingleResult();
         assertThat(mitAnfrage)
                 .as("Vertrag muss an die paket-lose Kontakt-Anfrage gebunden sein")
                 .isEqualTo(1);
@@ -224,20 +229,22 @@ public class SponsorAnfrageZuVertragSteps {
 
     @Transactional
     public long zaehleVertraegeZwischen(String vereinName, String sponsorName) {
-        return vertragRepository.findAll().stream()
-                .filter(v -> v.getOrg() != null
-                        && v.getOrg().getName().equals(vereinName)
-                        && v.getSponsorOrg() != null
-                        && v.getSponsorOrg().getName().equals(sponsorName))
-                .count();
+        return em.createQuery(
+                "SELECT COUNT(v) FROM Vertrag v JOIN v.org o JOIN v.sponsorOrg s "
+                        + "WHERE o.name = :vn AND s.name = :sn", Long.class)
+                .setParameter("vn", vereinName)
+                .setParameter("sn", sponsorName)
+                .getSingleResult();
     }
 
     @Transactional
     public UUID findeKontaktAnfrageId(String vereinName) {
-        return anfrageRepository.findAll().stream()
-                .filter(a -> a.getAnfragenderOrg().getName().equals(vereinName)
-                        && a.getPaket() == null)
-                .map(a -> a.getId())
+        return em.createQuery(
+                "SELECT a.id FROM SponsoringAnfrage a JOIN a.anfragenderOrg o "
+                        + "WHERE o.name = :name AND a.paket IS NULL", UUID.class)
+                .setParameter("name", vereinName)
+                .getResultList()
+                .stream()
                 .findFirst()
                 .orElseThrow(() -> new AssertionError(
                         "Kontakt-Anfrage von " + vereinName + " nicht gefunden"));

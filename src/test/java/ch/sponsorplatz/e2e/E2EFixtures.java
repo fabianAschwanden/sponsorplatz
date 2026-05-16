@@ -2,7 +2,6 @@ package ch.sponsorplatz.e2e;
 
 import ch.sponsorplatz.benutzer.AppUser;
 import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.organisation.Branche;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import ch.sponsorplatz.organisation.MitgliedschaftService;
 import ch.sponsorplatz.organisation.OrgStatus;
@@ -10,6 +9,7 @@ import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationRepository;
 import ch.sponsorplatz.organisation.Rolle;
+import ch.sponsorplatz.organisation.SponsorBranche;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -98,7 +98,7 @@ public class E2EFixtures {
         org.setName(SPONSOR_NAME);
         org.setSlug("css-versicherung");
         org.setTyp(OrgTyp.UNTERNEHMEN);
-        org.setBranche(Branche.PRAEVENTION);
+        org.setSponsorBranche(SponsorBranche.VERSICHERUNG);
         org.setStatus(OrgStatus.ACTIVE);
         orgRepository.save(org);
 
