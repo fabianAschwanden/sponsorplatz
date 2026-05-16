@@ -1,0 +1,82 @@
+@startuml
+set separator none
+
+skinparam {
+  shadowing false
+  arrowFontSize 15
+  defaultTextAlignment center
+  wrapWidth 100
+  maxMessageSize 100
+}
+hide stereotype
+
+skinparam rectangle<<_transparent>> {
+  BorderColor transparent
+  BackgroundColor transparent
+  FontColor transparent
+}
+
+skinparam person<<1>> {
+  BackgroundColor #00327d
+  FontColor #ffffff
+  BorderColor #002357
+}
+person "==Person" <<1>>
+
+skinparam person<<2>> {
+  BackgroundColor #00327d
+  FontColor #ffffff
+  BorderColor #002357
+}
+person "==Person, CSS" <<2>>
+
+skinparam person<<3>> {
+  BackgroundColor #e07a5f
+  FontColor #ffffff
+  BorderColor #9c5542
+}
+person "==Person, Sponsor" <<3>>
+
+skinparam person<<4>> {
+  BackgroundColor #1e3a5f
+  FontColor #ffffff
+  BorderColor #152842
+}
+person "==Person, Verein" <<4>>
+
+skinparam person<<5>> {
+  BackgroundColor #00a4e0
+  FontColor #ffffff
+  BorderColor #00729c
+}
+person "==Person, Versicherte" <<5>>
+
+skinparam rectangle<<6>> {
+  BackgroundColor #1168bd
+  FontColor #ffffff
+  BorderColor #0b4884
+  roundCorner 20
+}
+rectangle "==Software System" <<6>>
+
+skinparam rectangle<<7>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+}
+rectangle "==Software System, External" <<7>>
+
+skinparam rectangle<<8>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+}
+rectangle "==Software System, External, Backlog" <<8>>
+
+rectangle "." <<_transparent>> as 9
+9 .[#707070,thickness=2].> 9 : "<color:#707070>Relationship"
+
+
+@enduml

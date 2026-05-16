@@ -1,0 +1,119 @@
+@startuml
+set separator none
+title Sponsorplatz - System Context
+
+left to right direction
+
+skinparam {
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam person<<CSSSponsoringTeam>> {
+  BackgroundColor #00327d
+  FontColor #ffffff
+  BorderColor #002357
+  shadowing false
+}
+skinparam person<<CSSAgentur>> {
+  BackgroundColor #00327d
+  FontColor #ffffff
+  BorderColor #002357
+  shadowing false
+}
+skinparam person<<CSSVersicherte>> {
+  BackgroundColor #00a4e0
+  FontColor #ffffff
+  BorderColor #00729c
+  shadowing false
+}
+skinparam rectangle<<Datatrans>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+  shadowing false
+}
+skinparam rectangle<<MicrosoftEntraID>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+  shadowing false
+}
+skinparam rectangle<<OCIObjectStorage>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+  shadowing false
+}
+skinparam person<<PlattformAdmin>> {
+  BackgroundColor #00327d
+  FontColor #ffffff
+  BorderColor #002357
+  shadowing false
+}
+skinparam rectangle<<SMTPServer>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+  shadowing false
+}
+skinparam person<<SponsorUser>> {
+  BackgroundColor #e07a5f
+  FontColor #ffffff
+  BorderColor #9c5542
+  shadowing false
+}
+skinparam rectangle<<Sponsorplatz>> {
+  BackgroundColor #1168bd
+  FontColor #ffffff
+  BorderColor #0b4884
+  roundCorner 20
+  shadowing false
+}
+skinparam person<<VereinMitglied>> {
+  BackgroundColor #1e3a5f
+  FontColor #ffffff
+  BorderColor #152842
+  shadowing false
+}
+skinparam rectangle<<Zefix>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+  shadowing false
+}
+
+person "==Verein-Mitglied\n<size:10>[Person]</size>\n\nPflegt Vereinsprofil, Projekte, Anfragen" <<VereinMitglied>> as VereinMitglied
+rectangle "==Zefix\n<size:10>[Software System]</size>\n\nSchweizer Handelsregister (Stub)" <<Zefix>> as Zefix
+rectangle "==OCI Object Storage\n<size:10>[Software System]</size>\n\nBackup-Ziel + Medien-Storage" <<OCIObjectStorage>> as OCIObjectStorage
+rectangle "==Sponsorplatz\n<size:10>[Software System]</size>\n\nKuratierte Health-Sponsoring-Plattform — strikt fokussiert, breit gefasst" <<Sponsorplatz>> as Sponsorplatz
+person "==Sponsor-User\n<size:10>[Person]</size>\n\nStellt Sponsoring-Anfragen, scannt QR-Bill" <<SponsorUser>> as SponsorUser
+person "==CSS Sponsoring-Team\n<size:10>[Person]</size>\n\nKuratiert Vereine, sponsert zentral" <<CSSSponsoringTeam>> as CSSSponsoringTeam
+person "==CSS-Agentur\n<size:10>[Person]</size>\n\nRegionale CSS-Vertretung" <<CSSAgentur>> as CSSAgentur
+person "==CSS-Versicherte\n<size:10>[Person]</size>\n\nSieht lokales CSS-Engagement" <<CSSVersicherte>> as CSSVersicherte
+person "==Plattform-Admin\n<size:10>[Person]</size>\n\nVerifiziert Vereine, Backups, Audit" <<PlattformAdmin>> as PlattformAdmin
+rectangle "==Microsoft Entra ID\n<size:10>[Software System]</size>\n\nOIDC Identity Provider (Phase 1.4)" <<MicrosoftEntraID>> as MicrosoftEntraID
+rectangle "==Datatrans\n<size:10>[Software System]</size>\n\nOnline-Payment-Provider (Phase 9.2)" <<Datatrans>> as Datatrans
+rectangle "==SMTP-Server\n<size:10>[Software System]</size>\n\nMail-Versand (MailHog dev, prod-SMTP)" <<SMTPServer>> as SMTPServer
+
+VereinMitglied .[#707070,thickness=2].> Sponsorplatz : "<color:#707070>Pflegt Profil, antwortet Anfragen, erstellt Rechnungen"
+SponsorUser .[#707070,thickness=2].> Sponsorplatz : "<color:#707070>Stellt Anfragen, scannt QR-Bill"
+CSSSponsoringTeam .[#707070,thickness=2].> Sponsorplatz : "<color:#707070>Kuratiert Vereine, sponsert via Anfragen"
+CSSAgentur .[#707070,thickness=2].> Sponsorplatz : "<color:#707070>Regionale Sponsoring-Anfragen, Vor-Ort-Engagement"
+CSSVersicherte .[#707070,thickness=2].> Sponsorplatz : "<color:#707070>Sieht lokale CSS-Engagements (öffentlich)"
+PlattformAdmin .[#707070,thickness=2].> Sponsorplatz : "<color:#707070>Verifiziert, moderiert, exportiert"
+Sponsorplatz .[#707070,thickness=2].> MicrosoftEntraID : "<color:#707070>SSO-Authentifizierung (OIDC)\n<color:#707070><size:8>[OAuth2]</size>"
+Sponsorplatz .[#707070,thickness=2].> Datatrans : "<color:#707070>Online-Zahlungen + Webhook\n<color:#707070><size:8>[REST]</size>"
+Sponsorplatz .[#707070,thickness=2].> SMTPServer : "<color:#707070>Mail-Versand\n<color:#707070><size:8>[SMTP/STARTTLS]</size>"
+Sponsorplatz .[#707070,thickness=2].> Zefix : "<color:#707070>Verein-/Sponsor-Verifikation\n<color:#707070><size:8>[REST]</size>"
+Sponsorplatz .[#707070,thickness=2].> OCIObjectStorage : "<color:#707070>Backup-Spiegelung + Medien-Storage\n<color:#707070><size:8>[S3-kompatible API]</size>"
+@enduml

@@ -1,0 +1,43 @@
+graph LR
+  linkStyle default fill:#ffffff
+
+  subgraph diagram ["Sponsorplatz - System Context"]
+    style diagram fill:#ffffff,stroke:#ffffff
+
+    1["<div style='font-weight: bold'>Verein-Mitglied</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Pflegt Vereinsprofil,<br />Projekte, Anfragen</div>"]
+    style 1 fill:#1e3a5f,stroke:#152842,color:#ffffff
+    10("<div style='font-weight: bold'>Zefix</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Schweizer Handelsregister<br />(Stub)</div>")
+    style 10 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    11("<div style='font-weight: bold'>OCI Object Storage</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Backup-Ziel + Medien-Storage</div>")
+    style 11 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    12("<div style='font-weight: bold'>Sponsorplatz</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Kuratierte<br />Health-Sponsoring-Plattform —<br />strikt fokussiert, breit<br />gefasst</div>")
+    style 12 fill:#1168bd,stroke:#0b4884,color:#ffffff
+    2["<div style='font-weight: bold'>Sponsor-User</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Stellt Sponsoring-Anfragen,<br />scannt QR-Bill</div>"]
+    style 2 fill:#e07a5f,stroke:#9c5542,color:#ffffff
+    3["<div style='font-weight: bold'>CSS Sponsoring-Team</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Kuratiert Vereine, sponsert<br />zentral</div>"]
+    style 3 fill:#00327d,stroke:#002357,color:#ffffff
+    4["<div style='font-weight: bold'>CSS-Agentur</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Regionale CSS-Vertretung</div>"]
+    style 4 fill:#00327d,stroke:#002357,color:#ffffff
+    5["<div style='font-weight: bold'>CSS-Versicherte</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Sieht lokales CSS-Engagement</div>"]
+    style 5 fill:#00a4e0,stroke:#00729c,color:#ffffff
+    6["<div style='font-weight: bold'>Plattform-Admin</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Verifiziert Vereine, Backups,<br />Audit</div>"]
+    style 6 fill:#00327d,stroke:#002357,color:#ffffff
+    7("<div style='font-weight: bold'>Microsoft Entra ID</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>OIDC Identity Provider (Phase<br />1.4)</div>")
+    style 7 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    8("<div style='font-weight: bold'>Datatrans</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Online-Payment-Provider<br />(Phase 9.2)</div>")
+    style 8 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    9("<div style='font-weight: bold'>SMTP-Server</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Mail-Versand (MailHog dev,<br />prod-SMTP)</div>")
+    style 9 fill:#999999,stroke:#6b6b6b,color:#ffffff
+
+    1-. "<div>Pflegt Profil, antwortet<br />Anfragen, erstellt Rechnungen</div><div style='font-size: 70%'></div>" .->12
+    2-. "<div>Stellt Anfragen, scannt<br />QR-Bill</div><div style='font-size: 70%'></div>" .->12
+    3-. "<div>Kuratiert Vereine, sponsert<br />via Anfragen</div><div style='font-size: 70%'></div>" .->12
+    4-. "<div>Regionale<br />Sponsoring-Anfragen,<br />Vor-Ort-Engagement</div><div style='font-size: 70%'></div>" .->12
+    5-. "<div>Sieht lokale CSS-Engagements<br />(öffentlich)</div><div style='font-size: 70%'></div>" .->12
+    6-. "<div>Verifiziert, moderiert,<br />exportiert</div><div style='font-size: 70%'></div>" .->12
+    12-. "<div>SSO-Authentifizierung (OIDC)</div><div style='font-size: 70%'>[OAuth2]</div>" .->7
+    12-. "<div>Online-Zahlungen + Webhook</div><div style='font-size: 70%'>[REST]</div>" .->8
+    12-. "<div>Mail-Versand</div><div style='font-size: 70%'>[SMTP/STARTTLS]</div>" .->9
+    12-. "<div>Verein-/Sponsor-Verifikation</div><div style='font-size: 70%'>[REST]</div>" .->10
+    12-. "<div>Backup-Spiegelung +<br />Medien-Storage</div><div style='font-size: 70%'>[S3-kompatible API]</div>" .->11
+  end

@@ -1,0 +1,87 @@
+@startuml
+set separator none
+title Sponsorplatz - Containers
+
+left to right direction
+
+skinparam {
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam rectangle<<Datatrans>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+  shadowing false
+}
+skinparam rectangle<<MicrosoftEntraID>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+  shadowing false
+}
+skinparam rectangle<<OCIObjectStorage>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+  shadowing false
+}
+skinparam database<<Sponsorplatz.PostgreSQL17>> {
+  BackgroundColor #2b3674
+  FontColor #ffffff
+  BorderColor #1e2551
+  shadowing false
+}
+skinparam rectangle<<SMTPServer>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+  shadowing false
+}
+skinparam rectangle<<Sponsorplatz.WebAnwendung>> {
+  BackgroundColor #438dd5
+  FontColor #ffffff
+  BorderColor #2e6295
+  roundCorner 20
+  shadowing false
+}
+skinparam rectangle<<Zefix>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+  shadowing false
+}
+skinparam rectangle<<Sponsorplatz>> {
+  BorderColor #0b4884
+  FontColor #0b4884
+  shadowing false
+}
+
+rectangle "==Microsoft Entra ID\n<size:10>[Software System]</size>\n\nOIDC Identity Provider (Phase 1.4)" <<MicrosoftEntraID>> as MicrosoftEntraID
+rectangle "==Datatrans\n<size:10>[Software System]</size>\n\nOnline-Payment-Provider (Phase 9.2)" <<Datatrans>> as Datatrans
+rectangle "==SMTP-Server\n<size:10>[Software System]</size>\n\nMail-Versand (MailHog dev, prod-SMTP)" <<SMTPServer>> as SMTPServer
+rectangle "==Zefix\n<size:10>[Software System]</size>\n\nSchweizer Handelsregister (Stub)" <<Zefix>> as Zefix
+rectangle "==OCI Object Storage\n<size:10>[Software System]</size>\n\nBackup-Ziel + Medien-Storage" <<OCIObjectStorage>> as OCIObjectStorage
+
+rectangle "Sponsorplatz\n<size:10>[Software System]</size>" <<Sponsorplatz>> {
+  rectangle "==Web-Anwendung\n<size:10>[Container: Java 21]</size>\n\nSpring Boot 3.4 + Thymeleaf, server-rendered HTML" <<Sponsorplatz.WebAnwendung>> as Sponsorplatz.WebAnwendung
+  database "==PostgreSQL 17\n<size:10>[Container: Database]</size>\n\nPersistenz aller Sponsorplatz-Daten" <<Sponsorplatz.PostgreSQL17>> as Sponsorplatz.PostgreSQL17
+}
+
+Sponsorplatz.WebAnwendung .[#707070,thickness=2].> Sponsorplatz.PostgreSQL17 : "<color:#707070>Liest und schreibt via JPA/Hibernate + Flyway\n<color:#707070><size:8>[JDBC]</size>"
+Sponsorplatz.WebAnwendung .[#707070,thickness=2].> MicrosoftEntraID : "<color:#707070>OIDC Authorization-Code-Flow mit PKCE"
+Sponsorplatz.WebAnwendung .[#707070,thickness=2].> Datatrans : "<color:#707070>Zahlung initiieren + Webhook empfangen"
+Sponsorplatz.WebAnwendung .[#707070,thickness=2].> SMTPServer : "<color:#707070>Spring-Mail JavaMailSender"
+Sponsorplatz.WebAnwendung .[#707070,thickness=2].> Zefix : "<color:#707070>ZefixService (heute Stub, Phase X echte API)"
+Sponsorplatz.WebAnwendung .[#707070,thickness=2].> OCIObjectStorage : "<color:#707070>BackupService Push + MedienAsset-CDN"
+@enduml
