@@ -515,6 +515,22 @@ Bootet eine echte Spring-Instanz auf RandomPort + HTTP-GETs gegen die Schlüssel
 | **SMOKE-04** | `SmokeIT` | GET /marktplatz anon → Redirect endet auf Login (Auth-Gate) |
 | **SMOKE-05** | `SmokeIT` | GET /actuator/health → 200 + Status UP |
 
+### Phase 10.4 — Accessibility-Smoke (A11Y, WCAG 2.1 AA)
+
+Failsafe-Suite, läuft mit `mvn verify -P e2e -Dit.test=A11ySmokeIT`. Bootet Spring,
+fährt Playwright/Chromium hoch und injiziert axe-core inline (CSP-konform). Schlägt
+fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
+[`docs/a11y-bekannt.md`](../docs/a11y-bekannt.md).
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **A11Y-01** | `A11ySmokeIT` | Home / hat keine kritischen WCAG-Verstösse |
+| **A11Y-02** | `A11ySmokeIT` | /login hat keine kritischen WCAG-Verstösse |
+| **A11Y-03** | `A11ySmokeIT` | /kontakt hat keine kritischen WCAG-Verstösse |
+| **A11Y-04** | `A11ySmokeIT` | /impressum hat keine kritischen WCAG-Verstösse |
+| **A11Y-05** | `A11ySmokeIT` | /datenschutz hat keine kritischen WCAG-Verstösse |
+| **A11Y-06** | `A11ySmokeIT` | /agb hat keine kritischen WCAG-Verstösse |
+
 ### Phase Operational — Ops-Dashboard + Alerts (OPS)
 
 | ID | Test-Klasse | Beschreibung |
