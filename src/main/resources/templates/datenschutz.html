@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,7 +18,8 @@
             <span>Sponsorplatz</span>
         </a>
         <nav class="public-nav">
-            <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/kontakt}" th:text="#{navigation.kontakt}">Kontakt</a>
             <a th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
         </nav>
     </div>
@@ -49,6 +50,10 @@
             <li><strong>Verifizierungs-Token:</strong> Einmal-Token für E-Mail-Bestätigung und Vereins-Einladungen (max. 7 Tage gültig).</li>
             <li><strong>Audit-Log:</strong> Sicherheitsrelevante Aktionen (Verifizierung, Sperrung) für Nachvollziehbarkeit.</li>
             <li><strong>Server-Logs:</strong> IP-Adresse, Zeitstempel, aufgerufene URL, User-Agent — für Betrieb, Fehlersuche und Missbrauchsabwehr.</li>
+            <li><strong>Kontakt-Anfragen (anonym):</strong> Name, E-Mail-Adresse, Betreff und Nachricht aus dem
+                <a th:href="@{/kontakt}">öffentlichen Kontakt-Formular</a>. Diese Daten werden nicht in der
+                Datenbank persistiert, sondern per Mail an das Plattform-Team weitergeleitet und im Server-Log
+                vermerkt (30 Tage Rotation).</li>
         </ul>
 
         <h2>3. Zweck der Verarbeitung</h2>
@@ -64,7 +69,9 @@
         <ul>
             <li><strong>Oracle Cloud Infrastructure</strong> (Hosting, Region eu-zurich-1, Schweiz) — Server, Datenbank, Object Storage.</li>
             <li><strong>Let's Encrypt</strong> — TLS-Zertifikate für die HTTPS-Verschlüsselung.</li>
-            <li><strong>SMTP-Provider</strong> für transaktionale E-Mails (Verifizierung, Einladungen). Aktuell ist kein externer Versand aktiv.</li>
+            <li><strong>SMTP-Provider</strong> für transaktionale E-Mails: E-Mail-Verifizierung, Vereins-Einladungen,
+                Anfrage-Benachrichtigungen sowie die Weiterleitung der über die öffentliche
+                <a th:href="@{/kontakt}">Kontakt-Seite</a> eingegangenen Nachrichten ans Plattform-Team.</li>
         </ul>
         <p>Eine Weitergabe deiner Daten zu Werbezwecken oder an Dritte zur Vermarktung findet nicht statt.</p>
 
@@ -112,6 +119,7 @@
 
         <p style="margin-top: 2rem; color: var(--dash-grau);">
             <a th:href="@{/impressum}" th:text="#{footer.impressum}">Impressum</a> ·
+            <a th:href="@{/agb}" th:text="#{layout.agb}">AGB</a> ·
             <a th:href="@{/}" th:text="#{error.zurueckLink}">Zurück zur Startseite</a>
         </p>
     </article>
@@ -123,9 +131,5 @@
         <nav>
             <a th:href="@{/impressum}" th:text="#{footer.impressum}">Impressum</a>
             <a th:href="@{/datenschutz}" th:text="#{footer.datenschutz}">Datenschutz</a>
+            <a th:href="@{/agb}" th:text="#{layout.agb}">AGB</a>
         </nav>
-    </div>
-</footer>
-
-</body>
-</html>

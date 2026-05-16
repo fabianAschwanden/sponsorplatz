@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Locale;
+
 /**
  * Öffentliche Kontakt-/Anfrage-Seite — der einzige Funnel-Punkt für anonyme
  * Besucher neben Login/Registrierung. Versandt wird per Mail an die
@@ -37,12 +39,13 @@ public class KontaktController {
     @PostMapping
     public String absenden(@Valid @ModelAttribute("kontaktForm") KontaktFormDto form,
                            BindingResult binding,
+                           Locale locale,
                            RedirectAttributes redirect) {
-        // Honeypot: nicht-leer ⇒ Bot. Silent-Success — kein User-Hint, dass wir
-        // gefiltert haben.
+        // Honeypot zuerst — bevor Validierung berücksichtigt wird. Bots
+        // bekommen Silent-Success, kein Hinweis dass wir gefiltert haben.
         if (form.getHomepage() != null && !form.getHomepage().isBlank()) {
             redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                    "Vielen Dank — wir melden uns in Kürze.");
+                    kontaktService.erfolgsMeldung(locale));
             return "redirect:/kontakt";
         }
         if (binding.hasErrors()) {
@@ -50,7 +53,7 @@ public class KontaktController {
         }
         kontaktService.verarbeite(form);
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
-                "Vielen Dank — wir melden uns in Kürze.");
+                kontaktService.erfolgsMeldung(locale));
         return "redirect:/kontakt";
     }
 }

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{agb.titel} + ' — Sponsorplatz'">Allgemeine Geschäftsbedingungen — Sponsorplatz</title>
+    <meta name="description" content="AGB von Sponsorplatz, der Schweizer Sponsoring-Plattform für Sport und Gesundheit.">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="public-body">
+
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
+            <span>Sponsorplatz</span>
+        </a>
+        <nav class="public-nav">
+            <a sec:authorize="isAuthenticated()" th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/kontakt}" th:text="#{navigation.kontakt}">Kontakt</a>
+            <a th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
+        </nav>
+    </div>
+</header>
+
+<main class="public-main">
+    <article class="app-card" style="max-width: 760px; margin: 2rem auto;">
+        <h1 th:text="#{agb.titel}">Allgemeine Geschäftsbedingungen (AGB)</h1>
+        <p style="color: var(--dash-grau);">
+            Stand: <span th:text="${#dates.format(#dates.createNow(), 'dd.MM.yyyy')}">15.05.2026</span>
+        </p>
+
+        <h2 th:text="#{agb.geltungsbereich.titel}">1. Geltungsbereich</h2>
+        <p th:text="#{agb.geltungsbereich.text}">
+            Diese Allgemeinen Geschäftsbedingungen regeln die Nutzung der Plattform
+            «Sponsorplatz» (nachfolgend «Plattform»), betrieben von Fabian Aschwanden
+            (nachfolgend «Betreiber»). Mit der Registrierung akzeptieren Nutzende
+            diese AGB.
+        </p>
+
+        <h2 th:text="#{agb.leistungen.titel}">2. Leistungen der Plattform</h2>
+        <p th:text="#{agb.leistungen.text}">
+            Die Plattform bringt Vereine und Organisationen aus den Bereichen Sport
+            und Gesundheit mit potenziellen Sponsoren zusammen. Sponsorplatz stellt
+            die technische Infrastruktur bereit — der Plattformbetreiber wird nicht
+            Vertragspartei von Sponsoring-Vereinbarungen zwischen Vereinen und
+            Sponsoren.
+        </p>
+
+        <h2 th:text="#{agb.registrierung.titel}">3. Registrierung und Konto</h2>
+        <ul>
+            <li th:text="#{agb.registrierung.punkt1}">
+                Zur Nutzung ist ein Benutzerkonto mit gültiger E-Mail-Adresse erforderlich.
+            </li>
+            <li th:text="#{agb.registrierung.punkt2}">
+                Die Angaben bei der Registrierung müssen wahrheitsgemäss sein.
+            </li>
+            <li th:text="#{agb.registrierung.punkt3}">
+                Jede natürliche Person sollte nur ein persönliches Konto führen;
+                mehrere Konten pro Person können vom Betreiber zusammengeführt
+                oder bei Missbrauch gesperrt werden.
+            </li>
+            <li th:text="#{agb.registrierung.punkt4}">
+                Das Passwort ist vertraulich zu behandeln. Der Betreiber haftet nicht
+                für Schäden aus Missbrauch durch Dritte.
+            </li>
+        </ul>
+
+        <h2 th:text="#{agb.vereine.titel}">4. Vereine und Organisationen</h2>
+        <ul>
+            <li th:text="#{agb.vereine.punkt1}">
+                Vereine müssen einen nachweisbaren Bezug zu Sport oder Gesundheit haben
+                (gemäss Branche-Auswahl bei Registrierung).
+            </li>
+            <li th:text="#{agb.vereine.punkt2}">
+                Der Betreiber behält sich das Recht vor, Vereine zu verifizieren und
+                bei Verstössen zu suspendieren.
+            </li>
+            <li th:text="#{agb.vereine.punkt3}">
+                Eingestellte Inhalte (Projekte, Texte, Bilder) müssen den geltenden
+                Gesetzen entsprechen und dürfen keine Rechte Dritter verletzen.
+            </li>
+        </ul>
+
+        <h2 th:text="#{agb.sponsoren.titel}">5. Sponsoren</h2>
+        <ul>
+            <li th:text="#{agb.sponsoren.punkt1}">
+                Sponsoren registrieren sich als Unternehmen und können über den Marktplatz
+                Projekte finden und Anfragen stellen.
+            </li>
+            <li th:text="#{agb.sponsoren.punkt2}">
+                Sponsoring-Vereinbarungen kommen direkt zwischen Sponsor und Verein zustande.
+                Der Betreiber haftet nicht für die Erfüllung solcher Vereinbarungen.
+            </li>
+        </ul>
+
+        <h2 th:text="#{agb.gebuehren.titel}">6. Gebühren</h2>
+        <p th:text="#{agb.gebuehren.text}">
+            Die Nutzung der Plattform ist während der Pilotphase kostenlos. Sollte
+            ein kostenpflichtiges Modell eingeführt werden, werden bestehende Nutzer
+            mindestens 30 Tage im Voraus informiert und können ihr Konto bis zum
+            Inkrafttreten der neuen Gebühren kostenfrei kündigen.
+        </p>
+
+        <h2 th:text="#{agb.haftung.titel}">7. Haftung</h2>
+        <ul>
+            <li th:text="#{agb.haftung.punkt1}">
+                Der Betreiber haftet nicht für die Richtigkeit der von Nutzenden
+                eingestellten Inhalte.
+            </li>
+            <li th:text="#{agb.haftung.punkt2}">
+                Die Verfügbarkeit der Plattform wird nach bestem Bemühen gewährleistet,
+                ein ununterbrochener Betrieb kann jedoch nicht garantiert werden.
+            </li>
+            <li th:text="#{agb.haftung.punkt3}">
+                Schadensersatzansprüche sind, soweit gesetzlich zulässig, auf Vorsatz
+                und grobe Fahrlässigkeit beschränkt.
+            </li>
+        </ul>
+
+        <h2 th:text="#{agb.datenschutz.titel}">8. Datenschutz</h2>
+        <p>
+            <span th:text="#{agb.datenschutz.text}">
+                Für die Verarbeitung personenbezogener Daten gilt unsere Datenschutzerklärung.
+            </span>
+            <a th:href="@{/datenschutz}" th:text="#{agb.datenschutz.link}">→ Datenschutzerklärung</a>
+        </p>
+
+        <h2 th:text="#{agb.inhalte.titel}">9. Inhalte und geistiges Eigentum</h2>
+        <ul>
+            <li th:text="#{agb.inhalte.punkt1}">
+                Nutzende behalten alle Rechte an ihren eingestellten Inhalten.
+            </li>
+            <li th:text="#{agb.inhalte.punkt2}">
+                Mit dem Upload räumen Nutzende dem Betreiber ein einfaches, nicht
+                übertragbares Nutzungsrecht zur Darstellung auf der Plattform ein.
+            </li>
+            <li th:text="#{agb.inhalte.punkt3}">
+                Der Betreiber darf offensichtlich rechtswidrige Inhalte ohne
+                Vorankündigung entfernen.
+            </li>
+        </ul>
+
+        <h2 th:text="#{agb.kuendigung.titel}">10. Kündigung und Kontolöschung</h2>
+        <ul>
+            <li th:text="#{agb.kuendigung.punkt1}">
+                Nutzende können ihr Konto jederzeit per E-Mail an den Betreiber löschen lassen.
+            </li>
+            <li th:text="#{agb.kuendigung.punkt2}">
+                Der Betreiber kann bei Verstössen gegen diese AGB Konten sperren oder löschen.
+            </li>
+            <li th:text="#{agb.kuendigung.punkt3}">
+                Laufende Sponsoring-Vereinbarungen bleiben von einer Kontolöschung unberührt.
+            </li>
+        </ul>
+
+        <h2 th:text="#{agb.aenderungen.titel}">11. Änderungen der AGB</h2>
+        <p th:text="#{agb.aenderungen.text}">
+            Der Betreiber kann diese AGB jederzeit anpassen. Wesentliche Änderungen werden
+            mindestens 30 Tage im Voraus per E-Mail oder In-App-Benachrichtigung mitgeteilt.
+            Wer den geänderten AGB nicht zustimmt, kann sein Konto bis zum Inkrafttreten
+            kostenfrei kündigen; die Weiternutzung gilt als Zustimmung. Massgeblich ist
+            jeweils die aktuelle Fassung auf dieser Seite.
+        </p>
+
+        <h2 th:text="#{agb.recht.titel}">12. Anwendbares Recht und Gerichtsstand</h2>
+        <p th:text="#{agb.recht.text}">
+            Es gilt ausschliesslich Schweizer Recht. Gerichtsstand ist der Wohnsitz des
+            Betreibers, sofern das Gesetz keinen anderen zwingenden Gerichtsstand vorsieht.
+        </p>
+
+        <p style="margin-top: 2rem; color: var(--dash-grau);">
+            <a th:href="@{/impressum}" th:text="#{footer.impressum}">Impressum</a> ·
+            <a th:href="@{/datenschutz}" th:text="#{footer.datenschutz}">Datenschutz</a> ·
+            <a th:href="@{/}" th:text="#{error.zurueckLink}">Zurück zur Startseite</a>
+        </p>
+    </article>
+</main>
+
+<footer class="public-footer">
+    <div class="public-footer-inner">
+        <p style="margin:0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Sponsorplatz · Schweiz</p>
+        <nav>
+            <a th:href="@{/impressum}" th:text="#{footer.impressum}">Impressum</a>
+            <a th:href="@{/datenschutz}" th:text="#{footer.datenschutz}">Datenschutz</a>
+            <a th:href="@{/agb}" th:text="#{layout.agb}">AGB</a>
+        </nav>
+    </div>
+</footer>
+
+</body>
+</html>
+

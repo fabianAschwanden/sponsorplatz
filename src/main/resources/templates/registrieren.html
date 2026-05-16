@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +17,8 @@
             <span>Sponsorplatz</span>
         </a>
         <nav class="public-nav">
-            <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/kontakt}" th:text="#{navigation.kontakt}">Kontakt</a>
             <a th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
         </nav>
     </div>

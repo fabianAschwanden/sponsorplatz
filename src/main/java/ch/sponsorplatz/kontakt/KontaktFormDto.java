@@ -3,6 +3,7 @@ package ch.sponsorplatz.kontakt;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+// Bewusst keine @Size(max=0) auf homepage — siehe Kommentar dort.
 
 /**
  * Anonyme Plattform-Kontakt-Anfrage — wird vom {@link KontaktController}
@@ -29,8 +30,12 @@ public class KontaktFormDto {
     @Size(max = 4000)
     private String nachricht;
 
-    /** Honeypot — Bots füllen jedes Feld; Menschen sehen das versteckte Feld nicht. */
-    @Size(max = 0)
+    /**
+     * Honeypot — Bots füllen jedes Feld; Menschen sehen das versteckte Feld
+     * nicht. Bewusst ohne Bean-Validation: der Controller prüft das Feld
+     * VOR der Bindung-Auswertung und liefert Silent-Success, damit Bots
+     * keine Fehler-Hints zurückbekommen.
+     */
     private String homepage;
 
     public String getName() { return name; }

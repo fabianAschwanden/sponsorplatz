@@ -173,6 +173,20 @@ public class AppUserService {
     }
 
     /**
+     * Liefert nur die E-Mail-Adressen aller PLATFORM_ADMIN-User — für
+     * cross-feature Benachrichtigungen (Plattform-Kontakt, Mail-Fanout).
+     * Bounded-Context-Hygiene: andere Pakete brauchen kein {@code AppUser}
+     * und kein Repository (ARCH-01/-02).
+     */
+    @Transactional(readOnly = true)
+    public List<String> findeAdminEmails() {
+        return repository.findByPlatformRolle(PlatformRolle.PLATFORM_ADMIN)
+                .stream()
+                .map(AppUser::getEmail)
+                .toList();
+    }
+
+    /**
      * Setzt das {@code aktiv}-Flag eines Users und speichert. Wird vom
      * Admin-UI ({@code /admin/benutzer/{id}/{sperren,entsperren}}) genutzt.
      *

@@ -49,6 +49,9 @@ class KontaktControllerTest {
     @Test
     @DisplayName("KONT-02: POST /kontakt happy path → Service-Call + Flash + Redirect")
     void happyPath() throws Exception {
+        org.mockito.Mockito.when(kontaktService.erfolgsMeldung(org.mockito.ArgumentMatchers.any()))
+                .thenReturn("Danke");
+
         mockMvc.perform(post("/kontakt")
                         .param("name", "Max Muster")
                         .param("email", "max@example.com")
@@ -57,7 +60,7 @@ class KontaktControllerTest {
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/kontakt"))
-                .andExpect(flash().attributeExists("erfolgsMeldung"));
+                .andExpect(flash().attribute("erfolgsMeldung", "Danke"));
 
         verify(kontaktService).verarbeite(any(KontaktFormDto.class));
     }

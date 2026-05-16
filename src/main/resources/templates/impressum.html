@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,7 +18,8 @@
             <span>Sponsorplatz</span>
         </a>
         <nav class="public-nav">
-            <a th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/marktplatz}" th:text="#{navigation.marktplatz}">Marktplatz</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/kontakt}" th:text="#{navigation.kontakt}">Kontakt</a>
             <a th:href="@{/login}" th:text="#{navigation.anmelden}">Anmelden</a>
         </nav>
     </div>
@@ -31,7 +32,13 @@
         <h2>Verantwortlich</h2>
         <p>
             Fabian Aschwanden<br>
-            <a href="mailto:fabian.aschwanden@gmail.com">fabian.aschwanden@gmail.com</a>
+            <a href="mailto:fabian.aschwanden@gmail.com">fabian.aschwanden@gmail.com</a><br>
+            <a th:href="@{/kontakt}">Kontakt-Formular</a>
+        </p>
+        <p style="color: var(--dash-grau); font-size: 0.92em;">
+            Sponsorplatz wird in der Pilotphase als private Initiative ohne kommerzielle
+            Tätigkeit betrieben. Sobald ein gewerblicher Rahmen entsteht, werden hier
+            Postanschrift und UID-Nummer ergänzt.
         </p>
 
         <h2>Zweck dieses Angebots</h2>
@@ -66,6 +73,7 @@
 
         <p style="margin-top: 2rem; color: var(--dash-grau);">
             <a th:href="@{/datenschutz}" th:text="#{info.datenschutz.titel}">Datenschutzerklärung</a> ·
+            <a th:href="@{/agb}" th:text="#{layout.agb}">AGB</a> ·
             <a th:href="@{/}" th:text="#{error.zurueckLink}">Zurück zur Startseite</a>
         </p>
     </article>
@@ -77,9 +85,5 @@
         <nav>
             <a th:href="@{/impressum}" th:text="#{footer.impressum}">Impressum</a>
             <a th:href="@{/datenschutz}" th:text="#{footer.datenschutz}">Datenschutz</a>
+            <a th:href="@{/agb}" th:text="#{layout.agb}">AGB</a>
         </nav>
-    </div>
-</footer>
-
-</body>
-</html>
