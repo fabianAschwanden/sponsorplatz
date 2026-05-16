@@ -38,7 +38,7 @@ public class EventController {
         model.addAttribute("orgSlug", slug);
         model.addAttribute("orgName", kopf.name());
         model.addAttribute("events", eventService.findeViewsNachOrg(kopf.id()));
-        return "event-liste";
+        return "projekt/event-liste";
     }
 
     @PostMapping("/speichern")

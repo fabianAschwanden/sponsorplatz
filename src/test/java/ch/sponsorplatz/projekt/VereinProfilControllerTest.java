@@ -64,7 +64,7 @@ class VereinProfilControllerTest {
 
         mockMvc.perform(get("/vereine/fc-muster"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("verein-profil"))
+                .andExpect(view().name("projekt/verein-profil"))
                 .andExpect(model().attributeExists("org", "projekte"));
     }
 
@@ -94,7 +94,7 @@ class VereinProfilControllerTest {
 
         mockMvc.perform(get("/vereine/fc-sportverein"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("verein-profil"))
+                .andExpect(view().name("projekt/verein-profil"))
                 .andExpect(result -> {
                     var mv = result.getModelAndView();
                     assertThat(mv).isNotNull();

@@ -51,7 +51,7 @@ class SupportControllerTest {
     void mitAuthZeigtFormular() throws Exception {
         mockMvc.perform(get("/support"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("support"))
+                .andExpect(view().name("home/support"))
                 .andExpect(model().attributeExists("supportForm"));
     }
 
@@ -80,7 +80,7 @@ class SupportControllerTest {
                         .param("nachricht", "Eine ausreichend lange Nachricht für die Validierung.")
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(view().name("support"))
+                .andExpect(view().name("home/support"))
                 .andExpect(model().attributeHasFieldErrors("supportForm", "betreff"));
     }
 }

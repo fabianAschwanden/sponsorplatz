@@ -38,7 +38,7 @@ public class RegistrierungController {
         }
         model.addAttribute("userForm", dto);
         model.addAttribute("einladungOffen", "offen".equals(einladung));
-        return "registrieren";
+        return "benutzer/registrieren";
     }
 
     @PostMapping("/registrieren")
@@ -46,14 +46,14 @@ public class RegistrierungController {
                               BindingResult br,
                               Model model) {
         if (br.hasErrors()) {
-            return "registrieren";
+            return "benutzer/registrieren";
         }
         try {
             appUserService.registriere(dto);
             return "redirect:/login?registriert";
         } catch (IllegalArgumentException ex) {
             model.addAttribute(ModelAttributeNames.FEHLERMELDUNG, ex.getMessage());
-            return "registrieren";
+            return "benutzer/registrieren";
         }
     }
 }

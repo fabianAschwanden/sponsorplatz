@@ -46,7 +46,7 @@ public class EngagementController {
         model.addAttribute("filterRegion", region);
         model.addAttribute("filterBranche", branche);
         model.addAttribute("alleBranchen", Branche.values());
-        return "engagement-schaufenster";
+        return "anfrage/engagement-schaufenster";
     }
 }
 

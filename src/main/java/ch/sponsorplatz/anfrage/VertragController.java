@@ -75,7 +75,7 @@ public class VertragController {
         if (!model.containsAttribute("form")) {
             model.addAttribute("form", vertragService.findeFormularNachId(id));
         }
-        return "vertrag-detail";
+        return "anfrage/vertrag-detail";
     }
 
     @PostMapping("/vertraege/{id}")
@@ -121,7 +121,7 @@ public class VertragController {
         vars.put("vertrag", v);
         vars.put("erstelltAmDatum", LocalDate.now());
 
-        byte[] pdf = pdfGenerator.erzeuge("vertrag-pdf", vars, "/");
+        byte[] pdf = pdfGenerator.erzeuge("anfrage/vertrag-pdf", vars, "/");
         String dateiname = "sponsorplatz-vertrag-"
                 + DATEINAME_TS.format(LocalDate.now()) + "-" + id + ".pdf";
         return ResponseEntity.ok()

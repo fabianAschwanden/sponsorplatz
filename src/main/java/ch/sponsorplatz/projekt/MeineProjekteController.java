@@ -38,6 +38,6 @@ public class MeineProjekteController {
         var orgIds = mitgliedschaftService.findeOrgIdsVonUser(userId);
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
         model.addAttribute("projekte", projektService.findeViewsNachOrgIds(orgIds));
-        return "meine-projekte";
+        return "projekt/meine-projekte";
     }
 }

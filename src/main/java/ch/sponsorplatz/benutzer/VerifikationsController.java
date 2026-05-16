@@ -23,7 +23,7 @@ public class VerifikationsController {
             model.addAttribute("erfolg", false);
             model.addAttribute("fehlermeldung", ex.getMessage());
         }
-        return "verifizierung";
+        return "benutzer/verifizierung";
     }
 }
 

@@ -83,7 +83,7 @@ class ProjektControllerTest {
 
         mockMvc.perform(get("/organisationen/fc-test/projekte"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("projekt-liste"))
+                .andExpect(view().name("projekt/projekt-liste"))
                 .andExpect(model().attributeExists("projekte"));
     }
 
@@ -97,7 +97,7 @@ class ProjektControllerTest {
 
         mockMvc.perform(get("/organisationen/fc-test/projekte/neu"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("projekt-form"))
+                .andExpect(view().name("projekt/projekt-form"))
                 .andExpect(model().attributeExists("projektForm"));
     }
 
@@ -135,7 +135,7 @@ class ProjektControllerTest {
 
         mockMvc.perform(get("/organisationen/fc-test/projekte/sommerfest-2026"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("projekt-detail"))
+                .andExpect(view().name("projekt/projekt-detail"))
                 .andExpect(model().attributeExists("projekt", "pakete"));
     }
 
@@ -151,7 +151,7 @@ class ProjektControllerTest {
                         .with(csrf())
                         .param("name", ""))
                 .andExpect(status().isOk())
-                .andExpect(view().name("projekt-form"));
+                .andExpect(view().name("projekt/projekt-form"));
     }
 
     /** PCTRL-06: POST .../speichern ohne Edit-Recht → 403. */

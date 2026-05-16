@@ -33,7 +33,7 @@ public class KontaktController {
         if (!model.containsAttribute("kontaktForm")) {
             model.addAttribute("kontaktForm", new KontaktFormDto());
         }
-        return "kontakt";
+        return "kontakt/kontakt";
     }
 
     @PostMapping
@@ -49,7 +49,7 @@ public class KontaktController {
             return "redirect:/kontakt";
         }
         if (binding.hasErrors()) {
-            return "kontakt";
+            return "kontakt/kontakt";
         }
         kontaktService.verarbeite(form);
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,

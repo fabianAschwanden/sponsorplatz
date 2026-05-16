@@ -39,7 +39,7 @@ public class EinladungsController {
     public String vorschau(@RequestParam String token, Model model) {
         EinladungVorschauView vorschau = einladungsService.ladeVorschau(token);
         model.addAttribute("vorschau", vorschau);
-        return "einladung-vorschau";
+        return "einladung/einladung-vorschau";
     }
 
     /** POST führt die Annahme aus — User hat die Vorschau-Page bestätigt. */
@@ -53,6 +53,6 @@ public class EinladungsController {
             return "redirect:/registrieren?email=" + email + "&einladung=offen";
         }
         model.addAttribute("erfolgsMeldung", "Einladung angenommen! Sie sind jetzt Mitglied.");
-        return "einladung-erfolg";
+        return "einladung/einladung-erfolg";
     }
 }

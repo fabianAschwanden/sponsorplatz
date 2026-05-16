@@ -42,7 +42,7 @@ class KontaktControllerTest {
     void formularIstPublic() throws Exception {
         mockMvc.perform(get("/kontakt"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("kontakt"))
+                .andExpect(view().name("kontakt/kontakt"))
                 .andExpect(model().attributeExists("kontaktForm"));
     }
 
@@ -75,7 +75,7 @@ class KontaktControllerTest {
                         .param("nachricht", "")
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(view().name("kontakt"));
+                .andExpect(view().name("kontakt/kontakt"));
 
         verify(kontaktService, never()).verarbeite(any());
     }

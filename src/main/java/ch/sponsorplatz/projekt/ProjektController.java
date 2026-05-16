@@ -47,7 +47,7 @@ public class ProjektController {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
         model.addAttribute("org", org);
         model.addAttribute("projekte", projektService.findeViewsNachOrg(org.id()));
-        return "projekt-liste";
+        return "projekt/projekt-liste";
     }
 
     @GetMapping("/neu")
@@ -56,7 +56,7 @@ public class ProjektController {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
         model.addAttribute("org", ladeOrgView(orgSlug));
         model.addAttribute("projektForm", new ProjektFormDto());
-        return "projekt-form";
+        return "projekt/projekt-form";
     }
 
     @PostMapping("/speichern")
@@ -71,7 +71,7 @@ public class ProjektController {
         if (br.hasErrors()) {
             model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "projekte");
             model.addAttribute("org", org);
-            return "projekt-form";
+            return "projekt/projekt-form";
         }
         ProjektView projekt = projektService.erstelleAusFormAlsView(
                 org.id(), dto.getName(), dto.getBeschreibung(),
@@ -99,7 +99,7 @@ public class ProjektController {
         model.addAttribute("medien", medien.bilder());
         model.addAttribute("anhaenge", medien.anhaenge());
         model.addAttribute("paketForm", new SponsoringPaketFormDto());
-        return "projekt-detail";
+        return "projekt/projekt-detail";
     }
 
     @PostMapping("/{projektSlug}/veroeffentlichen")
@@ -129,7 +129,7 @@ public class ProjektController {
             model.addAttribute("org", ladeOrgView(orgSlug));
             model.addAttribute("projekt", projekt);
             model.addAttribute("pakete", paketService.findeViewsNachProjekt(projekt.id()));
-            return "projekt-detail";
+            return "projekt/projekt-detail";
         }
         paketService.erstelleNachProjektSlug(projektSlug, dto.getName(), dto.getBeschreibung(), dto.getPreisChf());
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,

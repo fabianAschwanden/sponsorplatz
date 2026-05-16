@@ -48,7 +48,7 @@ public class MitgliederController {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("org", org);
         model.addAttribute("mitglieder", mitgliedschaftService.findeViewsNachOrg(org.id()));
-        return "mitglieder";
+        return "organisation/mitglieder";
     }
 
     @PostMapping("/hinzufuegen")

@@ -40,7 +40,7 @@ class EngagementControllerTest {
 
         mockMvc.perform(get("/marken/css-versicherung/engagements"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("engagement-schaufenster"))
+                .andExpect(view().name("anfrage/engagement-schaufenster"))
                 .andExpect(model().attributeExists("engagements", "sponsorSlug", "alleBranchen"));
     }
 

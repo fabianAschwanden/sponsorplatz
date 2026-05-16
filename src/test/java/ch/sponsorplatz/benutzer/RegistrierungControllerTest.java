@@ -38,7 +38,7 @@ class RegistrierungControllerTest {
     void formularWirdAngezeigt() throws Exception {
         mockMvc.perform(get("/registrieren"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("registrieren"))
+                .andExpect(view().name("benutzer/registrieren"))
                 .andExpect(model().attributeExists("userForm"));
     }
 
@@ -52,7 +52,7 @@ class RegistrierungControllerTest {
                         .param("email", "Max@Example.com")
                         .param("einladung", "offen"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("registrieren"))
+                .andExpect(view().name("benutzer/registrieren"))
                 .andExpect(model().attribute("einladungOffen", true))
                 .andExpect(model().attribute("userForm",
                         org.hamcrest.Matchers.hasProperty("email",
@@ -88,7 +88,7 @@ class RegistrierungControllerTest {
                         .param("passwort", "passwort123")
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(view().name("registrieren"))
+                .andExpect(view().name("benutzer/registrieren"))
                 .andExpect(model().attributeExists("fehlermeldung"));
     }
 
@@ -101,7 +101,7 @@ class RegistrierungControllerTest {
                         .param("passwort", "")
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(view().name("registrieren"));
+                .andExpect(view().name("benutzer/registrieren"));
     }
 }
 

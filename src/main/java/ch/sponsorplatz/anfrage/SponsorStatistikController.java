@@ -44,6 +44,6 @@ public class SponsorStatistikController {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "statistiken");
         model.addAttribute("sponsorStatistik", sponsorStatistik);
         model.addAttribute("vereinStatistik", vereinStatistik);
-        return "statistik";
+        return "anfrage/statistik";
     }
 }

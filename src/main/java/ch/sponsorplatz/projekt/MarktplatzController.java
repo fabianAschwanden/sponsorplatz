@@ -90,7 +90,7 @@ public class MarktplatzController {
                 .map(this::mitCover)
                 .toList());
 
-        return "marktplatz";
+        return "projekt/marktplatz";
     }
 
     /** Holt das Cover-Asset des Projekts (falls vorhanden) und reichert die ProjektView an. */
@@ -111,6 +111,6 @@ public class MarktplatzController {
         model.addAttribute("pakete", pakete);
         model.addAttribute("anhaenge", anhaenge);
         model.addAttribute("galerie", galerie);
-        return "marktplatz-detail";
+        return "projekt/marktplatz-detail";
     }
 }

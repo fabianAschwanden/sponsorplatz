@@ -14,16 +14,16 @@ public class InfoController {
 
     @GetMapping("/impressum")
     public String impressum() {
-        return "impressum";
+        return "home/impressum";
     }
 
     @GetMapping("/datenschutz")
     public String datenschutz() {
-        return "datenschutz";
+        return "home/datenschutz";
     }
 
     @GetMapping("/agb")
     public String agb() {
-        return "agb";
+        return "home/agb";
     }
 }

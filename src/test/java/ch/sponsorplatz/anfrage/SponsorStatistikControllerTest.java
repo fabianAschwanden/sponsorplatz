@@ -61,7 +61,7 @@ class SponsorStatistikControllerTest {
 
         mockMvc.perform(get("/statistiken"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("statistik"))
+                .andExpect(view().name("anfrage/statistik"))
                 .andExpect(model().attributeExists("sponsorStatistik"))
                 .andExpect(model().attributeExists("vereinStatistik"));
     }
@@ -80,7 +80,7 @@ class SponsorStatistikControllerTest {
 
         mockMvc.perform(get("/statistiken"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("statistik"))
+                .andExpect(view().name("anfrage/statistik"))
                 .andExpect(model().attribute("sponsorStatistik", stat));
     }
 
@@ -100,7 +100,7 @@ class SponsorStatistikControllerTest {
 
         mockMvc.perform(get("/statistiken"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("statistik"))
+                .andExpect(view().name("anfrage/statistik"))
                 .andExpect(model().attribute("vereinStatistik", vereinStat));
     }
 }

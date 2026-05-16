@@ -35,7 +35,7 @@ class PasswortResetControllerTest {
     void passwortVergessenFormular() throws Exception {
         mockMvc.perform(get("/passwort-vergessen"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("passwort-vergessen"));
+                .andExpect(view().name("benutzer/passwort-vergessen"));
     }
 
     @Test
@@ -58,7 +58,7 @@ class PasswortResetControllerTest {
 
         mockMvc.perform(get("/passwort-reset").param("token", "abc"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("passwort-reset"))
+                .andExpect(view().name("benutzer/passwort-reset"))
                 .andExpect(model().attribute("token", "abc"));
     }
 
@@ -69,7 +69,7 @@ class PasswortResetControllerTest {
 
         mockMvc.perform(get("/passwort-reset").param("token", "bad"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("passwort-vergessen"))
+                .andExpect(view().name("benutzer/passwort-vergessen"))
                 .andExpect(model().attributeExists("fehlermeldung"));
     }
 
@@ -97,7 +97,7 @@ class PasswortResetControllerTest {
                         .param("passwortBestaetigung", "passwort2")
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(view().name("passwort-reset"))
+                .andExpect(view().name("benutzer/passwort-reset"))
                 .andExpect(model().attribute("fehlermeldung", "Passwörter stimmen nicht überein"));
     }
 }

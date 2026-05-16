@@ -43,7 +43,7 @@ public class AnfragenController {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "anfragen");
         model.addAttribute("org", org);
         model.addAttribute("anfragen", anfrageService.findeEingehendeViews(org.id()));
-        return "anfragen-liste";
+        return "anfrage/anfragen-liste";
     }
 
     @PostMapping("/{anfrageId}/annehmen")

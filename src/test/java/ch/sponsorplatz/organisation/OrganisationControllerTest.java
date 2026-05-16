@@ -59,7 +59,7 @@ class OrganisationControllerTest {
 
         mockMvc.perform(get("/organisationen"))
             .andExpect(status().isOk())
-            .andExpect(view().name("organisationen"))
+            .andExpect(view().name("organisation/organisationen"))
             .andExpect(model().attributeExists("organisationen"));
     }
 
@@ -122,7 +122,7 @@ class OrganisationControllerTest {
 
         mockMvc.perform(get("/organisationen/fc-test"))
             .andExpect(status().isOk())
-            .andExpect(view().name("organisation-detail"))
+            .andExpect(view().name("organisation/organisation-detail"))
             .andExpect(model().attributeExists("org"));
     }
 
@@ -142,7 +142,7 @@ class OrganisationControllerTest {
     void neuOhneTypZeigtTypAuswahl() throws Exception {
         mockMvc.perform(get("/organisationen/neu"))
             .andExpect(status().isOk())
-            .andExpect(view().name("organisation-typ-waehlen"))
+            .andExpect(view().name("organisation/organisation-typ-waehlen"))
             .andExpect(model().attributeExists("typen"));
     }
 
@@ -152,7 +152,7 @@ class OrganisationControllerTest {
     void neuMitTypZeigtFormular() throws Exception {
         mockMvc.perform(get("/organisationen/neu").param("typ", "VEREIN"))
             .andExpect(status().isOk())
-            .andExpect(view().name("organisation-form"))
+            .andExpect(view().name("organisation/organisation-form"))
             .andExpect(model().attributeExists("orgForm"))
             .andExpect(model().attributeExists("typen"))
             .andExpect(model().attributeExists("sponsorBranchen"));
@@ -165,7 +165,7 @@ class OrganisationControllerTest {
                 .param("name", "")
                 .with(csrf()))
             .andExpect(status().isOk())
-            .andExpect(view().name("organisation-form"));
+            .andExpect(view().name("organisation/organisation-form"));
     }
 
     /** ORG-12: GET /organisationen/{slug}/bearbeiten ohne Edit-Recht → 403. */
@@ -191,7 +191,7 @@ class OrganisationControllerTest {
 
         mockMvc.perform(get("/organisationen/fc-test/bearbeiten"))
             .andExpect(status().isOk())
-            .andExpect(view().name("organisation-form"));
+            .andExpect(view().name("organisation/organisation-form"));
     }
 
     /**

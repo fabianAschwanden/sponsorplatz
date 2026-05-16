@@ -42,7 +42,7 @@ class SponsorRegistrierungControllerTest {
     void formularWirdAngezeigt() throws Exception {
         mockMvc.perform(get("/sponsor/registrieren"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("sponsor-registrieren"))
+                .andExpect(view().name("organisation/sponsor-registrieren"))
                 .andExpect(model().attributeExists("sponsorForm"));
     }
 
@@ -74,7 +74,7 @@ class SponsorRegistrierungControllerTest {
                         .param("firmenname", "")
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(view().name("sponsor-registrieren"));
+                .andExpect(view().name("organisation/sponsor-registrieren"));
     }
 
     /** SR-07: POST /sponsor/registrieren mit doppelter E-Mail → Fehlermeldung. */
@@ -92,7 +92,7 @@ class SponsorRegistrierungControllerTest {
                         .param("sponsorBranche", "SPORTARTIKEL")
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(view().name("sponsor-registrieren"))
+                .andExpect(view().name("organisation/sponsor-registrieren"))
                 .andExpect(model().attributeExists("fehlermeldung"));
     }
 }

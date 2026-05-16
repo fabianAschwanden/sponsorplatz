@@ -89,7 +89,7 @@ class DatenExportServiceTest {
 
         Map<String, Object> export = service.exportiere(user.getId());
 
-        assertThat(export).containsKey("watchlist");
+        assertThat(export).containsKey("projekt/watchlist");
     }
 
     /** DSG-04: Export für nicht existierenden User wirft. */

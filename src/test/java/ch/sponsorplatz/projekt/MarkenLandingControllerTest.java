@@ -42,7 +42,7 @@ class MarkenLandingControllerTest {
 
         mockMvc.perform(get("/fuer-marken"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("marken-landing"))
+                .andExpect(view().name("projekt/marken-landing"))
                 .andExpect(model().attributeExists("vereineProBranche", "anzahlProjekte"));
     }
 

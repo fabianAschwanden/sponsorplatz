@@ -50,7 +50,7 @@ public class NotificationController {
         List<Benachrichtigung> liste = notificationService.letzteNachrichtenFuer(userId);
         model.addAttribute("benachrichtigungen", BenachrichtigungView.von(liste));
         notificationService.markiereAlleAlsGelesen(userId);
-        return "benachrichtigungen";
+        return "benachrichtigung/benachrichtigungen";
     }
 
     @GetMapping("/anzahl")

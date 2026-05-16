@@ -31,7 +31,7 @@ public class WatchlistController {
         UUID userId = appUserService.findeIdNachEmail(auth.getName());
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "watchlist");
         model.addAttribute("eintraege", watchlistService.findeViewsNachUser(userId));
-        return "watchlist";
+        return "projekt/watchlist";
     }
 
     @PostMapping("/hinzufuegen/{projektSlug}")

@@ -47,7 +47,7 @@ class InfoControllerTest {
     void impressumOeffentlichErreichbar() throws Exception {
         mockMvc.perform(get("/impressum"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("impressum"));
+                .andExpect(view().name("home/impressum"));
     }
 
     @Test
@@ -56,7 +56,7 @@ class InfoControllerTest {
     void datenschutzOeffentlichErreichbar() throws Exception {
         mockMvc.perform(get("/datenschutz"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("datenschutz"));
+                .andExpect(view().name("home/datenschutz"));
     }
 
     @Test
@@ -65,7 +65,7 @@ class InfoControllerTest {
     void agbOeffentlichErreichbar() throws Exception {
         mockMvc.perform(get("/agb"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("agb"));
+                .andExpect(view().name("home/agb"));
     }
 
     @Test

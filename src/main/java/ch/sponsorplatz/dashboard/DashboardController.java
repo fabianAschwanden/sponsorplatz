@@ -109,6 +109,6 @@ public class DashboardController {
         model.addAttribute("offeneEinladungen",
                 einladungsService.findeOffeneFuerEmail(auth.getName()));
 
-        return "dashboard";
+        return "dashboard/dashboard";
     }
 }

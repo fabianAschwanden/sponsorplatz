@@ -43,11 +43,11 @@ public class EinstellungenController {
 
     @GetMapping
     public String einstellungen(Authentication auth, Model model) {
-        model.addAttribute("aktiveSeite", "einstellungen");
+        model.addAttribute("aktiveSeite", "benutzer/einstellungen");
         model.addAttribute("profil", appUserService.findeProfilViewNachEmail(auth.getName()));
         model.addAttribute("profilForm", appUserService.findeProfilFormularNachEmail(auth.getName()));
         model.addAttribute("sprachen", VERFUEGBARE_SPRACHEN);
-        return "einstellungen";
+        return "benutzer/einstellungen";
     }
 
     @PostMapping("/profil")
@@ -58,10 +58,10 @@ public class EinstellungenController {
                                    HttpServletResponse response,
                                    RedirectAttributes redirect) {
         if (br.hasErrors()) {
-            model.addAttribute("aktiveSeite", "einstellungen");
+            model.addAttribute("aktiveSeite", "benutzer/einstellungen");
             model.addAttribute("profil", appUserService.findeProfilViewNachEmail(auth.getName()));
             model.addAttribute("sprachen", VERFUEGBARE_SPRACHEN);
-            return "einstellungen";
+            return "benutzer/einstellungen";
         }
 
         UUID userId = appUserService.findeIdNachEmail(auth.getName());

@@ -33,7 +33,7 @@ public class AufgabenController {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "aufgaben");
         model.addAttribute("aufgaben",
                 AufgabeView.von(aufgabenService.meineOffenen(auth.getName())));
-        return "aufgaben";
+        return "aufgabe/aufgaben";
     }
 
     @PostMapping("/aufgaben/{id}/erledigen")

@@ -77,7 +77,7 @@ class MeineAnfragenControllerTest {
 
         mockMvc.perform(get("/anfragen"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("meine-anfragen"))
+                .andExpect(view().name("anfrage/meine-anfragen"))
                 .andExpect(model().attributeExists("anfragen", "anzahlOffene"));
     }
 
@@ -124,7 +124,7 @@ class MeineAnfragenControllerTest {
 
         mockMvc.perform(get("/anfragen/neu").param("paketId", paketId.toString()))
                 .andExpect(status().isOk())
-                .andExpect(view().name("anfrage-neu"))
+                .andExpect(view().name("anfrage/anfrage-neu"))
                 .andExpect(model().attributeExists("anfrageForm", "paketName", "empfaengerOrg", "meineOrgs"))
                 .andExpect(model().attribute("paketName", "Gold"));
     }
@@ -187,7 +187,7 @@ class MeineAnfragenControllerTest {
                         .param("nachricht", "Wir wollen uns selbst sponsern.")
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(view().name("anfrage-neu"));
+                .andExpect(view().name("anfrage/anfrage-neu"));
 
         verify(anfrageService, never()).erstelleNachIds(any(), any(), any(), any(), any(), any());
     }

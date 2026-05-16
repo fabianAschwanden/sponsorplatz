@@ -55,7 +55,7 @@ public class OrganisationController {
     public String liste(Authentication auth, Model model) {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("organisationen", ladeListeViews(auth));
-        return "organisationen";
+        return "organisation/organisationen";
     }
 
     private List<OrganisationView> ladeListeViews(Authentication auth) {
@@ -85,13 +85,13 @@ public class OrganisationController {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         if (typ == null) {
             model.addAttribute("typen", OrgTyp.values());
-            return "organisation-typ-waehlen";
+            return "organisation/organisation-typ-waehlen";
         }
         OrganisationFormDto dto = new OrganisationFormDto();
         dto.setTyp(typ);
         model.addAttribute("orgForm", dto);
         zeigeFormularModelDaten(model);
-        return "organisation-form";
+        return "organisation/organisation-form";
     }
 
     /**
@@ -154,7 +154,7 @@ public class OrganisationController {
 
     private String zeigeFormular(Model model) {
         zeigeFormularModelDaten(model);
-        return "organisation-form";
+        return "organisation/organisation-form";
     }
 
     /** Pure Model-Befüllung — von zeigeFormular und vom Pre-Fill-GET genutzt. */
@@ -175,7 +175,7 @@ public class OrganisationController {
         model.addAttribute("statusOk", org.status() == OrgStatus.ACTIVE || org.status() == OrgStatus.VERIFIED);
         model.addAttribute("untergeordneteOrgs", service.findeUntergeordneteViews(org.id()));
         model.addAttribute("elternkette", hierarchieService.findeElternketteNachSlug(slug));
-        return "organisation-detail";
+        return "organisation/organisation-detail";
     }
 
     @GetMapping("/{slug}/bearbeiten")
@@ -186,7 +186,7 @@ public class OrganisationController {
         model.addAttribute("orgForm", service.findeFormularNachSlug(slug));
         model.addAttribute("bearbeitenSlug", slug);
         zeigeFormularModelDaten(model);
-        return "organisation-form";
+        return "organisation/organisation-form";
     }
 
     @PostMapping("/{slug}/loeschen")

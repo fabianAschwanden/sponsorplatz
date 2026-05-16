@@ -380,7 +380,7 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 - [x] **Storno-Grund** (Spec §8.1, Migration V34): `rechnung.storno_grund VARCHAR(500) NULL`. `stornieren(id, grund)`-Signatur, Audit-Log mit `vorheriger_status` + `grund`.
 - [x] Tests: RECH-07/07b/08/09 (RechnungsnummerGenerator), RECH-15 (markiereBezahlt-Audit), RECH-16 (stornieren-Audit + Grund). 462 Tests gesamt.
 - [x] **State-Machine-Sauber-Iteration**: `VertragService.kuendige(id, grund)` mit BEZAHLT-Check (wirft) + OFFEN-Auto-Storno + Audit-Event `VERTRAG_GEKUENDIGT`. `markiereUnterzeichnet` prüft `preisChf > 0 OR leistungVerein/Sponsor gepflegt` (verhindert versehentliche Standardwert-Unterzeichnung; Naturalien-Sponsoring explizit erlaubt). Migration V35 (`gekuendigt_am`, `kuendigungs_grund`). VertragService↔RechnungService-Cycle via `@Lazy`-Proxy gelöst. Tests VTR-05b/c, VTR-07/08/08b/08c — 468 Tests gesamt.
-- [ ] **Mahnwesen** (Spec §7, V36) — nächste Iteration: `mahnstufe`/`letzte_mahnung_am`-Spalten, `MahnungsCronJob` täglich 06:00, Tests MAHN-01..04.
+- [ ] **Mahnwesen** (Spec §7, V37) — Backlog, nach Pilot-Launch: `mahnstufe`/`letzte_mahnung_am`-Spalten, `MahnungsCronJob` täglich 06:00, Tests MAHN-01..04.
 
 ### 11.12 — Statistik-Dashboard für Sponsor + Verein (5.C)
 
@@ -474,6 +474,16 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 - [x] Footer-Links validiert, alle drei Pages (Impressum, Datenschutz, AGB) aus jedem Layout erreichbar
 - [x] `/agb` in SecurityConfig als permitAll (dev + prod)
 - [x] Tests: PUB-03 AGB-Route, PUB-04 Cookie-Banner-Verzicht-Dokumentation (4 Tests in InfoControllerTest)
+
+### 10.5 — Security-Hardening (Response-Headers) ✓
+
+- [x] `X-Content-Type-Options: nosniff` (verhindert MIME-Sniffing)
+- [x] `Referrer-Policy: strict-origin-when-cross-origin` (DSG-konforme Referrer-Beschränkung)
+- [x] `Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()` (Browser-Feature-Restriktion)
+- [x] `Content-Security-Policy` mit striktem Default (`default-src 'self'`), Sentry-CDN-Ausnahme für script/connect
+- [x] Prod: `frame-ancestors 'none'` (Clickjacking-Schutz), HSTS mit 1 Jahr max-age + includeSubDomains
+- [x] Dev: `frame-src 'self'` (für H2-Console), `'unsafe-eval'` (Dev-Tools)
+- [x] Tests: SEC-HDR-01..05 (5 Tests, alle grün)
 
 ### 10.4 — Pilot-Launch-Checkliste
 

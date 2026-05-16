@@ -72,7 +72,7 @@ class MarktplatzControllerTest {
 
         mockMvc.perform(get("/marktplatz"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("marktplatz"))
+                .andExpect(view().name("projekt/marktplatz"))
                 .andExpect(model().attributeExists("projekte"));
     }
 
@@ -189,7 +189,7 @@ class MarktplatzControllerTest {
 
         mockMvc.perform(get("/marktplatz/sommerfest"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("marktplatz-detail"))
+                .andExpect(view().name("projekt/marktplatz-detail"))
                 .andExpect(model().attributeExists("projekt", "pakete", "anhaenge", "galerie"));
     }
 
@@ -271,7 +271,7 @@ class MarktplatzControllerTest {
 
         mockMvc.perform(get("/marktplatz").param("branche", "SPORT"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("marktplatz"))
+                .andExpect(view().name("projekt/marktplatz"))
                 .andExpect(result -> {
                     ModelAndView mv = result.getModelAndView();
                     assertThat(mv).isNotNull();

@@ -44,7 +44,7 @@ public class SupportController {
     public String formular(Model model) {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "support");
         model.addAttribute("supportForm", new SupportFormDto());
-        return "support";
+        return "home/support";
     }
 
     @PostMapping
@@ -55,7 +55,7 @@ public class SupportController {
                            RedirectAttributes redirect) {
         if (br.hasErrors()) {
             model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "support");
-            return "support";
+            return "home/support";
         }
 
         String absenderEmail = auth.getName();
@@ -88,7 +88,7 @@ public class SupportController {
             model.addAttribute(ModelAttributeNames.FEHLERMELDUNG,
                     "Mail-Versand ist aktuell nicht möglich. Bitte senden Sie Ihre Anfrage direkt an "
                             + empfaenger + " — Ihre Eingabe bleibt unten erhalten.");
-            return "support";
+            return "home/support";
         }
     }
 

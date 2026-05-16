@@ -27,7 +27,7 @@ public class MarkenLandingController {
         model.addAttribute("vereineProBranche", statistikService.vereineProBranche());
         model.addAttribute("anzahlProjekte", statistikService.anzahlAktiveProjekte());
         model.addAttribute("alleBranchen", Branche.values());
-        return "marken-landing";
+        return "projekt/marken-landing";
     }
 }
 

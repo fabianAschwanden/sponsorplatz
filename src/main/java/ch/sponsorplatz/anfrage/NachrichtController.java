@@ -62,7 +62,7 @@ public class NachrichtController {
         // Vergleich (Authentication.email matched nie gegen UUID).
         model.addAttribute("aktuellerUserId",
                 appUserService.findeOptionalIdNachEmail(auth.getName()).orElse(null));
-        return "nachrichten-thread";
+        return "anfrage/nachrichten-thread";
     }
 
     @PostMapping

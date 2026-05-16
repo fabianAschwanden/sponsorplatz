@@ -69,7 +69,7 @@ class AnfragenControllerTest {
 
         mockMvc.perform(get("/organisationen/fc-test/anfragen"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("anfragen-liste"))
+                .andExpect(view().name("anfrage/anfragen-liste"))
                 .andExpect(model().attributeExists("anfragen"));
     }
 

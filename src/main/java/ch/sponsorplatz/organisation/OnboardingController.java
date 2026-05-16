@@ -83,7 +83,7 @@ public class OnboardingController {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "onboarding");
         model.addAttribute("vereinForm", new VereinSchnellFormDto());
         model.addAttribute("branchen", Branche.values());
-        return "onboarding";
+        return "organisation/onboarding";
     }
 
     @PostMapping("/verein-erstellen")
@@ -96,7 +96,7 @@ public class OnboardingController {
             model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "onboarding");
             model.addAttribute("branchen", Branche.values());
             model.addAttribute("zeigeVereinForm", true);
-            return "onboarding";
+            return "organisation/onboarding";
         }
 
         UUID userId = appUserService.findeIdNachEmail(auth.getName());
@@ -119,7 +119,7 @@ public class OnboardingController {
             model.addAttribute(ModelAttributeNames.FEHLERMELDUNG, ex.getMessage());
             model.addAttribute("branchen", Branche.values());
             model.addAttribute("zeigeVereinForm", true);
-            return "onboarding";
+            return "organisation/onboarding";
         }
     }
 

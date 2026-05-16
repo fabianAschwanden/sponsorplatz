@@ -102,7 +102,7 @@ class NachrichtControllerTest {
 
         mockMvc.perform(get("/organisationen/" + ORG_SLUG + "/anfragen/" + ANFRAGE_ID + "/nachrichten"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("nachrichten-thread"))
+                .andExpect(view().name("anfrage/nachrichten-thread"))
                 .andExpect(model().attributeExists("nachrichten", "anfrage", "org"));
     }
 

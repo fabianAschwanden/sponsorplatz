@@ -88,7 +88,7 @@ public class RechnungController {
 
         model.addAttribute("rechnung", v);
         model.addAttribute("qrBildDataUrl", qrBillService.erzeugeAlsDataUrlFuerId(id));
-        return "rechnung-detail";
+        return "anfrage/rechnung-detail";
     }
 
     @PostMapping("/rechnungen/{id}/bezahlt")
@@ -134,7 +134,7 @@ public class RechnungController {
         vars.put("qrBildDataUrl", qrBillService.erzeugeAlsDataUrlFuerId(id));
         vars.put("erstelltAmDatum", LocalDate.now());
 
-        byte[] pdf = pdfGenerator.erzeuge("rechnung-pdf", vars, "/");
+        byte[] pdf = pdfGenerator.erzeuge("anfrage/rechnung-pdf", vars, "/");
         String dateiname = "sponsorplatz-rechnung-" + v.rechnungsnummer() + ".pdf";
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)

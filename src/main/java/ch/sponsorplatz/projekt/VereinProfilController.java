@@ -33,6 +33,6 @@ public class VereinProfilController {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "vereine");
         model.addAttribute("org", org);
         model.addAttribute("projekte", projektService.findeOeffentlicheViewsNachOrg(org.id()));
-        return "verein-profil";
+        return "projekt/verein-profil";
     }
 }

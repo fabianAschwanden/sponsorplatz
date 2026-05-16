@@ -37,7 +37,7 @@ public class PdfGeneratorService {
      * Rendert ein Thymeleaf-Template zu HTML, dann zu PDF-Bytes.
      *
      * @param templateName Name des Templates ohne {@code .html}-Suffix,
-     *                     z.B. {@code "vertrag-pdf"}
+     *                     z.B. {@code "anfrage/vertrag-pdf"}
      * @param variablen    werden ins Thymeleaf-Modell gestellt
      * @param baseUri      Root-URI für relative Links/Bilder im HTML —
      *                     z.B. {@code "https://sponsorplatz.for-better.biz/"}

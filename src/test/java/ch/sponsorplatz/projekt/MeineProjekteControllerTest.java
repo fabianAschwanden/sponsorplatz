@@ -89,7 +89,7 @@ class MeineProjekteControllerTest {
 
         mockMvc.perform(get("/meine-projekte"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("meine-projekte"))
+                .andExpect(view().name("projekt/meine-projekte"))
                 .andExpect(model().attributeExists("projekte"))
                 .andExpect(model().attribute("aktiveSeite", "projekte"));
     }
@@ -107,6 +107,6 @@ class MeineProjekteControllerTest {
 
         mockMvc.perform(get("/meine-projekte"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("meine-projekte"));
+                .andExpect(view().name("projekt/meine-projekte"));
     }
 }

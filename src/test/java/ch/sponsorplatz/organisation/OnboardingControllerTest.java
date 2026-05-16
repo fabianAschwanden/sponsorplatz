@@ -70,7 +70,7 @@ class OnboardingControllerTest {
 
         mockMvc.perform(get("/onboarding"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("onboarding"))
+                .andExpect(view().name("organisation/onboarding"))
                 .andExpect(model().attributeExists("vereinForm", "branchen"));
 
         verify(appUserService).markiereOnboardingGesehen(user.getId());
@@ -102,7 +102,7 @@ class OnboardingControllerTest {
 
         mockMvc.perform(get("/onboarding"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("onboarding"));
+                .andExpect(view().name("organisation/onboarding"));
 
         org.mockito.Mockito.verify(appUserService, org.mockito.Mockito.never()).markiereOnboardingGesehen(org.mockito.ArgumentMatchers.any());
     }
@@ -159,7 +159,7 @@ class OnboardingControllerTest {
                 .param("branche", "SPORT")
                 .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(view().name("onboarding"))
+                .andExpect(view().name("organisation/onboarding"))
                 .andExpect(model().attributeHasFieldErrors("vereinForm", "vereinName"));
     }
 

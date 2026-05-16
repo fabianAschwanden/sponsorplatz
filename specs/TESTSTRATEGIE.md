@@ -492,6 +492,16 @@ Registrierungs-Services; der Versand selbst ist im
 | **SENTRY-04** | `SentryConfigTest` | User-IP wird aus Events entfernt (DSG-Compliance) |
 | **SENTRY-05** | `SentryConfigTest` | Event ohne Exception wird durchgelassen |
 
+### Phase 10.5 — Security-Hardening Response-Headers (SEC-HDR)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **SEC-HDR-01** | `SecurityHeadersTest` | X-Content-Type-Options: nosniff auf Responses |
+| **SEC-HDR-02** | `SecurityHeadersTest` | Referrer-Policy: strict-origin-when-cross-origin |
+| **SEC-HDR-03** | `SecurityHeadersTest` | Permissions-Policy schränkt Kamera/Mikrofon/Geo/Payment ein |
+| **SEC-HDR-04** | `SecurityHeadersTest` | Content-Security-Policy Header vorhanden |
+| **SEC-HDR-05** | `SecurityHeadersTest` | CSP erlaubt Sentry-CDN für Script-Loading |
+
 ### Phase Operational — Ops-Dashboard + Alerts (OPS)
 
 | ID | Test-Klasse | Beschreibung |

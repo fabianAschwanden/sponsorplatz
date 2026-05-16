@@ -41,7 +41,7 @@ public class DatenExportService implements ch.sponsorplatz.benutzer.BenutzerDate
         Map<String, Object> export = new LinkedHashMap<>();
         export.put("benutzer", benutzerDaten(user));
         export.put("mitgliedschaften", mitgliedschaftDaten(userId));
-        export.put("watchlist", watchlistDaten(userId));
+        export.put("projekt/watchlist", watchlistDaten(userId));
         export.put("exportiertAm", java.time.Instant.now().toString());
         return export;
     }

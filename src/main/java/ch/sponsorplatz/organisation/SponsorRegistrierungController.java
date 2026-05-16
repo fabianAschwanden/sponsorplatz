@@ -28,7 +28,7 @@ public class SponsorRegistrierungController {
     public String formular(Model model) {
         model.addAttribute("sponsorForm", new SponsorRegistrierungFormDto());
         model.addAttribute("branchen", SponsorBranche.values());
-        return "sponsor-registrieren";
+        return "organisation/sponsor-registrieren";
     }
 
     @PostMapping
@@ -37,7 +37,7 @@ public class SponsorRegistrierungController {
                               Model model) {
         if (br.hasErrors()) {
             model.addAttribute("branchen", SponsorBranche.values());
-            return "sponsor-registrieren";
+            return "organisation/sponsor-registrieren";
         }
         try {
             sponsorRegistrierungService.registriereSponsor(dto);
@@ -45,7 +45,7 @@ public class SponsorRegistrierungController {
         } catch (IllegalArgumentException ex) {
             model.addAttribute(ModelAttributeNames.FEHLERMELDUNG, ex.getMessage());
             model.addAttribute("branchen", SponsorBranche.values());
-            return "sponsor-registrieren";
+            return "organisation/sponsor-registrieren";
         }
     }
 }

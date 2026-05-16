@@ -125,7 +125,24 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/h2-console/**", "/benachrichtigungen/**", "/payment/webhook/**"))
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(loginSperreFilter, RateLimitFilter.class)
-                .headers(h -> h.frameOptions(f -> f.disable()));
+                .headers(h -> {
+                    h.frameOptions(f -> f.disable());
+                    // Security-Hardening (Phase 10.5) — lockerer in dev für H2-Console
+                    h.contentTypeOptions(Customizer.withDefaults());
+                    h.referrerPolicy(r -> r.policy(
+                            org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN));
+                    h.permissionsPolicy(p -> p.policy("camera=(), microphone=(), geolocation=(), payment=()"));
+                    h.contentSecurityPolicy(csp -> csp.policyDirectives(
+                            "default-src 'self'; " +
+                            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://browser.sentry-cdn.com; " +
+                            "style-src 'self' 'unsafe-inline'; " +
+                            "img-src 'self' data:; " +
+                            "font-src 'self'; " +
+                            "connect-src 'self' https://*.ingest.sentry.io; " +
+                            "frame-src 'self'; " +
+                            "frame-ancestors 'self'"
+                    ));
+                });
 
         wendeOidcLoginAn(http, oauth2Clients, oidcUserService, loginSuccessHandler, loginFailureHandler);
         return http.build();
@@ -180,6 +197,25 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/benachrichtigungen/**", "/payment/webhook/**"))
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(loginSperreFilter, RateLimitFilter.class)
+                .headers(h -> {
+                    // Security-Hardening (Phase 10.5)
+                    h.contentTypeOptions(Customizer.withDefaults());
+                    h.httpStrictTransportSecurity(hsts -> hsts
+                            .includeSubDomains(true)
+                            .maxAgeInSeconds(31536000));
+                    h.referrerPolicy(r -> r.policy(
+                            org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN));
+                    h.permissionsPolicy(p -> p.policy("camera=(), microphone=(), geolocation=(), payment=()"));
+                    h.contentSecurityPolicy(csp -> csp.policyDirectives(
+                            "default-src 'self'; " +
+                            "script-src 'self' 'unsafe-inline' https://browser.sentry-cdn.com; " +
+                            "style-src 'self' 'unsafe-inline'; " +
+                            "img-src 'self' data:; " +
+                            "font-src 'self'; " +
+                            "connect-src 'self' https://*.ingest.sentry.io; " +
+                            "frame-ancestors 'none'"
+                    ));
+                })
                 .logout(Customizer.withDefaults());
 
         wendeOidcLoginAn(http, oauth2Clients, oidcUserService, loginSuccessHandler, loginFailureHandler);

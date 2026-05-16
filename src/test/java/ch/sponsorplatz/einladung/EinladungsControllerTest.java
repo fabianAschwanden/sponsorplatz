@@ -57,7 +57,7 @@ class EinladungsControllerTest {
 
         mockMvc.perform(get("/einladung/annehmen").param("token", "valid-token"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("einladung-vorschau"))
+                .andExpect(view().name("einladung/einladung-vorschau"))
                 .andExpect(model().attributeExists("vorschau"));
 
         // Kritisch: GET darf nimmAn NIEMALS aufrufen!
@@ -85,7 +85,7 @@ class EinladungsControllerTest {
                         .with(csrf())
                         .param("token", "valid-token"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("einladung-erfolg"));
+                .andExpect(view().name("einladung/einladung-erfolg"));
 
         verify(einladungsService).nimmAn("valid-token");
     }

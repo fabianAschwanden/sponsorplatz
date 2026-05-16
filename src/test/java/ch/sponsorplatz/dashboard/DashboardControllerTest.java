@@ -90,7 +90,7 @@ class DashboardControllerTest {
 
         mockMvc.perform(get("/dashboard"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("dashboard"));
+                .andExpect(view().name("dashboard/dashboard"));
     }
 
     /** DASH-03: Model enthält die Dashboard-Attribute. */
@@ -158,7 +158,7 @@ class DashboardControllerTest {
 
         mockMvc.perform(get("/dashboard"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("dashboard"));
+                .andExpect(view().name("dashboard/dashboard"));
     }
 
     /** DASH-07: Plattform-Admin ohne Mitgliedschaften → bleibt auf Dashboard (kein Onboarding-Redirect). */
@@ -173,6 +173,6 @@ class DashboardControllerTest {
 
         mockMvc.perform(get("/dashboard"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("dashboard"));
+                .andExpect(view().name("dashboard/dashboard"));
     }
 }

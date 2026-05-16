@@ -93,7 +93,7 @@ public class MeineAnfragenController {
         model.addAttribute("meineOrgNamen", daten.vereinsOrgNamen());
         model.addAttribute("anzahlOffene", offene);
         model.addAttribute("kannKontaktanfrageStellen", istVereinsMitglied);
-        return "meine-anfragen";
+        return "anfrage/meine-anfragen";
     }
 
     /**
@@ -123,7 +123,7 @@ public class MeineAnfragenController {
         model.addAttribute("kontaktForm", form);
         model.addAttribute("meineOrgs", meineVereinsOrgs);
         model.addAttribute("sponsoren", sponsoren);
-        return "anfrage-kontakt-neu";
+        return "anfrage/anfrage-kontakt-neu";
     }
 
     @PostMapping("/anfragen/kontakt-erstellen")
@@ -158,7 +158,7 @@ public class MeineAnfragenController {
             model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "anfragen");
             model.addAttribute("meineOrgs", mitgliedschaftService.findeMeineVereinsOrgViews(userId));
             model.addAttribute("sponsoren", organisationService.findeAktiveSponsorenAlsViews());
-            return "anfrage-kontakt-neu";
+            return "anfrage/anfrage-kontakt-neu";
         }
 
         UUID erstelltVonUserId = appUserService.findeIdNachEmail(auth.getName());
@@ -228,7 +228,7 @@ public class MeineAnfragenController {
         model.addAttribute("projektSlug", paketInfo.projektSlug());
         model.addAttribute("empfaengerOrg", paketInfo.empfaengerOrg());
         model.addAttribute("meineOrgs", meineOrgs);
-        return "anfrage-neu";
+        return "anfrage/anfrage-neu";
     }
 
     @PostMapping("/anfragen/erstellen")
@@ -261,7 +261,7 @@ public class MeineAnfragenController {
             model.addAttribute("empfaengerOrg", paketInfo.empfaengerOrg());
             model.addAttribute("meineOrgs",
                     mitgliedschaftService.findeMeineOrgsAusser(userId, empfaengerOrgId));
-            return "anfrage-neu";
+            return "anfrage/anfrage-neu";
         }
 
         UUID erstelltVonUserId = appUserService.findeIdNachEmail(auth.getName());

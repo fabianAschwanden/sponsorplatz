@@ -26,7 +26,7 @@ class HomeControllerTest {
     void rootGibtIndexZurueck() throws Exception {
         mockMvc.perform(get("/"))
             .andExpect(status().isOk())
-            .andExpect(view().name("index"))
+            .andExpect(view().name("home/index"))
             .andExpect(model().attribute("aktiveSeite", "home"));
     }
 }

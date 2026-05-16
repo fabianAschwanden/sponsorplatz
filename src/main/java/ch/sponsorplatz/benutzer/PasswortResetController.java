@@ -27,7 +27,7 @@ public class PasswortResetController {
 
     @GetMapping("/passwort-vergessen")
     public String formularAnzeigen() {
-        return "passwort-vergessen";
+        return "benutzer/passwort-vergessen";
     }
 
     @PostMapping("/passwort-vergessen")
@@ -35,7 +35,7 @@ public class PasswortResetController {
         resetService.sendeResetMail(email);
         // Immer Erfolg zeigen (kein Information Leak ob E-Mail existiert)
         model.addAttribute("gesendet", true);
-        return "passwort-vergessen";
+        return "benutzer/passwort-vergessen";
     }
 
     @GetMapping("/passwort-reset")
@@ -43,10 +43,10 @@ public class PasswortResetController {
         try {
             resetService.validiereToken(token);
             model.addAttribute("token", token);
-            return "passwort-reset";
+            return "benutzer/passwort-reset";
         } catch (IllegalArgumentException | IllegalStateException e) {
             model.addAttribute("fehlermeldung", e.getMessage());
-            return "passwort-vergessen";
+            return "benutzer/passwort-vergessen";
         }
     }
 
@@ -59,7 +59,7 @@ public class PasswortResetController {
         if (!neuesPasswort.equals(passwortBestaetigung)) {
             model.addAttribute("token", token);
             model.addAttribute("fehlermeldung", "Passwörter stimmen nicht überein");
-            return "passwort-reset";
+            return "benutzer/passwort-reset";
         }
 
         try {
@@ -70,7 +70,7 @@ public class PasswortResetController {
         } catch (IllegalArgumentException | IllegalStateException e) {
             model.addAttribute("token", token);
             model.addAttribute("fehlermeldung", e.getMessage());
-            return "passwort-reset";
+            return "benutzer/passwort-reset";
         }
     }
 }

@@ -62,7 +62,7 @@ class WatchlistControllerTest {
 
         mockMvc.perform(get("/watchlist"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("watchlist"))
+                .andExpect(view().name("projekt/watchlist"))
                 .andExpect(model().attributeExists("eintraege"));
     }
 
