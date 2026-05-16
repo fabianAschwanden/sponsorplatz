@@ -877,13 +877,14 @@ Bootet eine echte Spring-Instanz auf RandomPort + HTTP-GETs gegen die Schlüssel
 | **ARCH-12** | `@Controller`/`@RestController`-Klassen tragen Suffix `Controller` | Naming-Konvention |
 | **ARCH-13** | *(informativ)* Tests liegen im gleichen Paket wie SUT | Durch PR-Template/Code-Review durchgesetzt, nicht durch ArchUnit |
 | **ARCH-14** | Templates liegen in einem Feature-Folder, der einem Java-Paket entspricht (`TemplateStrukturTest`) | Verhindert dass die nach Bounded-Context strukturierten Templates wieder im Top-Level landen |
+| **ARCH-15** | HTML-Attribute (placeholder/title/alt/aria-label) mit deutschem Text haben `th:`-Pendant in der Nähe (`I18nLintTest`) | Verhindert Lokalisierungslücken in user-facing Form-Hints — Allowlist für `admin/` und Legal-Pages |
 
 **Spätere Regel-Kandidaten:**
 
-- **ARCH-15** (TBD): `model.addAttribute(...)` darf nicht direkt mit JPA-Entity aufgerufen werden — heute mit ArchUnit schwer messbar, Workaround via ARCH-02
-- **ARCH-16** (TBD): Migrationen sind additiv — keine `DROP COLUMN` / `DROP TABLE` ohne `IF EXISTS`-Guard (statische SQL-Analyse, nicht ArchUnit)
-- **ARCH-17** (TBD): Jeder `@RestController` hat `@CrossOrigin`-Policy explizit deklariert
-- **ARCH-18** (TBD): Migration-Test gegen prod-Schema-Snapshot (Spring Modulith oder Testcontainers + Flyway-Validate)
+- **ARCH-16** (TBD): `model.addAttribute(...)` darf nicht direkt mit JPA-Entity aufgerufen werden — heute mit ArchUnit schwer messbar, Workaround via ARCH-02
+- **ARCH-17** (TBD): Migrationen sind additiv — keine `DROP COLUMN` / `DROP TABLE` ohne `IF EXISTS`-Guard (statische SQL-Analyse, nicht ArchUnit)
+- **ARCH-18** (TBD): Jeder `@RestController` hat `@CrossOrigin`-Policy explizit deklariert
+- **ARCH-19** (TBD): Migration-Test gegen prod-Schema-Snapshot (Spring Modulith oder Testcontainers + Flyway-Validate)
 
 ## CI
 

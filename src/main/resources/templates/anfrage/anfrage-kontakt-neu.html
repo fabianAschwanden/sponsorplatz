@@ -66,6 +66,7 @@
                 <label for="betreff">Betreff *</label>
                 <input type="text" id="betreff" th:field="*{betreff}" required
                        minlength="3" maxlength="255"
+                       th:placeholder="#{anfrageKontakt.feld.betreffPlaceholder}"
                        placeholder="z.B. Anfrage Sponsoring Sommerfest 2026">
                 <p class="app-meldung fehler" th:if="${#fields.hasErrors('betreff')}" th:errors="*{betreff}"></p>
             </div>
@@ -74,6 +75,7 @@
                 <label for="nachricht">Nachricht *</label>
                 <textarea id="nachricht" th:field="*{nachricht}" rows="6" required
                           minlength="10" maxlength="2000"
+                          th:placeholder="#{anfrageKontakt.feld.nachrichtPlaceholder}"
                           placeholder="Beschreibe euer Projekt, was ihr sucht und warum dieser Sponsor passen könnte."></textarea>
                 <p class="app-meldung fehler" th:if="${#fields.hasErrors('nachricht')}" th:errors="*{nachricht}"></p>
             </div>
