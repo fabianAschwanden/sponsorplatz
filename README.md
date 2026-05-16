@@ -21,7 +21,7 @@ Schärfe ist unser Vertrauens-Versprechen an die Sponsoren-Seite.
 
 Die Plattform vereint:
 
-- **Kuratierter Health-Marktplatz** — strikt auf Sport und Gesundheit fokussiert (elf Branchen)
+- **Kuratierter Health-Marktplatz** — auf Sport und Gesundheit fokussiert (elf Branchen)
 - **Kollaboratives CRM** für Sponsoren-Daten (geteilte Stammdaten, Edit-Rechte pro Verein)
 - **Marktplatz** mit öffentlichen Projekt-Profilen, Sponsoring-Paketen und Anfrage-Workflow
 - **Engagement-Schaufenster** — öffentliche Darstellung aktiver Sponsoring-Partnerschaften
