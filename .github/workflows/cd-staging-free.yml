@@ -116,3 +116,52 @@ jobs:
           done
           echo "Health check failed at $HEALTH_URL"
           exit 1
+
+      # OCIR füllt sich sonst pro Commit um ~300 MB; Always-Free hat 25 GB.
+      # Behält die `RETENTION_KEEP` neuesten Images im Repo `sponsorplatz` und
+      # löscht den Rest. Bricht den Deploy nicht — wenn die Secrets fehlen,
+      # nur Warning. Permissions: CICD-Group hat bereits "manage repos" via
+      # infra/shared/bootstrap/main.tf.
+      - name: OCIR-Retention (alte Images aufräumen)
+        if: success()
+        continue-on-error: true
+        env:
+          OCI_CLI_USER: ${{ secrets.OCI_USER_OCID }}
+          OCI_CLI_TENANCY: ${{ secrets.OCI_TENANCY_OCID }}
+          OCI_CLI_FINGERPRINT: ${{ secrets.OCI_KEY_FINGERPRINT }}
+          OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_API_PRIVATE_KEY }}
+          OCI_CLI_REGION: eu-zurich-1
+          RETENTION_KEEP: '10'
+        run: |
+          if [ -z "$OCI_CLI_USER" ] || [ -z "$OCI_CLI_KEY_CONTENT" ]; then
+            echo "::warning::OCIR-Retention skipped — Secrets OCI_USER_OCID / OCI_API_PRIVATE_KEY / OCI_TENANCY_OCID / OCI_KEY_FINGERPRINT fehlen. Setup-Anleitung in infra/staging-free/README.md."
+            exit 0
+          fi
+
+          python3 -m pip install --quiet oci-cli
+
+          # Alle Images im Repo, sortiert nach Erstellungszeit (neueste zuerst).
+          # Dedupe nach Image-OCID (Tags teilen sich denselben Digest).
+          oci artifacts container image list \
+            --compartment-id "$OCI_CLI_TENANCY" --repository-name sponsorplatz --all \
+            --query 'data.items[].{ocid:id,created:"time-created"}' \
+            --output json > /tmp/raw.json
+
+          jq -s '.[0] | unique_by(.ocid) | sort_by(.created) | reverse' /tmp/raw.json > /tmp/uniq.json
+          TOTAL=$(jq 'length' /tmp/uniq.json)
+          echo "OCIR sponsorplatz: $TOTAL eindeutige Images vorhanden"
+
+          if [ "$TOTAL" -le "$RETENTION_KEEP" ]; then
+            echo "✓ Unter Retention-Schwelle ($RETENTION_KEEP) — kein Cleanup nötig"
+            exit 0
+          fi
+
+          DELETE_COUNT=$(( TOTAL - RETENTION_KEEP ))
+          echo "→ Lösche $DELETE_COUNT älteste Images (behalte $RETENTION_KEEP neueste)"
+
+          jq -r ".[${RETENTION_KEEP}:][] | .ocid" /tmp/uniq.json | while read -r ocid; do
+            echo "  - $ocid"
+            oci artifacts container image delete --image-id "$ocid" --force 2>&1 | tail -1 || true
+          done
+
+          echo "✓ Retention durch"

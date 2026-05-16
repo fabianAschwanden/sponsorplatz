@@ -108,6 +108,21 @@ Alle drei Container laufen auf derselben VM. Persistente Daten unter `/var/lib/s
 | Secret | `STAGING_FREE_SSH_PRIVATE_KEY` | SSH-Key für `opc@<VM-IP>` |
 | Secret | `SLACK_WEBHOOK_URL` (optional) | für Failure-Notifications |
 
+**Optional — OCIR-Retention** (cleant alte Images im Repo `sponsorplatz` nach
+jedem Deploy, behält die 10 neuesten). Skipt mit Warning, wenn nicht gesetzt:
+
+| Type | Name | Wert |
+|---|---|---|
+| Secret | `OCI_USER_OCID` | OCID des CICD-Service-Users |
+| Secret | `OCI_TENANCY_OCID` | OCID der Tenancy |
+| Secret | `OCI_KEY_FINGERPRINT` | Fingerprint des API-Keys (Console → User → API Keys) |
+| Secret | `OCI_API_PRIVATE_KEY` | PEM-Inhalt des privaten API-Keys (inkl. Header/Footer) |
+
+API-Key-Upload: Console → Identity → Users → CICD-User → API Keys → Add. Den
+Public-Key hochladen, den private Key als `OCI_API_PRIVATE_KEY` ins GitHub-Repo.
+Die `manage repos in tenancy`-Policy ist bereits in
+`infra/shared/bootstrap/main.tf` enthalten — kein Policy-Update nötig.
+
 ## Object Storage (Phase 2)
 
 Mit `STORAGE_PROVIDER=oci` werden Uploads + Backups in OCI Object Storage gespeichert:
