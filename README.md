@@ -31,8 +31,8 @@ Die Plattform vereint:
 
 ## Phase
 
-Aktuell: **Phase 9 — Roadmap-Lücken geschlossen** ✓ — Mehrsprachigkeit, Zahlungs-Provider, Event-Entity.
-Nächste Phase: **Phase 10 — Production-Readiness & Pilot-Launch**.
+Aktuell: **Phase 10 — Production-Readiness & Pilot-Launch** ⏳ — Code-seitig komplett (Monitoring, Sentry, DSG, Security-Hardening, Smoke-Tests, Kontakt-Funnel), 10.4-Ops (HTTPS/SMTP-prod/DNS/Backups) noch offen.
+Architektur statisch durchgesetzt: **15 ArchUnit/Lint-Regeln (ARCH-01..15)**, **551 Tests**, Feature-Folder-Topologie ohne Cycles (Java + Templates parallel strukturiert).
 
 ### Umgesetzte Features
 
@@ -49,7 +49,13 @@ Nächste Phase: **Phase 10 — Production-Readiness & Pilot-Launch**.
 | 7 | Health-Story: Branche-Filter, Vereins-Health-Hero, Marken-Landing-Page | ✓ |
 | 8 | MVP-Reife: Demo-Seed, Engagement-Schaufenster, OG-Card-Generator | ✓ |
 | 9 | Mehrsprachigkeit DE/FR/IT/EN, Zahlungs-Provider, Event-Entity | ✓ |
-| 10 | Production-Readiness & Pilot-Launch | ⏳ |
+| 10.1 | Monitoring: TraceId-Filter mit W3C-`traceparent`, Actuator-Probes, JSON-Logs | ✓ |
+| 10.2 | Sentry Error-Tracking (Java + Browser, DSG-konform, SRI-Pinning) | ✓ |
+| 10.3 | DSG: Impressum, Datenschutz, AGB (4-sprachig), kein Cookie-Banner nötig | ✓ |
+| 10.4 | Pilot-Launch: Smoke-IT, Kontakt-Funnel ✓ — HTTPS/SMTP-prod/DNS Ops ⏳ | ⏳ |
+| 10.5 | Security-Hardening: CSP, Permissions-Policy, Referrer-Policy, SRI | ✓ |
+| 11 | Pilot-Hardening: Onboarding, Support, Anhänge, Verträge, Rechnungen | ✓ |
+| 12 | Customizable Task-Engine (Aufgaben mit Trigger-Regeln, Sidebar-Badge) | ✓ |
 
 ## Tech-Stack
 
