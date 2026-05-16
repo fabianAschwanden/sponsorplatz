@@ -482,6 +482,16 @@ Registrierungs-Services; der Versand selbst ist im
 | **PUB-03** | `InfoControllerTest` | GET `/agb` → 200 + agb-Template, public erreichbar |
 | **PUB-04** | `InfoControllerTest` | Datenschutz-Seite dokumentiert Cookie-Banner-Verzicht (enthält „kein Tracking") |
 
+### Phase 10.2 — Error-Tracking / Sentry (SENTRY)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **SENTRY-01** | `SentryConfigTest` | NotFoundException wird vom BeforeSend-Callback gefiltert (kein Event an Sentry) |
+| **SENTRY-02** | `SentryConfigTest` | IllegalArgumentException wird gefiltert |
+| **SENTRY-03** | `SentryConfigTest` | RuntimeException wird an Sentry durchgelassen |
+| **SENTRY-04** | `SentryConfigTest` | User-IP wird aus Events entfernt (DSG-Compliance) |
+| **SENTRY-05** | `SentryConfigTest` | Event ohne Exception wird durchgelassen |
+
 ### Phase Operational — Ops-Dashboard + Alerts (OPS)
 
 | ID | Test-Klasse | Beschreibung |

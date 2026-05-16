@@ -81,6 +81,7 @@
     <p th:if="${projekte.isEmpty()}" th:text="#{vereinProfil.keineProjekte}">Dieser Verein hat aktuell keine veröffentlichten Projekte.</p>
     </main>
 </div>
+<th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
 </body>
 </html>
 

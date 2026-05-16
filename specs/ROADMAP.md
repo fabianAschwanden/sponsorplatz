@@ -455,12 +455,15 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 - [ ] OCI Cloud Logging-Forwarding via Sidecar oder Direct-Push
 - [x] Tests: MON-01..04 + MON-03c/d (9 Tests, alle grün)
 
-### 10.2 — Error-Tracking
+### 10.2 — Error-Tracking ✓
 
-- [ ] Glitchtip self-hosted (DSG-konform) oder Sentry-EU-Cloud
-- [ ] Sentry-Java-SDK ins Backend, Release-Tagging via CI
-- [ ] Sentry-Browser-SDK ins Layout (nur Errors, kein Replay → DSG)
-- [ ] Konfiguration als ENV (`SENTRY_DSN`, `SENTRY_ENVIRONMENT`)
+- [x] Sentry Java-SDK (`sentry-spring-boot-starter-jakarta` 8.13.2) + Logback-Appender (`SentryAppender` mit `minimumEventLevel=ERROR` und `minimumBreadcrumbLevel=INFO`, in dev+prod registriert)
+- [x] DSG-konform: `send-default-pii=false`, `traces-sample-rate=0`, BeforeSend-Callback entfernt User-IP
+- [x] BeforeSend-Filter: NotFoundException (404) und IllegalArgumentException (400) werden nicht gesendet (Business-Errors, kein Noise)
+- [x] Konfiguration als ENV: `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_RELEASE` — ohne DSN bleibt Sentry inaktiv (No-Op). Prod erzwingt `SENTRY_RELEASE` (kein Dev-Fallback), damit Release-Health-Tracking nicht unter dem SNAPSHOT-Tag landet.
+- [x] Sentry Browser-SDK als Thymeleaf-Fragment `fragments/sentry-browser.html` (CDN-Einbindung mit SRI-`integrity`-Hash, nur JS-Errors, kein Replay) — eingebunden vor `</body>` in allen 57 nicht-Fragment-Templates
+- [x] Kompatibel mit Glitchtip (self-hosted, DSG) und Sentry-EU-Cloud
+- [x] Tests: SENTRY-01..05 (5 Tests, alle grün)
 
 ### 10.3 — DSG-Compliance & Public-Pages ✓
 

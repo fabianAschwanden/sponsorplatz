@@ -155,6 +155,21 @@
             <version>8.0</version>
         </dependency>
 
+        <!-- Error-Tracking: Sentry Java-SDK (Phase 10.2)
+             Aktivierung via ENV: SENTRY_DSN=https://...@sentry.io/...
+             Ohne DSN bleibt Sentry inaktiv (No-Op). DSG-konform:
+             kein Session-Replay, keine PII, nur Errors + Breadcrumbs. -->
+        <dependency>
+            <groupId>io.sentry</groupId>
+            <artifactId>sentry-spring-boot-starter-jakarta</artifactId>
+            <version>8.13.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.sentry</groupId>
+            <artifactId>sentry-logback</artifactId>
+            <version>8.13.2</version>
+        </dependency>
+
         <!--
           Generiert META-INF/spring-configuration-metadata.json für jede
           @ConfigurationProperties-Klasse — IDE versteht eigene Properties

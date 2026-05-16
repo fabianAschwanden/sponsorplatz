@@ -12,6 +12,18 @@
     <appender name="RECENT_ERRORS" class="ch.sponsorplatz.ops.RecentErrorsAppender"/>
 
     <!--
+        Sentry-Logback-Appender: forwardet WARN+ERROR an Sentry/Glitchtip.
+        - minimumEventLevel=ERROR: nur Errors werden als Events angelegt
+        - minimumBreadcrumbLevel=INFO: INFO+ landen als Breadcrumbs am Event
+        - Ohne gesetzten sentry.dsn ist der Sentry-SDK-Client im No-Op-Modus —
+          dieser Appender feuert dann ins Leere statt zu crashen.
+    -->
+    <appender name="SENTRY" class="io.sentry.logback.SentryAppender">
+        <minimumEventLevel>ERROR</minimumEventLevel>
+        <minimumBreadcrumbLevel>INFO</minimumBreadcrumbLevel>
+    </appender>
+
+    <!--
         JSON-Appender für prod/cloud-free: strukturierte Logs mit logstash-encoder.
         Trace-ID aus MDC wird automatisch als Feld mitgeliefert.
     -->
@@ -32,6 +44,7 @@
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="RECENT_ERRORS"/>
+            <appender-ref ref="SENTRY"/>
         </root>
         <logger name="ch.sponsorplatz" level="DEBUG"/>
     </springProfile>
@@ -41,6 +54,7 @@
         <root level="INFO">
             <appender-ref ref="JSON_CONSOLE"/>
             <appender-ref ref="RECENT_ERRORS"/>
+            <appender-ref ref="SENTRY"/>
         </root>
         <logger name="ch.sponsorplatz" level="INFO"/>
     </springProfile>

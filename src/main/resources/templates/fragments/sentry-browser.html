@@ -1,0 +1,48 @@
+<!--
+  Sentry Browser-SDK Fragment — nur in prod mit konfiguriertem DSN aktiv.
+  Einbindung in Templates: <th:block th:replace="~{fragments/sentry-browser :: sentry-script}" />
+  Vor </body> einfügen.
+
+  DSG-konform:
+  - Nur JavaScript-Errors (keine Session-Replays, kein Performance-Monitoring)
+  - Kein User-Tracking, keine PII
+  - CDN-Einbindung (Bundle-Loader) — kein lokaler Build nötig
+-->
+<th:block th:fragment="sentry-script"
+          th:if="${@environment.getProperty('sentry.dsn') != null and !@environment.getProperty('sentry.dsn').isEmpty()}">
+    <!--
+      SRI-Pinning: integrity-Hash verhindert ausgetauschten CDN-Inhalt
+      (sha384 von bundle.min.js, https://browser.sentry-cdn.com/8.13.2/).
+      Bei Versions-Update den Hash neu generieren:
+        curl -sL https://browser.sentry-cdn.com/<VERSION>/bundle.min.js \\
+          | openssl dgst -sha384 -binary | openssl base64 -A
+    -->
+    <script
+        th:src="'https://browser.sentry-cdn.com/8.13.2/bundle.min.js'"
+        integrity="sha384-+ZoRJkxRPyMzrP6hUpcabGSJJ9Zar1rxfBLFpMegGnKaEC2Djg6bYmmdi9ff2VsV"
+        crossorigin="anonymous">
+    </script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        if (typeof Sentry !== 'undefined') {
+            Sentry.init({
+                dsn: /*[[${@environment.getProperty('sentry.dsn')}]]*/ '',
+                environment: /*[[${@environment.getProperty('sentry.environment', 'dev')}]]*/ 'dev',
+                release: /*[[${@environment.getProperty('sentry.release', 'sponsorplatz@0.1.0')}]]*/ 'sponsorplatz@0.1.0',
+                // DSG: kein Session-Replay, kein Performance-Tracking
+                tracesSampleRate: 0,
+                replaysSessionSampleRate: 0,
+                replaysOnErrorSampleRate: 0,
+                // Nur Errors aus Sponsorplatz-Code
+                allowUrls: [/sponsorplatz\.ch/, /localhost/],
+                beforeSend: function(event) {
+                    // IP-Felder entfernen (Defense in Depth)
+                    if (event.user) { delete event.user.ip_address; }
+                    return event;
+                }
+            });
+        }
+        /*]]>*/
+    </script>
+</th:block>
+
