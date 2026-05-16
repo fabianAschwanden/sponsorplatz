@@ -131,7 +131,7 @@ public class SecurityConfig {
                     h.contentTypeOptions(Customizer.withDefaults());
                     h.referrerPolicy(r -> r.policy(
                             org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN));
-                    h.permissionsPolicy(p -> p.policy("camera=(), microphone=(), geolocation=(), payment=()"));
+                    h.permissionsPolicyHeader(p -> p.policy("camera=(), microphone=(), geolocation=(), payment=()"));
                     h.contentSecurityPolicy(csp -> csp.policyDirectives(
                             "default-src 'self'; " +
                             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://browser.sentry-cdn.com; " +
@@ -205,7 +205,7 @@ public class SecurityConfig {
                             .maxAgeInSeconds(31536000));
                     h.referrerPolicy(r -> r.policy(
                             org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN));
-                    h.permissionsPolicy(p -> p.policy("camera=(), microphone=(), geolocation=(), payment=()"));
+                    h.permissionsPolicyHeader(p -> p.policy("camera=(), microphone=(), geolocation=(), payment=()"));
                     h.contentSecurityPolicy(csp -> csp.policyDirectives(
                             "default-src 'self'; " +
                             "script-src 'self' 'unsafe-inline' https://browser.sentry-cdn.com; " +
