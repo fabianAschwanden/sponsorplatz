@@ -492,7 +492,7 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 - [ ] SPF / DKIM / DMARC für Mail-Domain einrichten und testen
 - [ ] Backups in OCI Object Storage spiegeln, Restore-Test einmal pro Quartal
 - [ ] DNS `sponsorplatz.ch` + `www`-Redirect, IPv6 enabled
-- [ ] Smoke-Test-Suite gegen prod-URL (Login, Marktplatz, Anfrage, Logout)
+- [x] Smoke-Test-Suite (lokal, randomPort) — `SmokeIT` mit 5 Checks (Home, Login, Kontakt, Marktplatz-Auth-Gate, Actuator-Health) via `mvn verify -P e2e`. Gleicher Code läuft später gegen prod-URL via System-Property.
 - [ ] Onboarding 5 echter CH-Sport-/Health-Vereine (Pilot-Welle)
 - [ ] Public-Launch-Kommunikation: Blog-Post, LinkedIn, lokale Sport-Verbände
 

@@ -9,22 +9,22 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Tests für Phase 10.5 — Security-Hardening Response-Headers.
  *
- * <p>Verifiziert, dass die SecurityConfig die OWASP-empfohlenen
+ * <p>
+ * Verifiziert, dass die SecurityConfig die OWASP-empfohlenen
  * Security-Headers auf allen Responses setzt.
  *
  * <ul>
- *   <li>SEC-HDR-01: X-Content-Type-Options: nosniff</li>
- *   <li>SEC-HDR-02: Referrer-Policy: strict-origin-when-cross-origin</li>
- *   <li>SEC-HDR-03: Permissions-Policy (keine Kamera/Mikrofon/Geo/Payment)</li>
- *   <li>SEC-HDR-04: Content-Security-Policy vorhanden</li>
- *   <li>SEC-HDR-05: CSP enthält script-src mit sentry-cdn</li>
+ * <li>SEC-HDR-01: X-Content-Type-Options: nosniff</li>
+ * <li>SEC-HDR-02: Referrer-Policy: strict-origin-when-cross-origin</li>
+ * <li>SEC-HDR-03: Permissions-Policy (keine Kamera/Mikrofon/Geo/Payment)</li>
+ * <li>SEC-HDR-04: Content-Security-Policy vorhanden</li>
+ * <li>SEC-HDR-05: CSP enthält script-src mit sentry-cdn</li>
  * </ul>
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)

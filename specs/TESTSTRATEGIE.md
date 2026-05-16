@@ -502,6 +502,19 @@ Registrierungs-Services; der Versand selbst ist im
 | **SEC-HDR-04** | `SecurityHeadersTest` | Content-Security-Policy Header vorhanden |
 | **SEC-HDR-05** | `SecurityHeadersTest` | CSP erlaubt Sentry-CDN für Script-Loading |
 
+### Phase 10.4 — Pilot-Launch Smoke-Tests (SMOKE)
+
+Failsafe-Suite, läuft mit `mvn verify -P e2e` (im normalen Surefire-Run ausgeschlossen).
+Bootet eine echte Spring-Instanz auf RandomPort + HTTP-GETs gegen die Schlüssel-Routen.
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **SMOKE-01** | `SmokeIT` | GET / → 200 + Marketing-Inhalt |
+| **SMOKE-02** | `SmokeIT` | GET /login → 200 + Form-Felder sichtbar |
+| **SMOKE-03** | `SmokeIT` | GET /kontakt → 200 + Anfrage-Formular |
+| **SMOKE-04** | `SmokeIT` | GET /marktplatz anon → Redirect endet auf Login (Auth-Gate) |
+| **SMOKE-05** | `SmokeIT` | GET /actuator/health → 200 + Status UP |
+
 ### Phase Operational — Ops-Dashboard + Alerts (OPS)
 
 | ID | Test-Klasse | Beschreibung |
@@ -863,13 +876,14 @@ Registrierungs-Services; der Versand selbst ist im
 | **ARCH-11** | Records haben keine `@Autowired`-Felder | Records sind Datenträger, keine Spring-Beans |
 | **ARCH-12** | `@Controller`/`@RestController`-Klassen tragen Suffix `Controller` | Naming-Konvention |
 | **ARCH-13** | *(informativ)* Tests liegen im gleichen Paket wie SUT | Durch PR-Template/Code-Review durchgesetzt, nicht durch ArchUnit |
+| **ARCH-14** | Templates liegen in einem Feature-Folder, der einem Java-Paket entspricht (`TemplateStrukturTest`) | Verhindert dass die nach Bounded-Context strukturierten Templates wieder im Top-Level landen |
 
 **Spätere Regel-Kandidaten:**
 
-- **ARCH-14** (TBD): `model.addAttribute(...)` darf nicht direkt mit JPA-Entity aufgerufen werden — heute mit ArchUnit schwer messbar, Workaround via ARCH-02
-- **ARCH-15** (TBD): Migrationen sind additiv — keine `DROP COLUMN` / `DROP TABLE` ohne `IF EXISTS`-Guard (statische SQL-Analyse, nicht ArchUnit)
-- **ARCH-16** (TBD): Jeder `@RestController` hat `@CrossOrigin`-Policy explizit deklariert
-- **ARCH-17** (TBD): Migration-Test gegen prod-Schema-Snapshot (Spring Modulith oder Testcontainers + Flyway-Validate)
+- **ARCH-15** (TBD): `model.addAttribute(...)` darf nicht direkt mit JPA-Entity aufgerufen werden — heute mit ArchUnit schwer messbar, Workaround via ARCH-02
+- **ARCH-16** (TBD): Migrationen sind additiv — keine `DROP COLUMN` / `DROP TABLE` ohne `IF EXISTS`-Guard (statische SQL-Analyse, nicht ArchUnit)
+- **ARCH-17** (TBD): Jeder `@RestController` hat `@CrossOrigin`-Policy explizit deklariert
+- **ARCH-18** (TBD): Migration-Test gegen prod-Schema-Snapshot (Spring Modulith oder Testcontainers + Flyway-Validate)
 
 ## CI
 

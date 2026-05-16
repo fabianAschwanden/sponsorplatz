@@ -33,31 +33,39 @@ Ernährung, Wellness, Selbsthilfe, Patientenorganisationen — siehe `Branche`-E
 
 ## Wo stehen wir gerade
 
-**Phase 0 — Skelett:** ✅ erledigt
-**Phase 0.1 — Organisation-Entity:** ✅ erledigt (V2-Migration, 21 Tests)
-**Phase 0.2 — AppUser + Mitgliedschaft + AccessControl:** 🔜 als nächstes
+**Phasen 0 – 9, 11, 12:** ✅ erledigt
+**Phase 10 — Production-Readiness & Pilot-Launch:** ⏳ aktiv
+- 10.1 Monitoring ✓ (TraceId-Filter, Actuator-Probes)
+- 10.2 Error-Tracking ✓ (Sentry Java + Browser, DSG-konform, SRI-Pinning)
+- 10.3 DSG-Compliance & Public-Pages ✓ (Impressum, Datenschutz, AGB, kein Cookie-Banner nötig)
+- 10.4 Pilot-Launch-Checkliste 🔜 (HTTPS, prod-SMTP, SPF/DKIM/DMARC, OCI-Backups, DNS, Smoke-Tests)
+- 10.5 Security-Hardening ✓ (CSP, Permissions-Policy, Referrer-Policy)
+
+Architektur-Disziplin ist statisch durchgesetzt: **13 ArchUnit-Regeln** (`ArchitekturRegelnTest`, ARCH-01..13), **545+ Tests** grün, **Feature-Folder-Topologie** ohne Cycles (Java + Templates parallel strukturiert).
 
 Vollständige Roadmap in [`specs/ROADMAP.md`](specs/ROADMAP.md), detaillierte Phase-Pläne in `docs/` (siehe unten).
 
-### Zuletzt umgesetzt (Phase 0.1)
+### Zuletzt umgesetzt
 
-- Migration `V2__organisation.sql` — Tabelle mit ENUM-CHECK-Constraints
-- Entity `Organisation` mit `OrgTyp` (VEREIN/UNTERNEHMEN/STIFTUNG/ANDERE) und `OrgStatus` (PENDING/VERIFIED/ACTIVE/SUSPENDED)
-- `OrganisationRepository`, `OrganisationService`, `SlugGenerator` (Umlaute → ASCII)
-- Controller mit Routen `/organisationen[/neu|/{slug}|/{slug}/bearbeiten|/{slug}/loeschen]`
-- 3 Templates (Liste, Form, Detail)
-- 21 Tests: SlugGenerator (6), OrganisationRepository (4), OrganisationService (5), OrganisationController (6)
-- Specs aktualisiert: DATENMODELL, TECHNISCHE_SPEZIFIKATION, TESTSTRATEGIE
-- dev-Profil: Flyway aktiv, `ddl-auto=validate`
+- **Templates strukturiert nach Bounded-Context** — 47 Templates aus dem flachen Top-Level in Feature-Unterordner (`anfrage/`, `organisation/`, `projekt/`, …) verschoben, analog zur Java-Paket-Struktur
+- **`/kontakt`-Seite** als einziger anonymer Anfrage-Funnel; alles ausser Home + Auth-Flows hinter Login
+- **Sentry-Hardening** — Browser-SDK in allen Templates eingebunden, SRI-Hash, SentryAppender für `log.error(...)`
+- **ARCH-02 + ARCH-06** komplett aufgelöst (View-DTO-Pflicht + Feature-Cycles-DAG)
+- **Aufgaben-Sidebar-Badge** + Task-Engine
+- **AGB-Seite** + Datenschutz/Impressum-Hygiene (DSG)
 
-### Nächste Iteration: Phase 0.2
+### Nächste Iteration: Phase 10.4 (Pilot-Launch)
 
-1. Migration `V3__app_user_und_mitgliedschaft.sql` mit Tabellen `app_user` (BCrypt-Pw) + `mitgliedschaft` (UNIQUE user_id, org_id, rolle)
-2. Entities `AppUser`, `Mitgliedschaft`, `Rolle` (ORG_OWNER, ORG_EDITOR, ORG_VIEWER)
-3. Repositories + Services
-4. `AccessControl`-Bean mit `kannOrgEditieren(orgId, auth)` und `kannOrgVerwalten(orgId, auth)` — siehe [`specs/ROLLENKONZEPT.md`](specs/ROLLENKONZEPT.md)
-5. Mitglieder-Verwaltungs-UI unter `/organisationen/{slug}/mitglieder`
-6. Tests: AC-01 bis AC-08, AU-01 bis AU-05, MG-01 bis MG-04
+Code-Themen, die ohne OCI-Account erledigbar sind:
+1. **Smoke-Test-Suite** gegen prod-URL (Login → Marktplatz → Anfrage → Logout) via Playwright
+2. **MON-W3C-Migration** (`X-Trace-ID` → W3C-`traceparent`) sobald Distributed-Tracing-Backend (Tempo/Jaeger) im Bild ist
+
+Ops-Themen, die OCI/DNS/SMTP-Zugriff brauchen (kein Code):
+- HTTPS via OCI Load Balancer + Let's Encrypt
+- SMTP-Konfiguration prod (statt MailHog)
+- SPF/DKIM/DMARC für sponsorplatz.ch
+- Backup-Spiegel in OCI Object Storage
+- DNS sponsorplatz.ch + www-Redirect
 
 ---
 
@@ -258,18 +266,18 @@ rm -rf data/
 
 ## Offene Punkte / Backlog
 
-- Phase 0.2 (siehe oben) — als nächstes
+- Phase 10.4 (Pilot-Launch-Checkliste, siehe oben) — Code-Themen: Smoke-Test-Suite + MON-W3C-Migration
+- Phase 10.4 Ops (HTTPS/DNS/SMTP-prod/SPF-DKIM-DMARC/OCI-Backup-Spiegel) — kein Code, OCI-Konsole
 - `target/` ist in `.gitignore`, niemals committen
 - VS-Code-Configs in `.vscode/` werden bewusst committet (Team-Standard)
-- Java-Upgrade auf 21 ist bereits aktiv (`pom.xml` java.version=21)
-- Domain `sponsorplatz.ch` ist zu sichern (außerhalb Code, Hosting-Aufgabe)
+- Domain `sponsorplatz.ch` ist zu sichern (Hosting-Aufgabe)
 
 ---
 
 ## Wenn Du als Claude in einer neuen Session startest
 
 Sag dem Benutzer:
-1. „Ich habe die `CLAUDE.md` gelesen, Phase 0.1 ist erledigt, Phase 0.2 (`AppUser` + `Mitgliedschaft` + `AccessControl`) ist als nächstes dran."
+1. „Ich habe die `CLAUDE.md` gelesen, Phasen 0–9 + 11 + 12 sind erledigt, Phase 10 (Production-Readiness) läuft, 10.4 (Pilot-Launch) ist als nächstes dran — code-seitig vor allem die Smoke-Test-Suite."
 2. Frage gezielt: Soll ich mit Spec-Update beginnen oder zuerst die Tests anlegen? (TDD-Disziplin halten!)
 3. Lies vor jeder Spec-/Test-Änderung die zugehörige Datei in `specs/` — dort ist der aktuelle Stand.
 
