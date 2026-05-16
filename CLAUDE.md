@@ -237,6 +237,7 @@ rm -rf data/
 | Suchen | Datei |
 |---|---|
 | **Architektur-Entscheidungen + Warum** | [`docs/adr/README.md`](docs/adr/README.md) (ADR-Index) |
+| **Architektur-Diagramme (C4)** | [`docs/architektur/README.md`](docs/architektur/README.md) — Structurizr-DSL + Auto-Render |
 | Was ist Sponsorplatz | [`specs/PROJEKT_INFO.md`](specs/PROJEKT_INFO.md) |
 | Stack & Routen | [`specs/TECHNISCHE_SPEZIFIKATION.md`](specs/TECHNISCHE_SPEZIFIKATION.md) |
 | Datenbank-Schema | [`specs/DATENMODELL.md`](specs/DATENMODELL.md) |

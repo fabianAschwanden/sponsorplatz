@@ -54,3 +54,4 @@ sind ein **Audit-Trail**.
 | [0005](0005-foederierte-identitaeten-eigene-tabelle.md) | Föderierte Identitäten in eigener Tabelle | Akzeptiert |
 | [0006](0006-swiss-qr-bill-stack.md) | Swiss-QR-Bill mit OpenHTMLtoPDF + ZXing | Akzeptiert |
 | [0007](0007-archunit-fuer-statische-verifikation.md) | ArchUnit für statische Architektur-Verifikation | Akzeptiert |
+| [0008](0008-structurizr-fuer-c4-diagramme.md) | Structurizr-DSL für C4-Architektur-Diagramme | Akzeptiert |

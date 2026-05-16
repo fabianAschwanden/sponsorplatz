@@ -35,6 +35,7 @@ src/test/java/ch/sponsorplatz/architektur/                             @fabianas
 # --- Specs (Architektur-Vertrag) ---
 specs/                                                                  @fabianaschwanden
 docs/adr/                                                               @fabianaschwanden
+docs/architektur/                                                       @fabianaschwanden
 
 # --- Dependencies & Build ---
 pom.xml                                                                 @fabianaschwanden

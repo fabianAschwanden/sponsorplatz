@@ -1,0 +1,110 @@
+# =============================================================================
+# Architektur-Diagramme automatisch rendern
+# =============================================================================
+# Quelle:     docs/architektur/workspace.dsl
+# Renderer:   Structurizr CLI (Mermaid + PlantUML Export)
+# Output:     docs/architektur/diagramme/*
+#
+# Trigger:
+#   - Push auf main mit Änderung an workspace.dsl → committe Diagramme zurück
+#   - Pull-Request mit Änderung an workspace.dsl → Validierung + Artifact
+#   - Manuell via GitHub-UI (workflow_dispatch)
+# =============================================================================
+
+name: Architektur-Diagramme
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/architektur/workspace.dsl'
+      - '.github/workflows/architektur-diagramme.yml'
+  pull_request:
+    paths:
+      - 'docs/architektur/workspace.dsl'
+  workflow_dispatch:
+
+permissions:
+  contents: write   # für Auto-Commit auf main
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Java 21 einrichten
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Structurizr CLI herunterladen
+        run: |
+          mkdir -p "${RUNNER_TEMP}/structurizr"
+          cd "${RUNNER_TEMP}/structurizr"
+          # Pinning auf eine konkrete Release-Version — Auto-Update via Renovate/Dependabot
+          curl -sL -o structurizr-cli.zip \
+            https://github.com/structurizr/cli/releases/download/v2024.12.07/structurizr-cli.zip
+          unzip -q structurizr-cli.zip
+          ls -la
+
+      - name: Workspace validieren
+        run: |
+          "${RUNNER_TEMP}/structurizr/structurizr.sh" validate \
+            -workspace docs/architektur/workspace.dsl
+
+      - name: Diagramme rendern (Mermaid)
+        run: |
+          mkdir -p docs/architektur/diagramme
+          "${RUNNER_TEMP}/structurizr/structurizr.sh" export \
+            -workspace docs/architektur/workspace.dsl \
+            -format mermaid \
+            -output docs/architektur/diagramme/
+
+      - name: Diagramme rendern (PlantUML — als Backup-Format)
+        run: |
+          "${RUNNER_TEMP}/structurizr/structurizr.sh" export \
+            -workspace docs/architektur/workspace.dsl \
+            -format plantuml/structurizr \
+            -output docs/architektur/diagramme/
+
+      - name: Übersichts-Index als Markdown generieren
+        run: |
+          cat > docs/architektur/diagramme/README.md <<'EOF'
+          # Generierte Architektur-Diagramme
+
+          **Diese Dateien werden von der CI automatisch generiert** —
+          Quelle ist `docs/architektur/workspace.dsl`. Nicht von Hand editieren.
+
+          ## C4-Views
+
+          | Datei | Inhalt |
+          |---|---|
+          | `C1_SystemContext.mmd` | Personen + externe Systeme + Sponsorplatz im Überblick |
+          | `C2_Container.mmd` | Web-Anwendung + PostgreSQL + externe Anbindungen |
+          | `C3_Komponenten_Web.mmd` | Feature-Folder als Komponenten innerhalb der Web-Anwendung |
+
+          ## Ansicht
+
+          GitHub rendert die `*.mmd`-Dateien als Mermaid-Diagramme inline,
+          wenn sie aus einer Markdown-Datei eingebunden werden.
+
+          Lokale Vorschau / Editier-Workflow siehe [`../README.md`](../README.md).
+          EOF
+
+      - name: Diagramme als Artifact hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: architektur-diagramme
+          path: docs/architektur/diagramme/
+
+      - name: Aktualisierte Diagramme committen
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'docs(architektur): rerender Diagramme aus workspace.dsl'
+          file_pattern: 'docs/architektur/diagramme/*'
+          commit_user_name: 'Sponsorplatz CI'
+          commit_user_email: 'ci@sponsorplatz.ch'
