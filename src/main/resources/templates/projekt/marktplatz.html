@@ -8,7 +8,7 @@
     <title th:text="#{navigation.marktplatz} + ' — Sponsorplatz'">Marktplatz — Sponsorplatz</title>
     <meta name="description" th:content="#{marktplatz.metaDescription}" content="Sponsoring-Projekte von Schweizer Vereinen entdecken.">
     <link rel="stylesheet" th:href="@{/css/main.css}">
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
 <body class="app-body">

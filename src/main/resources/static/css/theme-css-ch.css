@@ -1,0 +1,49 @@
+/*
+ * Theme-Override: css.ch
+ *
+ * Lädt nach dashboard.css und überschreibt nur die --dash-*-Variablen.
+ * Tokens stammen aus dem öffentlichen css.ch-Stylesheet (style.CfMKlP8B.css,
+ * Top-Häufigkeiten der Hex-Werte) — siehe ADR-0009.
+ *
+ *  #00327d  CSS-Navy        Primary (Header, Buttons, Akzente)
+ *  #0078bb  CSS-Blue        Hover / Sekundär-Akzent
+ *  #4d70a4  CSS-Steel       Sekundärer Link
+ *  #008bca  CSS-Cyan        Highlight / Info
+ *  #d53419  CSS-Red         Warn / Korall-Slot
+ *  #f2f2ed  CSS-Sand        Page-Background (warmes Off-White)
+ *  #626874  CSS-Slate       Body-Text alt
+ *  MuseoSans (proprietär) → Fallback Helvetica/Arial im Body, Cambria-Serife
+ *  bleibt für Headings (klassischer Marken-Kontrast Headlines vs. Body).
+ */
+:root {
+    --dash-sidebar-bg:     #00327d;
+    --dash-sidebar-text:   #FFFFFF;
+    --dash-sidebar-mute:   #B4C3DA;
+    --dash-sidebar-accent: #008BCA;
+
+    --dash-bg:             #F2F2ED;
+    --dash-card:           #FFFFFF;
+    --dash-border:         #D9DCE0;
+
+    --dash-text:           #1A2433;
+    --dash-muted:          #626874;
+    --dash-text-muted:     #475569;
+
+    /* Violett-Slot → CSS-Navy für primäre Buttons/Pills */
+    --dash-violet:         #4D70A4;
+    --dash-violet-light:   #E1E8F2;
+    --dash-violet-dark:    #00327D;
+
+    /* Korall-Slot → CSS-Red für Warn/Accent, mit accessible Text-Variante */
+    --dash-coral:          #D53419;
+    --dash-coral-light:    #FAE5E1;
+    --dash-coral-text:     #8B1F0F;
+
+    --dash-success:        #107212;
+
+    /* MuseoSans ist lizenzpflichtig — Helvetica/Arial als kostenlose Fallbacks.
+       Wer eine Lizenz hat, kann MuseoSans über ein zusätzliches @font-face-
+       Stylesheet ergänzen (theme-css-ch-museosans.css). */
+    --dash-font-body: 'MuseoSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --dash-font-head: 'MuseoSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}

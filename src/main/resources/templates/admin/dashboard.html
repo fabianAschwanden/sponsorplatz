@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title th:text="#{admin.rubrik} + ' — ' + #{admin.dashboard.titel} + ' — Sponsorplatz'">Admin — Dashboard — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
 <body class="app-body">

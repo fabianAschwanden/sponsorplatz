@@ -69,6 +69,32 @@ public class PlattformEinstellungenService {
                 e.getMailAbsender(), e.getMailTestEmpfaenger());
     }
 
+    /** Erlaubte Style-Werte für den aktiven Plattform-Style. */
+    public static final java.util.Set<String> GUELTIGE_STYLES = java.util.Set.of("default", "css-ch");
+
+    /**
+     * Liefert den aktuell aktiven Plattform-Style — wird vom
+     * {@code StyleAdvice} an die Templates durchgereicht, damit das Layout
+     * das passende Theme-CSS einbinden kann.
+     */
+    @Transactional(readOnly = true)
+    public String ladeAktivenStyle() {
+        return lade().getAktiverStyle();
+    }
+
+    /**
+     * Schaltet den Plattform-Style um. Nur Werte aus {@link #GUELTIGE_STYLES}
+     * werden akzeptiert; sonst {@link IllegalArgumentException}.
+     */
+    public void setzeAktivenStyle(String style, String aktualisiertVon) {
+        if (style == null || !GUELTIGE_STYLES.contains(style)) {
+            throw new IllegalArgumentException("Ungültiger Style: " + style);
+        }
+        PlattformEinstellungen e = lade();
+        e.setAktiverStyle(style);
+        speichere(e, aktualisiertVon);
+    }
+
     private static String blankToNull(String s) {
         return (s == null || s.isBlank()) ? null : s.trim();
     }

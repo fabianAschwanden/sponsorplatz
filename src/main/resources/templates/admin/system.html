@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title th:text="#{admin.rubrik} + ' — ' + #{admin.system.titel} + ' — Sponsorplatz'">Admin — System — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
     <style>
         .ops-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; margin-bottom:1.5rem; }

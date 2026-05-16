@@ -52,6 +52,9 @@ public class PlattformEinstellungen {
     @Column(name = "mail_test_empfaenger")
     private String mailTestEmpfaenger;
 
+    @Column(name = "aktiver_style", nullable = false)
+    private String aktiverStyle = "default";
+
     @Column(name = "aktualisiert_am", nullable = false)
     private Instant aktualisiertAm = Instant.now();
 
@@ -134,6 +137,14 @@ public class PlattformEinstellungen {
 
     public void setMailTestEmpfaenger(String mailTestEmpfaenger) {
         this.mailTestEmpfaenger = mailTestEmpfaenger;
+    }
+
+    public String getAktiverStyle() {
+        return aktiverStyle;
+    }
+
+    public void setAktiverStyle(String aktiverStyle) {
+        this.aktiverStyle = aktiverStyle;
     }
 
     public Instant getAktualisiertAm() {

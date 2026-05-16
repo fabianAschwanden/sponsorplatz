@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin — Plattform-Style — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('admin', null)}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">Plattform-Admin</p>
+                <h1>Plattform-Style</h1>
+                <p class="app-muted" style="margin-top:0.5rem;">
+                    Wählt das aktive Design-Token-Set. Das Theme-Override-CSS
+                    überschreibt nur Farb- und Schriftvariablen — Layout und
+                    Komponenten bleiben gleich.
+                </p>
+            </div>
+        </header>
+
+        <div th:if="${erfolgsMeldung}" class="app-alert app-alert-success"
+             th:text="${erfolgsMeldung}">Gespeichert.</div>
+        <div th:if="${fehlerMeldung}" class="app-alert app-alert-error"
+             th:text="${fehlerMeldung}">Fehler.</div>
+
+        <form th:action="@{/admin/style/speichern}" method="post" class="app-card"
+              style="max-width:560px; padding:1.5rem;">
+
+            <div th:each="opt : ${verfuegbareStyles}" style="margin-bottom:1rem;">
+                <label style="display:flex; align-items:flex-start; gap:0.75rem; cursor:pointer;">
+                    <input type="radio" name="style" th:value="${opt}"
+                           th:checked="${opt == aktiverStyle}" style="margin-top:0.25rem;">
+                    <span>
+                        <strong th:text="${opt}">default</strong>
+                        <span class="app-muted" style="display:block; font-size:0.85rem;"
+                              th:switch="${opt}">
+                            <span th:case="'default'">
+                                Sponsorplatz-Standardtokens (Coral + Violet + Sand-Background).
+                            </span>
+                            <span th:case="'css-ch'">
+                                CSS-Versicherung-Markentokens (Navy #00327d, Blue #0078bb,
+                                Sand-Background, Helvetica/Arial-Fallback für MuseoSans).
+                            </span>
+                            <span th:case="*">—</span>
+                        </span>
+                    </span>
+                </label>
+            </div>
+
+            <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+                <button type="submit" class="app-btn">Speichern</button>
+                <a th:href="@{/admin}" class="app-btn app-btn-ghost">Abbrechen</a>
+            </div>
+        </form>
+
+        <p class="app-muted" style="margin-top:1.5rem; font-size:0.85rem;">
+            Aktuell aktiv: <strong th:text="${aktiverStyle}">default</strong>
+        </p>
+    </main>
+</div>
+
+</body>
+</html>

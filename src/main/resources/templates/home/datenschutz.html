@@ -6,7 +6,7 @@
     <title th:text="#{info.datenschutz.titel} + ' — Sponsorplatz'">Datenschutzerklärung — Sponsorplatz</title>
     <meta name="description" content="Datenschutzerklärung von Sponsorplatz nach Schweizer DSG: welche Daten wir wofür verarbeiten und wie du deine Rechte wahrnimmst.">
     <link rel="stylesheet" th:href="@{/css/main.css}">
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
 <body class="public-body">

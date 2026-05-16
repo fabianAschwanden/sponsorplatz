@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<!--
+  Style-Stack — wird in jedem Layout-Head per th:replace eingebunden statt
+  dashboard.css direkt zu linken. Das StyleAdvice setzt aktiverStyle als
+  Model-Attribut; ist es != 'default', wird zusätzlich ein Theme-Override
+  geladen, das nur :root-Variablen überschreibt.
+-->
+<th:block th:fragment="styles">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link th:if="${aktiverStyle != null and aktiverStyle == 'css-ch'}"
+          rel="stylesheet"
+          th:href="@{/css/theme-css-ch.css}">
+</th:block>
+
+</head>
+</html>

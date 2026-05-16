@@ -26,7 +26,7 @@
           th:content="${projekt.beschreibung != null ? #strings.abbreviate(projekt.beschreibung, 200) : 'Sponsoring-Projekt auf Sponsorplatz'}">
     <meta name="twitter:image" th:content="@{/og/projekt/{slug}.png(slug=${projekt.slug})}">
     <link rel="stylesheet" th:href="@{/css/main.css}">
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
 <body class="app-body">

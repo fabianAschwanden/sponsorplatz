@@ -6,7 +6,7 @@
     <title th:text="#{agb.titel} + ' — Sponsorplatz'">Allgemeine Geschäftsbedingungen — Sponsorplatz</title>
     <meta name="description" content="AGB von Sponsorplatz, der Schweizer Sponsoring-Plattform für Sport und Gesundheit.">
     <link rel="stylesheet" th:href="@{/css/main.css}">
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
 <body class="public-body">
