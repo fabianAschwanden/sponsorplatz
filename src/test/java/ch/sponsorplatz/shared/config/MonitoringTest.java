@@ -142,8 +142,70 @@ class MonitoringTest {
         // Cleanup ist ohne Filter-Internalspy schwer — die try/finally-
         // Struktur ist garantiert durch JVM-Semantik.
         assertThat(MDC.get("traceId")).isNull();
+        assertThat(MDC.get("spanId")).isNull();
         assertThat(MDC.get("method")).isNull();
         assertThat(MDC.get("uri")).isNull();
+    }
+
+    // ─── MON-W3C: W3C Trace Context (traceparent) ────────────────────────────
+
+    /** MON-W3C-01: ohne Header bekommt der Response ein gültiges traceparent + X-Trace-ID. */
+    @Test
+    @DisplayName("MON-W3C-01: Response trägt traceparent (W3C) + X-Trace-ID (Backcompat)")
+    void responseTraegtTraceparentUndLegacyHeader() throws Exception {
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk())
+                .andExpect(header().exists("traceparent"))
+                .andExpect(header().exists("X-Trace-ID"))
+                .andExpect(header().string("traceparent",
+                        org.hamcrest.Matchers.matchesPattern(
+                                "^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$")));
+    }
+
+    /** MON-W3C-02: W3C-Header hat Vorrang — trace-id wird übernommen. */
+    @Test
+    @DisplayName("MON-W3C-02: eingehender traceparent → trace-id wird übernommen")
+    void traceparentTraceIdWirdUebernommen() throws Exception {
+        String incoming = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
+        String erwartetTraceId = "4bf92f3577b34da6a3ce929d0e0e4736";
+
+        mockMvc.perform(get("/actuator/health")
+                        .header("traceparent", incoming))
+                .andExpect(status().isOk())
+                // Outgoing traceparent enthält die übernommene trace-id (neue span-id pro Hop)
+                .andExpect(header().string("traceparent",
+                        org.hamcrest.Matchers.startsWith("00-" + erwartetTraceId + "-")))
+                // X-Trace-ID-Backcompat trägt die gleiche trace-id
+                .andExpect(header().string("X-Trace-ID", erwartetTraceId));
+    }
+
+    /** MON-W3C-03: ungültiges traceparent (falsche Länge) → fällt auf fresh Generation zurück. */
+    @Test
+    @DisplayName("MON-W3C-03: ungültiges traceparent wird verworfen, frische trace-id wird generiert")
+    void traceparentUngueltigWirdVerworfen() throws Exception {
+        mockMvc.perform(get("/actuator/health")
+                        .header("traceparent", "00-DEADBEEF-00f067aa0ba902b7-01"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("traceparent",
+                        org.hamcrest.Matchers.matchesPattern(
+                                "^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$")))
+                .andExpect(header().string("traceparent",
+                        org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("DEADBEEF"))));
+    }
+
+    /** MON-W3C-04: all-zero trace-id im traceparent ist per Spec ungültig → fresh. */
+    @Test
+    @DisplayName("MON-W3C-04: all-zero trace-id wird verworfen (W3C-Spec)")
+    void allZeroTraceIdWirdVerworfen() throws Exception {
+        String allZero = "00-00000000000000000000000000000000-00f067aa0ba902b7-01";
+
+        mockMvc.perform(get("/actuator/health")
+                        .header("traceparent", allZero))
+                .andExpect(status().isOk())
+                .andExpect(header().string("traceparent",
+                        org.hamcrest.Matchers.not(
+                                org.hamcrest.Matchers.containsString(
+                                        "00000000000000000000000000000000"))));
     }
 }
 

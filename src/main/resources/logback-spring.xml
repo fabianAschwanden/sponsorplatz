@@ -30,6 +30,7 @@
     <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
             <includeMdcKeyName>method</includeMdcKeyName>
             <includeMdcKeyName>uri</includeMdcKeyName>
             <fieldNames>

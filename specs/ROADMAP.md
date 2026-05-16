@@ -451,7 +451,7 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 - [x] Spring Actuator: `/actuator/prometheus` für Prometheus-Scrape (in prod auf separatem Management-Port 9090, Loopback-Bind)
 - [x] `logback-spring.xml` mit JSON-Encoder (logstash-encoder, prod/cloud-free)
 - [x] Strukturierte Logs mit Trace-ID via MDC (`X-Trace-ID`-Header) — `TraceIdFilter` mit Format-Validierung (Log-Injection-Schutz)
-- [ ] **MON-W3C**: Migration von `X-Trace-ID` (UUID) zu W3C-`traceparent` (`00-<32hex>-<16hex>-01`) sobald Distributed-Tracing-Backend (Tempo/Jaeger) eingeführt wird — OpenTelemetry-kompatibel
+- [x] **MON-W3C**: W3C-`traceparent` (OTel-Standard) hat Vorrang vor Legacy-`X-Trace-ID`, frische Span-ID pro Hop, ungültige/all-zero-IDs fallen auf fresh-Generation zurück. Response liefert beide Header. MDC trägt `traceId` (16 Byte hex) + `spanId` (8 Byte hex). Tests MON-W3C-01..04 in `MonitoringTest`.
 - [ ] OCI Cloud Logging-Forwarding via Sidecar oder Direct-Push
 - [x] Tests: MON-01..04 + MON-03c/d (9 Tests, alle grün)
 

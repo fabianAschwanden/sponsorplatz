@@ -833,6 +833,10 @@ Bootet eine echte Spring-Instanz auf RandomPort + HTTP-GETs gegen die Schlüssel
 | **MON-03c** | `MonitoringTest` | Sonderzeichen in `X-Trace-ID` (Quote, Space, …) werden verworfen → UUID-Fallback (Log-Injection-Schutz). CR/LF fängt Tomcat selbst mit 400 ab. |
 | **MON-03d** | `MonitoringTest` | Overlong `X-Trace-ID` (>64 Zeichen) wird verworfen — kein unbegrenzter MDC-Memory-Footprint |
 | **MON-04** | `MonitoringTest` | MDC wird nach jedem Request aufgeräumt — keine Trace-ID-Leaks im Spring-Thread-Pool |
+| **MON-W3C-01** | `MonitoringTest` | Response trägt `traceparent` (W3C-Format `00-<32hex>-<16hex>-<2hex>`) + `X-Trace-ID` (Backcompat) |
+| **MON-W3C-02** | `MonitoringTest` | Eingehender `traceparent`-Header — trace-id wird übernommen (Vorrang vor Legacy), frische span-id pro Hop |
+| **MON-W3C-03** | `MonitoringTest` | Malformatiertes `traceparent` (falsche Längen) → frische Generation, kein Echo der Eingabe |
+| **MON-W3C-04** | `MonitoringTest` | All-zero trace-id im traceparent ist per W3C-Spec ungültig → frische Generation |
 
 **Architektur-Hinweise zum Monitoring-Setup:**
 
@@ -843,8 +847,10 @@ Bootet eine echte Spring-Instanz auf RandomPort + HTTP-GETs gegen die Schlüssel
 - **Public-Endpoints am Application-Port** (8080): nur `/actuator/health`, `/actuator/health/liveness`,
   `/actuator/health/readiness`, `/actuator/info` — explizite Allowlist statt `/actuator/**`-Wildcard, damit
   `diskSpace`/`db`/`ping`-Sub-Indikatoren nicht versehentlich freigeschaltet werden.
-- **MON-W3C (Roadmap)**: Migration von proprietärem `X-Trace-ID` zu W3C-`traceparent` (OpenTelemetry-kompatibel),
-  sobald Distributed-Tracing-Backend (Tempo/Jaeger) eingeführt wird.
+- **MON-W3C (umgesetzt)**: W3C-`traceparent` (OpenTelemetry-Standard) hat Vorrang vor Legacy-`X-Trace-ID`.
+  Frische Span-ID pro Hop (wir sind Empfänger, nicht Sender). All-zero/ungültige IDs fallen auf
+  Fresh-Generation zurück. Response liefert beide Header (`traceparent` für Downstream-Services,
+  `X-Trace-ID` für interne Caller, die noch nicht migriert sind). MDC: `traceId` + `spanId`.
 
 ### Architektur-Verifikation (ARCH) — Schicht 1 mit ArchUnit
 
