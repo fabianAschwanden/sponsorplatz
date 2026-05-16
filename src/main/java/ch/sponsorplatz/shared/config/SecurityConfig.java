@@ -99,7 +99,7 @@ public class SecurityConfig {
                         // Marktplatz, Vereine, Marken-Landing, Org-Listing, Sponsor-Self-Reg
                         // erfordern jetzt Login — die /kontakt-Seite ist der einzige Anfrage-Funnel.
                         .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
-                        .requestMatchers("/impressum", "/datenschutz").permitAll()
+                        .requestMatchers("/impressum", "/datenschutz", "/agb").permitAll()
                         .requestMatchers("/kontakt").permitAll()
                         .requestMatchers("/login", "/registrieren", "/verifizieren").permitAll()
                         .requestMatchers("/passwort-vergessen", "/passwort-reset").permitAll()
@@ -146,7 +146,7 @@ public class SecurityConfig {
                         // Marktplatz, Vereine, Marken-Landing, Org-Listing, Sponsor-Self-Reg
                         // erfordern jetzt Login — die /kontakt-Seite ist der einzige Anfrage-Funnel.
                         .requestMatchers("/", "/css/**", "/images/**", "/favicon.ico", "/sitemap.xml").permitAll()
-                        .requestMatchers("/impressum", "/datenschutz").permitAll()
+                        .requestMatchers("/impressum", "/datenschutz", "/agb").permitAll()
                         .requestMatchers("/kontakt").permitAll()
                         .requestMatchers("/login", "/registrieren", "/verifizieren").permitAll()
                         .requestMatchers("/passwort-vergessen", "/passwort-reset").permitAll()

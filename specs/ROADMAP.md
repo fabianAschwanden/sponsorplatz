@@ -462,14 +462,15 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 - [ ] Sentry-Browser-SDK ins Layout (nur Errors, kein Replay → DSG)
 - [ ] Konfiguration als ENV (`SENTRY_DSN`, `SENTRY_ENVIRONMENT`)
 
-### 10.3 — DSG-Compliance & Public-Pages
+### 10.3 — DSG-Compliance & Public-Pages ✓
 
-- [ ] Cookie-Banner (nur technisch notwendige Cookies, kein Tracking)
-- [ ] `impressum.html` mit Adresse, Kontakt, MwSt-Nummer
-- [ ] `datenschutz.html` mit DSG-Text (Daten-Erhebung, Speicherdauer, Auskunfts-/Lösch-Rechte)
-- [ ] `agb.html` mit Sponsoring-Plattform-spezifischen Bedingungen
-- [ ] Footer-Links validiert, alle drei Pages aus jedem Layout erreichbar
-- [ ] Tests: PUB-01 Impressum, PUB-02 Datenschutz, PUB-03 AGB, PUB-04 Cookie-Banner-Default
+- [x] Cookie-Banner (nicht nötig: nur technisch notwendige Cookies, dokumentiert in Datenschutz §6)
+- [x] `impressum.html` mit Adresse, Kontakt (bereits in Phase Operational umgesetzt)
+- [x] `datenschutz.html` mit DSG-Text (bereits in Phase Operational umgesetzt)
+- [x] `agb.html` mit Sponsoring-Plattform-spezifischen Bedingungen (12 Abschnitte, i18n DE/FR/IT/EN)
+- [x] Footer-Links validiert, alle drei Pages (Impressum, Datenschutz, AGB) aus jedem Layout erreichbar
+- [x] `/agb` in SecurityConfig als permitAll (dev + prod)
+- [x] Tests: PUB-03 AGB-Route, PUB-04 Cookie-Banner-Verzicht-Dokumentation (4 Tests in InfoControllerTest)
 
 ### 10.4 — Pilot-Launch-Checkliste
 

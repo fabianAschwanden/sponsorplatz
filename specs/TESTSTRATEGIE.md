@@ -475,6 +475,13 @@ Registrierungs-Services; der Versand selbst ist im
 | **INFO-01** | `InfoControllerTest` | GET `/impressum` → 200 + impressum-Template, public erreichbar |
 | **INFO-02** | `InfoControllerTest` | GET `/datenschutz` → 200 + datenschutz-Template, public erreichbar |
 
+### Phase 10.3 — DSG-Compliance & Public-Pages (PUB)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **PUB-03** | `InfoControllerTest` | GET `/agb` → 200 + agb-Template, public erreichbar |
+| **PUB-04** | `InfoControllerTest` | Datenschutz-Seite dokumentiert Cookie-Banner-Verzicht (enthält „kein Tracking") |
+
 ### Phase Operational — Ops-Dashboard + Alerts (OPS)
 
 | ID | Test-Klasse | Beschreibung |

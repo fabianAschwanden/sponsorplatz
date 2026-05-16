@@ -16,13 +16,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 /**
- * Tests für statische Public-Pages (Impressum, Datenschutz).
+ * Tests für statische Public-Pages (Impressum, Datenschutz, AGB).
  *
- * Test-IDs: INFO-01, INFO-02 in {@code specs/TESTSTRATEGIE.md}.
+ * Test-IDs: INFO-01, INFO-02, PUB-03, PUB-04 in {@code specs/TESTSTRATEGIE.md}.
  */
 @WebMvcTest(InfoController.class)
 @Import({SecurityConfig.class, InfoControllerTest.MockBeans.class})
@@ -56,5 +57,24 @@ class InfoControllerTest {
         mockMvc.perform(get("/datenschutz"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("datenschutz"));
+    }
+
+    @Test
+    @DisplayName("PUB-03: GET /agb → 200 + agb-Template, public erreichbar")
+    @WithAnonymousUser
+    void agbOeffentlichErreichbar() throws Exception {
+        mockMvc.perform(get("/agb"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("agb"));
+    }
+
+    @Test
+    @DisplayName("PUB-04: Datenschutz-Seite dokumentiert Cookie-Banner-Verzicht (nur technische Cookies)")
+    @WithAnonymousUser
+    void datenschutzEnthaeltCookieBannerHinweis() throws Exception {
+        mockMvc.perform(get("/datenschutz"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(
+                        org.hamcrest.Matchers.containsString("kein Tracking")));
     }
 }
