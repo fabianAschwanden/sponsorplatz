@@ -234,11 +234,11 @@ Die Plattform unterstützt vier Sprachen: **Deutsch**, **Französisch**, **Itali
 
 | Phase | Inhalt | Status |
 |---|---|---|
-| 0–6 | Fundament bis Einstellungen | ✓ |
-| 7 | Health-Story (Branche-Filter, Vereins-Hero, Marken-Landing) | ✓ |
-| 8 | MVP-Reife (Demo-Seed, Engagement-Schaufenster, OG-Cards) | ✓ |
-| 9 | Roadmap-Lücken (i18n DE/FR/IT/EN, Payment-Provider, Events) | ✓ |
-| 10 | Production-Readiness & Pilot-Launch | ⏳ |
+| 0–9 | Fundament bis Mehrsprachigkeit | ✓ |
+| 10.1–10.3, 10.5 | Monitoring (W3C-Trace), Sentry, DSG-Pages, Security-Hardening | ✓ |
+| 10.4 | Pilot-Launch — Smoke-Tests + Kontakt-Funnel code-seitig ✓, Ops (HTTPS/SMTP/DNS) | ⏳ |
+| 11 | Pilot-Hardening (Onboarding, Support, Anhänge, Verträge, Rechnungen) | ✓ |
+| 12 | Customizable Task-Engine (Aufgaben + Sidebar-Badge) | ✓ |
 
 Vollständig dokumentiert in [`specs/ROADMAP.md`](specs/ROADMAP.md).
 
@@ -252,9 +252,12 @@ Vollständig dokumentiert in [`specs/ROADMAP.md`](specs/ROADMAP.md).
 | [`specs/ROLLENKONZEPT.md`](specs/ROLLENKONZEPT.md) | Rollen, Permissions, AccessControl |
 | [`specs/TESTSTRATEGIE.md`](specs/TESTSTRATEGIE.md) | Test-Ebenen, Testfälle, Smoke-Checkliste |
 | [`specs/ROADMAP.md`](specs/ROADMAP.md) | Phasen, Iterationen, MVP-Definition |
+| [`specs/BETA_TESTPLAN.md`](specs/BETA_TESTPLAN.md) | Pilot-Akzeptanz-Tests (manuelle Checks) |
+| [`DEPLOYMENT.md`](DEPLOYMENT.md) | Pilot-Launch-Runbook (HTTPS, SMTP, DNS, Backups) |
+| [`docs/adr/README.md`](docs/adr/README.md) | Architecture Decision Records |
+| [`docs/architektur/README.md`](docs/architektur/README.md) | C4-Diagramme (Structurizr-DSL) |
 | [`.instructions.md`](.instructions.md) | Clean Code, TDD-Workflow, Conventions |
 | [`docs/konzept.md`](docs/konzept.md) | Vollständiges Konzept-Dokument |
-| [`docs/roadmap-detailliert.md`](docs/roadmap-detailliert.md) | Ausführliche Roadmap |
 | [`infra/README.md`](infra/README.md) | Infrastruktur-Übersicht (OCI) |
 
 ## Mitmachen
