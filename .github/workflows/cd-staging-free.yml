@@ -106,15 +106,22 @@ jobs:
 
       - name: Smoke test
         run: |
-          HEALTH_URL="${{ vars.STAGING_FREE_DOMAIN && format('https://{0}', vars.STAGING_FREE_DOMAIN) || format('http://{0}', vars.STAGING_FREE_VM_IP) }}/actuator/health"
+          # Hinweis: Actuator läuft in prod (siehe application-prod.properties)
+          # auf Port 9090 mit Loopback-Bind und ist von ausserhalb der VM
+          # bewusst NICHT erreichbar. Stattdessen probieren wir die /login-
+          # Public-Route — die liefert nur 200, wenn Tomcat + Thymeleaf +
+          # SecurityConfig + DB-Verbindung alle hochgekommen sind.
+          # Der echte Actuator-Healthcheck läuft Container-intern via
+          # docker-compose-healthcheck (siehe staging-free/docker-compose.yml).
+          SMOKE_URL="${{ vars.STAGING_FREE_DOMAIN && format('https://{0}', vars.STAGING_FREE_DOMAIN) || format('http://{0}', vars.STAGING_FREE_VM_IP) }}/login"
           for i in $(seq 1 30); do
-            if curl -fsS -o /dev/null "$HEALTH_URL"; then
-              echo "Health OK after $i polls"; exit 0
+            if curl -fsS -o /dev/null "$SMOKE_URL"; then
+              echo "Smoke OK after $i polls ($SMOKE_URL)"; exit 0
             fi
-            echo "Poll $i — not ready yet"
+            echo "Poll $i — not ready yet ($SMOKE_URL)"
             sleep 10
           done
-          echo "Health check failed at $HEALTH_URL"
+          echo "Smoke check failed at $SMOKE_URL"
           exit 1
 
       # OCIR füllt sich sonst pro Commit um ~300 MB; Always-Free hat 25 GB.
