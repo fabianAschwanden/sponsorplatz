@@ -91,6 +91,7 @@ public class SecurityConfig {
             LoginSperreFilter loginSperreFilter,
             LoginFailureHandler loginFailureHandler,
             AuthenticationSuccessHandler loginSuccessHandler,
+            ApiKeyFilter apiKeyFilter,
             ObjectProvider<ClientRegistrationRepository> oauth2Clients,
             ObjectProvider<OAuth2UserService<OidcUserRequest, OidcUser>> oidcUserService) throws Exception {
         http
@@ -112,6 +113,8 @@ public class SecurityConfig {
                         .requestMatchers("/medien/**").permitAll()
                         .requestMatchers("/og/**").permitAll()
                         .requestMatchers("/payment/webhook/**").permitAll()
+                        // REST-API: permitAll auf HTTP-Ebene, ApiKeyFilter prüft X-API-Key
+                        .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
@@ -122,9 +125,13 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/")
                         .permitAll())
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**", "/benachrichtigungen/**", "/payment/webhook/**"))
-                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(loginSperreFilter, RateLimitFilter.class)
+                        .ignoringRequestMatchers("/h2-console/**", "/benachrichtigungen/**", "/payment/webhook/**", "/api/**"))
+                // Filter-Reihenfolge explizit linear: LoginSperre → RateLimit →
+                // ApiKey → UsernamePassword. So ist Brute-Force gegen den
+                // API-Key über RateLimitFilter abgedeckt.
+                .addFilterBefore(loginSperreFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(rateLimitFilter, LoginSperreFilter.class)
+                .addFilterAfter(apiKeyFilter, RateLimitFilter.class)
                 .headers(h -> {
                     h.frameOptions(f -> f.disable());
                     // Security-Hardening (Phase 10.5) — lockerer in dev für H2-Console
@@ -155,6 +162,7 @@ public class SecurityConfig {
             LoginSperreFilter loginSperreFilter,
             LoginFailureHandler loginFailureHandler,
             AuthenticationSuccessHandler loginSuccessHandler,
+            ApiKeyFilter apiKeyFilter,
             ObjectProvider<ClientRegistrationRepository> oauth2Clients,
             ObjectProvider<OAuth2UserService<OidcUserRequest, OidcUser>> oidcUserService) throws Exception {
         http
@@ -187,6 +195,8 @@ public class SecurityConfig {
                         .requestMatchers("/medien/**").permitAll()
                         .requestMatchers("/og/**").permitAll()
                         .requestMatchers("/payment/webhook/**").permitAll()
+                        // REST-API: permitAll auf HTTP-Ebene, ApiKeyFilter prüft X-API-Key
+                        .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
@@ -194,9 +204,13 @@ public class SecurityConfig {
                         .failureHandler(loginFailureHandler)
                         .permitAll())
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/benachrichtigungen/**", "/payment/webhook/**"))
-                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(loginSperreFilter, RateLimitFilter.class)
+                        .ignoringRequestMatchers("/benachrichtigungen/**", "/payment/webhook/**", "/api/**"))
+                // Filter-Reihenfolge explizit linear: LoginSperre → RateLimit →
+                // ApiKey → UsernamePassword. So ist Brute-Force gegen den
+                // API-Key über RateLimitFilter abgedeckt.
+                .addFilterBefore(loginSperreFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(rateLimitFilter, LoginSperreFilter.class)
+                .addFilterAfter(apiKeyFilter, RateLimitFilter.class)
                 .headers(h -> {
                     // Security-Hardening (Phase 10.5)
                     h.contentTypeOptions(Customizer.withDefaults());

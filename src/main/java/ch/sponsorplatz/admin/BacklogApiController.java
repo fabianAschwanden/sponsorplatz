@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -61,12 +62,14 @@ public class BacklogApiController {
      * </pre>
      */
     @PostMapping
-    public ResponseEntity<BacklogItemView> erstelle(@Valid @RequestBody BacklogApiRequest request) {
+    public ResponseEntity<BacklogItemView> erstelle(
+            @Valid @RequestBody BacklogApiRequest request,
+            @RequestAttribute(name = "apiCallerSource", required = false) String callerSource) {
         BacklogItem item = backlogService.erstelle(
                 request.titel(),
                 request.beschreibung(),
                 request.prioritaet(),
-                "api"
+                callerSource != null ? callerSource : "api"
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(BacklogItemView.von(item));
     }
@@ -81,13 +84,19 @@ public class BacklogApiController {
      */
     @PatchMapping("/{id}/status")
     public BacklogItemView aendereStatus(@PathVariable UUID id,
-                                         @RequestBody BacklogStatusRequest request) {
+                                         @Valid @RequestBody BacklogStatusRequest request) {
         BacklogItem item = backlogService.aendereStatus(id, request.status());
         return BacklogItemView.von(item);
     }
 
     /**
      * Request-DTO für POST /api/backlog.
+     *
+     * @param titel       Pflichtfeld, max. 200 Zeichen
+     * @param beschreibung optional, beliebige Länge
+     * @param prioritaet  optional — {@code null} fällt auf
+     *                    {@link BacklogPrioritaet#MITTEL} zurück
+     *                    (siehe {@link BacklogService#erstelle})
      */
     public record BacklogApiRequest(
             @jakarta.validation.constraints.NotBlank(message = "Titel ist Pflichtfeld")

@@ -167,5 +167,17 @@ class BacklogApiControllerTest {
                                 """))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    @DisplayName("BAPI-09: PATCH ohne status-Feld im Body → 400 (Bean-Validation)")
+    void statusAendernOhneStatusFeld() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        mockMvc.perform(patch("/api/backlog/{id}/status", id)
+                        .header("X-API-Key", API_KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
+    }
 }
 
