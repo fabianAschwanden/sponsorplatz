@@ -1,8 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
   "version": "0.2",
-  "language": "en",
-  "description": "Sponsorplatz — Deutsch-Domain-Vokabular fürs Code Spell Checker VS-Code-Plugin. CLAUDE.md schreibt die deutsche Domain-Sprache fest (verein, sponsoring, anfrage, …); ohne diese Liste lärmen die Editor-Warnings. Wer ein neues Domain-Wort einführt, ergänzt's hier.",
+  "language": "en,de,de-CH",
+  "description": "Sponsorplatz — Sprachprofil EN + DE/DE-CH plus Domain-Wortliste. Aktiviert beide Wörterbücher gleichzeitig (braucht das streetsidesoftware.code-spell-checker-german VS-Code-Plugin, in .vscode/extensions.json bereits empfohlen). CLAUDE.md schreibt deutsche Domain-Sprache fest — sponsoring-spezifische Wörter unten ergänzen.",
   "words": [
     "sponsorplatz",
     "Sponsorplatz",
