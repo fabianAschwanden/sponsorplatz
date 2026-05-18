@@ -69,8 +69,11 @@ Alle drei Container laufen auf derselben VM. Persistente Daten unter `/var/lib/s
    SPONSORPLATZ_ADMIN_EMAIL=admin@example.ch
    SPONSORPLATZ_ADMIN_PASSWORD=<starkes-pw-für-erste-Anmeldung>
 
-   # --- REST-API (optional, off-by-default) ---
-   # SPONSORPLATZ_API_KEY=<starker-key>   # auskommentiert lassen → /api/** 503
+   # --- REST-API (off-by-default; CD-managed, NICHT manuell setzen) ---
+   # SPONSORPLATZ_API_KEY wird vom GitHub-Actions-CD-Workflow aus dem
+   # gleichnamigen Repo-Secret in diese Datei synchronisiert (siehe
+   # "REST-API freischalten" unten). Bitte hier weglassen — sonst
+   # überschreibt der nächste CD-Run deine manuelle Eingabe.
 
    # --- Object Storage (optional, sonst lokales Volume) ---
    # STORAGE_PROVIDER=oci          # auskommentiert lassen → lokal
@@ -125,6 +128,39 @@ API-Key-Upload: Console → Identity → Users → CICD-User → API Keys → Ad
 Public-Key hochladen, den private Key als `OCI_API_PRIVATE_KEY` ins GitHub-Repo.
 Die `manage repos in tenancy`-Policy ist bereits in
 `infra/shared/bootstrap/main.tf` enthalten — kein Policy-Update nötig.
+
+## REST-API freischalten (CD-managed)
+
+Die REST-API unter `/api/**` ist **off by default** — ohne Key antwortet
+`ApiKeyFilter` mit 503. Zum Aktivieren:
+
+1. **GitHub Repo-Secret setzen:** Settings → Secrets and variables → Actions
+   → New repository secret:
+   ```
+   Name:  SPONSORPLATZ_API_KEY
+   Value: <starker-key>     # z.B. `openssl rand -hex 32`
+   ```
+
+2. **CD triggern** — entweder via Push auf `main` oder
+   `gh workflow run "CD Staging (Free Tier)"`. Der `Sync managed Secrets in
+   VM-.env`-Step setzt den Key idempotent in `/opt/sponsorplatz/.env` und
+   `--force-recreate` sorgt dafür dass der App-Container die neue ENV beim
+   Boot liest.
+
+3. **Verifizieren** nach dem Deploy:
+   ```bash
+   curl -s -o /dev/null -w "%{http_code}\n" \
+     -H "X-API-Key: <dein-key>" \
+     https://sponsorplatz.for-better.biz/api/backlog
+   # Erwartet: 200
+   ```
+
+**Key-Rotation:** Secret-Wert im Repo aktualisieren, Workflow neu triggern.
+Alter Key gilt bis zum nächsten erfolgreichen Deploy.
+
+**Auf der VM nichts manuell editieren** — der CD-Workflow überschreibt den
+Eintrag bei jedem Lauf. Andere Variablen (`DB_PASSWORD`, `SMTP_*`,
+`ADMIN_*`) bleiben in der manuell gepflegten `.env` unangetastet.
 
 ## Object Storage (Phase 2)
 
