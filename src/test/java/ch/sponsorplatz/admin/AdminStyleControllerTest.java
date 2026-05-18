@@ -83,6 +83,6 @@ class AdminStyleControllerTest {
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/style"))
-                .andExpect(flash().attribute("fehlerMeldung", "Ungültiger Style: foobar"));
+                .andExpect(flash().attribute("fehlermeldung", "Ungültiger Style: foobar"));
     }
 }

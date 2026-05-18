@@ -908,6 +908,78 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 - **ARCH-18** (TBD): Jeder `@RestController` hat `@CrossOrigin`-Policy explizit deklariert
 - **ARCH-19** (TBD): Migration-Test gegen prod-Schema-Snapshot (Spring Modulith oder Testcontainers + Flyway-Validate)
 
+## Coverage-Erweiterungen — Controller- und Service-Slices
+
+> Eingeführt zur Coverage-Erhöhung vor dem Pilot-Launch. Alle Tests sind
+> WebMvcTest-Slices oder Mockito-Unit-Tests — kein Spring-Kontext-Roundtrip,
+> daher zügig.
+
+### Admin (AAUDIT, AUSER)
+
+| ID | Was geprüft |
+|---|---|
+| **AAUDIT-01** | GET `/admin/audit` rendert `admin/audit` mit `auditLogs`-Attribut |
+| **AAUDIT-02** | GET `/admin/backups` zeigt Backup-Liste |
+| **AAUDIT-03** | POST `/admin/backups/erstellen` triggert `BackupService.erstelleBackup()` + Erfolgs-Flash |
+| **AAUDIT-04** | GET `/admin/backups/{name}/download` liefert SQL-Bytes mit `Content-Disposition` |
+| **AAUDIT-05** | POST `/admin/backups/{name}/loeschen` triggert `loescheBackup` |
+| **AAUDIT-06** | POST `/admin/backups/restore` ohne RESTORE-Bestätigung → Fehler-Flash |
+| **AAUDIT-07** | POST `/admin/backups/restore` mit RESTORE → `BackupRestoreService.restore` |
+| **AAUDIT-08** | Nicht-Admin GET `/admin/audit` → 403 (deckt `@PreAuthorize` Class-Level ab) |
+| **AUSER-01** | GET `/admin/benutzer` rendert Benutzerliste + Rollen |
+| **AUSER-02** | POST `/{id}/sperren` setzt aktiv=false **und** auditiert `GESPERRT` |
+| **AUSER-03** | POST `/{id}/entsperren` setzt aktiv=true **und** auditiert `ENTSPERRT` |
+| **AUSER-04** | POST `/{id}/rolle` ändert PlatformRolle **und** auditiert `ROLLE_GEAENDERT` |
+| **AUSER-05** | GET `/admin/organisationen` ruft `OrganisationService.alle()` (pinnt Service-API, gegen stille Migration zu `alleViews()`) |
+| **AUSER-06** | Nicht-Admin GET `/admin/benutzer` → 403 |
+
+### Anfrage-Flow (VCTRL, RCTRL, PAY-WH, VIEW-14..17)
+
+| ID | Was geprüft |
+|---|---|
+| **VCTRL-01** | POST erstellen → Redirect auf Vertrag-Detail |
+| **VCTRL-02** | GET detail rendert Vertrag-View + Form |
+| **VCTRL-03** | POST speichern → `aktualisiereAusForm` + Erfolgs-Flash |
+| **VCTRL-04** | POST unterzeichnen ohne Owner-Recht → 403 |
+| **VCTRL-05** | POST unterzeichnen mit Owner → `markiereUnterzeichnet` mit explizitem Username |
+| **VCTRL-06** | GET pdf liefert `application/pdf` |
+| **VCTRL-07** | POST erstellen ohne Edit-Recht → 403 |
+| **VCTRL-08** | POST speichern ohne Edit-Recht → 403 |
+| **RCTRL-01** | POST erstellen → Redirect auf Rechnung-Detail |
+| **RCTRL-02** | POST erstellen bei `IllegalStateException` → Fehler-Flash |
+| **RCTRL-03** | GET detail rendert Rechnung + QR-Bild-DataUrl |
+| **RCTRL-04** | POST bezahlt → `markiereBezahlt` + Erfolgs-Flash |
+| **RCTRL-05** | POST stornieren mit Grund → `stornieren` |
+| **RCTRL-06** | GET pdf liefert `application/pdf` |
+| **RCTRL-07** | POST erstellen ohne Edit-Recht → 403 |
+| **RCTRL-08** | POST bezahlt ohne Edit-Recht → 403 |
+| **RCTRL-09** | POST stornieren ohne Edit-Recht → 403 |
+| **PAY-WH-01** | Unbekannter Provider → 404 |
+| **PAY-WH-02** | Ungültige Signatur → 401 |
+| **PAY-WH-03** | Ungültiger JSON-Body → 400 |
+| **PAY-WH-04** | Fehlende Pflichtfelder (`transaktionsId`, `rechnungId`) → 400 |
+| **PAY-WH-05** | Erfolgreicher Webhook ruft `markiereAlsBezahltViaWebhook` |
+| **PAY-WH-06** | Rechnung nicht gefunden → 404 |
+| **PAY-WH-07** | Bereits bezahlte Rechnung → 200 (idempotent — verhindert Provider-Endlos-Retry) |
+| **VIEW-14** | `VertragView.von()` mappt alle Felder |
+| **VIEW-15** | `VertragView.von()` toleriert Null-Referenzen (anfrage, org, sponsorOrg) |
+| **VIEW-16** | `RechnungView.von()` mappt alle Felder |
+| **VIEW-17** | `RechnungView.von()` toleriert Null-Referenzen |
+
+### Aufgaben-Definition-Service (AUFG-DEF) — Phase 12
+
+| ID | Was geprüft |
+|---|---|
+| **AUFG-DEF-01** | `alle()` liefert nach Titel sortierte Liste |
+| **AUFG-DEF-02** | `findeNachId()` wirft `NotFoundException` bei unbekannter ID |
+| **AUFG-DEF-03** | `findeFormular()` mappt Entity-Felder auf FormDto |
+| **AUFG-DEF-04** | `erstelle()` trim-t Titel und markiert nicht als System-Definition |
+| **AUFG-DEF-05** | `aktualisiere()` bei System-Def ignoriert Trigger-Felder, ändert nur Anzeige-Felder |
+| **AUFG-DEF-06** | `aktualisiere()` bei Custom-Def ändert alle Felder; leerer String → null |
+| **AUFG-DEF-07** | `loesche()` blockiert System-Definitionen mit `IllegalStateException` |
+| **AUFG-DEF-08** | `loesche()` entfernt Custom-Definitionen |
+| **AUFG-DEF-09** | `istSystemDefinition()` delegiert an Entity-Flag |
+
 ## CI
 
 - Bei jedem Push und PR auf `main`: `mvn -B clean verify` + Docker-Build-Smoke

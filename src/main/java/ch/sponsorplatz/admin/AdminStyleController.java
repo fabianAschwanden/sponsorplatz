@@ -49,7 +49,7 @@ public class AdminStyleController {
             redirect.addFlashAttribute("erfolgsMeldung",
                     "Plattform-Style wurde auf \"" + style + "\" umgeschaltet.");
         } catch (IllegalArgumentException e) {
-            redirect.addFlashAttribute("fehlerMeldung", e.getMessage());
+            redirect.addFlashAttribute("fehlermeldung", e.getMessage());
         }
         return "redirect:/admin/style";
     }

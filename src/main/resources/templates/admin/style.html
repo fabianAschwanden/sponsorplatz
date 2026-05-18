@@ -26,8 +26,8 @@
 
         <div th:if="${erfolgsMeldung}" class="app-alert app-alert-success"
              th:text="${erfolgsMeldung}">OK</div>
-        <div th:if="${fehlerMeldung}" class="app-alert app-alert-error"
-             th:text="${fehlerMeldung}">Fehler</div>
+        <div th:if="${fehlermeldung}" class="app-alert app-alert-error"
+             th:text="${fehlermeldung}">Fehler</div>
 
         <form th:action="@{/admin/style/speichern}" method="post" class="app-card"
               style="max-width:560px; padding:1.5rem;">

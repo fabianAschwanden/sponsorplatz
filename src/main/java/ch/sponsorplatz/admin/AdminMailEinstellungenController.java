@@ -89,10 +89,10 @@ public class AdminMailEinstellungenController {
             redirect.addFlashAttribute("erfolgsMeldung",
                     "Test-Mail wurde an " + mailService.effektiverTestEmpfaenger() + " gesendet.");
         } catch (IllegalStateException e) {
-            redirect.addFlashAttribute("fehlerMeldung", e.getMessage());
+            redirect.addFlashAttribute("fehlermeldung", e.getMessage());
         } catch (RuntimeException e) {
             log.warn("Test-Mail fehlgeschlagen: {}", e.getMessage());
-            redirect.addFlashAttribute("fehlerMeldung",
+            redirect.addFlashAttribute("fehlermeldung",
                     "Test-Mail-Versand fehlgeschlagen: " + e.getMessage());
         }
         return "redirect:/admin/mail-einstellungen";
