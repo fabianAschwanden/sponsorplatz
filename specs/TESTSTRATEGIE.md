@@ -576,6 +576,26 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **CLOUD-STO-05** | `OciStorageServiceTest` | `ladeAlsResource` liefert lesbare Resource mit dem Object-Inhalt |
 | **CLOUD-STO-06** | `OciStorageServiceTest` | `getObject` 404 → `RuntimeException("nicht gefunden")` |
 
+#### AzureBlobStorageService (CLOUD-STO-AZ) — Phase 15.3
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **CLOUD-STO-AZ-01** | `AzureBlobStorageServiceTest` | `validierePfad` lehnt leer/null/'..' mit `IllegalArgumentException` ab |
+| **CLOUD-STO-AZ-02** | `AzureBlobStorageServiceTest` | `speichere` ruft `AzureBlobOperations.upload` mit Key, Stream, Länge, `overwrite=true` |
+| **CLOUD-STO-AZ-03** | `AzureBlobStorageServiceTest` | `AzureBlobOperationException` wird in `RuntimeException` mit Status-Code gewrappt |
+| **CLOUD-STO-AZ-04** | `AzureBlobStorageServiceTest` | `loesche` ruft `deleteIfExists` — nativ idempotent (true/false ohne Throw) |
+| **CLOUD-STO-AZ-05** | `AzureBlobStorageServiceTest` | `ladeAlsResource` liefert lesbare Resource mit Blob-Inhalt |
+| **CLOUD-STO-AZ-06** | `AzureBlobStorageServiceTest` | `AzureBlobNotFoundException` → `RuntimeException("nicht gefunden")` |
+
+#### AzureBackupCloudUploader (CLOUD-BKP-AZ) — Phase 15.3
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **CLOUD-BKP-AZ-01** | `AzureBackupCloudUploaderTest` | `lade` nutzt Key `backups/<dateiname>` und `overwrite=true` mit korrekter Länge |
+| **CLOUD-BKP-AZ-02** | `AzureBackupCloudUploaderTest` | `AzureBlobOperationException` aus dem Adapter wird in `RuntimeException` gewrappt |
+| **CLOUD-BKP-AZ-03** | `AzureBackupCloudUploaderTest` | Fehlende lokale Datei → `RuntimeException` (IO-Fehler) |
+| **CLOUD-BKP-AZ-04** | `AzureBackupCloudUploaderTest` | Konstruktor lehnt null-Operations mit `NullPointerException` ab |
+
 #### BackupService Cloud-Upload (BACKUP)
 
 | ID | Test-Klasse | Beschreibung |

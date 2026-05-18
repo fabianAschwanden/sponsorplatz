@@ -49,7 +49,8 @@ Post-Pilot (📋)
     Phase 15  Wachstum nach erstem Echt-Betrieb (NEU)
               15.1 Echte Zahlungs-Provider-Integration (Stripe/PostFinance/Datatrans)
               15.2 Mahnwesen (automatische Mahnstufen, CH-Inkasso-Anbindung)
-              15.3 Weitere Post-Pilot-Features (Backlog-getrieben)
+              15.3 Multi-Cloud — Azure als zweite Zone (DR / Aktiv-Aktiv-Vorbereitung)
+              15.4 Weitere Post-Pilot-Features (Backlog-getrieben)
 ```
 
 Die Verschiebung von 10.4 → 14 schafft Platz: Phase 13 deckt
@@ -657,7 +658,59 @@ Der ursprüngliche „Pilot-Launch"-Block lebt jetzt als **Phase 14 (Produktivsc
 - [ ] Audit-Log für jeden Mahnschritt (was wurde wann von wem ausgelöst)
 - [ ] Tests: MAHN-01..N
 
-### 15.3 — Weitere Post-Pilot-Themen
+### 15.3 — Multi-Cloud — Azure als zweite Zone
+
+> Heutiges OCI Always-Free ist Single-Point-of-Failure (eine VM, eine Region,
+> ein Provider). Azure wird als zweite Zone vorbereitet — initial als
+> **Warm-DR** (Promote per DNS-Switch), später als Aktiv-Aktiv-Split.
+> Entscheidung dokumentiert in [`docs/adr/0009-multi-cloud-azure-als-dr-zone.md`](../docs/adr/0009-multi-cloud-azure-als-dr-zone.md).
+
+**Slices in TDD-Reihenfolge** — Slice 1+2 laufen App-seitig, der Rest ist Ops.
+
+- [x] **Slice 1 — `StorageService`-Abstraktion auf Azure ziehen.**
+      `AzureBlobStorageService` (`@ConditionalOnProperty(...="azure")`) +
+      `AzureStorageConfig` (Default-Auth via Managed Identity, optional
+      Connection-String für lokale Tests). Tests: CLOUD-STO-AZ-01..06.
+- [x] **Slice 2 — `BackupCloudUploader` für Azure.**
+      `AzureBackupCloudUploader` analog OCI; Bucket `sponsorplatz-backups`.
+      Tests: CLOUD-BKP-AZ-01..04.
+- [x] **Slice 3 — Terraform-Modul `infra/envs/azure-staging/`.**
+      Resource Group + VNet + NSG (22/80/443) + VM Standard_B2s +
+      Azure Database for PostgreSQL Flexible Server (Burstable B1ms,
+      VNet-privat) + Azure Container Registry (Basic, MSI-only) +
+      Storage Account mit zwei Containern (`uploads`, `backups`) +
+      User-Assigned Managed Identity mit `AcrPull` + `Storage Blob Data
+      Contributor`-Rollen. cloud-init.yaml.tftpl + `cloud-azure` Spring-
+      Profil.
+- [x] **Slice 4 — CD-Workflow `cd-azure-staging.yml`.**
+      Eigener Workflow parallel zu OCI (NICHT in `cd-staging-free.yml`
+      einklemmen). Build einmal mit `docker buildx`, Trivy-Scan, Push
+      nach ACR via Service-Principal mit `AcrPush`-Rolle, SSH-Deploy auf
+      Azure-VM mit MSI-`az acr login`-Refresh, Smoke gegen
+      `https://${vars.AZURE_STAGING_DOMAIN}/login`. Preflight-Job skipt
+      sauber, wenn `AZURE_VM_IP`/`AZURE_ACR_LOGIN_SERVER` Vars fehlen.
+- [ ] **Slice 5 — DNS-Failover via Cloudflare.**
+      Zwei A-Records: OCI primary (weight 100), Azure failover (weight 0).
+      Health-Check auf `/login` alle 60s, Threshold 3. Promote-Script
+      `infra/scripts/promote-azure.sh` + Runbook
+      `docs/runbooks/dr-failover.md` (Dry-Run-getestet, Ziel < 30 min).
+- [ ] **Slice 6 — Backup-Cross-Replication OCI ↔ Azure Blob.**
+      `BackupService` lädt in **beide** Provider-Buckets, wenn beide
+      Uploader im Context sind. Refactor: `Optional<BackupCloudUploader>` →
+      `List<BackupCloudUploader>`. Test: BKP-X-01..03.
+- [ ] **Slice 7 — Beidseitiger Smoke + `X-Served-By`-Header.**
+      Neuer CI-Job `smoke-multicloud` (manueller `workflow_dispatch`),
+      verifiziert beide URLs + Header. Kleiner App-Change: `HostnameFilter`
+      setzt `X-Served-By: <hostname>` damit der Smoke beweisen kann
+      welche Cloud geantwortet hat.
+
+**Kostenhinweis:** Azure ist **nicht** Free-Tier — Standard_B2s + Flex
+Postgres B1ms + Blob ≈ CHF 50–80/Monat. Vor Slice 3 Budget freigeben.
+
+**Tests:** CLOUD-STO-AZ-01..06, CLOUD-BKP-AZ-01..04, BKP-X-01..03,
+SMOKE-MC-01..02.
+
+### 15.4 — Weitere Post-Pilot-Themen
 
 Diese landen erst nach Pilot-Feedback im Backlog (`/admin/backlog` oder via REST-API `POST /api/backlog`). Kandidaten heute schon im Blick:
 

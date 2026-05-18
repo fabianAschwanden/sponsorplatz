@@ -1,0 +1,43 @@
+# Kopieren nach terraform.tfvars und Werte ausfüllen.
+# terraform.tfvars ist .gitignored.
+
+# ── Azure-Auth ──────────────────────────────────────────────────────────────
+subscription_id = "REPLACE_ME"
+tenant_id       = "REPLACE_ME"
+# CH-Residency-Default. Bei Capacity-Engpässen: switzerlandwest oder westeurope.
+location = "switzerlandnorth"
+zone     = "1"   # AZ — Postgres + VM landen gemeinsam in dieser Zone
+
+# ── Identifier ──────────────────────────────────────────────────────────────
+resource_prefix = "sponsorplatz"
+env_name        = "azure-staging"
+
+# ── VM ──────────────────────────────────────────────────────────────────────
+vm_size        = "Standard_B2s"
+ssh_public_key = "ssh-ed25519 AAAA... user@host"
+
+# ── Domain + TLS ────────────────────────────────────────────────────────────
+domain     = "azure-staging.sponsorplatz.ch"
+acme_email = "admin@sponsorplatz.ch"
+
+# ── ACR ─────────────────────────────────────────────────────────────────────
+acr_sku = "Basic"
+# image_url leer lassen — wird automatisch auf <neuer-acr-fqdn>/sponsorplatz:azure-staging-latest gesetzt.
+
+# ── PostgreSQL ──────────────────────────────────────────────────────────────
+postgres_sku    = "B_Standard_B1ms"
+db_password     = "REPLACE_ME_STARK"
+
+# ── App-Admin ───────────────────────────────────────────────────────────────
+admin_email    = "admin@sponsorplatz.ch"
+admin_password = "REPLACE_ME_STARK"
+
+# ── SMTP (optional, ohne diese Werte ist Mail-Versand deaktiviert) ──────────
+# smtp_host            = "smtp-relay.brevo.com"
+# smtp_user            = "REPLACE_ME"
+# smtp_password        = "REPLACE_ME"
+# mail_live            = false
+# mail_test_empfaenger = "admin@sponsorplatz.ch"
+
+# ── Storage-Provider ────────────────────────────────────────────────────────
+storage_provider = "azure"

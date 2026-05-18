@@ -28,6 +28,8 @@
         <cucumber.version>7.21.1</cucumber.version>
         <playwright.version>1.49.0</playwright.version>
         <oci-sdk.version>3.86.0</oci-sdk.version>
+        <azure-storage-blob.version>12.29.0</azure-storage-blob.version>
+        <azure-identity.version>1.14.2</azure-identity.version>
 
         <!-- Security-Patches über Spring-Boot-3.5.3-BOM (siehe Trivy-Findings):
              tomcat → 10.1.54 (CVE-2026-29145, CVE-2025-48989, CVE-2026-34483, CVE-2026-34487)
@@ -203,6 +205,18 @@
             <groupId>com.oracle.oci.sdk</groupId>
             <artifactId>oci-java-sdk-common-httpclient-jersey3</artifactId>
             <version>${oci-sdk.version}</version>
+        </dependency>
+
+        <!-- Azure Blob Storage (nur bei sponsorplatz.storage.provider=azure aktiv) -->
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-storage-blob</artifactId>
+            <version>${azure-storage-blob.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-identity</artifactId>
+            <version>${azure-identity.version}</version>
         </dependency>
 
         <!-- Tests -->

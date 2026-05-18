@@ -1,0 +1,167 @@
+#cloud-config
+# Cloud-Init für die Azure-Staging-VM (Ubuntu 24.04 LTS):
+# 1. Docker + Azure-CLI installieren
+# 2. UFW → 80/443 freischalten
+# 3. /opt/sponsorplatz/{Caddyfile, docker-compose.yml} schreiben
+# 4. ACR-Login via Managed Identity
+# 5. systemd-Service einrichten der den Compose-Stack startet
+
+package_update: true
+package_upgrade: false
+
+write_files:
+  # ── docker-compose.yml ────────────────────────────────────────────────────
+  # Im Gegensatz zu OCI gibt es KEINEN lokalen DB-Container — Postgres läuft
+  # extern als Azure Flex Server. App + Caddy reichen.
+  - path: /opt/sponsorplatz/docker-compose.yml
+    permissions: '0600'
+    content: |
+      services:
+        app:
+          image: ${image_url}
+          container_name: sponsorplatz-app
+          restart: unless-stopped
+          mem_limit: 2g
+          environment:
+            SPRING_PROFILES_ACTIVE: cloud-azure
+            DB_URL: jdbc:postgresql://${db_host}:5432/${db_name}?sslmode=require
+            DB_USER: ${db_user}
+            DB_PASSWORD: ${db_password}
+            SMTP_HOST: ${smtp_host}
+            SMTP_PORT: "${smtp_port}"
+            SMTP_USER: ${smtp_user}
+            SMTP_PASSWORD: ${smtp_password}
+            SMTP_AUTH: "true"
+            SMTP_STARTTLS: "true"
+            MAIL_ABSENDER: ${mail_absender}
+            MAIL_LIVE: "${mail_live}"
+            MAIL_TEST_EMPFAENGER: ${mail_test_empfaenger}
+            BASIS_URL: ${basis_url}
+            SPONSORPLATZ_ADMIN_EMAIL: ${admin_email}
+            SPONSORPLATZ_ADMIN_PASSWORD: ${admin_password}
+            STORAGE_PROVIDER: ${storage_provider}
+            AZURE_AUTH_MODE: managed-identity
+            AZURE_ACCOUNT_URL: ${account_url}
+            AZURE_CONTAINER_UPLOADS: ${container_uploads}
+            AZURE_CONTAINER_BACKUPS: ${container_backups}
+            # DefaultAzureCredentialBuilder liest diese ENV automatisch
+            # und nutzt die User-Assigned Managed Identity ohne weitere Config.
+            AZURE_CLIENT_ID: ${managed_identity}
+            JAVA_OPTS: "-Xms512m -Xmx1500m"
+          volumes:
+            - /var/lib/sponsorplatz/uploads:/app/uploads
+          expose:
+            - "8080"
+          healthcheck:
+            test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+            interval: 30s
+            timeout: 5s
+            retries: 5
+            start_period: 90s
+
+        caddy:
+          image: caddy:2-alpine
+          container_name: sponsorplatz-caddy
+          restart: unless-stopped
+          mem_limit: 128m
+          depends_on:
+            - app
+          ports:
+            - "80:80"
+            - "443:443"
+          volumes:
+            - /opt/sponsorplatz/Caddyfile:/etc/caddy/Caddyfile:ro
+            - /var/lib/sponsorplatz/caddy-data:/data
+            - /var/lib/sponsorplatz/caddy-config:/config
+
+  # ── Caddyfile ─────────────────────────────────────────────────────────────
+  - path: /opt/sponsorplatz/Caddyfile
+    permissions: '0644'
+    content: |
+      {
+          email ${acme_email}
+      }
+      ${domain} {
+          encode gzip
+          header {
+              Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+              X-Content-Type-Options "nosniff"
+              X-Frame-Options "DENY"
+              Referrer-Policy "strict-origin-when-cross-origin"
+          }
+          reverse_proxy app:8080 {
+              header_up X-Forwarded-Proto https
+          }
+      }
+
+  # ── systemd-Service ──────────────────────────────────────────────────────
+  - path: /etc/systemd/system/sponsorplatz.service
+    permissions: '0644'
+    content: |
+      [Unit]
+      Description=Sponsorplatz (docker compose, Azure)
+      Requires=docker.service
+      After=docker.service network-online.target
+      Wants=network-online.target
+
+      [Service]
+      Type=oneshot
+      RemainAfterExit=true
+      WorkingDirectory=/opt/sponsorplatz
+      ExecStart=/usr/bin/docker compose up -d --remove-orphans
+      ExecStop=/usr/bin/docker compose down
+
+      [Install]
+      WantedBy=multi-user.target
+
+  # ── ACR-Refresh-Helper (Token läuft alle 3h ab) ──────────────────────────
+  # Cron alle 2h: az login --identity → az acr login → refreshed /root/.docker/config.json
+  - path: /usr/local/bin/sponsorplatz-acr-refresh
+    permissions: '0750'
+    content: |
+      #!/bin/bash
+      set -e
+      az login --identity --client-id "${managed_identity}" >/dev/null
+      az acr login --name "$(echo ${acr_login_server} | cut -d. -f1)" >/dev/null
+
+  - path: /etc/cron.d/sponsorplatz-acr
+    permissions: '0644'
+    content: |
+      0 */2 * * * root /usr/local/bin/sponsorplatz-acr-refresh
+
+  # ── Convenience-Aliases ──────────────────────────────────────────────────
+  - path: /etc/profile.d/sponsorplatz.sh
+    permissions: '0644'
+    content: |
+      # ACR-Refresh + docker-Compose brauchen root (Script ist 0750,
+      # docker.sock gehört root); sudo daher in allen Aliases.
+      alias logs='cd /opt/sponsorplatz && sudo docker compose logs -f'
+      alias restart-app='cd /opt/sponsorplatz && sudo docker compose restart app'
+      alias pull-app='cd /opt/sponsorplatz && sudo /usr/local/bin/sponsorplatz-acr-refresh && sudo docker compose pull app && sudo docker compose up -d app'
+
+runcmd:
+  # Docker Engine (Ubuntu-Repo, schneller als upstream-Docker-Repo für die VM-Grösse)
+  - apt-get update
+  - apt-get install -y docker.io docker-compose-v2 curl gnupg lsb-release
+  - systemctl enable --now docker
+
+  # Azure CLI (für ACR-Login via MSI)
+  - curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
+  # UFW: 22 default offen (SSH), 80 + 443 freischalten
+  - ufw allow 22/tcp
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw --force enable
+
+  # Persistenz-Verzeichnisse
+  - mkdir -p /var/lib/sponsorplatz/uploads /var/lib/sponsorplatz/caddy-data /var/lib/sponsorplatz/caddy-config
+  - chown -R 1001:1001 /var/lib/sponsorplatz/uploads     # sponsor-User im App-Container
+
+  # ACR-Login via Managed Identity (initialer Login + Cron für Refresh)
+  - /usr/local/bin/sponsorplatz-acr-refresh
+
+  # Stack starten
+  - cd /opt/sponsorplatz && docker compose pull
+  - systemctl daemon-reload
+  - systemctl enable --now sponsorplatz.service

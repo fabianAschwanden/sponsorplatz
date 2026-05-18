@@ -91,6 +91,35 @@
     },
 
     {
+      "name": "sponsorplatz.storage.azure.auth-mode",
+      "type": "java.lang.String",
+      "description": "Azure-Auth-Modus: 'managed-identity' (User-Assigned MI auf der VM) oder 'connection-string' (lokales Testen / Azurite).",
+      "defaultValue": "managed-identity"
+    },
+    {
+      "name": "sponsorplatz.storage.azure.account-url",
+      "type": "java.lang.String",
+      "description": "Azure-Storage-Account-Endpoint (z.B. https://<account>.blob.core.windows.net). Pflicht bei auth-mode=managed-identity."
+    },
+    {
+      "name": "sponsorplatz.storage.azure.connection-string",
+      "type": "java.lang.String",
+      "description": "Azure-Storage-Connection-String. Pflicht bei auth-mode=connection-string."
+    },
+    {
+      "name": "sponsorplatz.storage.azure.container-uploads",
+      "type": "java.lang.String",
+      "description": "Azure-Blob-Container für Medien-Uploads.",
+      "defaultValue": "sponsorplatz-uploads"
+    },
+    {
+      "name": "sponsorplatz.storage.azure.container-backups",
+      "type": "java.lang.String",
+      "description": "Azure-Blob-Container für DB-Backup-Dumps.",
+      "defaultValue": "sponsorplatz-backups"
+    },
+
+    {
       "name": "sponsorplatz.backup.verzeichnis",
       "type": "java.lang.String",
       "description": "Lokales Verzeichnis für Backup-SQL-Dumps. Wird zusätzlich auf OCI gespiegelt, wenn storage.provider=oci.",
@@ -177,6 +206,10 @@
         {
           "value": "oci",
           "description": "OCI Object Storage (braucht namespace + region + Buckets)."
+        },
+        {
+          "value": "azure",
+          "description": "Azure Blob Storage (braucht account-url + Container; Auth via Managed Identity oder Connection-String)."
         }
       ]
     },
@@ -190,6 +223,19 @@
         {
           "value": "config",
           "description": "Lokale ~/.oci/config — für Entwickler-Maschinen."
+        }
+      ]
+    },
+    {
+      "name": "sponsorplatz.storage.azure.auth-mode",
+      "values": [
+        {
+          "value": "managed-identity",
+          "description": "User-Assigned Managed Identity der Azure-VM (Default für Azure-Deployment, keine Secrets)."
+        },
+        {
+          "value": "connection-string",
+          "description": "Storage-Account-Connection-String — für lokales Testen gegen Azurite oder ad-hoc-Setups."
         }
       ]
     }

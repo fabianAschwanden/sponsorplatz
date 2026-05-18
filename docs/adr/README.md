@@ -55,3 +55,4 @@ sind ein **Audit-Trail**.
 | [0006](0006-swiss-qr-bill-stack.md) | Swiss-QR-Bill mit OpenHTMLtoPDF + ZXing | Akzeptiert |
 | [0007](0007-archunit-fuer-statische-verifikation.md) | ArchUnit für statische Architektur-Verifikation | Akzeptiert |
 | [0008](0008-structurizr-fuer-c4-diagramme.md) | Structurizr-DSL für C4-Architektur-Diagramme | Akzeptiert |
+| [0009](0009-multi-cloud-azure-als-dr-zone.md) | Multi-Cloud — Azure als zweite Zone (Warm-DR) | Akzeptiert |

@@ -1,0 +1,173 @@
+name: CD Azure-Staging
+
+# Deploy auf die Azure-Staging-VM (infra/envs/azure-staging).
+# Phase 15.3 — Multi-Cloud / Warm-DR. Läuft parallel zu CD Staging (Free Tier).
+# Beide Pipelines sind bewusst unabhängig: ein Failure auf OCI blockiert
+# Azure nicht (und umgekehrt). Trigger ist derselbe (grüner CI auf main).
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write   # für azure/login mit OIDC-Federation, falls später aktiviert
+
+jobs:
+  # Diagnose-Job: läuft immer und logt explizit, warum der Deploy skipped wurde.
+  # Spiegelt das Pattern aus cd-staging-free.yml. Secrets können wir leider nicht
+  # gleich prüfen (kein contains() auf secrets-Kontext), daher nur Vars hier.
+  preflight:
+    name: Preflight (vars-check)
+    runs-on: ubuntu-latest
+    outputs:
+      can-deploy: ${{ steps.check.outputs.can-deploy }}
+    steps:
+      - id: check
+        run: |
+          missing=()
+          [ -z "${{ vars.AZURE_VM_IP }}" ]            && missing+=("vars.AZURE_VM_IP")
+          [ -z "${{ vars.AZURE_ACR_LOGIN_SERVER }}" ] && missing+=("vars.AZURE_ACR_LOGIN_SERVER")
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::warning::CD-Azure skipped — fehlende Repo-Variablen: ${missing[*]}. Setup siehe infra/envs/azure-staging/README.md"
+            echo "can-deploy=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "can-deploy=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    name: Build → Trivy → ACR-Push → SSH-Deploy
+    needs: preflight
+    if: ${{ (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success') && needs.preflight.outputs.can-deploy == 'true' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: azure-staging
+      url: https://${{ vars.AZURE_STAGING_DOMAIN || vars.AZURE_VM_IP }}
+    env:
+      IMAGE_BASE: ${{ vars.AZURE_ACR_LOGIN_SERVER }}/sponsorplatz
+      IMAGE_TAG:  ${{ github.event.workflow_run.head_sha || github.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build einmal, lokal laden. Dasselbe Image, das auch Trivy scannt, wird
+      # nach erfolgreichem Scan zu ACR gepusht — kein Re-Build.
+      - name: Build image (linux/amd64 für Standard_B2s)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: |
+            ${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG }}
+            ${{ env.IMAGE_BASE }}:azure-staging-latest
+
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG }}
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          ignore-unfixed: true
+
+      # Login via Service Principal mit AcrPush-Rolle.
+      # SP einmalig erstellen:
+      #   az ad sp create-for-rbac --name sponsorplatz-cd-azure \
+      #     --role AcrPush --scopes /subscriptions/<ID>/resourceGroups/sponsorplatz-azure-staging-rg/providers/Microsoft.ContainerRegistry/registries/<acr-name>
+      # Die Ausgabe (appId/password/tenant) als 3 Secrets im Repo speichern.
+      - name: Azure-Login (Service Principal)
+        uses: azure/login@v2
+        with:
+          creds: |
+            {
+              "clientId":       "${{ secrets.AZURE_SP_CLIENT_ID }}",
+              "clientSecret":   "${{ secrets.AZURE_SP_CLIENT_SECRET }}",
+              "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}",
+              "tenantId":       "${{ secrets.AZURE_TENANT_ID }}"
+            }
+
+      - name: ACR-Login + Push
+        run: |
+          # ACR-Name ist der Hostname-Anteil vor .azurecr.io
+          ACR_NAME=$(echo "${{ vars.AZURE_ACR_LOGIN_SERVER }}" | cut -d. -f1)
+          az acr login --name "$ACR_NAME"
+          docker push ${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG }}
+          docker push ${{ env.IMAGE_BASE }}:azure-staging-latest
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.AZURE_VM_SSH_PRIVATE_KEY }}
+
+      - name: Add VM to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ vars.AZURE_VM_IP }} >> ~/.ssh/known_hosts
+
+      # Identisches Pattern wie cd-staging-free.yml: ein einziges CD-managed
+      # Secret (SPONSORPLATZ_API_KEY) wandert in die VM-.env. Andere Secrets
+      # (DB_PASSWORD, SMTP_*, ADMIN_*) bleiben in der von Terraform/cloud-init
+      # gesetzten /opt/sponsorplatz/.env und sind hier nicht rotations-getrieben.
+      - name: Sync managed Secrets in VM-.env (idempotent)
+        if: success()
+        env:
+          API_KEY: ${{ secrets.SPONSORPLATZ_API_KEY }}
+        run: |
+          if [ -z "$API_KEY" ]; then
+            echo "::notice::SPONSORPLATZ_API_KEY-Secret nicht gesetzt — überspringe .env-Update. API bleibt deaktiviert (503)."
+            exit 0
+          fi
+          ssh sponsoradmin@${{ vars.AZURE_VM_IP }} "
+            set -e
+            sudo touch /opt/sponsorplatz/.env
+            sudo grep -v '^SPONSORPLATZ_API_KEY=' /opt/sponsorplatz/.env > /tmp/env.new || true
+            echo 'SPONSORPLATZ_API_KEY=$API_KEY' >> /tmp/env.new
+            sudo install -m 0600 -o root -g root /tmp/env.new /opt/sponsorplatz/.env
+            rm -f /tmp/env.new
+            echo 'SPONSORPLATZ_API_KEY synced in /opt/sponsorplatz/.env'
+          "
+
+      - name: Deploy on VM (ACR-Refresh + cleanup + pull + restart)
+        run: |
+          # Auf der VM muss vor `docker compose pull` der ACR-Login frisch sein
+          # — das übernimmt /usr/local/bin/sponsorplatz-acr-refresh, das von
+          # cloud-init installiert wurde (MSI-basierter `az acr login`).
+          # Pre-Pull-Cleanup: alte ungenutzte Images älter als 24h löschen.
+          # --force-recreate: ENV-Änderungen aus dem .env-Sync-Step werden
+          # nur beim Container-Re-Create wirksam (Image-Tag kann gleich bleiben).
+          ssh sponsoradmin@${{ vars.AZURE_VM_IP }} \
+            "sudo /usr/local/bin/sponsorplatz-acr-refresh && \
+             sudo docker system prune -af --filter 'until=24h' 2>&1 | tail -3 && \
+             cd /opt/sponsorplatz && sudo docker compose pull app && sudo docker compose up -d --force-recreate app"
+
+      - name: Smoke test
+        run: |
+          # Actuator läuft in prod auf Loopback:9090 (siehe application-prod.properties)
+          # und ist von ausserhalb der VM bewusst NICHT erreichbar.
+          # Stattdessen probieren wir die /login-Public-Route — die liefert nur
+          # 200, wenn Tomcat + Thymeleaf + SecurityConfig + Flex-Server-Verbindung
+          # alle hochgekommen sind.
+          SMOKE_URL="${{ vars.AZURE_STAGING_DOMAIN && format('https://{0}', vars.AZURE_STAGING_DOMAIN) || format('http://{0}', vars.AZURE_VM_IP) }}/login"
+          for i in $(seq 1 30); do
+            if curl -fsS -o /dev/null "$SMOKE_URL"; then
+              echo "Smoke OK after $i polls ($SMOKE_URL)"; exit 0
+            fi
+            echo "Poll $i — not ready yet ($SMOKE_URL)"
+            sleep 10
+          done
+          echo "Smoke check failed at $SMOKE_URL"
+          exit 1
+
+      - name: Azure-Logout
+        if: always()
+        run: az logout || true
