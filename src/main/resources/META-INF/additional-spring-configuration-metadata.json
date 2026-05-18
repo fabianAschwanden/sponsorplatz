@@ -157,6 +157,12 @@
       "name": "sponsorplatz.oidc.rollen-mapping",
       "type": "java.util.Map<java.lang.String,java.lang.String>",
       "description": "Mapping von OIDC-Group-Claims auf interne Rollen (z.B. 'admins=PLATFORM_ADMIN')."
+    },
+
+    {
+      "name": "sponsorplatz.api.key",
+      "type": "java.lang.String",
+      "description": "API-Key für /api/**-Routen (ApiKeyFilter prüft X-API-Key gegen diesen Wert). Leer oder ungesetzt → API ist deaktiviert (503). Off-by-default ist Absicht."
     }
   ],
 
