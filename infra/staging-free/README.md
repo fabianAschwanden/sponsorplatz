@@ -69,6 +69,9 @@ Alle drei Container laufen auf derselben VM. Persistente Daten unter `/var/lib/s
    SPONSORPLATZ_ADMIN_EMAIL=admin@example.ch
    SPONSORPLATZ_ADMIN_PASSWORD=<starkes-pw-für-erste-Anmeldung>
 
+   # --- REST-API (optional, off-by-default) ---
+   # SPONSORPLATZ_API_KEY=<starker-key>   # auskommentiert lassen → /api/** 503
+
    # --- Object Storage (optional, sonst lokales Volume) ---
    # STORAGE_PROVIDER=oci          # auskommentiert lassen → lokal
    # OCI_NAMESPACE=<oci os ns get>

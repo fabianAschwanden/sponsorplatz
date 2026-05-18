@@ -53,6 +53,10 @@ services:
       BASIS_URL: ${BASIS_URL}
       SPONSORPLATZ_ADMIN_EMAIL: ${SPONSORPLATZ_ADMIN_EMAIL:-}
       SPONSORPLATZ_ADMIN_PASSWORD: ${SPONSORPLATZ_ADMIN_PASSWORD:-}
+      # REST-API-Key — off-by-default. Wenn leer/ungesetzt, antwortet
+      # ApiKeyFilter mit 503. Zur Aktivierung in /opt/sponsorplatz/.env
+      # setzen und Container neu starten (docker compose up -d app).
+      SPONSORPLATZ_API_KEY: ${SPONSORPLATZ_API_KEY:-}
       # Storage: STORAGE_PROVIDER=oci aktiviert OCI Object Storage; ungesetzt = lokal
       STORAGE_PROVIDER: ${STORAGE_PROVIDER:-lokal}
       OCI_AUTH_MODE: ${OCI_AUTH_MODE:-instance}
