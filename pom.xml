@@ -36,12 +36,15 @@
              spring-framework → 6.2.11 (CVE-2025-41249)
              spring-security → 6.5.9 (CVE-2026-22732, CVE-2025-41248)
              thymeleaf → 3.1.5 (CVE-2026-40477, CVE-2026-41901 SSTI)
-             postgresql → 42.7.11 (CVE-2026-42198 Client-DoS) -->
+             postgresql → 42.7.11 (CVE-2026-42198 Client-DoS)
+             netty → 4.1.133.Final (CVE-2026-42579/42583/42584/42587 — transitiv
+                     über azure-storage-blob + azure-identity neu eingeschleppt) -->
         <tomcat.version>10.1.54</tomcat.version>
         <spring-framework.version>6.2.11</spring-framework.version>
         <spring-security.version>6.5.9</spring-security.version>
         <thymeleaf.version>3.1.5.RELEASE</thymeleaf.version>
         <postgresql.version>42.7.11</postgresql.version>
+        <netty.version>4.1.133.Final</netty.version>
     </properties>
 
     <dependencies>
