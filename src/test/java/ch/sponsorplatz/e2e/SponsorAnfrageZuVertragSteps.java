@@ -1,7 +1,5 @@
 package ch.sponsorplatz.e2e;
 
-import ch.sponsorplatz.anfrage.SponsoringAnfrageRepository;
-import ch.sponsorplatz.anfrage.VertragRepository;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationRepository;
 import com.microsoft.playwright.Page;
@@ -43,8 +41,6 @@ public class SponsorAnfrageZuVertragSteps {
     @Autowired private E2EContext ctx;
     @Autowired private E2EFixtures fixtures;
     @Autowired private OrganisationRepository orgRepository;
-    @Autowired private SponsoringAnfrageRepository anfrageRepository;
-    @Autowired private VertragRepository vertragRepository;
     @PersistenceContext private EntityManager em;
 
     // -------- Background --------
