@@ -115,6 +115,12 @@ public class SecurityConfig {
                         .requestMatchers("/payment/webhook/**").permitAll()
                         // REST-API: permitAll auf HTTP-Ebene, ApiKeyFilter prüft X-API-Key
                         .requestMatchers("/api/**").permitAll()
+                        // Spring-Boot-Error-Dispatch: ein nicht-2xx-Response auf irgendeiner
+                        // Route triggert einen internen Forward nach /error. Wenn /error
+                        // hier nicht permitAll wäre, würde die Security-Chain den Forward
+                        // wieder umleiten — Validierungsfehler (400) auf der API würden
+                        // als 302 → /login auftauchen statt sauberer 400-Status.
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
@@ -197,6 +203,8 @@ public class SecurityConfig {
                         .requestMatchers("/payment/webhook/**").permitAll()
                         // REST-API: permitAll auf HTTP-Ebene, ApiKeyFilter prüft X-API-Key
                         .requestMatchers("/api/**").permitAll()
+                        // Spring-Boot-Error-Dispatch — siehe dev-Chain für die Begründung.
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
