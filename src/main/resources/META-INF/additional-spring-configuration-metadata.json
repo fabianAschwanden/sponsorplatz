@@ -1,0 +1,191 @@
+{
+  "properties": [
+    {
+      "name": "sponsorplatz.basis-url",
+      "type": "java.lang.String",
+      "description": "Öffentliche Basis-URL der Plattform (für Mail-Links, OG-Tags, Sitemap, OAuth-Redirects).",
+      "defaultValue": "http://localhost:8080"
+    },
+    {
+      "name": "sponsorplatz.demo-modus",
+      "type": "java.lang.Boolean",
+      "description": "Zeigt einen Demo-Disclaimer im Footer/Topbar an. Wird auch von DemoModusAdvice gelesen.",
+      "defaultValue": false
+    },
+    {
+      "name": "sponsorplatz.support.empfaenger",
+      "type": "java.lang.String",
+      "description": "E-Mail-Adresse, an die das /support-Form Nachrichten weiterleitet. Leer = nur ins Audit-Log."
+    },
+
+    {
+      "name": "sponsorplatz.dev.email",
+      "type": "java.lang.String",
+      "description": "Auto-Login-User im dev-Profil (DevSeedRunner). Nicht für Prod.",
+      "defaultValue": "dev@sponsorplatz.ch"
+    },
+    {
+      "name": "sponsorplatz.dev.passwort",
+      "type": "java.lang.String",
+      "description": "Auto-Login-Passwort im dev-Profil (DevSeedRunner). Nicht für Prod.",
+      "defaultValue": "dev"
+    },
+
+    {
+      "name": "sponsorplatz.mail.absender",
+      "type": "java.lang.String",
+      "description": "Absender-Adresse für ausgehende Mails. Wird von der DB-Einstellung (admin/mail-einstellungen) überschrieben, falls dort gesetzt.",
+      "defaultValue": "noreply@sponsorplatz.ch"
+    },
+    {
+      "name": "sponsorplatz.mail.live",
+      "type": "java.lang.Boolean",
+      "description": "Live-Modus: Mails gehen an echte Empfänger. Bei false → Test-Empfänger (admin-UI/ENV) oder verworfen. Bewusst nur als ENV/Property, kein UI-Toggle.",
+      "defaultValue": false
+    },
+    {
+      "name": "sponsorplatz.mail.test-empfaenger",
+      "type": "java.lang.String",
+      "description": "Sammel-Empfänger im Nicht-Live-Modus. Pilot-Phase: alle Mails landen hier statt bei echten Usern."
+    },
+
+    {
+      "name": "sponsorplatz.storage.provider",
+      "type": "java.lang.String",
+      "description": "Speicher-Backend für Uploads und Backups.",
+      "defaultValue": "lokal"
+    },
+    {
+      "name": "sponsorplatz.storage.lokal.basis-pfad",
+      "type": "java.lang.String",
+      "description": "Wurzel-Verzeichnis für lokale Uploads (nur bei provider=lokal).",
+      "defaultValue": "./uploads"
+    },
+    {
+      "name": "sponsorplatz.storage.oci.auth-mode",
+      "type": "java.lang.String",
+      "description": "OCI-Authentifizierungs-Modus: 'instance' (Instance Principal auf der VM) oder 'config' (~/.oci/config).",
+      "defaultValue": "instance"
+    },
+    {
+      "name": "sponsorplatz.storage.oci.namespace",
+      "type": "java.lang.String",
+      "description": "OCI Object-Storage-Namespace (Tenancy-Namespace, in der Console sichtbar)."
+    },
+    {
+      "name": "sponsorplatz.storage.oci.region",
+      "type": "java.lang.String",
+      "description": "OCI-Region für Object Storage (z.B. eu-zurich-1)."
+    },
+    {
+      "name": "sponsorplatz.storage.oci.bucket-uploads",
+      "type": "java.lang.String",
+      "description": "Bucket-Name für Medien-Uploads (Cover-Bilder, Logos, Anhänge).",
+      "defaultValue": "sponsorplatz-uploads"
+    },
+    {
+      "name": "sponsorplatz.storage.oci.bucket-backups",
+      "type": "java.lang.String",
+      "description": "Bucket-Name für DB-Backup-Dumps.",
+      "defaultValue": "sponsorplatz-backups"
+    },
+
+    {
+      "name": "sponsorplatz.backup.verzeichnis",
+      "type": "java.lang.String",
+      "description": "Lokales Verzeichnis für Backup-SQL-Dumps. Wird zusätzlich auf OCI gespiegelt, wenn storage.provider=oci.",
+      "defaultValue": "./backups"
+    },
+    {
+      "name": "sponsorplatz.backup.aufbewahrung-tage",
+      "type": "java.lang.Integer",
+      "description": "Retention für lokale Backups in Tagen. Ältere Dumps werden vom BackupService gelöscht.",
+      "defaultValue": 30
+    },
+    {
+      "name": "sponsorplatz.backup.cron",
+      "type": "java.lang.String",
+      "description": "Cron-Expression für den BackupService (Spring @Scheduled-Syntax: 'sec min hour dom mon dow').",
+      "defaultValue": "0 0 2 * * *"
+    },
+
+    {
+      "name": "sponsorplatz.alerts.cpu-prozent",
+      "type": "java.lang.Integer",
+      "description": "CPU-Schwelle in Prozent — bei Überschreitung erstellt der OpsAlertService einen Alert.",
+      "defaultValue": 85
+    },
+    {
+      "name": "sponsorplatz.alerts.heap-prozent",
+      "type": "java.lang.Integer",
+      "description": "Heap-Auslastung in Prozent — bei Überschreitung Alert.",
+      "defaultValue": 85
+    },
+    {
+      "name": "sponsorplatz.alerts.error-grenze",
+      "type": "java.lang.Integer",
+      "description": "Fehler-Schwellwert pro Minute, ab dem ein Alert ausgelöst wird.",
+      "defaultValue": 5
+    },
+    {
+      "name": "sponsorplatz.alerts.min-pause-minuten",
+      "type": "java.lang.Integer",
+      "description": "Mindestpause zwischen identischen Alerts (Anti-Flood) in Minuten.",
+      "defaultValue": 60
+    },
+    {
+      "name": "sponsorplatz.alerts.cron",
+      "type": "java.lang.String",
+      "description": "Cron-Expression für den OpsAlertScheduler (Default: jede Minute).",
+      "defaultValue": "0 * * * * *"
+    },
+
+    {
+      "name": "sponsorplatz.rate-limit.capacity",
+      "type": "java.lang.Integer",
+      "description": "Token-Bucket-Kapazität pro IP für den RateLimitFilter.",
+      "defaultValue": 30
+    },
+    {
+      "name": "sponsorplatz.rate-limit.window-seconds",
+      "type": "java.lang.Integer",
+      "description": "Refill-Fenster in Sekunden für den RateLimitFilter.",
+      "defaultValue": 60
+    },
+
+    {
+      "name": "sponsorplatz.oidc.rollen-mapping",
+      "type": "java.util.Map<java.lang.String,java.lang.String>",
+      "description": "Mapping von OIDC-Group-Claims auf interne Rollen (z.B. 'admins=PLATFORM_ADMIN')."
+    }
+  ],
+
+  "hints": [
+    {
+      "name": "sponsorplatz.storage.provider",
+      "values": [
+        {
+          "value": "lokal",
+          "description": "Lokales Dateisystem unter sponsorplatz.storage.lokal.basis-pfad."
+        },
+        {
+          "value": "oci",
+          "description": "OCI Object Storage (braucht namespace + region + Buckets)."
+        }
+      ]
+    },
+    {
+      "name": "sponsorplatz.storage.oci.auth-mode",
+      "values": [
+        {
+          "value": "instance",
+          "description": "Instance Principal auf der VM (Default für cloud-free)."
+        },
+        {
+          "value": "config",
+          "description": "Lokale ~/.oci/config — für Entwickler-Maschinen."
+        }
+      ]
+    }
+  ]
+}
