@@ -31,7 +31,11 @@ Die Plattform vereint:
 
 ## Phase
 
-Aktuell: **Phase 10 — Production-Readiness & Pilot-Launch** ⏳ — Code-seitig komplett (Monitoring, Sentry, DSG, Security-Hardening, Smoke-Tests, Kontakt-Funnel), 10.4-Ops (HTTPS/SMTP-prod/DNS/Backups) noch offen.
+Aktuell: **Phase 13 — Pre-Pilot-Hardening** ⏳ — Phase 10 ist bis auf
+10.4 (jetzt umnummeriert zu Phase 14 = Produktivschaltung) durch.
+Vor dem Cutover stehen 2FA, A11y-auth-Smoke und OIDC-Anbindung an.
+Mahnwesen und echte Zahlungs-Provider-Integration sind in **Phase 15**
+nach dem ersten Pilot-Run angesetzt.
 Architektur statisch durchgesetzt: **15 ArchUnit/Lint-Regeln (ARCH-01..15)**, **551 Tests**, Feature-Folder-Topologie ohne Cycles (Java + Templates parallel strukturiert).
 
 ### Umgesetzte Features
@@ -236,11 +240,15 @@ Die Plattform unterstützt vier Sprachen: **Deutsch**, **Französisch**, **Itali
 |---|---|---|
 | 0–9 | Fundament bis Mehrsprachigkeit | ✓ |
 | 10.1–10.3, 10.5 | Monitoring (W3C-Trace), Sentry, DSG-Pages, Security-Hardening | ✓ |
-| 10.4 | Pilot-Launch — Smoke-Tests + Kontakt-Funnel code-seitig ✓, Ops (HTTPS/SMTP/DNS) | ⏳ |
 | 11 | Pilot-Hardening (Onboarding, Support, Anhänge, Verträge, Rechnungen) | ✓ |
 | 12 | Customizable Task-Engine (Aufgaben + Sidebar-Badge) | ✓ |
+| **13** | **Pre-Pilot-Hardening — A11y-auth-Smoke, 2FA-TOTP, OIDC-Anbindung** | ⏳ |
+| **14** | **Produktivschaltung — HTTPS, prod-SMTP, SPF/DKIM/DMARC, OCI-Backups, DNS, Pilot-Welle** (war 10.4) | 🔜 |
+| **15** | **Post-Pilot — echte Zahlungs-Provider-Integration, Mahnwesen, MwSt, Abos, …** | 📋 |
 
-Vollständig dokumentiert in [`specs/ROADMAP.md`](specs/ROADMAP.md).
+Vollständig dokumentiert in [`specs/ROADMAP.md`](specs/ROADMAP.md) — die
+„Logische Reihenfolge"-Sektion oben am ROADMAP erklärt die Sequenz
+und warum 10.4 → 14 verschoben wurde.
 
 ## Dokumentation
 

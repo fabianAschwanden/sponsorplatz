@@ -3,7 +3,62 @@
 > Vollständige Variante mit Iterations-Details: siehe `Sponsoring Plattform/06_Umsetzungsplan.md`.
 > Dieses Dokument ist der Spec-Auszug für aktive Entwicklung.
 
-## Aktueller Stand: **Phase 0 — Skelett** ✓
+## Aktueller Stand (kurz)
+
+- **Phasen 0 – 9, 11, 12**: ✅ abgeschlossen
+- **Phase 10** (Production-Readiness, ohne 10.4): ✅ 10.1–10.3 + 10.5 fertig
+- **Phase 13** (Pre-Pilot-Hardening): ⏳ aktiv — A11y für auth-Seiten, 2FA, OIDC
+- **Phase 14** (Produktivschaltung, **war 10.4**): 🔜 sobald Phase 13 durch
+- **Phase 15** (Post-Pilot): 📋 geplant — echtes Zahlungs-Provider-Wiring, Mahnwesen
+
+## Logische Reihenfolge
+
+Die Phasen-Nummern sind historisch gewachsen (Phase 10 wurde vor 11/12
+begonnen, 10.4 aber später als 12 abgeschlossen — Reihenfolge im Dokument
+spiegelt das). Die **logische Lese-/Umsetzungs-Reihenfolge** ist:
+
+```
+Foundation (✅ alles erledigt)
+    Phase 0   Skelett + Org-Entity + AppUser + Dashboard
+    Phase 1   Self-Reg & Verifizierung
+    Phase 2   Pakete + Medien
+    Phase 3   Marktplatz Public
+    Phase 4   Anfragen & Konversation
+    Phase 5   Watchlist (+ Wachstum als 5+)
+    Phase 6   Einstellungen & DSG-Export
+    Phase 7   Health-Story
+    Phase 8   MVP-Reife & Demo
+    Phase 9   Roadmap-Lücken (i18n, Zahlungs-Provider-Skeleton, Events)
+    Phase 11  Pilot-Hardening
+    Phase 12  Customizable Task-Engine
+    Phase 10  Production-Readiness (10.1 Monitoring, 10.2 Sentry,
+              10.3 DSG-Pages, 10.5 Security-Headers)
+
+Pre-Pilot (⏳ jetzt)
+    Phase 13  Pre-Pilot-Hardening (NEU)
+              13.1 A11y für authentifizierte Seiten
+              13.2 Zwei-Faktor-Authentifizierung (TOTP)
+              13.3 OIDC-Identity-Provider-Anbindung
+
+Produktivschaltung (🔜)
+    Phase 14  Cutover sponsorplatz.ch (war 10.4)
+              14.1 Ops — HTTPS, prod-SMTP, SPF/DKIM/DMARC, OCI-Backups, DNS
+              14.2 Pilot-Welle — 5 echte CH-Sport-/Health-Vereine
+
+Post-Pilot (📋)
+    Phase 15  Wachstum nach erstem Echt-Betrieb (NEU)
+              15.1 Echte Zahlungs-Provider-Integration (Stripe/PostFinance/Datatrans)
+              15.2 Mahnwesen (automatische Mahnstufen, CH-Inkasso-Anbindung)
+              15.3 Weitere Post-Pilot-Features (Backlog-getrieben)
+```
+
+Die Verschiebung von 10.4 → 14 schafft Platz: Phase 13 deckt
+Sicherheits- und A11y-Themen ab, die vor dem ersten Echtbenutzer
+landen sollten, ohne den Cutover zu verzögern. Phase 15 sammelt
+alles, was erst Sinn macht wenn echte Verträge + Zahlungsflüsse
+existieren.
+
+## Phase 0 — Skelett ✓
 
 - Spring Boot App lauffähig
 - Layout + Index-Seite
@@ -485,16 +540,132 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 - [x] Dev: `frame-src 'self'` (für H2-Console), `'unsafe-eval'` (Dev-Tools)
 - [x] Tests: SEC-HDR-01..05 (5 Tests, alle grün)
 
-### 10.4 — Pilot-Launch-Checkliste
+### 10.4 — Pilot-Launch-Checkliste → **verschoben auf Phase 14**
 
-- [ ] HTTPS via OCI Load Balancer + Zertifikat (Let's Encrypt oder OCI-Cert)
-- [ ] SMTP-Konfiguration prod (statt MailHog) — getrennter Mail-User
-- [ ] SPF / DKIM / DMARC für Mail-Domain einrichten und testen
-- [ ] Backups in OCI Object Storage spiegeln, Restore-Test einmal pro Quartal
-- [ ] DNS `sponsorplatz.ch` + `www`-Redirect, IPv6 enabled
-- [x] Smoke-Test-Suite (lokal, randomPort) — `SmokeIT` mit 5 Checks (Home, Login, Kontakt, Marktplatz-Auth-Gate, Actuator-Health) via `mvn verify -P e2e`. Gleicher Code läuft später gegen prod-URL via System-Property.
-- [ ] Onboarding 5 echter CH-Sport-/Health-Vereine (Pilot-Welle)
+Der ursprüngliche „Pilot-Launch"-Block lebt jetzt als **Phase 14 (Produktivschaltung)** weiter unten in diesem Dokument. Begründung: zwischen den abgeschlossenen Production-Readiness-Bausteinen (10.1–10.3, 10.5) und dem eigentlichen Cutover passen noch Phase-13-Features (A11y-auth-Smoke, 2FA, OIDC), die vor dem ersten Echt-User landen sollten. Die alten 10.4-Items (HTTPS, SMTP-prod, SPF/DKIM/DMARC, OCI-Backups, DNS, Pilot-Welle) sind 1:1 in Phase 14 übernommen.
+
+---
+
+## Phase 13 — Pre-Pilot-Hardening ⏳
+
+> **Paket 5.** Sicherheits- und A11y-Themen, die vor dem ersten echten
+> Pilot-Benutzer in Prod abgeschlossen sein sollten. Nicht-blockierend
+> für die reine Produktivschaltung, aber stark empfohlen — Login,
+> Identitäten und Zugänglichkeit sind die Themen, die ein Reviewer
+> oder Sicherheitsbeauftragter zuerst anschaut.
+
+### 13.1 — A11y-Smoke-Suite für authentifizierte Seiten
+
+> Backlog-Eintrag in V40 (`A11y-Smoke-Suite für authentifizierte Seiten`).
+
+- [ ] Login-Helper in der Test-Suite (`@WithUserDetails` oder dedizierte Demo-Seed-Methode)
+- [ ] `A11ySmokeIT` um eine zweite Schleife auf `/dashboard`, `/aufgaben`, `/meine-anfragen`, `/onboarding`, `/einstellungen` erweitert
+- [ ] Test-IDs A11Y-07..12 in TESTSTRATEGIE.md eintragen
+- [ ] Falls Playwright-Sessions inkompatibel mit MockMvc: Form-Login-Helper via `E2EFixtures` aufrufen
+
+### 13.2 — Zwei-Faktor-Authentifizierung (TOTP)
+
+> Backlog-Eintrag in V39 (`Zwei-Faktor-Authentifizierung (2FA)`).
+
+- [ ] DB-Spalten auf `app_user`: `totp_secret`, `totp_enabled`, `backup_codes_hashed`
+- [ ] Setup-Flow `/einstellungen/2fa` mit QR-Code (Library: `dev.samstevens.totp`)
+- [ ] Login-Flow mit zweitem Schritt (POST `/login/2fa`) und eigener SecurityFilter-Stage
+- [ ] 10 Backup-Codes (BCrypt-gehasht, einmalig)
+- [ ] Recovery-Reset durch Plattform-Admin im `/admin/benutzer`-UI
+- [ ] Pflicht für PLATFORM_ADMIN, optional für Vereins-/Sponsor-Owner (Nudge nach erstem Login)
+- [ ] Audit-Log für Enable/Disable/Recovery
+- [ ] Tests AUTH-2FA-01..10 (Setup, Verify, Reuse-Protection, Replay-Window, Lockout, Recovery, Admin-Reset)
+- [ ] Bei OIDC-Login: 2FA kommt vom IdP — kein eigener Schritt; Policy nur auf Form-Login-User anwenden
+
+### 13.3 — OIDC-Identity-Provider-Anbindung
+
+> Backlog-Eintrag in V27 (`OIDC-Identity-Provider-Anbindung`).
+> `spring-boot-starter-oauth2-client` ist im POM bereits vorhanden.
+
+- [ ] Provider-Registrierung pro Tenant (Microsoft Entra ID, Google Workspace, SwissID, Switch edu-ID)
+- [ ] Mapping vom OIDC-`sub` auf `AppUser` (Auto-Anlage bei Erstanmeldung)
+- [ ] Domain-Whitelist für die Auto-Verifizierung
+- [ ] Logout-Flow (RP-initiated)
+- [ ] Rollen-Mapping über `sponsorplatz.oidc.rollen-mapping` (siehe `additional-spring-configuration-metadata.json`)
+- [ ] Tests SEC-OIDC-01..05
+
+---
+
+## Phase 14 — Produktivschaltung sponsorplatz.ch 🔜
+
+> **Paket 6.** Der echte Cutover — übernommen aus dem alten 10.4-Block,
+> erweitert um Punkte aus dem `Produktivschaltung`-Backlog-Item (API-erfasst).
+> Reihenfolge ist bewusst: Infrastruktur (14.1) → Cutover-Validation (14.2)
+> → Pilot-Welle (14.3).
+
+### 14.1 — Infrastruktur
+
+- [ ] HTTPS via OCI Load Balancer + Zertifikat (Let's Encrypt automatisch oder OCI-Cert)
+- [ ] Renewal-Cron (certbot oder OCI-Vault-rotation)
+- [ ] Prod-SMTP statt MailHog — separater Mail-User in OCI-Vault
+- [ ] `sponsorplatz.mail.live=true` setzen sobald SMTP+SPF+DKIM live
+- [ ] SPF / DKIM / DMARC für sponsorplatz.ch im DNS einrichten + testen (mail-tester.com ≥ 9/10)
+- [ ] Backup-Spiegel in OCI Object Storage (`sponsorplatz-backups`), Lifecycle-Policy + Restore-Test quartalsweise
+- [ ] DNS `sponsorplatz.ch` + `www`-Redirect aufschalten, IPv6 enabled
+- [ ] CDN/Cache-Policy für `/css/`, `/images/`, `/medien/` (Caddy oder OCI LB)
+
+### 14.2 — Cutover-Validation
+
+- [x] Smoke-Test-Suite lokal (`SmokeIT` via `mvn verify -P e2e`)
+- [ ] CD-Smoke gegen Prod-URL nach jedem Deploy (`/login` als 200-Probe — `/actuator/health` ist absichtlich nicht öffentlich)
+- [ ] OCIR-Retention scharfgeschaltet (`OCI_USER_OCID`, `OCI_TENANCY_OCID`, `OCI_KEY_FINGERPRINT`, `OCI_API_PRIVATE_KEY` in GitHub-Secrets)
+- [ ] Sentry-Release-Tagging im CD-Workflow eingebaut
+- [ ] Rollback-Pfad dokumentiert (`docker compose down` + `docker compose up -d --tag <vorher-sha>`)
+
+### 14.3 — Pilot-Welle
+
+- [ ] Onboarding 5 echter CH-Sport-/Health-Vereine (Pilot-Welle 1)
+- [ ] Onboarding 3 Sponsoring-Marken (Krankenkasse/Pharma/Fitness — Pilot-Welle 2)
+- [ ] Feedback-Kanal: `/support`-Formular + dediziertes Slack-Channel / Email-Alias
 - [ ] Public-Launch-Kommunikation: Blog-Post, LinkedIn, lokale Sport-Verbände
+- [ ] Wöchentlicher Retro-Review für die ersten 4 Pilot-Wochen
+
+---
+
+## Phase 15 — Post-Pilot — Wachstum 📋
+
+> **Paket 7.** Features die erst Sinn machen, wenn echte Verträge,
+> Mahnstufen und Geldflüsse existieren. Bewusst nicht vor dem Pilot —
+> wir wollen die Use-Cases beobachten bevor wir große Integrationen
+> bauen, deren Anforderungen sich aus echten Vereinen ergeben.
+
+### 15.1 — Echte Zahlungs-Provider-Integration
+
+> Heute: `PaymentService`-Interface + `StubPaymentProvider` (Phase 9.2)
+> als Vorbereitung. Webhook-Endpoint `/payment/webhook/{provider}` ist
+> signaturverifiziert (siehe `PaymentWebhookController`).
+
+- [ ] Stripe Connect für CH-Vereine (Standard) evaluieren — Pro: Volumen, Browser-SDKs; Con: ausländischer Anbieter
+- [ ] PostFinance Checkout / Datatrans als CH-native Alternative — Pro: Datenresidenz, Bankvertrauen
+- [ ] Live-Webhook-Signaturen (HMAC pro Provider)
+- [ ] PCI-DSS-SAQ-A-Compliance-Check (wenn Karten-Daten nur via Provider-iframe fließen, SAQ-A reicht)
+- [ ] Refund-Flow + Storno-Audit-Log
+- [ ] Tests: PAY-PROV-01..N (Real-Provider-Sandbox-Calls)
+
+### 15.2 — Mahnwesen
+
+- [ ] Mahnstufen-Konfiguration auf Plattform-Ebene (Default: Erinnerung +7d, 1. Mahnung +14d, 2. Mahnung +28d, Inkasso-Übergabe +60d)
+- [ ] Pro Verein anpassbar (z.B. längere Fristen für etablierte Sponsoren-Beziehungen)
+- [ ] Mahnungs-Vorlagen als Template (Verein-Branding, dynamische Felder)
+- [ ] Schweizer Inkasso-Schnittstelle (z.B. Creditreform, Intrum) — als Pluggable-Service
+- [ ] DSG-konformer Datenexport an Inkasso (Minimaldaten, dokumentiert in Datenschutz)
+- [ ] Audit-Log für jeden Mahnschritt (was wurde wann von wem ausgelöst)
+- [ ] Tests: MAHN-01..N
+
+### 15.3 — Weitere Post-Pilot-Themen
+
+Diese landen erst nach Pilot-Feedback im Backlog (`/admin/backlog` oder via REST-API `POST /api/backlog`). Kandidaten heute schon im Blick:
+
+- Mehrwertsteuer-Berechnung (8.1 % CH-Standardsatz, Mehrwertsteuer-Nummer am Sponsor)
+- Wiederkehrende Sponsoring-Abos (monatlich/jährlich) als Pendant zur Einmal-Anfrage
+- Public API für Vereine (`/api/v1/verein/{slug}/...`) zur Anbindung an Vereins-Websites
+- Mobile-App / PWA-Optimierung (heute nur responsive Web)
+- Multi-Tenant-Bereich für Verbände (Dachverband → Mitgliedsvereine, eigene Subdomain)
 
 ---
 
