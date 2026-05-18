@@ -155,12 +155,14 @@
     </footer>
 
     <footer class="dash-userbox" sec:authorize="isAuthenticated()">
-        <div class="dash-notification-bell" id="notificationBell">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+        <div class="dash-notification-bell" id="notificationBell"
+             role="button" tabindex="0"
+             th:aria-label="#{sidebar.benachrichtigungen}">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                 <path d="M13.73 21a2 2 0 01-3.46 0"/>
             </svg>
-            <span class="dash-notification-badge" id="notificationBadge" style="display:none;">0</span>
+            <span class="dash-notification-badge" id="notificationBadge" style="display:none;" aria-live="polite">0</span>
         </div>
         <a th:href="@{/einstellungen}" class="dash-user-link"
            th:classappend="${aktiv == 'einstellungen'} ? 'aktiv'"
@@ -225,8 +227,16 @@
 
         // Bell-Click: navigiert auf die HTML-Liste — der Server markiert beim
         // Laden alle als gelesen (atomar, keine fetch+navigate-Race-Condition).
-        document.getElementById('notificationBell').addEventListener('click', function() {
+        var bell = document.getElementById('notificationBell');
+        bell.addEventListener('click', function() {
             window.location.href = '/benachrichtigungen';
+        });
+        // Keyboard-Support (Enter/Space) für role="button"
+        bell.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                window.location.href = '/benachrichtigungen';
+            }
         });
     })();
 </script>

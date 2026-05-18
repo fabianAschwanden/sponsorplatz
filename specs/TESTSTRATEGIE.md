@@ -997,3 +997,16 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 - [ ] Neue Org anlegen via UI → erscheint in Liste, Detail-Page lädt
 - [ ] `mvn test` — alle grün
 - [ ] `docker compose up --build app` → läuft im Container
+
+### A11y-Smoke (manuell, JS-Pfade die Axe nicht prüft)
+
+- [ ] **Skip-Link**: TAB auf irgendeiner Hauptseite → erstes Element ist
+      "Zum Inhalt springen", sichtbar, ENTER springt zum `<main id="inhalt">`
+- [ ] **Auto-Focus bei Fehler**: eine Form mit ungültigen Daten absenden
+      → Fehler-Flash bekommt Focus (sichtbar via Focus-Ring), Screenreader
+      liest sofort vor
+- [ ] **Kein Auto-Focus bei Erfolg**: eine Form erfolgreich absenden →
+      Erfolgs-Flash erscheint, aber Focus bleibt im Anschluss-Element
+      (kein Sprung aus dem Workflow heraus)
+- [ ] **Notification-Bell per Keyboard**: TAB bis zum Glocken-Icon →
+      ENTER und SPACE öffnen beide `/benachrichtigungen`

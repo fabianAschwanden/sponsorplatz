@@ -10,6 +10,8 @@
 </head>
 <body class="public-body">
 
+<a th:replace="~{fragments/a11y :: skip-link}"></a>
+
 <header class="public-topbar">
     <div class="public-topbar-inner">
         <a class="public-logo" th:href="@{/}">
@@ -22,7 +24,7 @@
     </div>
 </header>
 
-<main class="public-main">
+<main class="public-main" id="inhalt">
     <section class="public-auth-card">
         <h1 th:text="#{kontakt.titel}">Kontakt</h1>
 

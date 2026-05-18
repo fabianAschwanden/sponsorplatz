@@ -12,13 +12,15 @@
 </head>
 <body class="dashboard-body">
 
+    <a th:replace="~{fragments/a11y :: skip-link}"></a>
+
     <div class="dashboard-layout">
 
         <!-- ===================== LINKE SIDEBAR ===================== -->
         <aside th:replace="~{fragments/sidebar :: app-sidebar('dashboard', ${anzahlOffeneAnfragen})}"></aside>
 
         <!-- ===================== HAUPTBEREICH ===================== -->
-        <main class="dash-main">
+        <main class="dash-main" id="inhalt">
 
             <!-- Top-Bar mit Navigator -->
             <header class="dash-topbar">

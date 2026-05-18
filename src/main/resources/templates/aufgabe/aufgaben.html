@@ -9,15 +9,16 @@
 </head>
 <body class="app-body">
 
+<a th:replace="~{fragments/a11y :: skip-link}"></a>
+
 <div class="app-layout">
     <aside th:replace="~{fragments/sidebar :: app-sidebar('aufgaben', ${anzahlOffeneAnfragen})}"></aside>
-    <main class="app-main">
+    <main class="app-main" id="inhalt">
         <div class="app-page-head">
             <h1 th:text="#{aufgaben.titel}">Meine Aufgaben</h1>
         </div>
 
-        <div th:if="${erfolgsMeldung}" class="app-flash app-flash-success"
-             th:text="${erfolgsMeldung}">OK</div>
+        <div th:replace="~{fragments/a11y :: flash-meldungen}"></div>
 
         <div th:if="${#lists.isEmpty(aufgaben)}" class="app-empty"
              style="text-align:center; padding:3rem 1rem; background:#f9fafb; border-radius:0.5rem;">

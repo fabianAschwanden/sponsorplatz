@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  Skip-Navigation-Link — wird als erstes Fokus-Element im DOM platziert.
+  Nur sichtbar bei Keyboard-Focus (:focus-visible).
+  Verweist auf das erste <main> oder <div id="inhalt">.
+-->
+<a th:fragment="skip-link" href="#inhalt" class="a11y-skip-link"
+   th:text="#{a11y.skipLink}">Zum Inhalt springen</a>
+
+<!--
+  Flash-Meldung-Container mit aria-live. Einbindung:
+    th:replace="~{fragments/a11y :: flash-meldungen}"
+  Zeigt erfolgsMeldung und/oder fehlermeldung als accessible Alert an.
+
+  Auto-Focus nur für Fehler — `aria-live="polite"` reicht Screenreader für
+  Erfolgs-Meldungen, und Focus-Klau aus einer Form heraus wäre für
+  Keyboard-Nutzer:innen irritierend. Bei Errors ist die Aufmerksamkeit
+  bewusst erwünscht (assertive + Focus).
+-->
+<div th:fragment="flash-meldungen">
+    <div th:if="${erfolgsMeldung}" class="app-flash app-flash-success"
+         role="status" aria-live="polite" aria-atomic="true"
+         id="flash-erfolg"
+         th:text="${erfolgsMeldung}">Erfolg</div>
+    <div th:if="${fehlermeldung}" class="app-flash app-flash-error"
+         role="alert" aria-live="assertive" aria-atomic="true"
+         tabindex="-1" id="flash-fehler"
+         th:text="${fehlermeldung}">Fehler</div>
+    <script th:if="${fehlermeldung}">
+        (function() {
+            var el = document.getElementById('flash-fehler');
+            if (el) el.focus();
+        })();
+    </script>
+</div>
+
+</body>
+</html>
+

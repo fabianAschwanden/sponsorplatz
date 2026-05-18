@@ -10,6 +10,8 @@
 </head>
 <body class="public-body">
 
+<a th:replace="~{fragments/a11y :: skip-link}"></a>
+
 <header class="public-topbar">
     <div class="public-topbar-inner">
         <a class="public-logo" th:href="@{/}">
@@ -24,24 +26,24 @@
     </div>
 </header>
 
-<main class="public-main">
+<main class="public-main" id="inhalt">
     <section class="public-auth-card">
         <h1 th:text="#{login.titel}">Anmelden</h1>
 
-        <div th:if="${param.error}" class="app-meldung fehler" th:text="#{login.fehlerCredentials}">
+        <div th:if="${param.error}" class="app-meldung fehler" role="alert" th:text="#{login.fehlerCredentials}">
             E-Mail oder Passwort ist falsch.
         </div>
-        <div th:if="${param.gesperrt}" class="app-meldung fehler">
+        <div th:if="${param.gesperrt}" class="app-meldung fehler" role="alert">
             <span th:text="#{login.fehlerGesperrtBeginn}">Zu viele Fehlversuche…</span>
-            <a th:href="@{/passwort-vergessen}" th:text="#{login.fehlerGesperrtLink}">setzen Sie Ihr Passwort zurück</a>.
+            <a th:href="@{/passwort-vergessen}" th:text="#{login.fehlerGesperrtLink}">setzen Sie Ihr Passwort zurck</a>.
         </div>
-        <div th:if="${param.logout}" class="app-meldung erfolg" th:text="#{login.erfolgAbgemeldet}">
+        <div th:if="${param.logout}" class="app-meldung erfolg" role="status" th:text="#{login.erfolgAbgemeldet}">
             Sie wurden erfolgreich abgemeldet.
         </div>
-        <div th:if="${param.registriert}" class="app-meldung info" th:text="#{login.infoRegistriert}">
-            Registrierung erfolgreich! Bitte E-Mail bestätigen und dann anmelden.
+        <div th:if="${param.registriert}" class="app-meldung info" role="status" th:text="#{login.infoRegistriert}">
+            Registrierung erfolgreich! Bitte E-Mail besttigen und dann anmelden.
         </div>
-        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" role="status" th:text="${erfolgsMeldung}"></div>
 
         <form th:action="@{/login}" method="post" class="app-form">
             <div class="app-form-group">

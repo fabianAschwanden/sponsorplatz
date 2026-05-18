@@ -105,7 +105,9 @@
             height: 1px;
             background: #e5e7eb;
         }
-        .skip-link {
+        /* Onboarding-CTA „Erstmal stöbern" — bewusst nicht .skip-link, weil
+           das mit der a11y-Skip-Navigation (.a11y-skip-link) namens-kollidiert. */
+        .onboarding-skip-cta {
             display: block;
             text-align: center;
             margin-top: 1.25rem;
@@ -113,14 +115,16 @@
             font-size: 0.85rem;
             text-decoration: none;
         }
-        .skip-link:hover {
+        .onboarding-skip-cta:hover {
             color: var(--dash-violet, #7c3aed);
         }
     </style>
 </head>
 <body>
 
-<div class="onboarding-layout">
+<a th:replace="~{fragments/a11y :: skip-link}"></a>
+
+<main class="onboarding-layout" id="inhalt">
 
     <div class="onboarding-card">
 
@@ -132,7 +136,7 @@
             <p th:text="#{onboarding.intro}">Noch ein Schritt — wie möchten Sie starten?</p>
         </div>
 
-        <div th:if="${fehlermeldung}" class="app-meldung fehler" th:text="${fehlermeldung}" style="margin-bottom:1rem;"></div>
+        <div th:replace="~{fragments/a11y :: flash-meldungen}"></div>
 
         <!-- ==================== OPTION A: VEREIN ERSTELLEN ==================== -->
         <div class="onboarding-option" id="optionVerein" onclick="zeigeForm('verein')">
@@ -200,9 +204,9 @@
             </form>
         </div>
 
-        <a th:href="@{/marktplatz}" class="skip-link" th:text="#{onboarding.skipLink}">Erstmal im Marktplatz stöbern →</a>
+        <a th:href="@{/marktplatz}" class="onboarding-skip-cta" th:text="#{onboarding.skipLink}">Erstmal im Marktplatz stöbern →</a>
     </div>
-</div>
+</main>
 
 <script>
     function zeigeForm(typ) {

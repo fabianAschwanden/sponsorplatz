@@ -16,6 +16,8 @@
 
 <body class="public-body">
 
+  <a th:replace="~{fragments/a11y :: skip-link}"></a>
+
   <div th:if="${demoModus}" class="demo-disclaimer" th:text="#{demo.disclaimer}">
     ⚠️ DEMO — Beispieldaten. Keine echten Vereine oder Sponsoren.
   </div>
@@ -38,7 +40,7 @@
     </div>
   </header>
 
-  <main class="public-main">
+  <main class="public-main" id="inhalt">
     <section class="public-hero">
       <p class="public-hero-rubrik" th:text="#{index.hero.rubrik}">CSS Sponsoring-Hub · Sport und Gesundheit · Schweiz
       </p>
