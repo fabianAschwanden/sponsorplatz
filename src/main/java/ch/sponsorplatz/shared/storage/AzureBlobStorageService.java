@@ -61,7 +61,7 @@ public class AzureBlobStorageService implements StorageService {
         try {
             return new InputStreamResource(uploads.openInputStream(storagePfad));
         } catch (AzureBlobNotFoundException e) {
-            throw new RuntimeException("Datei nicht gefunden: " + storagePfad, e);
+            throw new StorageObjectNotFoundException(storagePfad, e);
         } catch (AzureBlobOperationException e) {
             throw new RuntimeException(
                     "Azure getBlob fehlgeschlagen (" + storagePfad + "): " + e.getMessage(), e);

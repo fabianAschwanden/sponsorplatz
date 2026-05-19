@@ -64,7 +64,7 @@ public class LokalerStorageService implements StorageService {
             if (resource.exists() && resource.isReadable()) {
                 return resource;
             }
-            throw new RuntimeException("Datei nicht gefunden: " + storagePfad);
+            throw new StorageObjectNotFoundException(storagePfad);
         } catch (MalformedURLException e) {
             throw new RuntimeException("Ungültiger Pfad: " + storagePfad, e);
         }

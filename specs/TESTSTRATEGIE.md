@@ -856,6 +856,14 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **VIEW-12b** | `MedienAssetViewTest` | `endung()` extrahiert Datei-Endung lowercase, leer wenn kein Punkt im Namen |
 | **VIEW-13** | `AnfrageViewTest` | `vereinSlug()` liefert Anfragender-Slug bei Kontakt-Anfrage (Verein → Sponsor), Empfänger-Slug bei Paket-Anfrage. Siehe [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md) |
 
+#### MedienController-Auslieferung (MA)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **MA-07** | `MedienControllerTest` | `GET /medien/{id}` liefert Bild mit korrektem Content-Type + Cache-Control |
+| **MA-08** | `MedienControllerTest` | `GET /medien/{id}` mit unbekannter Asset-ID → 404 (via `NotFoundException` aus Service) |
+| **MA-09** | `MedienControllerTest` | Orphaned Asset (DB-Record vorhanden, Storage-Objekt fehlt) → 404 statt 500 — Controller catched `StorageObjectNotFoundException` |
+
 ### Monitoring & Observability (MON) — Phase 10.1
 
 | ID | Test-Klasse | Beschreibung |

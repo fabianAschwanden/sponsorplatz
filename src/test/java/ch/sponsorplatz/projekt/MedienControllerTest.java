@@ -20,6 +20,7 @@ import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.shared.storage.StorageObjectNotFoundException;
 import ch.sponsorplatz.shared.storage.StorageService;
 
 @WebMvcTest(controllers = MedienController.class)
@@ -67,6 +68,24 @@ class MedienControllerTest {
         UUID id = UUID.randomUUID();
         when(medienAssetService.findeAuslieferungsSnapshot(id))
                 .thenThrow(new ch.sponsorplatz.shared.exception.NotFoundException("nicht gefunden"));
+
+        mockMvc.perform(get("/medien/{id}", id))
+                .andExpect(status().isNotFound());
+    }
+
+    /**
+     * MA-09: Orphaned MedienAsset — DB-Snapshot existiert, Storage-Objekt fehlt.
+     * Controller darf nicht 500 werfen, sondern 404 zurückgeben, damit broken-
+     * image-Loads nicht das Sentry-Dashboard fluten.
+     */
+    @Test
+    void ausliefernOrphanGibt404StattRuntime() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(medienAssetService.findeAuslieferungsSnapshot(id))
+                .thenReturn(new MedienAssetService.AuslieferungsSnapshot(
+                        "user/abc/orphan.png", "image/png", "orphan.png"));
+        when(storageService.ladeAlsResource("user/abc/orphan.png"))
+                .thenThrow(new StorageObjectNotFoundException("user/abc/orphan.png"));
 
         mockMvc.perform(get("/medien/{id}", id))
                 .andExpect(status().isNotFound());

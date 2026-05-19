@@ -100,7 +100,7 @@ public class OciStorageService implements StorageService {
             return new InputStreamResource(response.getInputStream());
         } catch (BmcException e) {
             if (e.getStatusCode() == 404) {
-                throw new RuntimeException("Datei nicht gefunden: " + storagePfad, e);
+                throw new StorageObjectNotFoundException(storagePfad, e);
             }
             throw new RuntimeException(
                     "OCI getObject fehlgeschlagen (" + storagePfad + "): "

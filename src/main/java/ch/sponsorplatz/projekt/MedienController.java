@@ -19,6 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.organisation.AccessControl;
 import ch.sponsorplatz.organisation.OrganisationService;
+import ch.sponsorplatz.shared.storage.StorageObjectNotFoundException;
 import ch.sponsorplatz.shared.storage.StorageService;
 
 /**
@@ -53,7 +54,14 @@ public class MedienController {
     public ResponseEntity<Resource> ausliefern(@PathVariable UUID id) {
         MedienAssetService.AuslieferungsSnapshot snap = medienAssetService.findeAuslieferungsSnapshot(id);
 
-        Resource resource = storageService.ladeAlsResource(snap.storagePfad());
+        // Orphaned MedienAsset (DB-Record vorhanden, Storage-Objekt fehlt) →
+        // 404 statt 500. Vermeidet Sentry-Flood durch broken-image-Loads.
+        Resource resource;
+        try {
+            resource = storageService.ladeAlsResource(snap.storagePfad());
+        } catch (StorageObjectNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
 
         // Spring's ContentDisposition.builder() encoded den Filename gemäss
         // RFC 5987 (UTF-8) und filtert Quotes/Newlines — schützt gegen
