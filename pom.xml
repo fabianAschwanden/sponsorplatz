@@ -32,14 +32,18 @@
         <azure-identity.version>1.14.2</azure-identity.version>
 
         <!-- Security-Patches über Spring-Boot-3.5.3-BOM (siehe Trivy-Findings):
-             tomcat → 10.1.54 (CVE-2026-29145, CVE-2025-48989, CVE-2026-34483, CVE-2026-34487)
+             tomcat → 10.1.55 (CVE-2026-29145, CVE-2025-48989, CVE-2026-34483, CVE-2026-34487,
+                     CVE-2026-41293 CRITICAL Improper Input Validation,
+                     CVE-2026-43512 CRITICAL Digest-Auth-Bypass,
+                     CVE-2026-41284 HIGH DoS, CVE-2026-42498 HIGH WS-Auth-Leak,
+                     CVE-2026-43513 HIGH LockOutRealm Case-Sensitivity)
              spring-framework → 6.2.11 (CVE-2025-41249)
              spring-security → 6.5.9 (CVE-2026-22732, CVE-2025-41248)
              thymeleaf → 3.1.5 (CVE-2026-40477, CVE-2026-41901 SSTI)
              postgresql → 42.7.11 (CVE-2026-42198 Client-DoS)
              netty → 4.1.133.Final (CVE-2026-42579/42583/42584/42587 — transitiv
                      über azure-storage-blob + azure-identity neu eingeschleppt) -->
-        <tomcat.version>10.1.54</tomcat.version>
+        <tomcat.version>10.1.55</tomcat.version>
         <spring-framework.version>6.2.11</spring-framework.version>
         <spring-security.version>6.5.9</spring-security.version>
         <thymeleaf.version>3.1.5.RELEASE</thymeleaf.version>
