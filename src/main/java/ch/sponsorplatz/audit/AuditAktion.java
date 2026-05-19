@@ -17,6 +17,8 @@ public final class AuditAktion {
     public static final String LOGIN = "LOGIN";
     public static final String PASSWORT_GEAENDERT = "PASSWORT_GEAENDERT";
     public static final String BACKUP_ERSTELLT = "BACKUP_ERSTELLT";
+    public static final String DATEI_BACKUP_ERSTELLT = "DATEI_BACKUP_ERSTELLT";
+    public static final String DATEI_BACKUP_RESTORED = "DATEI_BACKUP_RESTORED";
     public static final String EINLADUNG_GESENDET = "EINLADUNG_GESENDET";
     public static final String ANFRAGE_ANGENOMMEN = "ANFRAGE_ANGENOMMEN";
     public static final String ANFRAGE_ABGELEHNT = "ANFRAGE_ABGELEHNT";

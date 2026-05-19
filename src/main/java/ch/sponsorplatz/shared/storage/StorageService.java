@@ -15,6 +15,13 @@ public interface StorageService {
     String speichere(MultipartFile datei, String zielpfad);
 
     /**
+     * Speichert bereits geladene Bytes unter dem gegebenen Pfad — primär für
+     * den ZIP-Restore-Pfad in {@code DateiBackupRestoreService}, der einzelne
+     * ZIP-Entries als {@code byte[]} aus dem Archiv liest.
+     */
+    String speichereBytes(byte[] inhalt, String contentType, String zielpfad);
+
+    /**
      * Löscht eine Datei anhand des Storage-Pfads.
      */
     void loesche(String storagePfad);

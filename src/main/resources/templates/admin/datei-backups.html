@@ -2,7 +2,7 @@
 <html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="#{admin.rubrik} + ' — ' + #{admin.backups.titel} + ' — Sponsorplatz'">Admin — Backups — Sponsorplatz</title>
+    <title>Admin — Datei-Backups — Sponsorplatz</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <th:block th:replace="~{fragments/styles :: styles}"></th:block>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
@@ -16,10 +16,10 @@
         <header class="app-page-head">
             <div>
                 <p class="app-page-rubrik" th:text="#{admin.rubrik}">Plattform-Admin</p>
-                <h1 th:text="#{admin.backups.titel}">Backups</h1>
+                <h1>Datei-Backups</h1>
             </div>
-            <form th:action="@{/admin/backups/erstellen}" method="post" style="margin:0;">
-                <button type="submit" class="app-btn">Backup jetzt erstellen</button>
+            <form th:action="@{/admin/datei-backups/erstellen}" method="post" style="margin:0;">
+                <button type="submit" class="app-btn">Datei-Backup jetzt erstellen</button>
             </form>
         </header>
 
@@ -28,8 +28,8 @@
             <a th:href="@{/admin/benutzer}" class="app-btn app-btn-ghost">Benutzer</a>
             <a th:href="@{/admin/organisationen}" class="app-btn app-btn-ghost">Organisationen</a>
             <a th:href="@{/admin/audit}" class="app-btn app-btn-ghost">Audit-Log</a>
-            <a th:href="@{/admin/backups}" class="app-btn">DB-Backups</a>
-            <a th:href="@{/admin/datei-backups}" class="app-btn app-btn-ghost">Datei-Backups</a>
+            <a th:href="@{/admin/backups}" class="app-btn app-btn-ghost">DB-Backups</a>
+            <a th:href="@{/admin/datei-backups}" class="app-btn">Datei-Backups</a>
             <a th:href="@{/admin/mail-einstellungen}" class="app-btn app-btn-ghost">Mail</a>
             <a th:href="@{/admin/system}" class="app-btn app-btn-ghost">System</a>
             <a th:href="@{/admin/backlog}" class="app-btn app-btn-ghost">Backlog</a>
@@ -39,25 +39,29 @@
         <div th:if="${fehlermeldung}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
 
         <div class="app-card" style="padding:1.5rem; margin-bottom:1.5rem;">
-            <h3 style="margin:0 0 0.5rem;">Konfiguration</h3>
-            <dl class="app-datenliste" style="font-size:0.9rem;">
-                <dt>Verzeichnis</dt>
-                <dd><code>./backups</code></dd>
-                <dt>Zeitplan</dt>
-                <dd>Täglich um 02:00 Uhr</dd>
-                <dt>Aufbewahrung</dt>
-                <dd>30 Tage (ältere werden automatisch gelöscht)</dd>
-            </dl>
+            <h3 style="margin:0 0 0.5rem;">Wie es funktioniert</h3>
+            <p class="app-muted" style="margin:0 0 0.75rem;">
+                Datei-Backups packen alle in <code>MedienAsset</code> referenzierten
+                Storage-Objekte (Logos, Cover-Bilder, Anhänge, Profilbilder) in
+                ein ZIP-Archiv. Der Datei-Pfad innerhalb des ZIPs entspricht
+                dem Storage-Key — damit ist das Archiv cross-cloud
+                transportabel (OCI ↔ Azure).
+            </p>
+            <p class="app-muted" style="margin:0;">
+                Fehlende Objekte (orphaned <code>MedienAsset</code>-Records)
+                werden geloggt und übersprungen — der Backup-Lauf wird nicht
+                abgebrochen.
+            </p>
         </div>
 
-        <h2 style="font-size:1rem; margin:1.5rem 0 0.75rem;">Vorhandene Backups</h2>
+        <h2 style="font-size:1rem; margin:1.5rem 0 0.75rem;">Vorhandene Datei-Backups</h2>
 
-        <div th:if="${#lists.isEmpty(backups)}" class="app-empty">
-            <strong>Noch keine Backups vorhanden.</strong>
-            Klicken Sie oben auf «Backup jetzt erstellen» oder warten Sie auf den nächsten automatischen Durchlauf.
+        <div th:if="${#lists.isEmpty(dateiBackups)}" class="app-empty">
+            <strong>Noch keine Datei-Backups vorhanden.</strong>
+            Klick oben auf «Datei-Backup jetzt erstellen».
         </div>
 
-        <div th:unless="${#lists.isEmpty(backups)}" class="admin-table-wrapper">
+        <div th:unless="${#lists.isEmpty(dateiBackups)}" class="admin-table-wrapper">
             <table class="admin-table">
                 <thead>
                 <tr>
@@ -67,15 +71,15 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="b : ${backups}">
-                    <td><code th:text="${b.dateiname}">backup.sql</code></td>
-                    <td th:text="${b.groesse}">1.2 MB</td>
+                <tr th:each="b : ${dateiBackups}">
+                    <td><code th:text="${b.dateiname}">uploads.zip</code></td>
+                    <td th:text="${b.groesse}">12.3 MB</td>
                     <td style="text-align:right; white-space:nowrap;">
-                        <a th:href="@{'/admin/backups/' + ${b.dateiname} + '/download'}"
+                        <a th:href="@{'/admin/datei-backups/' + ${b.dateiname} + '/download'}"
                            class="app-btn app-btn-ghost" style="padding:0.25rem 0.75rem;">Download</a>
-                        <form th:action="@{'/admin/backups/' + ${b.dateiname} + '/loeschen'}"
+                        <form th:action="@{'/admin/datei-backups/' + ${b.dateiname} + '/loeschen'}"
                               method="post" style="display:inline; margin-left:0.5rem;"
-                              onsubmit="return confirm('Backup endgültig löschen?');">
+                              onsubmit="return confirm('Datei-Backup endgültig löschen?');">
                             <button type="submit" class="app-btn app-btn-ghost"
                                     style="padding:0.25rem 0.75rem; color:#dc2626;">Löschen</button>
                         </form>
@@ -87,26 +91,25 @@
 
         <!-- ── Restore ──────────────────────────────────────────────── -->
         <section class="app-card" style="margin-top:2rem; border-left:4px solid #dc2626;">
-            <h2 style="margin-top:0;">Restore aus SQL-Dump</h2>
+            <h2 style="margin-top:0;">Restore aus ZIP</h2>
             <p class="app-muted">
-                <strong style="color:#dc2626;">Achtung:</strong> Dies ist eine
-                <strong>destruktive</strong> Operation. Alle aktuellen Daten
-                werden durch den Inhalt der hochgeladenen Datei ersetzt.
-                Empfehlung: vorher ein neues Backup erstellen.
+                <strong style="color:#dc2626;">Achtung:</strong> Vorhandene Storage-
+                Objekte mit identischem Pfad werden überschrieben. Empfehlung:
+                vorher einen Datei-Backup ziehen.
             </p>
             <p class="app-muted">
-                Akzeptiert wird ein <code>pg_dump</code>-Output (Postgres, mit
-                <code>--clean --if-exists</code>) oder ein H2 <code>SCRIPT TO</code>-Output.
-                Die Datei muss zur aktuellen Schema-Version passen — Mismatch
-                führt zu fehlgeschlagenem Restore.
+                Akzeptiert wird ein ZIP wie es <code>DateiBackupService</code>
+                erzeugt — Datei-Pfade innerhalb des ZIPs werden 1:1 als
+                Storage-Keys verwendet (z.B. <code>user/abc/logo.png</code>).
+                Content-Type wird heuristisch aus der Datei-Endung abgeleitet.
             </p>
-            <form th:action="@{/admin/backups/restore}" method="post"
+            <form th:action="@{/admin/datei-backups/restore}" method="post"
                   enctype="multipart/form-data"
-                  onsubmit="return confirm('Restore startet sofort. Aktuelle Daten gehen verloren. Fortfahren?');">
+                  onsubmit="return confirm('Restore startet sofort. Bestehende Dateien werden überschrieben. Fortfahren?');">
                 <div class="app-form-grid" style="margin-bottom:1rem;">
                     <label>
-                        SQL-Dump-Datei
-                        <input type="file" name="datei" accept=".sql" required>
+                        ZIP-Datei
+                        <input type="file" name="datei" accept=".zip" required>
                     </label>
                     <label>
                         Bestätigung — exakt <code>RESTORE</code> tippen
@@ -132,4 +135,3 @@
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
 </body>
 </html>
-

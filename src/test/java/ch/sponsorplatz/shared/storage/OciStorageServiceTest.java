@@ -119,4 +119,21 @@ class OciStorageServiceTest {
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("nicht gefunden");
     }
+
+    @Test
+    @DisplayName("CLOUD-STO-07: speichereBytes ruft putObject mit Inhalt, ContentType, Länge")
+    void speichereBytesSetztRequestKorrekt() {
+        byte[] inhalt = {7, 7, 7, 7, 7};
+
+        String key = storage.speichereBytes(inhalt, "image/jpeg", "user/abc/restore.jpg");
+
+        ArgumentCaptor<PutObjectRequest> captor = ArgumentCaptor.forClass(PutObjectRequest.class);
+        verify(client).putObject(captor.capture());
+        PutObjectRequest req = captor.getValue();
+
+        assertThat(key).isEqualTo("user/abc/restore.jpg");
+        assertThat(req.getObjectName()).isEqualTo("user/abc/restore.jpg");
+        assertThat(req.getContentLength()).isEqualTo(5L);
+        assertThat(req.getContentType()).isEqualTo("image/jpeg");
+    }
 }

@@ -4,6 +4,8 @@ import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.audit.AuditService;
 import ch.sponsorplatz.backup.BackupRestoreService;
 import ch.sponsorplatz.backup.BackupService;
+import ch.sponsorplatz.backup.DateiBackupRestoreService;
+import ch.sponsorplatz.backup.DateiBackupService;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -35,13 +37,19 @@ public class AdminAuditController {
     private final AuditService auditService;
     private final BackupService backupService;
     private final BackupRestoreService restoreService;
+    private final DateiBackupService dateiBackupService;
+    private final DateiBackupRestoreService dateiBackupRestoreService;
 
     public AdminAuditController(AuditService auditService,
                                 BackupService backupService,
-                                BackupRestoreService restoreService) {
+                                BackupRestoreService restoreService,
+                                DateiBackupService dateiBackupService,
+                                DateiBackupRestoreService dateiBackupRestoreService) {
         this.auditService = auditService;
         this.backupService = backupService;
         this.restoreService = restoreService;
+        this.dateiBackupService = dateiBackupService;
+        this.dateiBackupRestoreService = dateiBackupRestoreService;
     }
 
     // --- Audit-Log ---
@@ -140,6 +148,94 @@ public class AdminAuditController {
                     "Restore fehlgeschlagen: " + e.getMessage());
         }
         return "redirect:/admin/backups";
+    }
+
+    // --- Datei-Backup (Medien-Uploads als ZIP) ---
+
+    @GetMapping("/datei-backups")
+    public String dateiBackupListe(Model model) {
+        try {
+            List<Path> backups = dateiBackupService.listeDateiBackups();
+            model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "admin");
+            model.addAttribute("dateiBackups", backups.stream()
+                    .map(p -> new BackupInfo(p.getFileName().toString(), formatGroesse(p)))
+                    .toList());
+        } catch (IOException e) {
+            model.addAttribute(ModelAttributeNames.FEHLERMELDUNG,
+                    "Datei-Backup-Verzeichnis nicht lesbar: " + e.getMessage());
+            model.addAttribute("dateiBackups", List.of());
+        }
+        return "admin/datei-backups";
+    }
+
+    @PostMapping("/datei-backups/erstellen")
+    public String dateiBackupErstellen(RedirectAttributes redirect) {
+        try {
+            Path pfad = dateiBackupService.erstelleDateiBackup();
+            redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
+                    "Datei-Backup erstellt: " + pfad.getFileName());
+        } catch (Exception e) {
+            redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
+                    "Datei-Backup fehlgeschlagen: " + e.getMessage());
+        }
+        return "redirect:/admin/datei-backups";
+    }
+
+    @GetMapping("/datei-backups/{dateiname}/download")
+    public ResponseEntity<ByteArrayResource> dateiBackupDownload(@PathVariable String dateiname) throws IOException {
+        byte[] bytes = dateiBackupService.leseDateiBackup(dateiname);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + dateiname + "\"")
+                .contentLength(bytes.length)
+                .body(new ByteArrayResource(bytes));
+    }
+
+    @PostMapping("/datei-backups/{dateiname}/loeschen")
+    public String dateiBackupLoeschen(@PathVariable String dateiname, RedirectAttributes redirect) {
+        try {
+            dateiBackupService.loescheDateiBackup(dateiname);
+            redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
+                    "Datei-Backup gelöscht: " + dateiname);
+        } catch (Exception e) {
+            redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
+                    "Löschen fehlgeschlagen: " + e.getMessage());
+        }
+        return "redirect:/admin/datei-backups";
+    }
+
+    /**
+     * Restore aus hochgeladenem ZIP. Wie beim DB-Restore verlangt eine
+     * explizite Bestätigung — vorhandene Storage-Objekte werden überschrieben.
+     */
+    @PostMapping("/datei-backups/restore")
+    public String dateiBackupRestore(@RequestParam("datei") MultipartFile datei,
+                                     @RequestParam("bestaetigung") String bestaetigung,
+                                     Authentication auth,
+                                     RedirectAttributes redirect) {
+        if (!"RESTORE".equals(bestaetigung)) {
+            redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
+                    "Restore abgebrochen — Bestätigungs-Text muss exakt RESTORE sein.");
+            return "redirect:/admin/datei-backups";
+        }
+        if (datei == null || datei.isEmpty()) {
+            redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
+                    "Keine ZIP-Datei gewählt.");
+            return "redirect:/admin/datei-backups";
+        }
+        try {
+            String name = auth != null ? auth.getName() : "system";
+            DateiBackupRestoreService.RestoreReport report =
+                    dateiBackupRestoreService.restore(datei.getBytes(), name);
+            redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
+                    "Datei-Restore erfolgreich — " + report.restored() + " Dateien wiederhergestellt"
+                            + (report.skipped() > 0 ? ", " + report.skipped() + " skipped" : "") + ".");
+        } catch (Exception e) {
+            redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
+                    "Datei-Restore fehlgeschlagen: " + e.getMessage());
+        }
+        return "redirect:/admin/datei-backups";
     }
 
     private String formatGroesse(Path pfad) {

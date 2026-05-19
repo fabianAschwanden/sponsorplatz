@@ -47,6 +47,18 @@ public class LokalerStorageService implements StorageService {
     }
 
     @Override
+    public String speichereBytes(byte[] inhalt, String contentType, String zielpfad) {
+        try {
+            Path ziel = basisPfad.resolve(zielpfad).normalize();
+            erstelleVerzeichnis(ziel.getParent());
+            Files.write(ziel, inhalt);
+            return zielpfad;
+        } catch (IOException e) {
+            throw new RuntimeException("Datei-Bytes konnten nicht gespeichert werden: " + zielpfad, e);
+        }
+    }
+
+    @Override
     public void loesche(String storagePfad) {
         try {
             Path pfad = basisPfad.resolve(storagePfad).normalize();

@@ -3,6 +3,8 @@ package ch.sponsorplatz.admin;
 import ch.sponsorplatz.audit.AuditService;
 import ch.sponsorplatz.backup.BackupRestoreService;
 import ch.sponsorplatz.backup.BackupService;
+import ch.sponsorplatz.backup.DateiBackupRestoreService;
+import ch.sponsorplatz.backup.DateiBackupService;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
@@ -49,6 +51,12 @@ class AdminAuditControllerTest {
 
     @MockitoBean
     private BackupRestoreService restoreService;
+
+    @MockitoBean
+    private DateiBackupService dateiBackupService;
+
+    @MockitoBean
+    private DateiBackupRestoreService dateiBackupRestoreService;
 
     @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;

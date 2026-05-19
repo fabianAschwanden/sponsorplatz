@@ -117,4 +117,18 @@ class AzureBlobStorageServiceTest {
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("nicht gefunden");
     }
+
+    @Test
+    @DisplayName("CLOUD-STO-AZ-07: speichereBytes ruft upload mit Key, Stream, Länge, overwrite=true")
+    void speichereBytesSetztUploadKorrekt() {
+        byte[] inhalt = {1, 2, 3, 4, 5};
+
+        String key = storage.speichereBytes(inhalt, "image/png", "user/abc/restore.png");
+
+        ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
+        verify(operations).upload(keyCaptor.capture(), any(InputStream.class), eq(5L), eq(true));
+
+        assertThat(key).isEqualTo("user/abc/restore.png");
+        assertThat(keyCaptor.getValue()).isEqualTo("user/abc/restore.png");
+    }
 }

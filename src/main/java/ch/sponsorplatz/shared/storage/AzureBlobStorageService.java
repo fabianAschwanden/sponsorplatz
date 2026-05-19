@@ -49,6 +49,18 @@ public class AzureBlobStorageService implements StorageService {
     }
 
     @Override
+    public String speichereBytes(byte[] inhalt, String contentType, String zielpfad) {
+        validierePfad(zielpfad);
+        try {
+            uploads.upload(zielpfad, new java.io.ByteArrayInputStream(inhalt), inhalt.length, true);
+            return zielpfad;
+        } catch (AzureBlobOperationException e) {
+            throw new RuntimeException(
+                    "Azure Blob-Upload (Bytes) fehlgeschlagen (" + zielpfad + "): " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void loesche(String storagePfad) {
         validierePfad(storagePfad);
         // deleteIfExists ist nativ idempotent — kein 404-Handling nötig.

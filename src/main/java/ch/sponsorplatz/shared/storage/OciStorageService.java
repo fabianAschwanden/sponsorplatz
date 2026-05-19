@@ -70,6 +70,26 @@ public class OciStorageService implements StorageService {
     }
 
     @Override
+    public String speichereBytes(byte[] inhalt, String contentType, String zielpfad) {
+        validierePfad(zielpfad);
+        try {
+            client.putObject(PutObjectRequest.builder()
+                    .namespaceName(namespace)
+                    .bucketName(bucketName)
+                    .objectName(zielpfad)
+                    .contentLength((long) inhalt.length)
+                    .contentType(contentType)
+                    .putObjectBody(new java.io.ByteArrayInputStream(inhalt))
+                    .build());
+            return zielpfad;
+        } catch (BmcException e) {
+            throw new RuntimeException(
+                    "OCI putObject (Bytes) fehlgeschlagen (" + zielpfad + "): "
+                            + e.getStatusCode() + " " + e.getServiceCode() + " — " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void loesche(String storagePfad) {
         validierePfad(storagePfad);
         try {

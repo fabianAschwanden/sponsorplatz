@@ -50,7 +50,8 @@ Post-Pilot (📋)
               15.1 Echte Zahlungs-Provider-Integration (Stripe/PostFinance/Datatrans)
               15.2 Mahnwesen (automatische Mahnstufen, CH-Inkasso-Anbindung)
               15.3 Multi-Cloud — Azure als zweite Zone (DR / Aktiv-Aktiv-Vorbereitung)
-              15.4 Weitere Post-Pilot-Features (Backlog-getrieben)
+              15.4 Datei-Backup + Restore (Sponsoring-Files-Roundtrip)
+              15.5 Weitere Post-Pilot-Features (Backlog-getrieben)
 ```
 
 Die Verschiebung von 10.4 → 14 schafft Platz: Phase 13 deckt
@@ -710,7 +711,26 @@ Postgres B1ms + Blob ≈ CHF 50–80/Monat. Vor Slice 3 Budget freigeben.
 **Tests:** CLOUD-STO-AZ-01..06, CLOUD-BKP-AZ-01..04, BKP-X-01..03,
 SMOKE-MC-01..02.
 
-### 15.4 — Weitere Post-Pilot-Themen
+### 15.4 — Datei-Backup + Restore (Sponsoring-Files-Roundtrip) ✓
+
+> Parallel zum bestehenden DB-Backup: Medien-Uploads als portables ZIP
+> sichern und restoren — provider-agnostisch via `StorageService`,
+> arbeitet mit lokal, OCI und Azure.
+
+- [x] `StorageService.speichereBytes(byte[], contentType, pfad)` als
+      Restore-Schnittstelle in allen drei Impls
+- [x] `DateiBackupService.erstelleDateiBackup()` — walkt `MedienAsset`-
+      Repository, streamt jede Datei in ZIP, orphaned Records werden
+      skipped + im Audit dokumentiert
+- [x] `DateiBackupRestoreService.restore(byte[], ausgefuehrtVon)` —
+      liest ZIP, Path-Traversal-Schutz, Content-Type aus Dateinamen-
+      Heuristik, ruft `speichereBytes` pro Entry
+- [x] Admin-UI: `/admin/datei-backups` mit Create/Download/Delete/
+      Restore (RESTORE-Bestätigungstext wie DB-Restore)
+- [x] Tests: DATEI-BACKUP-01..05, DATEI-RESTORE-01..04,
+      CLOUD-STO-07, CLOUD-STO-AZ-07
+
+### 15.5 — Weitere Post-Pilot-Themen
 
 Diese landen erst nach Pilot-Feedback im Backlog (`/admin/backlog` oder via REST-API `POST /api/backlog`). Kandidaten heute schon im Blick:
 

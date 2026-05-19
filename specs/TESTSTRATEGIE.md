@@ -575,6 +575,7 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **CLOUD-STO-04** | `OciStorageServiceTest` | `loesche` idempotent — 404-Antwort vom Bucket wird geschluckt |
 | **CLOUD-STO-05** | `OciStorageServiceTest` | `ladeAlsResource` liefert lesbare Resource mit dem Object-Inhalt |
 | **CLOUD-STO-06** | `OciStorageServiceTest` | `getObject` 404 → `RuntimeException("nicht gefunden")` |
+| **CLOUD-STO-07** | `OciStorageServiceTest` | `speichereBytes` ruft `putObject` mit Inhalt, ContentType und korrekter Länge (Restore-Pfad) |
 
 #### AzureBlobStorageService (CLOUD-STO-AZ) — Phase 15.3
 
@@ -586,6 +587,7 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **CLOUD-STO-AZ-04** | `AzureBlobStorageServiceTest` | `loesche` ruft `deleteIfExists` — nativ idempotent (true/false ohne Throw) |
 | **CLOUD-STO-AZ-05** | `AzureBlobStorageServiceTest` | `ladeAlsResource` liefert lesbare Resource mit Blob-Inhalt |
 | **CLOUD-STO-AZ-06** | `AzureBlobStorageServiceTest` | `AzureBlobNotFoundException` → `RuntimeException("nicht gefunden")` |
+| **CLOUD-STO-AZ-07** | `AzureBlobStorageServiceTest` | `speichereBytes` ruft `upload` mit Key, Stream, Länge, `overwrite=true` (Restore-Pfad) |
 
 #### AzureBackupCloudUploader (CLOUD-BKP-AZ) — Phase 15.3
 
@@ -611,6 +613,20 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **RESTORE-01** | `BackupRestoreServiceTest` | Leerer/null Input wird abgelehnt |
 | **RESTORE-02** | `BackupRestoreServiceTest` | H2-Restore ruft `RUNSCRIPT FROM` + Audit-Eintrag |
 | **RESTORE-03** | `BackupRestoreServiceTest` | SQL-Failure beim RUNSCRIPT als RuntimeException propagiert |
+
+#### Datei-Backup + Restore (DATEI-BACKUP / DATEI-RESTORE) — Sponsoring-Files-Roundtrip
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **DATEI-BACKUP-01** | `DateiBackupServiceTest` | `erstelleDateiBackup` baut ZIP mit allen Asset-Bytes; ZIP-Entry-Name = Storage-Pfad |
+| **DATEI-BACKUP-02** | `DateiBackupServiceTest` | Orphaned Asset (`StorageObjectNotFoundException`) wird übersprungen, Backup läuft weiter |
+| **DATEI-BACKUP-03** | `DateiBackupServiceTest` | Audit-Log enthält `DATEI_BACKUP_ERSTELLT` mit Detail-String |
+| **DATEI-BACKUP-04** | `DateiBackupServiceTest` | `listeDateiBackups` filtert nur eigene ZIP-Files, neueste zuerst |
+| **DATEI-BACKUP-05** | `DateiBackupServiceTest` | `lese-/loescheDateiBackup` lehnt Path-Traversal + ungültige Namen ab |
+| **DATEI-RESTORE-01** | `DateiBackupRestoreServiceTest` | Leerer/null Input wird abgelehnt |
+| **DATEI-RESTORE-02** | `DateiBackupRestoreServiceTest` | Jeder ZIP-Entry geht via `speichereBytes` ins Storage, Content-Type aus Filename-Heuristik |
+| **DATEI-RESTORE-03** | `DateiBackupRestoreServiceTest` | Path-Traversal-Entry (`..`) wird übersprungen, nicht im Storage abgelegt |
+| **DATEI-RESTORE-04** | `DateiBackupRestoreServiceTest` | Audit-Log enthält `DATEI_BACKUP_RESTORED` mit `ausgefuehrtVon` |
 
 ### Phase Operational — Feature-Backlog (BL)
 
