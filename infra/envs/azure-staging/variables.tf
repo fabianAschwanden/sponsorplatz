@@ -91,7 +91,10 @@ variable "postgres_storage_mb" {
 
 variable "postgres_version" {
   type    = string
-  default = "16"
+  default = "17"
+  # Muss zur OCI-Source-Version passen, damit pg_dump-Restore PG17-only-
+  # Direktiven (z.B. 'SET transaction_timeout') schluckt. Sonst:
+  # ERROR: unrecognized configuration parameter "transaction_timeout"
 }
 
 variable "db_admin_user" {
