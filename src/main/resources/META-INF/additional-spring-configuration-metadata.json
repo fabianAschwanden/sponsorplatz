@@ -192,6 +192,13 @@
       "name": "sponsorplatz.api.key",
       "type": "java.lang.String",
       "description": "API-Key für /api/**-Routen (ApiKeyFilter prüft X-API-Key gegen diesen Wert). Leer oder ungesetzt → API ist deaktiviert (503). Off-by-default ist Absicht."
+    },
+
+    {
+      "name": "sponsorplatz.umgebung",
+      "type": "java.lang.String",
+      "description": "Quell-Umgebung dieser Instanz. Wird in jeden Audit-Log-Eintrag und in jedes Sentry-Event als Tag geschrieben — schützt vor Verwechslung nach Cross-Cloud-DB-Sync (Phase 15.3). Werte: 'lokal' (dev), 'oci-staging-free', 'azure-staging' oder beliebige eigene Bezeichnung.",
+      "defaultValue": "lokal"
     }
   ],
 
@@ -236,6 +243,23 @@
         {
           "value": "connection-string",
           "description": "Storage-Account-Connection-String — für lokales Testen gegen Azurite oder ad-hoc-Setups."
+        }
+      ]
+    },
+    {
+      "name": "sponsorplatz.umgebung",
+      "values": [
+        {
+          "value": "lokal",
+          "description": "Dev-Maschine (Default)."
+        },
+        {
+          "value": "oci-staging-free",
+          "description": "OCI Always-Free-VM — sponsorplatz.for-better.biz."
+        },
+        {
+          "value": "azure-staging",
+          "description": "Azure-Stack — sponsorplatz.for-the.biz."
         }
       ]
     }

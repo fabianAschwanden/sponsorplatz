@@ -24,7 +24,7 @@ import io.sentry.protocol.User;
 class SentryConfigTest {
 
     private final SentryConfig config = new SentryConfig();
-    private final SentryOptions.BeforeSendCallback callback = config.sentryBeforeSendCallback();
+    private final SentryOptions.BeforeSendCallback callback = config.sentryBeforeSendCallback("test-env");
 
     @Test
     @DisplayName("SENTRY-01: NotFoundException wird gefiltert — kein Event an Sentry")

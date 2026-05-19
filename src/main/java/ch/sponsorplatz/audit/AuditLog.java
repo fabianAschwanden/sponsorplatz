@@ -43,6 +43,15 @@ public class AuditLog {
     @Column(name = "details", updatable = false, columnDefinition = "TEXT")
     private String details;
 
+    /**
+     * Umgebung in der der Eintrag entstand — z.B. {@code oci-staging-free},
+     * {@code azure-staging}, {@code lokal}. Wird im AuditService aus
+     * {@code sponsorplatz.umgebung} gelesen. Schützt vor Verwechslung nach
+     * Cross-Cloud-DB-Sync (Phase 15.3).
+     */
+    @Column(name = "umgebung", nullable = false, updatable = false, length = 50)
+    private String umgebung;
+
     @PrePersist
     void onCreate() {
         if (zeitpunkt == null) {
@@ -78,6 +87,9 @@ public class AuditLog {
 
     public String getDetails() { return details; }
     public void setDetails(String details) { this.details = details; }
+
+    public String getUmgebung() { return umgebung; }
+    public void setUmgebung(String umgebung) { this.umgebung = umgebung; }
 
     @Override
     public boolean equals(Object o) {

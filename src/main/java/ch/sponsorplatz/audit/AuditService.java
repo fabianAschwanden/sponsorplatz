@@ -2,6 +2,7 @@ package ch.sponsorplatz.audit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +24,14 @@ public class AuditService {
     private static final Logger log = LoggerFactory.getLogger(AuditService.class);
 
     private final AuditLogRepository repository;
+
+    /**
+     * Quell-Umgebung dieser Instanz — wird in jedes audit_log-Insert
+     * geschrieben. Default {@code lokal} (dev). Auf Prod via ENV
+     * {@code SPONSORPLATZ_UMGEBUNG} überschrieben (siehe Cloud-Init).
+     */
+    @Value("${sponsorplatz.umgebung:lokal}")
+    private String umgebung;
 
     public AuditService(AuditLogRepository repository) {
         this.repository = repository;
@@ -52,8 +61,9 @@ public class AuditService {
         eintrag.setZielId(zielId);
         eintrag.setZielTyp(zielTyp);
         eintrag.setDetails(details);
+        eintrag.setUmgebung(umgebung);
         repository.save(eintrag);
-        log.debug("Audit: {} {} {} ({})", aktion, bereich, zielId, benutzerEmail);
+        log.debug("Audit: {} {} {} ({}) [{}]", aktion, bereich, zielId, benutzerEmail, umgebung);
     }
 
     /**
@@ -93,6 +103,7 @@ public class AuditService {
         eintrag.setZielId(zielId);
         eintrag.setZielTyp(zielTyp);
         eintrag.setDetails(details);
+        eintrag.setUmgebung(umgebung);
 
         // Benutzer aus SecurityContext (wenn vorhanden)
         try {
@@ -105,7 +116,7 @@ public class AuditService {
         }
 
         repository.save(eintrag);
-        log.debug("Audit: {} {} {} ({})", aktion, bereich, zielId, eintrag.getBenutzerEmail());
+        log.debug("Audit: {} {} {} ({}) [{}]", aktion, bereich, zielId, eintrag.getBenutzerEmail(), umgebung);
     }
 }
 

@@ -628,6 +628,22 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **DATEI-RESTORE-03** | `DateiBackupRestoreServiceTest` | Path-Traversal-Entry (`..`) wird übersprungen, nicht im Storage abgelegt |
 | **DATEI-RESTORE-04** | `DateiBackupRestoreServiceTest` | Audit-Log enthält `DATEI_BACKUP_RESTORED` mit `ausgefuehrtVon` |
 
+#### Audit-Log Quell-Umgebungs-Marker (AUDIT / VIEW-AUDIT) — Cross-Cloud-DB-Sync-Schutz
+
+> Hintergrund: nach DB-Restore von OCI → Azure liegen Audit-Einträge in
+> beiden Clouds. Die neue `umgebung`-Spalte (V41) trägt die Quell-
+> Umgebung des Eintrags, damit ein Admin auf `/admin/audit` sofort
+> sieht: "passierte das hier oder kommt's aus dem Source-Backup?".
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **AUDIT-01** | `AuditServiceTest` | `protokolliere` speichert Eintrag mit allen Pflichtfeldern |
+| **AUDIT-02** | `AuditServiceTest` | `protokolliereMitBenutzer` setzt Benutzer-Felder |
+| **AUDIT-03** | `AuditServiceTest` | `letzteEintraege` gibt Repository-Ergebnis zurück |
+| **AUDIT-04** | `AuditServiceTest` | Eintrag enthält die konfigurierte `sponsorplatz.umgebung` |
+| **AUDIT-05** | `AuditServiceTest` | `protokolliereMitBenutzer` setzt `umgebung` ebenfalls |
+| **VIEW-AUDIT-01** | `AuditLogViewTest` | `AuditLogView.von` mappt `umgebung` inkl. anderer Felder |
+
 ### Phase Operational — Feature-Backlog (BL)
 
 | ID | Test-Klasse | Beschreibung |

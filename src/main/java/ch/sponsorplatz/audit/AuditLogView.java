@@ -16,7 +16,8 @@ public record AuditLogView(
         String benutzerEmail,
         UUID zielId,
         String zielTyp,
-        String details
+        String details,
+        String umgebung
 ) {
 
     public static AuditLogView von(AuditLog log) {
@@ -28,7 +29,8 @@ public record AuditLogView(
                 log.getBenutzerEmail(),
                 log.getZielId(),
                 log.getZielTyp(),
-                log.getDetails()
+                log.getDetails(),
+                log.getUmgebung()
         );
     }
 

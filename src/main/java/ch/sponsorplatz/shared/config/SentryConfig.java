@@ -2,6 +2,7 @@ package ch.sponsorplatz.shared.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,8 +41,9 @@ public class SentryConfig {
      */
     @Bean
     @ConditionalOnProperty(name = "sentry.dsn", matchIfMissing = false)
-    public SentryOptions.BeforeSendCallback sentryBeforeSendCallback() {
-        log.info("Sentry Error-Tracking aktiv — DSG-konform (keine PII, kein Replay)");
+    public SentryOptions.BeforeSendCallback sentryBeforeSendCallback(
+            @Value("${sponsorplatz.umgebung:lokal}") String umgebung) {
+        log.info("Sentry Error-Tracking aktiv — DSG-konform (keine PII, kein Replay) — Umgebung: {}", umgebung);
         return (event, hint) -> {
             // Erwartete Business-Exceptions nicht an Sentry senden
             if (event.getThrowable() != null) {
@@ -57,6 +59,11 @@ public class SentryConfig {
             if (event.getUser() != null) {
                 event.getUser().setIpAddress(null);
             }
+
+            // Quell-Umgebung als Tag — ermöglicht Filter im Sentry-Dashboard
+            // (z.B. 'sponsorplatz.umgebung:oci-staging-free') nach Multi-Cloud-
+            // DB-Sync. Auch in der Sentry-Release-/Env-Sicht hilfreich.
+            event.setTag("sponsorplatz.umgebung", umgebung);
 
             return event;
         };

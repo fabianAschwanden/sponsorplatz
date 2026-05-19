@@ -44,6 +44,7 @@
                 <thead>
                 <tr>
                     <th>Zeitpunkt</th>
+                    <th>Umgebung</th>
                     <th>Aktion</th>
                     <th>Bereich</th>
                     <th>Benutzer</th>
@@ -54,6 +55,7 @@
                 <tbody>
                 <tr th:each="a : ${auditLogs}">
                     <td th:text="${a.zeitpunkt != null ? #temporals.format(a.zeitpunkt, 'dd.MM.yyyy HH:mm:ss') : '—'}">01.01.2026</td>
+                    <td><span class="app-chip umgebung-chip" th:classappend="${'umgebung-' + #strings.toLowerCase(a.umgebung ?: 'unknown')}" th:text="${a.umgebung ?: '—'}">lokal</span></td>
                     <td><span class="app-chip" th:classappend="${'audit-' + #strings.toLowerCase(a.aktion)}" th:text="${a.aktion}">ERSTELLT</span></td>
                     <td th:text="${a.bereich}">ORG</td>
                     <td th:text="${a.benutzerEmail ?: '—'}">user@test.ch</td>
@@ -79,7 +81,12 @@
     .audit-geloescht, .audit-suspendiert, .audit-gesperrt { background: #fecaca; color: #991b1b; }
     .audit-verifiziert, .audit-entsperrt { background: #d1fae5; color: #065f46; }
     .audit-registriert { background: #dbeafe; color: #1e40af; }
-    .audit-backup_erstellt { background: #e0e7ff; color: #3730a3; }
+    .audit-backup_erstellt, .audit-datei_backup_erstellt, .audit-datei_backup_restored { background: #e0e7ff; color: #3730a3; }
+    .umgebung-chip { font-size: 0.7rem; padding: 0.1rem 0.5rem; }
+    .umgebung-lokal { background: #f3f4f6; color: #4b5563; }
+    .umgebung-oci-staging-free { background: #fef3c7; color: #92400e; }
+    .umgebung-azure-staging { background: #dbeafe; color: #1e40af; }
+    .umgebung-unknown { background: #fce7f3; color: #9d174d; }
 </style>
 
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>

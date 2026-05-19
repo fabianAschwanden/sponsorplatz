@@ -53,6 +53,9 @@ services:
       BASIS_URL: ${BASIS_URL}
       SPONSORPLATZ_ADMIN_EMAIL: ${SPONSORPLATZ_ADMIN_EMAIL:-}
       SPONSORPLATZ_ADMIN_PASSWORD: ${SPONSORPLATZ_ADMIN_PASSWORD:-}
+      # Umgebungs-Marker für Audit-Log + Sentry-Tag — schützt vor
+      # Verwechslung nach Cross-Cloud-DB-Sync (Phase 15.3).
+      SPONSORPLATZ_UMGEBUNG: ${SPONSORPLATZ_UMGEBUNG:-oci-staging-free}
       # REST-API-Key — off-by-default. Wenn leer/ungesetzt, antwortet
       # ApiKeyFilter mit 503. Zur Aktivierung in /opt/sponsorplatz/.env
       # setzen und Container neu starten (docker compose up -d app).

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +27,7 @@ class AuditServiceTest {
     @BeforeEach
     void setUp() {
         service = new AuditService(repository);
+        ReflectionTestUtils.setField(service, "umgebung", "test-env");
     }
 
     @Test
@@ -70,6 +72,32 @@ class AuditServiceTest {
 
         List<AuditLog> result = service.letzteEintraege();
         assertThat(result).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("AUDIT-04: Eintrag enthält die konfigurierte sponsorplatz.umgebung")
+    void setztUmgebungAusProperty() {
+        UUID zielId = UUID.randomUUID();
+        when(repository.save(any(AuditLog.class))).thenAnswer(i -> i.getArgument(0));
+
+        service.protokolliere(AuditAktion.ERSTELLT, "ORGANISATION", zielId, "Organisation", "x");
+
+        ArgumentCaptor<AuditLog> captor = ArgumentCaptor.forClass(AuditLog.class);
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getUmgebung()).isEqualTo("test-env");
+    }
+
+    @Test
+    @DisplayName("AUDIT-05: protokolliereMitBenutzer setzt Umgebung ebenfalls")
+    void protokolliereMitBenutzerSetztUmgebung() {
+        when(repository.save(any(AuditLog.class))).thenAnswer(i -> i.getArgument(0));
+
+        service.protokolliereMitBenutzer(AuditAktion.VERIFIZIERT, "ORGANISATION",
+                UUID.randomUUID(), "admin@sp.ch", UUID.randomUUID(), "Organisation", "x");
+
+        ArgumentCaptor<AuditLog> captor = ArgumentCaptor.forClass(AuditLog.class);
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getUmgebung()).isEqualTo("test-env");
     }
 }
 
