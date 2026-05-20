@@ -13,6 +13,13 @@ skinparam {
 
 hide stereotype
 
+skinparam rectangle<<AzureBlobStorage>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+  shadowing false
+}
 skinparam rectangle<<Datatrans>> {
   BackgroundColor #999999
   FontColor #ffffff
@@ -34,7 +41,13 @@ skinparam rectangle<<OCIObjectStorage>> {
   roundCorner 20
   shadowing false
 }
-skinparam database<<Sponsorplatz.PostgreSQL17>> {
+skinparam database<<Sponsorplatz.PostgreSQL17AzureFlex>> {
+  BackgroundColor #2b3674
+  FontColor #ffffff
+  BorderColor #1e2551
+  shadowing false
+}
+skinparam database<<Sponsorplatz.PostgreSQL17DockerOCIVM>> {
   BackgroundColor #2b3674
   FontColor #ffffff
   BorderColor #1e2551
@@ -47,7 +60,21 @@ skinparam rectangle<<SMTPServer>> {
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung>> {
+skinparam rectangle<<SentryGlitchTip>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+  shadowing false
+}
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudazureDR>> {
+  BackgroundColor #438dd5
+  FontColor #ffffff
+  BorderColor #2e6295
+  roundCorner 20
+  shadowing false
+}
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI>> {
   BackgroundColor #438dd5
   FontColor #ffffff
   BorderColor #2e6295
@@ -71,17 +98,27 @@ rectangle "==Microsoft Entra ID\n<size:10>[Software System]</size>\n\nOIDC Ident
 rectangle "==Datatrans\n<size:10>[Software System]</size>\n\nOnline-Payment-Provider (Phase 9.2)" <<Datatrans>> as Datatrans
 rectangle "==SMTP-Server\n<size:10>[Software System]</size>\n\nMail-Versand (MailHog dev, prod-SMTP)" <<SMTPServer>> as SMTPServer
 rectangle "==Zefix\n<size:10>[Software System]</size>\n\nSchweizer Handelsregister (Stub)" <<Zefix>> as Zefix
-rectangle "==OCI Object Storage\n<size:10>[Software System]</size>\n\nBackup-Ziel + Medien-Storage" <<OCIObjectStorage>> as OCIObjectStorage
+rectangle "==OCI Object Storage\n<size:10>[Software System]</size>\n\nBackup-Ziel + Medien-Storage (cloud-free)" <<OCIObjectStorage>> as OCIObjectStorage
+rectangle "==Azure Blob Storage\n<size:10>[Software System]</size>\n\nBackup-Ziel + Medien-Storage (cloud-azure, Phase 15.3 Warm-DR)" <<AzureBlobStorage>> as AzureBlobStorage
+rectangle "==Sentry / GlitchTip\n<size:10>[Software System]</size>\n\nError-Tracking mit Umgebungs-Tag (DSG-konform)" <<SentryGlitchTip>> as SentryGlitchTip
 
 rectangle "Sponsorplatz\n<size:10>[Software System]</size>" <<Sponsorplatz>> {
-  rectangle "==Web-Anwendung\n<size:10>[Container: Java 21]</size>\n\nSpring Boot 3.4 + Thymeleaf, server-rendered HTML" <<Sponsorplatz.WebAnwendung>> as Sponsorplatz.WebAnwendung
-  database "==PostgreSQL 17\n<size:10>[Container: Database]</size>\n\nPersistenz aller Sponsorplatz-Daten" <<Sponsorplatz.PostgreSQL17>> as Sponsorplatz.PostgreSQL17
+  rectangle "==Web-Anwendung (cloud-free / OCI)\n<size:10>[Container: Java 21]</size>\n\nSpring Boot 3.5 + Thymeleaf, server-rendered HTML — primary Zone" <<Sponsorplatz.WebAnwendungcloudfreeOCI>> as Sponsorplatz.WebAnwendungcloudfreeOCI
+  database "==PostgreSQL 17 (Docker, OCI-VM)\n<size:10>[Container: Database]</size>\n\nPersistenz aller Sponsorplatz-Daten — primary Zone" <<Sponsorplatz.PostgreSQL17DockerOCIVM>> as Sponsorplatz.PostgreSQL17DockerOCIVM
+  rectangle "==Web-Anwendung (cloud-azure / DR)\n<size:10>[Container: Java 21]</size>\n\nIdentisches Image, eigene VM in Azure Sweden Central — Warm-DR-Zone" <<Sponsorplatz.WebAnwendungcloudazureDR>> as Sponsorplatz.WebAnwendungcloudazureDR
+  database "==PostgreSQL 17 (Azure Flex)\n<size:10>[Container: Database]</size>\n\nAzure Database for PostgreSQL Flexible Server, VNet-privat — DR-Zone" <<Sponsorplatz.PostgreSQL17AzureFlex>> as Sponsorplatz.PostgreSQL17AzureFlex
 }
 
-Sponsorplatz.WebAnwendung .[#707070,thickness=2].> Sponsorplatz.PostgreSQL17 : "<color:#707070>Liest und schreibt via JPA/Hibernate + Flyway\n<color:#707070><size:8>[JDBC]</size>"
-Sponsorplatz.WebAnwendung .[#707070,thickness=2].> MicrosoftEntraID : "<color:#707070>OIDC Authorization-Code-Flow mit PKCE"
-Sponsorplatz.WebAnwendung .[#707070,thickness=2].> Datatrans : "<color:#707070>Zahlung initiieren + Webhook empfangen"
-Sponsorplatz.WebAnwendung .[#707070,thickness=2].> SMTPServer : "<color:#707070>Spring-Mail JavaMailSender"
-Sponsorplatz.WebAnwendung .[#707070,thickness=2].> Zefix : "<color:#707070>ZefixService (heute Stub, Phase X echte API)"
-Sponsorplatz.WebAnwendung .[#707070,thickness=2].> OCIObjectStorage : "<color:#707070>BackupService Push + MedienAsset-CDN"
+Sponsorplatz.WebAnwendungcloudfreeOCI .[#707070,thickness=2].> Sponsorplatz.PostgreSQL17DockerOCIVM : "<color:#707070>JPA/Hibernate + Flyway\n<color:#707070><size:8>[JDBC]</size>"
+Sponsorplatz.WebAnwendungcloudfreeOCI .[#707070,thickness=2].> MicrosoftEntraID : "<color:#707070>OIDC Authorization-Code-Flow mit PKCE"
+Sponsorplatz.WebAnwendungcloudfreeOCI .[#707070,thickness=2].> Datatrans : "<color:#707070>Zahlung initiieren + Webhook empfangen"
+Sponsorplatz.WebAnwendungcloudfreeOCI .[#707070,thickness=2].> SMTPServer : "<color:#707070>Spring-Mail JavaMailSender"
+Sponsorplatz.WebAnwendungcloudfreeOCI .[#707070,thickness=2].> Zefix : "<color:#707070>ZefixService (heute Stub, Phase X echte API)"
+Sponsorplatz.WebAnwendungcloudfreeOCI .[#707070,thickness=2].> OCIObjectStorage : "<color:#707070>BackupService + StorageService — Instance Principal Auth"
+Sponsorplatz.WebAnwendungcloudfreeOCI .[#707070,thickness=2].> SentryGlitchTip : "<color:#707070>BeforeSend-Filter (DSG) + Tag sponsorplatz.umgebung=oci-staging-free"
+Sponsorplatz.WebAnwendungcloudazureDR .[#707070,thickness=2].> Sponsorplatz.PostgreSQL17AzureFlex : "<color:#707070>JPA/Hibernate + Flyway, VNet-private Connection\n<color:#707070><size:8>[JDBC + SSL]</size>"
+Sponsorplatz.WebAnwendungcloudazureDR .[#707070,thickness=2].> AzureBlobStorage : "<color:#707070>BackupService + StorageService — UAMI Managed Identity"
+Sponsorplatz.WebAnwendungcloudazureDR .[#707070,thickness=2].> SMTPServer : "<color:#707070>Spring-Mail JavaMailSender (gleicher Relay wie OCI)"
+Sponsorplatz.WebAnwendungcloudazureDR .[#707070,thickness=2].> SentryGlitchTip : "<color:#707070>BeforeSend-Filter (DSG) + Tag sponsorplatz.umgebung=azure-staging"
+Sponsorplatz.WebAnwendungcloudfreeOCI .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudazureDR : "<color:#707070>Manueller pg_dump + ZIP-Restore via /admin/backups + /admin/datei-backups\n<color:#707070><size:8>[Operator]</size>"
 @enduml

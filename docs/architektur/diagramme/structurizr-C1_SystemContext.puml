@@ -13,6 +13,13 @@ skinparam {
 
 hide stereotype
 
+skinparam rectangle<<AzureBlobStorage>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+  shadowing false
+}
 skinparam person<<CSSSponsoringTeam>> {
   BackgroundColor #00327d
   FontColor #ffffff
@@ -65,6 +72,13 @@ skinparam rectangle<<SMTPServer>> {
   roundCorner 20
   shadowing false
 }
+skinparam rectangle<<SentryGlitchTip>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  roundCorner 20
+  shadowing false
+}
 skinparam person<<SponsorUser>> {
   BackgroundColor #e07a5f
   FontColor #ffffff
@@ -94,7 +108,9 @@ skinparam rectangle<<Zefix>> {
 
 person "==Verein-Mitglied\n<size:10>[Person]</size>\n\nPflegt Vereinsprofil, Projekte, Anfragen" <<VereinMitglied>> as VereinMitglied
 rectangle "==Zefix\n<size:10>[Software System]</size>\n\nSchweizer Handelsregister (Stub)" <<Zefix>> as Zefix
-rectangle "==OCI Object Storage\n<size:10>[Software System]</size>\n\nBackup-Ziel + Medien-Storage" <<OCIObjectStorage>> as OCIObjectStorage
+rectangle "==OCI Object Storage\n<size:10>[Software System]</size>\n\nBackup-Ziel + Medien-Storage (cloud-free)" <<OCIObjectStorage>> as OCIObjectStorage
+rectangle "==Azure Blob Storage\n<size:10>[Software System]</size>\n\nBackup-Ziel + Medien-Storage (cloud-azure, Phase 15.3 Warm-DR)" <<AzureBlobStorage>> as AzureBlobStorage
+rectangle "==Sentry / GlitchTip\n<size:10>[Software System]</size>\n\nError-Tracking mit Umgebungs-Tag (DSG-konform)" <<SentryGlitchTip>> as SentryGlitchTip
 rectangle "==Sponsorplatz\n<size:10>[Software System]</size>\n\nKuratierte Health-Sponsoring-Plattform — strikt fokussiert, breit gefasst" <<Sponsorplatz>> as Sponsorplatz
 person "==Sponsor-User\n<size:10>[Person]</size>\n\nStellt Sponsoring-Anfragen, scannt QR-Bill" <<SponsorUser>> as SponsorUser
 person "==CSS Sponsoring-Team\n<size:10>[Person]</size>\n\nKuratiert Vereine, sponsert zentral" <<CSSSponsoringTeam>> as CSSSponsoringTeam
@@ -115,5 +131,7 @@ Sponsorplatz .[#707070,thickness=2].> MicrosoftEntraID : "<color:#707070>SSO-Aut
 Sponsorplatz .[#707070,thickness=2].> Datatrans : "<color:#707070>Online-Zahlungen + Webhook\n<color:#707070><size:8>[REST]</size>"
 Sponsorplatz .[#707070,thickness=2].> SMTPServer : "<color:#707070>Mail-Versand\n<color:#707070><size:8>[SMTP/STARTTLS]</size>"
 Sponsorplatz .[#707070,thickness=2].> Zefix : "<color:#707070>Verein-/Sponsor-Verifikation\n<color:#707070><size:8>[REST]</size>"
-Sponsorplatz .[#707070,thickness=2].> OCIObjectStorage : "<color:#707070>Backup-Spiegelung + Medien-Storage\n<color:#707070><size:8>[S3-kompatible API]</size>"
+Sponsorplatz .[#707070,thickness=2].> OCIObjectStorage : "<color:#707070>Backup-Spiegelung + Medien-Storage (cloud-free)\n<color:#707070><size:8>[OCI Object Storage SDK]</size>"
+Sponsorplatz .[#707070,thickness=2].> AzureBlobStorage : "<color:#707070>Backup-Spiegelung + Medien-Storage (cloud-azure)\n<color:#707070><size:8>[Azure Storage Blob SDK]</size>"
+Sponsorplatz .[#707070,thickness=2].> SentryGlitchTip : "<color:#707070>Error-Events + sponsorplatz.umgebung-Tag\n<color:#707070><size:8>[HTTPS]</size>"
 @enduml

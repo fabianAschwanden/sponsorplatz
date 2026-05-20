@@ -1,6 +1,6 @@
 @startuml
 set separator none
-title Sponsorplatz - Web-Anwendung - Components
+title Sponsorplatz - Web-Anwendung (cloud-free / OCI) - Components
 
 top to bottom direction
 
@@ -13,174 +13,174 @@ skinparam {
 
 hide stereotype
 
-skinparam rectangle<<Sponsorplatz.WebAnwendung.admin>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.admin>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung.anfrage>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.anfrage>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung.audit>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.audit>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung.aufgabe>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.aufgabe>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung.backup>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.backup>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung.benachrichtigung>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.benachrichtigung>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung.benutzer>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.benutzer>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung.dashboard>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.dashboard>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung.einladung>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.einladung>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung.home>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.home>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung.kontakt>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.kontakt>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung.ops>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.ops>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung.organisation>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.organisation>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung.projekt>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.projekt>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung.seed>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.seed>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung.shared>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI.shared>> {
   BackgroundColor #85bbf0
   FontColor #000000
   BorderColor #5d82a8
   roundCorner 20
   shadowing false
 }
-skinparam rectangle<<Sponsorplatz.WebAnwendung>> {
+skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI>> {
   BorderColor #2e6295
   FontColor #2e6295
   shadowing false
 }
 
-rectangle "Web-Anwendung\n<size:10>[Container: Java 21]</size>" <<Sponsorplatz.WebAnwendung>> {
-  rectangle "==organisation\n<size:10>[Component]</size>\n\nVereine, Mitgliedschaften, AccessControl, Branche-Enum" <<Sponsorplatz.WebAnwendung.organisation>> as Sponsorplatz.WebAnwendung.organisation
-  rectangle "==projekt\n<size:10>[Component]</size>\n\nProjekte, Pakete, Marktplatz, Volltextsuche" <<Sponsorplatz.WebAnwendung.projekt>> as Sponsorplatz.WebAnwendung.projekt
-  rectangle "==anfrage\n<size:10>[Component]</size>\n\nAnfrage → Vertrag → Rechnung → Payment-Provider" <<Sponsorplatz.WebAnwendung.anfrage>> as Sponsorplatz.WebAnwendung.anfrage
-  rectangle "==benutzer\n<size:10>[Component]</size>\n\nAppUser, Auth, Passwort-Reset, Profile" <<Sponsorplatz.WebAnwendung.benutzer>> as Sponsorplatz.WebAnwendung.benutzer
-  rectangle "==einladung\n<size:10>[Component]</size>\n\nToken-basierte Org-Einladungen" <<Sponsorplatz.WebAnwendung.einladung>> as Sponsorplatz.WebAnwendung.einladung
-  rectangle "==audit\n<size:10>[Component]</size>\n\nAuditLog, DSG-Datenexport" <<Sponsorplatz.WebAnwendung.audit>> as Sponsorplatz.WebAnwendung.audit
-  rectangle "==benachrichtigung\n<size:10>[Component]</size>\n\nIn-App-Notifications + E-Mail-Versand" <<Sponsorplatz.WebAnwendung.benachrichtigung>> as Sponsorplatz.WebAnwendung.benachrichtigung
-  rectangle "==admin\n<size:10>[Component]</size>\n\nVerifizierungs-Queue, Feature-Backlog, Mail-Einstellungen" <<Sponsorplatz.WebAnwendung.admin>> as Sponsorplatz.WebAnwendung.admin
-  rectangle "==home\n<size:10>[Component]</size>\n\nPublic-Pages, Marken-Landing, Statistik" <<Sponsorplatz.WebAnwendung.home>> as Sponsorplatz.WebAnwendung.home
-  rectangle "==dashboard\n<size:10>[Component]</size>\n\nEingeloggter Dashboard-Hub" <<Sponsorplatz.WebAnwendung.dashboard>> as Sponsorplatz.WebAnwendung.dashboard
-  rectangle "==kontakt\n<size:10>[Component]</size>\n\nSupport / Kontakt-Formular" <<Sponsorplatz.WebAnwendung.kontakt>> as Sponsorplatz.WebAnwendung.kontakt
-  rectangle "==aufgabe\n<size:10>[Component]</size>\n\nWorkflow-Aufgaben / Tasks" <<Sponsorplatz.WebAnwendung.aufgabe>> as Sponsorplatz.WebAnwendung.aufgabe
-  rectangle "==backup\n<size:10>[Component]</size>\n\nAutomatische DB-Backups" <<Sponsorplatz.WebAnwendung.backup>> as Sponsorplatz.WebAnwendung.backup
-  rectangle "==ops\n<size:10>[Component]</size>\n\nOps-Dashboard, Monitoring-Endpoints" <<Sponsorplatz.WebAnwendung.ops>> as Sponsorplatz.WebAnwendung.ops
-  rectangle "==seed\n<size:10>[Component]</size>\n\nDemo- und Dev-Seed-Daten" <<Sponsorplatz.WebAnwendung.seed>> as Sponsorplatz.WebAnwendung.seed
-  rectangle "==shared\n<size:10>[Component: Querschnitt]</size>\n\nQuerschnitt: Config, Util, Exception, PDF, Mail, Storage" <<Sponsorplatz.WebAnwendung.shared>> as Sponsorplatz.WebAnwendung.shared
+rectangle "Web-Anwendung (cloud-free / OCI)\n<size:10>[Container: Java 21]</size>" <<Sponsorplatz.WebAnwendungcloudfreeOCI>> {
+  rectangle "==organisation\n<size:10>[Component]</size>\n\nVereine, Mitgliedschaften, AccessControl, Branche-Enum" <<Sponsorplatz.WebAnwendungcloudfreeOCI.organisation>> as Sponsorplatz.WebAnwendungcloudfreeOCI.organisation
+  rectangle "==projekt\n<size:10>[Component]</size>\n\nProjekte, Pakete, Marktplatz, Volltextsuche" <<Sponsorplatz.WebAnwendungcloudfreeOCI.projekt>> as Sponsorplatz.WebAnwendungcloudfreeOCI.projekt
+  rectangle "==anfrage\n<size:10>[Component]</size>\n\nAnfrage → Vertrag → Rechnung → Payment-Provider" <<Sponsorplatz.WebAnwendungcloudfreeOCI.anfrage>> as Sponsorplatz.WebAnwendungcloudfreeOCI.anfrage
+  rectangle "==benutzer\n<size:10>[Component]</size>\n\nAppUser, Auth, Passwort-Reset, Profile" <<Sponsorplatz.WebAnwendungcloudfreeOCI.benutzer>> as Sponsorplatz.WebAnwendungcloudfreeOCI.benutzer
+  rectangle "==einladung\n<size:10>[Component]</size>\n\nToken-basierte Org-Einladungen" <<Sponsorplatz.WebAnwendungcloudfreeOCI.einladung>> as Sponsorplatz.WebAnwendungcloudfreeOCI.einladung
+  rectangle "==audit\n<size:10>[Component]</size>\n\nAuditLog, DSG-Datenexport" <<Sponsorplatz.WebAnwendungcloudfreeOCI.audit>> as Sponsorplatz.WebAnwendungcloudfreeOCI.audit
+  rectangle "==benachrichtigung\n<size:10>[Component]</size>\n\nIn-App-Notifications + E-Mail-Versand" <<Sponsorplatz.WebAnwendungcloudfreeOCI.benachrichtigung>> as Sponsorplatz.WebAnwendungcloudfreeOCI.benachrichtigung
+  rectangle "==admin\n<size:10>[Component]</size>\n\nVerifizierungs-Queue, Feature-Backlog, Mail-Einstellungen" <<Sponsorplatz.WebAnwendungcloudfreeOCI.admin>> as Sponsorplatz.WebAnwendungcloudfreeOCI.admin
+  rectangle "==home\n<size:10>[Component]</size>\n\nPublic-Pages, Marken-Landing, Statistik" <<Sponsorplatz.WebAnwendungcloudfreeOCI.home>> as Sponsorplatz.WebAnwendungcloudfreeOCI.home
+  rectangle "==dashboard\n<size:10>[Component]</size>\n\nEingeloggter Dashboard-Hub" <<Sponsorplatz.WebAnwendungcloudfreeOCI.dashboard>> as Sponsorplatz.WebAnwendungcloudfreeOCI.dashboard
+  rectangle "==kontakt\n<size:10>[Component]</size>\n\nSupport / Kontakt-Formular" <<Sponsorplatz.WebAnwendungcloudfreeOCI.kontakt>> as Sponsorplatz.WebAnwendungcloudfreeOCI.kontakt
+  rectangle "==aufgabe\n<size:10>[Component]</size>\n\nWorkflow-Aufgaben / Tasks" <<Sponsorplatz.WebAnwendungcloudfreeOCI.aufgabe>> as Sponsorplatz.WebAnwendungcloudfreeOCI.aufgabe
+  rectangle "==backup\n<size:10>[Component]</size>\n\nAutomatische DB-Backups" <<Sponsorplatz.WebAnwendungcloudfreeOCI.backup>> as Sponsorplatz.WebAnwendungcloudfreeOCI.backup
+  rectangle "==ops\n<size:10>[Component]</size>\n\nOps-Dashboard, Monitoring-Endpoints" <<Sponsorplatz.WebAnwendungcloudfreeOCI.ops>> as Sponsorplatz.WebAnwendungcloudfreeOCI.ops
+  rectangle "==seed\n<size:10>[Component]</size>\n\nDemo- und Dev-Seed-Daten" <<Sponsorplatz.WebAnwendungcloudfreeOCI.seed>> as Sponsorplatz.WebAnwendungcloudfreeOCI.seed
+  rectangle "==shared\n<size:10>[Component: Querschnitt]</size>\n\nQuerschnitt: Config, Util, Exception, PDF, Mail, Storage" <<Sponsorplatz.WebAnwendungcloudfreeOCI.shared>> as Sponsorplatz.WebAnwendungcloudfreeOCI.shared
 }
 
-Sponsorplatz.WebAnwendung.organisation .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.shared : "<color:#707070>Util, Exception, AccessControl"
-Sponsorplatz.WebAnwendung.projekt .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.shared : "<color:#707070>PDF, Util"
-Sponsorplatz.WebAnwendung.projekt .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.organisation : "<color:#707070>Org-Lookup, Branche-Filter"
-Sponsorplatz.WebAnwendung.anfrage .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.shared : "<color:#707070>PDF, Util, Storage"
-Sponsorplatz.WebAnwendung.anfrage .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.organisation : "<color:#707070>Org + Mitgliedschaft + AccessControl"
-Sponsorplatz.WebAnwendung.anfrage .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.projekt : "<color:#707070>Paket-Snapshot, Projekt-Ref"
-Sponsorplatz.WebAnwendung.anfrage .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.benachrichtigung : "<color:#707070>Mail bei Status-Übergang"
-Sponsorplatz.WebAnwendung.anfrage .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.audit : "<color:#707070>AuditLog Status-Events"
-Sponsorplatz.WebAnwendung.benutzer .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.shared : "<color:#707070>Mail, Util, Token-Gen"
-Sponsorplatz.WebAnwendung.benutzer .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.benachrichtigung : "<color:#707070>Reset-Mail, Verifikations-Mail"
-Sponsorplatz.WebAnwendung.einladung .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.shared : "<color:#707070>Token-Gen, Mail"
-Sponsorplatz.WebAnwendung.einladung .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.benutzer : "<color:#707070>User-Lookup"
-Sponsorplatz.WebAnwendung.einladung .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.organisation : "<color:#707070>Mitgliedschaft anlegen"
-Sponsorplatz.WebAnwendung.audit .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.shared : "<color:#707070>Async-Eventing"
-Sponsorplatz.WebAnwendung.benachrichtigung .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.shared : "<color:#707070>Mail-Versand"
-Sponsorplatz.WebAnwendung.benachrichtigung .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.benutzer : "<color:#707070>Empfänger-Lookup"
-Sponsorplatz.WebAnwendung.admin .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.organisation : "<color:#707070>Verifizierungs-Queue"
-Sponsorplatz.WebAnwendung.admin .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.audit : "<color:#707070>Admin-Aktionen loggen"
-Sponsorplatz.WebAnwendung.admin .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.backup : "<color:#707070>Backup-UI"
-Sponsorplatz.WebAnwendung.home .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.organisation : "<color:#707070>Statistik vereineProBranche"
-Sponsorplatz.WebAnwendung.home .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.projekt : "<color:#707070>Statistik anzahlAktiveProjekte"
-Sponsorplatz.WebAnwendung.dashboard .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.organisation : "<color:#707070>Eigene Orgs"
-Sponsorplatz.WebAnwendung.dashboard .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.projekt : "<color:#707070>Eigene Projekte"
-Sponsorplatz.WebAnwendung.dashboard .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.anfrage : "<color:#707070>Eigene Anfragen"
-Sponsorplatz.WebAnwendung.dashboard .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.benachrichtigung : "<color:#707070>Glocke + Liste"
-Sponsorplatz.WebAnwendung.kontakt .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.shared : "<color:#707070>Mail-Versand"
-Sponsorplatz.WebAnwendung.aufgabe .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.shared : "<color:#707070>"
-Sponsorplatz.WebAnwendung.aufgabe .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.benutzer : "<color:#707070>Aufgaben-Empfänger"
-Sponsorplatz.WebAnwendung.backup .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.shared : "<color:#707070>"
-Sponsorplatz.WebAnwendung.ops .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.shared : "<color:#707070>"
-Sponsorplatz.WebAnwendung.seed .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.organisation : "<color:#707070>Demo-Vereine"
-Sponsorplatz.WebAnwendung.seed .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.projekt : "<color:#707070>Demo-Projekte"
-Sponsorplatz.WebAnwendung.seed .[#707070,thickness=2].> Sponsorplatz.WebAnwendung.benutzer : "<color:#707070>Demo-User"
+Sponsorplatz.WebAnwendungcloudfreeOCI.organisation .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.shared : "<color:#707070>Util, Exception, AccessControl"
+Sponsorplatz.WebAnwendungcloudfreeOCI.projekt .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.shared : "<color:#707070>PDF, Util"
+Sponsorplatz.WebAnwendungcloudfreeOCI.projekt .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.organisation : "<color:#707070>Org-Lookup, Branche-Filter"
+Sponsorplatz.WebAnwendungcloudfreeOCI.anfrage .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.shared : "<color:#707070>PDF, Util, Storage"
+Sponsorplatz.WebAnwendungcloudfreeOCI.anfrage .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.organisation : "<color:#707070>Org + Mitgliedschaft + AccessControl"
+Sponsorplatz.WebAnwendungcloudfreeOCI.anfrage .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.projekt : "<color:#707070>Paket-Snapshot, Projekt-Ref"
+Sponsorplatz.WebAnwendungcloudfreeOCI.anfrage .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.benachrichtigung : "<color:#707070>Mail bei Status-Übergang"
+Sponsorplatz.WebAnwendungcloudfreeOCI.anfrage .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.audit : "<color:#707070>AuditLog Status-Events"
+Sponsorplatz.WebAnwendungcloudfreeOCI.benutzer .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.shared : "<color:#707070>Mail, Util, Token-Gen"
+Sponsorplatz.WebAnwendungcloudfreeOCI.benutzer .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.benachrichtigung : "<color:#707070>Reset-Mail, Verifikations-Mail"
+Sponsorplatz.WebAnwendungcloudfreeOCI.einladung .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.shared : "<color:#707070>Token-Gen, Mail"
+Sponsorplatz.WebAnwendungcloudfreeOCI.einladung .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.benutzer : "<color:#707070>User-Lookup"
+Sponsorplatz.WebAnwendungcloudfreeOCI.einladung .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.organisation : "<color:#707070>Mitgliedschaft anlegen"
+Sponsorplatz.WebAnwendungcloudfreeOCI.audit .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.shared : "<color:#707070>Async-Eventing"
+Sponsorplatz.WebAnwendungcloudfreeOCI.benachrichtigung .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.shared : "<color:#707070>Mail-Versand"
+Sponsorplatz.WebAnwendungcloudfreeOCI.benachrichtigung .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.benutzer : "<color:#707070>Empfänger-Lookup"
+Sponsorplatz.WebAnwendungcloudfreeOCI.admin .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.organisation : "<color:#707070>Verifizierungs-Queue"
+Sponsorplatz.WebAnwendungcloudfreeOCI.admin .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.audit : "<color:#707070>Admin-Aktionen loggen"
+Sponsorplatz.WebAnwendungcloudfreeOCI.admin .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.backup : "<color:#707070>Backup-UI"
+Sponsorplatz.WebAnwendungcloudfreeOCI.home .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.organisation : "<color:#707070>Statistik vereineProBranche"
+Sponsorplatz.WebAnwendungcloudfreeOCI.home .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.projekt : "<color:#707070>Statistik anzahlAktiveProjekte"
+Sponsorplatz.WebAnwendungcloudfreeOCI.dashboard .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.organisation : "<color:#707070>Eigene Orgs"
+Sponsorplatz.WebAnwendungcloudfreeOCI.dashboard .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.projekt : "<color:#707070>Eigene Projekte"
+Sponsorplatz.WebAnwendungcloudfreeOCI.dashboard .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.anfrage : "<color:#707070>Eigene Anfragen"
+Sponsorplatz.WebAnwendungcloudfreeOCI.dashboard .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.benachrichtigung : "<color:#707070>Glocke + Liste"
+Sponsorplatz.WebAnwendungcloudfreeOCI.kontakt .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.shared : "<color:#707070>Mail-Versand"
+Sponsorplatz.WebAnwendungcloudfreeOCI.aufgabe .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.shared : "<color:#707070>"
+Sponsorplatz.WebAnwendungcloudfreeOCI.aufgabe .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.benutzer : "<color:#707070>Aufgaben-Empfänger"
+Sponsorplatz.WebAnwendungcloudfreeOCI.backup .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.shared : "<color:#707070>"
+Sponsorplatz.WebAnwendungcloudfreeOCI.ops .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.shared : "<color:#707070>"
+Sponsorplatz.WebAnwendungcloudfreeOCI.seed .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.organisation : "<color:#707070>Demo-Vereine"
+Sponsorplatz.WebAnwendungcloudfreeOCI.seed .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.projekt : "<color:#707070>Demo-Projekte"
+Sponsorplatz.WebAnwendungcloudfreeOCI.seed .[#707070,thickness=2].> Sponsorplatz.WebAnwendungcloudfreeOCI.benutzer : "<color:#707070>Demo-User"
 @enduml

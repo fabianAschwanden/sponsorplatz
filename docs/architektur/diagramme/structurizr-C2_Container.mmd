@@ -12,22 +12,36 @@ graph LR
     style 9 fill:#999999,stroke:#6b6b6b,color:#ffffff
     10("<div style='font-weight: bold'>Zefix</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Schweizer Handelsregister<br />(Stub)</div>")
     style 10 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    11("<div style='font-weight: bold'>OCI Object Storage</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Backup-Ziel + Medien-Storage</div>")
+    11("<div style='font-weight: bold'>OCI Object Storage</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Backup-Ziel + Medien-Storage<br />(cloud-free)</div>")
     style 11 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    12("<div style='font-weight: bold'>Azure Blob Storage</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Backup-Ziel + Medien-Storage<br />(cloud-azure, Phase 15.3<br />Warm-DR)</div>")
+    style 12 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    13("<div style='font-weight: bold'>Sentry / GlitchTip</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Error-Tracking mit<br />Umgebungs-Tag (DSG-konform)</div>")
+    style 13 fill:#999999,stroke:#6b6b6b,color:#ffffff
 
-    subgraph 12 ["Sponsorplatz"]
-      style 12 fill:#ffffff,stroke:#0b4884,color:#0b4884
+    subgraph 14 ["Sponsorplatz"]
+      style 14 fill:#ffffff,stroke:#0b4884,color:#0b4884
 
-      13("<div style='font-weight: bold'>Web-Anwendung</div><div style='font-size: 70%; margin-top: 0px'>[Container: Java 21]</div><div style='font-size: 80%; margin-top:10px'>Spring Boot 3.4 + Thymeleaf,<br />server-rendered HTML</div>")
-      style 13 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      30[("<div style='font-weight: bold'>PostgreSQL 17</div><div style='font-size: 70%; margin-top: 0px'>[Container: Database]</div><div style='font-size: 80%; margin-top:10px'>Persistenz aller<br />Sponsorplatz-Daten</div>")]
-      style 30 fill:#2b3674,stroke:#1e2551,color:#ffffff
+      15("<div style='font-weight: bold'>Web-Anwendung (cloud-free / OCI)</div><div style='font-size: 70%; margin-top: 0px'>[Container: Java 21]</div><div style='font-size: 80%; margin-top:10px'>Spring Boot 3.5 + Thymeleaf,<br />server-rendered HTML —<br />primary Zone</div>")
+      style 15 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      32[("<div style='font-weight: bold'>PostgreSQL 17 (Docker, OCI-VM)</div><div style='font-size: 70%; margin-top: 0px'>[Container: Database]</div><div style='font-size: 80%; margin-top:10px'>Persistenz aller<br />Sponsorplatz-Daten — primary<br />Zone</div>")]
+      style 32 fill:#2b3674,stroke:#1e2551,color:#ffffff
+      33("<div style='font-weight: bold'>Web-Anwendung (cloud-azure / DR)</div><div style='font-size: 70%; margin-top: 0px'>[Container: Java 21]</div><div style='font-size: 80%; margin-top:10px'>Identisches Image, eigene VM<br />in Azure Sweden Central —<br />Warm-DR-Zone</div>")
+      style 33 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      34[("<div style='font-weight: bold'>PostgreSQL 17 (Azure Flex)</div><div style='font-size: 70%; margin-top: 0px'>[Container: Database]</div><div style='font-size: 80%; margin-top:10px'>Azure Database for PostgreSQL<br />Flexible Server, VNet-privat<br />— DR-Zone</div>")]
+      style 34 fill:#2b3674,stroke:#1e2551,color:#ffffff
     end
 
-    13-. "<div>Liest und schreibt via<br />JPA/Hibernate + Flyway</div><div style='font-size: 70%'>[JDBC]</div>" .->30
-    13-. "<div>OIDC Authorization-Code-Flow<br />mit PKCE</div><div style='font-size: 70%'></div>" .->7
-    13-. "<div>Zahlung initiieren + Webhook<br />empfangen</div><div style='font-size: 70%'></div>" .->8
-    13-. "<div>Spring-Mail JavaMailSender</div><div style='font-size: 70%'></div>" .->9
-    13-. "<div>ZefixService (heute Stub,<br />Phase X echte API)</div><div style='font-size: 70%'></div>" .->10
-    13-. "<div>BackupService Push +<br />MedienAsset-CDN</div><div style='font-size: 70%'></div>" .->11
+    15-. "<div>JPA/Hibernate + Flyway</div><div style='font-size: 70%'>[JDBC]</div>" .->32
+    15-. "<div>OIDC Authorization-Code-Flow<br />mit PKCE</div><div style='font-size: 70%'></div>" .->7
+    15-. "<div>Zahlung initiieren + Webhook<br />empfangen</div><div style='font-size: 70%'></div>" .->8
+    15-. "<div>Spring-Mail JavaMailSender</div><div style='font-size: 70%'></div>" .->9
+    15-. "<div>ZefixService (heute Stub,<br />Phase X echte API)</div><div style='font-size: 70%'></div>" .->10
+    15-. "<div>BackupService +<br />StorageService — Instance<br />Principal Auth</div><div style='font-size: 70%'></div>" .->11
+    15-. "<div>BeforeSend-Filter (DSG) + Tag<br />sponsorplatz.umgebung=oci-staging-free</div><div style='font-size: 70%'></div>" .->13
+    33-. "<div>JPA/Hibernate + Flyway,<br />VNet-private Connection</div><div style='font-size: 70%'>[JDBC + SSL]</div>" .->34
+    33-. "<div>BackupService +<br />StorageService — UAMI Managed<br />Identity</div><div style='font-size: 70%'></div>" .->12
+    33-. "<div>Spring-Mail JavaMailSender<br />(gleicher Relay wie OCI)</div><div style='font-size: 70%'></div>" .->9
+    33-. "<div>BeforeSend-Filter (DSG) + Tag<br />sponsorplatz.umgebung=azure-staging</div><div style='font-size: 70%'></div>" .->13
+    15-. "<div>Manueller pg_dump +<br />ZIP-Restore via<br />/admin/backups +<br />/admin/datei-backups</div><div style='font-size: 70%'>[Operator]</div>" .->33
   end

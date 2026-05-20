@@ -8,10 +8,14 @@ graph LR
     style 1 fill:#1e3a5f,stroke:#152842,color:#ffffff
     10("<div style='font-weight: bold'>Zefix</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Schweizer Handelsregister<br />(Stub)</div>")
     style 10 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    11("<div style='font-weight: bold'>OCI Object Storage</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Backup-Ziel + Medien-Storage</div>")
+    11("<div style='font-weight: bold'>OCI Object Storage</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Backup-Ziel + Medien-Storage<br />(cloud-free)</div>")
     style 11 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    12("<div style='font-weight: bold'>Sponsorplatz</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Kuratierte<br />Health-Sponsoring-Plattform —<br />strikt fokussiert, breit<br />gefasst</div>")
-    style 12 fill:#1168bd,stroke:#0b4884,color:#ffffff
+    12("<div style='font-weight: bold'>Azure Blob Storage</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Backup-Ziel + Medien-Storage<br />(cloud-azure, Phase 15.3<br />Warm-DR)</div>")
+    style 12 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    13("<div style='font-weight: bold'>Sentry / GlitchTip</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Error-Tracking mit<br />Umgebungs-Tag (DSG-konform)</div>")
+    style 13 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    14("<div style='font-weight: bold'>Sponsorplatz</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Kuratierte<br />Health-Sponsoring-Plattform —<br />strikt fokussiert, breit<br />gefasst</div>")
+    style 14 fill:#1168bd,stroke:#0b4884,color:#ffffff
     2["<div style='font-weight: bold'>Sponsor-User</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Stellt Sponsoring-Anfragen,<br />scannt QR-Bill</div>"]
     style 2 fill:#e07a5f,stroke:#9c5542,color:#ffffff
     3["<div style='font-weight: bold'>CSS Sponsoring-Team</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Kuratiert Vereine, sponsert<br />zentral</div>"]
@@ -29,15 +33,17 @@ graph LR
     9("<div style='font-weight: bold'>SMTP-Server</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Mail-Versand (MailHog dev,<br />prod-SMTP)</div>")
     style 9 fill:#999999,stroke:#6b6b6b,color:#ffffff
 
-    1-. "<div>Pflegt Profil, antwortet<br />Anfragen, erstellt Rechnungen</div><div style='font-size: 70%'></div>" .->12
-    2-. "<div>Stellt Anfragen, scannt<br />QR-Bill</div><div style='font-size: 70%'></div>" .->12
-    3-. "<div>Kuratiert Vereine, sponsert<br />via Anfragen</div><div style='font-size: 70%'></div>" .->12
-    4-. "<div>Regionale<br />Sponsoring-Anfragen,<br />Vor-Ort-Engagement</div><div style='font-size: 70%'></div>" .->12
-    5-. "<div>Sieht lokale CSS-Engagements<br />(öffentlich)</div><div style='font-size: 70%'></div>" .->12
-    6-. "<div>Verifiziert, moderiert,<br />exportiert</div><div style='font-size: 70%'></div>" .->12
-    12-. "<div>SSO-Authentifizierung (OIDC)</div><div style='font-size: 70%'>[OAuth2]</div>" .->7
-    12-. "<div>Online-Zahlungen + Webhook</div><div style='font-size: 70%'>[REST]</div>" .->8
-    12-. "<div>Mail-Versand</div><div style='font-size: 70%'>[SMTP/STARTTLS]</div>" .->9
-    12-. "<div>Verein-/Sponsor-Verifikation</div><div style='font-size: 70%'>[REST]</div>" .->10
-    12-. "<div>Backup-Spiegelung +<br />Medien-Storage</div><div style='font-size: 70%'>[S3-kompatible API]</div>" .->11
+    1-. "<div>Pflegt Profil, antwortet<br />Anfragen, erstellt Rechnungen</div><div style='font-size: 70%'></div>" .->14
+    2-. "<div>Stellt Anfragen, scannt<br />QR-Bill</div><div style='font-size: 70%'></div>" .->14
+    3-. "<div>Kuratiert Vereine, sponsert<br />via Anfragen</div><div style='font-size: 70%'></div>" .->14
+    4-. "<div>Regionale<br />Sponsoring-Anfragen,<br />Vor-Ort-Engagement</div><div style='font-size: 70%'></div>" .->14
+    5-. "<div>Sieht lokale CSS-Engagements<br />(öffentlich)</div><div style='font-size: 70%'></div>" .->14
+    6-. "<div>Verifiziert, moderiert,<br />exportiert</div><div style='font-size: 70%'></div>" .->14
+    14-. "<div>SSO-Authentifizierung (OIDC)</div><div style='font-size: 70%'>[OAuth2]</div>" .->7
+    14-. "<div>Online-Zahlungen + Webhook</div><div style='font-size: 70%'>[REST]</div>" .->8
+    14-. "<div>Mail-Versand</div><div style='font-size: 70%'>[SMTP/STARTTLS]</div>" .->9
+    14-. "<div>Verein-/Sponsor-Verifikation</div><div style='font-size: 70%'>[REST]</div>" .->10
+    14-. "<div>Backup-Spiegelung +<br />Medien-Storage (cloud-free)</div><div style='font-size: 70%'>[OCI Object Storage SDK]</div>" .->11
+    14-. "<div>Backup-Spiegelung +<br />Medien-Storage (cloud-azure)</div><div style='font-size: 70%'>[Azure Storage Blob SDK]</div>" .->12
+    14-. "<div>Error-Events +<br />sponsorplatz.umgebung-Tag</div><div style='font-size: 70%'>[HTTPS]</div>" .->13
   end
