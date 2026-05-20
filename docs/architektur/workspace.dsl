@@ -30,14 +30,16 @@ workspace "Sponsorplatz" "Schweizer Sponsoring-Plattform für Sport und Gesundhe
         datatrans  = softwareSystem "Datatrans" "Online-Payment-Provider (Phase 9.2)" "External,Backlog"
         smtp       = softwareSystem "SMTP-Server" "Mail-Versand (MailHog dev, prod-SMTP)" "External"
         zefix      = softwareSystem "Zefix" "Schweizer Handelsregister (Stub)" "External,Backlog"
-        oci        = softwareSystem "OCI Object Storage" "Backup-Ziel + Medien-Storage" "External"
+        oci        = softwareSystem "OCI Object Storage" "Backup-Ziel + Medien-Storage (cloud-free)" "External"
+        azureBlob  = softwareSystem "Azure Blob Storage" "Backup-Ziel + Medien-Storage (cloud-azure, Phase 15.3 Warm-DR)" "External"
+        sentry     = softwareSystem "Sentry / GlitchTip" "Error-Tracking mit Umgebungs-Tag (DSG-konform)" "External"
 
         // -------------------------------------------------------------------
         // Hauptsystem: Sponsorplatz
         // -------------------------------------------------------------------
         sponsorplatz = softwareSystem "Sponsorplatz" "Kuratierte Health-Sponsoring-Plattform — strikt fokussiert, breit gefasst" {
 
-            web = container "Web-Anwendung" "Spring Boot 3.4 + Thymeleaf, server-rendered HTML" "Java 21" {
+            web = container "Web-Anwendung (cloud-free / OCI)" "Spring Boot 3.5 + Thymeleaf, server-rendered HTML — primary Zone" "Java 21" {
 
                 // Feature-Folder als Komponenten — direkte Spiegelung der Paket-Struktur
                 organisation     = component "organisation"      "Vereine, Mitgliedschaften, AccessControl, Branche-Enum"
@@ -58,7 +60,13 @@ workspace "Sponsorplatz" "Schweizer Sponsoring-Plattform für Sport und Gesundhe
                 shared           = component "shared"            "Querschnitt: Config, Util, Exception, PDF, Mail, Storage" "Querschnitt"
             }
 
-            db = container "PostgreSQL 17" "Persistenz aller Sponsorplatz-Daten" "Database" "Database"
+            db = container "PostgreSQL 17 (Docker, OCI-VM)" "Persistenz aller Sponsorplatz-Daten — primary Zone" "Database" "Database"
+
+            // ---------------------------------------------------------------
+            // Phase 15.3 Multi-Cloud — Azure-Zone als Warm-DR
+            // ---------------------------------------------------------------
+            webAzure = container "Web-Anwendung (cloud-azure / DR)" "Identisches Image, eigene VM in Azure Sweden Central — Warm-DR-Zone" "Java 21"
+            dbAzure  = container "PostgreSQL 17 (Azure Flex)" "Azure Database for PostgreSQL Flexible Server, VNet-privat — DR-Zone" "Database" "Database"
         }
 
         // -------------------------------------------------------------------
@@ -75,17 +83,30 @@ workspace "Sponsorplatz" "Schweizer Sponsoring-Plattform für Sport und Gesundhe
         sponsorplatz -> datatrans "Online-Zahlungen + Webhook" "REST"
         sponsorplatz -> smtp      "Mail-Versand" "SMTP/STARTTLS"
         sponsorplatz -> zefix     "Verein-/Sponsor-Verifikation" "REST"
-        sponsorplatz -> oci       "Backup-Spiegelung + Medien-Storage" "S3-kompatible API"
+        sponsorplatz -> oci       "Backup-Spiegelung + Medien-Storage (cloud-free)" "OCI Object Storage SDK"
+        sponsorplatz -> azureBlob "Backup-Spiegelung + Medien-Storage (cloud-azure)" "Azure Storage Blob SDK"
+        sponsorplatz -> sentry    "Error-Events + sponsorplatz.umgebung-Tag" "HTTPS"
 
         // -------------------------------------------------------------------
         // Beziehungen — Container-Ebene
         // -------------------------------------------------------------------
-        web -> db        "Liest und schreibt via JPA/Hibernate + Flyway" "JDBC"
-        web -> entra     "OIDC Authorization-Code-Flow mit PKCE"
-        web -> datatrans "Zahlung initiieren + Webhook empfangen"
-        web -> smtp      "Spring-Mail JavaMailSender"
-        web -> zefix     "ZefixService (heute Stub, Phase X echte API)"
-        web -> oci       "BackupService Push + MedienAsset-CDN"
+        // OCI-Zone (primary)
+        web      -> db        "JPA/Hibernate + Flyway" "JDBC"
+        web      -> entra     "OIDC Authorization-Code-Flow mit PKCE"
+        web      -> datatrans "Zahlung initiieren + Webhook empfangen"
+        web      -> smtp      "Spring-Mail JavaMailSender"
+        web      -> zefix     "ZefixService (heute Stub, Phase X echte API)"
+        web      -> oci       "BackupService + StorageService — Instance Principal Auth"
+        web      -> sentry    "BeforeSend-Filter (DSG) + Tag sponsorplatz.umgebung=oci-staging-free"
+
+        // Azure-Zone (warm-DR, Phase 15.3)
+        webAzure -> dbAzure   "JPA/Hibernate + Flyway, VNet-private Connection" "JDBC + SSL"
+        webAzure -> azureBlob "BackupService + StorageService — UAMI Managed Identity"
+        webAzure -> smtp      "Spring-Mail JavaMailSender (gleicher Relay wie OCI)"
+        webAzure -> sentry    "BeforeSend-Filter (DSG) + Tag sponsorplatz.umgebung=azure-staging"
+
+        // Manueller Restore-Pfad heute (Slice 5/6 automatisiert das später)
+        web -> webAzure "Manueller pg_dump + ZIP-Restore via /admin/backups + /admin/datei-backups" "Operator"
 
         // -------------------------------------------------------------------
         // Beziehungen — Komponenten-Ebene

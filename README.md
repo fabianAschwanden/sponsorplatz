@@ -34,9 +34,18 @@ Die Plattform vereint:
 Aktuell: **Phase 13 — Pre-Pilot-Hardening** ⏳ — Phase 10 ist bis auf
 10.4 (jetzt umnummeriert zu Phase 14 = Produktivschaltung) durch.
 Vor dem Cutover stehen 2FA, A11y-auth-Smoke und OIDC-Anbindung an.
-Mahnwesen und echte Zahlungs-Provider-Integration sind in **Phase 15**
+
+**Multi-Cloud DR-Setup vorgezogen** (Phase 15.3): Azure-Staging-Zone
+in Sweden Central läuft parallel zum OCI-Always-Free-Stack — Warm-DR-
+Modus mit eigener CD-Pipeline, App + DB + Files cross-restored. Begleitend
+`audit_log.umgebung` + Sentry-Tag damit Audit/Errors cross-cloud
+zuordenbar bleiben. Slices 5–7 (DNS-Failover, automatische Cross-
+Replication, beidseitiger Smoke) noch offen.
+
+Mahnwesen und echte Zahlungs-Provider-Integration sind in **Phase 15.1/15.2**
 nach dem ersten Pilot-Run angesetzt.
-Architektur statisch durchgesetzt: **15 ArchUnit/Lint-Regeln (ARCH-01..15)**, **551 Tests**, Feature-Folder-Topologie ohne Cycles (Java + Templates parallel strukturiert).
+
+Architektur statisch durchgesetzt: **13 ArchUnit-Regeln (ARCH-01..13)**, **647 Tests**, Feature-Folder-Topologie ohne Cycles (Java + Templates parallel strukturiert).
 
 ### Umgesetzte Features
 
@@ -244,7 +253,10 @@ Die Plattform unterstützt vier Sprachen: **Deutsch**, **Französisch**, **Itali
 | 12 | Customizable Task-Engine (Aufgaben + Sidebar-Badge) | ✓ |
 | **13** | **Pre-Pilot-Hardening — A11y-auth-Smoke, 2FA-TOTP, OIDC-Anbindung** | ⏳ |
 | **14** | **Produktivschaltung — HTTPS, prod-SMTP, SPF/DKIM/DMARC, OCI-Backups, DNS, Pilot-Welle** (war 10.4) | 🔜 |
-| **15** | **Post-Pilot — echte Zahlungs-Provider-Integration, Mahnwesen, MwSt, Abos, …** | 📋 |
+| 15.3 | **Multi-Cloud Azure als Warm-DR (Slices 1–4)** — App-Schicht, Terraform, CD, cross-cloud Restore | ✓ |
+| 15.4 | **Datei-Backup + Restore als ZIP (provider-agnostisch)** + `/admin/datei-backups`-UI | ✓ |
+| 15.3-bonus | **Cross-Cloud-Sync-Schutz** — `audit_log.umgebung` + Sentry-Tag | ✓ |
+| **15.1/.2** | **Post-Pilot — echte Zahlungs-Provider-Integration, Mahnwesen, MwSt, Abos, …** | 📋 |
 
 Vollständig dokumentiert in [`specs/ROADMAP.md`](specs/ROADMAP.md) — die
 „Logische Reihenfolge"-Sektion oben am ROADMAP erklärt die Sequenz

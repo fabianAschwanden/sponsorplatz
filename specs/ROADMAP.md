@@ -9,7 +9,11 @@
 - **Phase 10** (Production-Readiness, ohne 10.4): ✅ 10.1–10.3 + 10.5 fertig
 - **Phase 13** (Pre-Pilot-Hardening): ⏳ aktiv — A11y für auth-Seiten, 2FA, OIDC
 - **Phase 14** (Produktivschaltung, **war 10.4**): 🔜 sobald Phase 13 durch
-- **Phase 15** (Post-Pilot): 📋 geplant — echtes Zahlungs-Provider-Wiring, Mahnwesen
+- **Phase 15** (Post-Pilot): teilweise vorgezogen
+  - 15.1 echtes Zahlungs-Provider-Wiring + 15.2 Mahnwesen: 📋 geplant
+  - 15.3 Multi-Cloud Azure: ⏳ Slices 1–4 (App + Terraform + CD) ✅, Slices 5–7 (DNS-Failover, Cross-Replication, Smoke) offen
+  - 15.4 Datei-Backup + Restore: ✅ inkl. Admin-UI
+  - Cross-Cloud-Sync-Schutz: ✅ `umgebung`-Marker in Audit-Log + Sentry-Tag
 
 ## Logische Reihenfolge
 

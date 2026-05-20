@@ -42,24 +42,37 @@
 
 ### `cloud-free` (OCI Always-Free-VM)
 
-- Erbt von `prod` (`spring.profiles.include=prod`)
+- Erbt von `prod` (via `spring.profiles.group.cloud-free=prod`)
 - Tomcat-Threadpool + HikariCP klein gehalten (1 GB RAM)
 - Mail über externen SMTP-Relay (Mailgun/SES)
 - Forwarded-Headers für Caddy-Reverse-Proxy
 - `STORAGE_PROVIDER=oci` aktiviert OCI Object Storage (siehe Storage-Abschnitt)
 
+### `cloud-azure` (Azure-Staging, Phase 15.3 — Warm-DR)
+
+- Erbt von `prod` (via `spring.profiles.group.cloud-azure=prod`)
+- DB extern: **Azure Database for PostgreSQL Flexible Server** im delegierten VNet — Connection-String über `DB_URL`, kein lokaler Postgres-Container
+- HikariCP-Pool auf das `B1ms`-Connection-Limit gekürzt
+- Storage über **Azure Blob** mit User-Assigned Managed Identity (`AZURE_AUTH_MODE=managed-identity`), Fallback `connection-string` für lokales Testen gegen Azurite
+- Image-Quelle: Azure Container Registry (Pull via MSI, kein Admin-User)
+
 ## Infrastruktur
 
-Vollständige IaC-Doku: [`infra/README.md`](../infra/README.md). Zwei Pfade zur VM:
+Vollständige IaC-Doku: [`infra/README.md`](../infra/README.md). Zwei Cloud-Zonen, drei Pfade:
 
 | Pfad | Wann | Doku |
 |---|---|---|
-| Manuell | Erst-Setup, Debugging | [`infra/staging-free/README.md`](../infra/staging-free/README.md) — VM mit der Hand bootstrappen |
-| Terraform | Reproduzierbar, mehrere Envs | [`infra/envs/staging-free/README.md`](../infra/envs/staging-free/README.md) — VCN + VM + Buckets + IAM via Terraform |
+| Manuell (OCI) | Erst-Setup, Debugging | [`infra/staging-free/README.md`](../infra/staging-free/README.md) — OCI-VM mit der Hand bootstrappen |
+| Terraform (OCI) | Reproduzierbar | [`infra/envs/staging-free/README.md`](../infra/envs/staging-free/README.md) — VCN + VM + Buckets + IAM |
+| Terraform (Azure) | Zweite Zone — Warm-DR | [`infra/envs/azure-staging/README.md`](../infra/envs/azure-staging/README.md) — VNet + VM + Flex-Postgres + ACR + Blob + MSI |
 
 Beim Terraform-Pfad bootstrappt `cloud-init.yaml.tftpl` Docker, schreibt `docker-compose.yml` + `Caddyfile` ins `/opt/sponsorplatz/`-Verzeichnis und startet den Stack via systemd. Spätere App-Updates kommen über die CD-Pipeline (`docker compose pull && up -d`), nicht über Terraform.
 
-Auth zwischen App-VM und Object-Storage läuft über **Instance Principal** — die VM ist Mitglied der Dynamic Group `sponsorplatz-vm-staging-free`, die per IAM-Policy Zugriff auf die Buckets hat. Keine API-Keys auf der VM.
+**Auth zwischen App-VM und Cloud-Storage:**
+- **OCI:** Instance Principal — VM ist Mitglied der Dynamic Group `sponsorplatz-vm-staging-free`, die per IAM-Policy Zugriff auf die Buckets hat
+- **Azure:** User-Assigned Managed Identity — `AcrPull`-Rolle auf den Container Registry + `Storage Blob Data Contributor`-Rolle auf den Storage Account. Cron `/usr/local/bin/sponsorplatz-acr-refresh` auf der VM frischt das ACR-Token alle 2h via MSI auf.
+
+Keine API-Keys auf den VMs.
 
 ## Storage
 
@@ -69,8 +82,15 @@ Auth zwischen App-VM und Object-Storage läuft über **Instance Principal** — 
 |---|---|---|
 | `lokal` (default) | `LokalerStorageService` — Dateisystem unter `sponsorplatz.storage.lokal.basis-pfad` | dev, test, prod-onprem |
 | `oci` | `OciStorageService` — OCI Object Storage über `oci-java-sdk-objectstorage` | cloud-free |
+| `azure` | `AzureBlobStorageService` — Azure Blob Storage über `azure-storage-blob` | cloud-azure |
 
 Aktivierung über `@ConditionalOnProperty` — pro Provider darf nur ein Bean existieren.
+
+**Methoden:**
+- `speichere(MultipartFile, zielpfad)` — Upload-Pfad (User-Forms)
+- `speichereBytes(byte[], contentType, zielpfad)` — Restore-Pfad (Datei-Backup)
+- `loesche(storagePfad)` — Soft-Löschung
+- `ladeAlsResource(storagePfad)` — Auslieferung als HTTP-Resource. Wirft `StorageObjectNotFoundException` (typed) bei 404, damit der Controller einen sauberen HTTP-404 statt 500-Stacktrace liefern kann (siehe `MedienController.ausliefern`).
 
 ### OCI-Auth (nur wenn `provider=oci`)
 
@@ -79,15 +99,39 @@ Aktivierung über `@ConditionalOnProperty` — pro Provider darf nur ein Bean ex
 | `instance` (default) | `InstancePrincipalsAuthenticationDetailsProvider` | OCI-VMs ohne Credentials — Dynamic Group + Policy |
 | `config` | `ConfigFileAuthenticationDetailsProvider` | Lokales Testen mit `~/.oci/config` |
 
-Buckets werden **nicht** vom Code angelegt — Erstellung + Versioning + Lifecycle-Rules sind Infra-Verantwortung (Phase 3 Terraform).
+### Azure-Auth (nur wenn `provider=azure`)
+
+| `sponsorplatz.storage.azure.auth-mode` | Provider | Wofür |
+|---|---|---|
+| `managed-identity` (default) | `DefaultAzureCredentialBuilder` mit UAMI-Client-ID | Azure-VM ohne Credentials — Managed Identity an VM gehängt |
+| `connection-string` | Connection-String aus `sponsorplatz.storage.azure.connection-string` | Lokales Testen gegen Azurite-Emulator oder Storage-Account-Key |
+
+Für die Test-Bypass-Problematik (Azure-SDK-Klassen sind `final` → mit subclass-Mockito nicht stubbar) gibt es eine schmale `AzureBlobOperations`-Adapter-Schnittstelle. Die Service-Schicht wirft die package-eigenen `AzureBlobNotFoundException` + `AzureBlobOperationException`, kein Azure-SDK-Typ leakt über den Adapter hinaus.
+
+Buckets/Container werden **nicht** vom Code angelegt — Erstellung + Versioning + Lifecycle-Rules sind Infra-Verantwortung (Terraform-Module `infra/envs/staging-free/` + `infra/envs/azure-staging/`).
 
 ## Backups
 
+Zwei parallele Backup-Pfade — DB und Datei-Uploads, beide unabhängig konfiguriert.
+
+### DB-Backup (`BackupService` + `BackupRestoreService`)
+
 `BackupService` erstellt täglich (`@Scheduled cron=0 0 2 * * *`) einen DB-Dump:
 - H2 (dev): `SCRIPT TO`
-- PostgreSQL (prod/cloud-free): `pg_dump`
+- PostgreSQL (prod/cloud-free/cloud-azure): `pg_dump`
 
-Wenn ein optionaler `BackupCloudUploader` im Context registriert ist (z.B. `OciBackupCloudUploader` bei `provider=oci`), wird das lokale Backup zusätzlich in einen Cloud-Bucket hochgeladen. Upload-Fehler eskalieren **nicht** — das lokale Backup gilt als primärer Schutzpfad.
+Wenn ein optionaler `BackupCloudUploader` im Context registriert ist (`OciBackupCloudUploader` bei `provider=oci`, `AzureBackupCloudUploader` bei `provider=azure`), wird das lokale Backup zusätzlich in einen Cloud-Bucket hochgeladen. Upload-Fehler eskalieren **nicht** — das lokale Backup gilt als primärer Schutzpfad.
+
+`BackupRestoreService.restore(byte[], ausgefuehrtVon)` spielt einen Dump aus dem Admin-UI zurück (`POST /admin/backups/restore`, RESTORE-Bestätigung pflicht).
+
+### Datei-Backup (`DateiBackupService` + `DateiBackupRestoreService`, Phase 15.4)
+
+Parallel zum DB-Backup: alle in `MedienAsset` referenzierten Storage-Objekte werden in ein **ZIP-Archiv** gepackt (`sponsorplatz_uploads_<ts>.zip`), in dem der ZIP-Entry-Name dem Storage-Pfad entspricht. Damit ist das Archiv cross-cloud transportabel (OCI ↔ Azure).
+
+- `DateiBackupService.erstelleDateiBackup()` walkt das `MedienAssetRepository`, streamt jede Datei via `StorageService.ladeAlsResource(...)` in den `ZipOutputStream`. Orphaned Records (Storage-404) werden geloggt + im Audit-Detail dokumentiert, der Backup-Lauf bricht nicht ab.
+- `DateiBackupRestoreService.restore(byte[], ausgefuehrtVon)` liest jeden ZIP-Entry, prüft Path-Traversal, leitet Content-Type aus Datei-Endung ab (`URLConnection.guessContentTypeFromName`) und ruft `StorageService.speichereBytes(...)`. Bestehende Storage-Objekte werden überschrieben.
+- UI: `/admin/datei-backups` (Liste + Create + Download + Delete + Restore-Form mit RESTORE-Bestätigung).
+- Audit-Aktionen: `DATEI_BACKUP_ERSTELLT`, `DATEI_BACKUP_RESTORED`.
 
 ## Routen-Tabelle
 
@@ -256,8 +300,8 @@ src/main/java/ch/sponsorplatz/
 └── home/                  # HomeController, InfoController (Impressum/DSG)
 
 src/main/resources/
-├── application*.properties               # default + dev + prod + demo
-├── db/migration/V*.sql                   # Flyway (V1..V30)
+├── application*.properties               # default + dev + prod + cloud-free + cloud-azure
+├── db/migration/V*.sql                   # Flyway (V1..V42)
 ├── templates/                            # ~50 Thymeleaf-Templates (DE/FR/IT/EN i18n)
 ├── static/                               # CSS, Bilder
 └── messages_{de_CH,fr_CH,it_CH,en}.properties   # i18n-Bundles, ~600 Keys
@@ -296,5 +340,17 @@ docker compose --profile app up --build
 
 ## Cloud-Deployment
 
-Ziel: **Oracle Cloud Infrastructure (OCI)** — Container Instances + Managed PostgreSQL + IAM (OIDC) + Object Storage + Vault.
-Detail-Spec folgt in Phase 1: `specs/CLOUD_DEPLOYMENT.md`.
+**Zwei Zonen parallel** seit Phase 15.3 — Architektur-Entscheidung in
+[`docs/adr/0009-multi-cloud-azure-als-dr-zone.md`](../docs/adr/0009-multi-cloud-azure-als-dr-zone.md):
+
+| Zone | Rolle | Hostname | Profil |
+|---|---|---|---|
+| **OCI Always-Free** (eu-zurich-1) | Primary | `sponsorplatz.for-better.biz` | `cloud-free` |
+| **Azure Sweden Central** | Warm-DR | `sponsorplatz.for-the.biz` | `cloud-azure` |
+
+Beide Stacks:
+- Eigene CD-Pipeline (`.github/workflows/cd-staging-free.yml` + `cd-azure-staging.yml`), parallel-unabhängig — Failure auf einer Cloud blockiert die andere nicht.
+- Eigene DB + eigener Object/Blob-Storage. DB-Sync OCI→Azure heute via manuellen `pg_dump`-Restore über `/admin/backups`, Files via ZIP-Restore über `/admin/datei-backups`.
+- Audit-Einträge tragen `umgebung`-Marker (`oci-staging-free` / `azure-staging`), Sentry-Events tragen Tag `sponsorplatz.umgebung` — Cross-Cloud-Provenienz ist im UI + Dashboard sichtbar.
+
+Status der Multi-Cloud-Slices: siehe [`specs/ROADMAP.md`](ROADMAP.md) §15.3 — App-Schicht + Terraform + CD ✓, DNS-Failover via Cloudflare + automatische Cross-Replication + beidseitiger Smoke noch offen (Slices 5–7).

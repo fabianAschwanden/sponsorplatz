@@ -39,6 +39,12 @@
 | V34 | `rechnung.storno_grund` | 11.11 ✓ |
 | V35 | `vertrag.gekuendigt_am` + `kuendigungs_grund` (State-Machine sauber) | 11.11 ✓ |
 | V36 | `aufgaben_definition` + `aufgabe` (customizable Task-Engine, fünf System-Seed-Defs) | 12 ✓ |
+| V37 | `plattform_einstellungen.aktiver_style` (Style-Switcher: default ↔ css-ch) | 11 ✓ |
+| V38 | `aufgabe` Link-Template-Felder zur `/meine-anfragen`-Sicht | 12 ✓ |
+| V39 | Backlog-Seed: 2FA (Priorität HOCH) | 13.2 ✓ |
+| V40 | Backlog-Seed: A11y-Smoke für authentifizierte Seiten | 13.1 ✓ |
+| V41 | `audit_log.umgebung` (Cross-Cloud-Sync-Schutz, NOT NULL DEFAULT 'unknown') + Index | 15.3 ✓ |
+| V42 | Backfill `audit_log.umgebung='unknown' → 'oci-staging-free'` (Pre-Multi-Cloud-Daten) | 15.3 ✓ |
 
 > **Hinweis:** V22 wurde reserviert für die Postgres-`tsvector`-Migration (Phase 5+). Die Datei ist für H2 nicht relevant und liegt nur als Postgres-spezifische Variante vor (siehe TECHNISCHE_SPEZIFIKATION.md → Volltextsuche).
 
@@ -200,7 +206,7 @@ Die untenstehenden Tabellen sind ab V5 stabil im Code; Field-Detail-Dokumentatio
 | `vertrag` | `Vertrag` | `anfrage/` | Sponsoring-Vertrag, generiert aus angenommener Anfrage (V16); PDF-fähig. |
 | `rechnung` | `Rechnung` | `anfrage/` | QR-Bill-Rechnung aus Vertrag (V17), `status` OFFEN/BEZAHLT/STORNIERT. |
 | `benachrichtigung` | `Benachrichtigung` | `benachrichtigung/` | In-App-Glocke (V19), Typen NEUE_ANFRAGE/ANGENOMMEN/ABGELEHNT/NEUE_NACHRICHT/MITGLIED_HINZUGEFUEGT/ORG_VERIFIZIERT/ORG_SUSPENDIERT/EINLADUNG_ERHALTEN/SYSTEM. |
-| `audit_log` | `AuditLog` | `audit/` | Plattform-Aktionen (V14), async befüllt. |
+| `audit_log` | `AuditLog` | `audit/` | Plattform-Aktionen (V14), async befüllt. Spalte `umgebung` (V41, NOT NULL) trägt die Quell-Umgebung — `lokal` / `oci-staging-free` / `azure-staging` — zur Auflösung der Mehrdeutigkeit nach Cross-Cloud-DB-Sync. AuditService liest `sponsorplatz.umgebung` und schreibt sie pro Insert. |
 | `feature_backlog` | `FeatureBacklog` | `admin/` | Interner Ideen-Tracker (V21), V27 seedet OIDC-Item. |
 | `plattform_einstellungen` | `PlattformEinstellungen` | `shared/einstellungen/` | Singleton-Row mit SMTP-Settings (V15) — DB > ENV > leer. |
 | `aufgaben_definition` | `AufgabenDefinition` | `aufgabe/` | „Workflow-Vorlage" (V36, Phase 12): `trigger_entity_typ` ENUM (ORG/ANFRAGE/VERTRAG/RECHNUNG/PROJEKT), `trigger_status` + optional `ziel_status` (freie Strings, weil pro Domain-Aggregat eigene Status-Enums), `assignee_regel` ENUM (PLATFORM_ADMIN, ORG_MITGLIEDER, ANFRAGE_EMPFAENGER_ORG, ANFRAGE_ANFRAGENDER_ORG, VERTRAG_VEREIN_ORG, VERTRAG_SPONSOR_ORG, RECHNUNG_VEREIN_ORG), `aktiv` + `system_definition` (V36-Seeds nicht löschbar). |

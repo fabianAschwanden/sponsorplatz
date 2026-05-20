@@ -51,23 +51,34 @@ Ernährung, Wellness, Selbsthilfe, Patientenorganisationen — siehe `Branche`-E
 - 14.2 Cutover-Validation (Prod-Smoke, OCIR-Retention, Rollback-Pfad)
 - 14.3 Pilot-Welle (5 Vereine + 3 Sponsoren onboarden)
 
-**Phase 15 — Post-Pilot — Wachstum:** 📋 nach erstem Pilot-Run
-- 15.1 Echte Zahlungs-Provider-Integration (Stripe/PostFinance/Datatrans)
-- 15.2 Mahnwesen (Mahnstufen, CH-Inkasso-Anbindung)
-- 15.3 Weitere Themen (MwSt, Abos, Public API, PWA, Multi-Tenant-Verbände)
+**Phase 15 — Post-Pilot — Wachstum:** teilweise vorgezogen (Ops-Themen, die das laufende DR-Setup brauchten)
+- 15.1 Echte Zahlungs-Provider-Integration: 📋 geplant
+- 15.2 Mahnwesen (Mahnstufen, CH-Inkasso-Anbindung): 📋 geplant
+- 15.3 **Multi-Cloud — Azure als zweite Zone**: ⏳ Slices 1–4 ✅
+  - Slice 1+2: `AzureBlobStorageService` + `AzureBackupCloudUploader` mit Seam-Interface gegen final-class-SDK
+  - Slice 3: Terraform-Modul `infra/envs/azure-staging/` (VNet + Flex-Postgres PG17 + ACR + Blob + UAMI) + Spring-Profil `cloud-azure`
+  - Slice 4: `cd-azure-staging.yml` mit ACR-Push via SP, SSH-Deploy mit MSI-Refresh, Smoke gegen `/login`
+  - **Live in Sweden Central** (Sub-Restrictions in `switzerlandnorth`), DB cross-cloud restored
+  - Slices 5–7 (DNS-Failover via Cloudflare, automatische Cross-Replication, beidseitiger Smoke): noch offen
+- 15.4 **Datei-Backup + Restore** (Sponsoring-Files-Roundtrip): ✅ ZIP-basiert, provider-agnostisch, `/admin/datei-backups`
+- Cross-Cloud-Sync-Schutz: ✅ `audit_log.umgebung` (V41) + Backfill (V42) + Sentry-Tag `sponsorplatz.umgebung`
 
-Architektur-Disziplin ist statisch durchgesetzt: **13 ArchUnit-Regeln** (`ArchitekturRegelnTest`, ARCH-01..13), **545+ Tests** grün, **Feature-Folder-Topologie** ohne Cycles (Java + Templates parallel strukturiert).
+Architektur-Disziplin ist statisch durchgesetzt: **13 ArchUnit-Regeln** (`ArchitekturRegelnTest`, ARCH-01..13), **647+ Tests** grün, **Feature-Folder-Topologie** ohne Cycles (Java + Templates parallel strukturiert).
 
 Vollständige Roadmap in [`specs/ROADMAP.md`](specs/ROADMAP.md), detaillierte Phase-Pläne in `docs/` (siehe unten).
 
 ### Zuletzt umgesetzt
 
-- **Templates strukturiert nach Bounded-Context** — 47 Templates aus dem flachen Top-Level in Feature-Unterordner (`anfrage/`, `organisation/`, `projekt/`, …) verschoben, analog zur Java-Paket-Struktur
-- **`/kontakt`-Seite** als einziger anonymer Anfrage-Funnel; alles ausser Home + Auth-Flows hinter Login
-- **Sentry-Hardening** — Browser-SDK in allen Templates eingebunden, SRI-Hash, SentryAppender für `log.error(...)`
+- **Multi-Cloud Azure-Staging** — zweite Zone in Sweden Central produktiv, eigene CD-Pipeline, DB + Files aus OCI cross-restored (ADR-0009)
+- **Datei-Backup + Restore als ZIP** — `/admin/datei-backups`, walkt MedienAsset, schreibt provider-agnostisch via `StorageService.speichereBytes(...)`
+- **`umgebung`-Marker** — jeder Audit-Eintrag + jedes Sentry-Event trägt die Quell-Cloud, damit nach DB-Sync klar ist wo das Ereignis entstand
+- **`StorageObjectNotFoundException`** — typed Exception, `MedienController.ausliefern` liefert 404 statt 500-Stacktrace bei orphaned Asset
+- **Tomcat 10.1.55 + Netty 4.1.133** — CVE-Patches (CRITICAL + HIGH) auf Build aktualisiert
+- **Templates strukturiert nach Bounded-Context** — 47 Templates aus dem flachen Top-Level in Feature-Unterordner verschoben
+- **`/kontakt`-Seite** als einziger anonymer Anfrage-Funnel
+- **Sentry-Hardening** — Browser-SDK, SRI-Hash, SentryAppender für `log.error(...)`
 - **ARCH-02 + ARCH-06** komplett aufgelöst (View-DTO-Pflicht + Feature-Cycles-DAG)
 - **Aufgaben-Sidebar-Badge** + Task-Engine
-- **AGB-Seite** + Datenschutz/Impressum-Hygiene (DSG)
 
 ### Nächste Iteration: Phase 13 (Pre-Pilot-Hardening)
 
