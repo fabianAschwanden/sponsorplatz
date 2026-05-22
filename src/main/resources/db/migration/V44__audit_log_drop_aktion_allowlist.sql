@@ -1,0 +1,24 @@
+-- V44: CHK_AUDIT_AKTION-Constraint droppen.
+--
+-- V14 hat eine CHECK-Constraint angelegt mit einer hartcodierten
+-- Allowlist gültiger 'aktion'-Werte:
+--   (ERSTELLT, AKTUALISIERT, ..., BACKUP_ERSTELLT, EINLADUNG_GESENDET,
+--    ANFRAGE_ANGENOMMEN, ANFRAGE_ABGELEHNT)
+--
+-- Seit dann sind in 'AuditAktion.java' viele neue Aktionen dazugekommen:
+--   VERTRAG_ERSTELLT, VERTRAG_UNTERZEICHNET, VERTRAG_GEKUENDIGT,
+--   RECHNUNG_ERSTELLT, RECHNUNG_BEZAHLT, RECHNUNG_STORNIERT,
+--   RECHNUNG_MAHNUNG_VERSENDET, RECHNUNG_PDF_HERUNTERGELADEN,
+--   DATEI_BACKUP_ERSTELLT, DATEI_BACKUP_RESTORED,
+--   TOTP_AKTIVIERT, TOTP_DEAKTIVIERT, TOTP_BACKUP_CODES_NEU
+--
+-- Die DB-Constraint wurde nie nachgezogen — Inserts dieser Aktionen
+-- werden mit "Bedingung verletzt: CHK_AUDIT_AKTION" abgelehnt. Im
+-- Async-Thread fällt das nur als ERROR im Log auf, nicht im Browser.
+--
+-- Lösung: Constraint entfernen. Die Java-Klasse AuditAktion ist die
+-- einzige Source of Truth — eine doppelte Pflege im SQL wäre brittle
+-- (jede neue Aktion bräuchte Schema-Migration) und bringt keinen Schutz
+-- (die App schreibt nichts ausserhalb der Konstanten).
+
+ALTER TABLE audit_log DROP CONSTRAINT IF EXISTS chk_audit_aktion;
