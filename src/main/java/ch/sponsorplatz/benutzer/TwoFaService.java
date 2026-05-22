@@ -115,6 +115,46 @@ public class TwoFaService {
     }
 
     /**
+     * Prüft beim Login-Flow den eingegebenen Code — zuerst als TOTP, dann
+     * als Backup-Code. Bei Backup-Treffer wird der Code aus der Liste
+     * entfernt (single-use). Bei Treffer wird ein {@link TwoFaEvents.TwoFaLoginOkEvent}
+     * publiziert, bei Miss ein {@link TwoFaEvents.TwoFaLoginFailEvent} mit
+     * der Versuch-Nummer.
+     *
+     * @param versuchNummer 1-basierter Zähler des aktuellen Versuchs (Caller hält Session-Counter)
+     * @return {@link LoginVerifyResult} mit Treffer-Flag + Backup-Code-Flag (für UI/Audit)
+     */
+    public LoginVerifyResult verifyForLogin(String email, String code, int versuchNummer) {
+        AppUser user = ladeOderWirf(email);
+        if (!user.hatTotpAktiv()) {
+            return LoginVerifyResult.NICHT_AKTIV;
+        }
+        if (totpService.verifyCode(user.getTotpSecret(), code)) {
+            events.publishEvent(new TwoFaEvents.TwoFaLoginOkEvent(user.getId(), user.getEmail(), false));
+            return new LoginVerifyResult(true, false);
+        }
+        TotpService.BackupCodeResult bcr = totpService.consumeBackupCode(user.getTotpBackupCodesHashed(), code);
+        if (bcr.matched()) {
+            user.setTotpBackupCodesHashed(bcr.neuesJson());
+            repository.save(user);
+            events.publishEvent(new TwoFaEvents.TwoFaLoginOkEvent(user.getId(), user.getEmail(), true));
+            return new LoginVerifyResult(true, true);
+        }
+        events.publishEvent(new TwoFaEvents.TwoFaLoginFailEvent(user.getId(), user.getEmail(), versuchNummer));
+        return LoginVerifyResult.MISS;
+    }
+
+    /**
+     * Publiziert das {@link TwoFaEvents.TwoFaLockoutEvent} — vom Controller
+     * aufgerufen, wenn der Session-Counter 5 erreicht und die Session
+     * invalidiert wird.
+     */
+    public void protokolliereLockout(String email) {
+        AppUser user = ladeOderWirf(email);
+        events.publishEvent(new TwoFaEvents.TwoFaLockoutEvent(user.getId(), user.getEmail()));
+    }
+
+    /**
      * Erzeugt einen frischen Satz Backup-Codes. Verlangt einen gültigen
      * TOTP-Code. Alte Codes werden ersetzt (alle ungültig).
      */
@@ -152,5 +192,15 @@ public class TwoFaService {
                 new TwoFaAktivierungsErgebnis(false, false, List.of());
         public static final TwoFaAktivierungsErgebnis BEREITS_AKTIV =
                 new TwoFaAktivierungsErgebnis(false, true, List.of());
+    }
+
+    /**
+     * Ergebnis von {@link #verifyForLogin}: matched=true wenn Code gültig war,
+     * backupCodeGenutzt=true wenn der Treffer über die Backup-Code-Liste lief
+     * (für UI-Hinweis "noch N Codes übrig" + Audit-Differenzierung).
+     */
+    public record LoginVerifyResult(boolean matched, boolean backupCodeGenutzt) {
+        public static final LoginVerifyResult MISS = new LoginVerifyResult(false, false);
+        public static final LoginVerifyResult NICHT_AKTIV = new LoginVerifyResult(false, false);
     }
 }

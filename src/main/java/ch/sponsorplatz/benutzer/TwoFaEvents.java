@@ -19,5 +19,12 @@ public final class TwoFaEvents {
 
     public record TwoFaBackupCodesNeuEvent(UUID userId, String email) {}
 
+    // Login-Flow (Slice B)
+    public record TwoFaLoginOkEvent(UUID userId, String email, boolean backupCodeGenutzt) {}
+
+    public record TwoFaLoginFailEvent(UUID userId, String email, int versuchNummer) {}
+
+    public record TwoFaLockoutEvent(UUID userId, String email) {}
+
     private TwoFaEvents() {}
 }

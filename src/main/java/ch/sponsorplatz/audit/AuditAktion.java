@@ -24,6 +24,10 @@ public final class AuditAktion {
     public static final String TOTP_AKTIVIERT = "TOTP_AKTIVIERT";
     public static final String TOTP_DEAKTIVIERT = "TOTP_DEAKTIVIERT";
     public static final String TOTP_BACKUP_CODES_NEU = "TOTP_BACKUP_CODES_NEU";
+    public static final String TOTP_LOGIN_OK = "TOTP_LOGIN_OK";
+    public static final String TOTP_LOGIN_FAIL = "TOTP_LOGIN_FAIL";
+    public static final String TOTP_BACKUP_CODE_GENUTZT = "TOTP_BACKUP_CODE_GENUTZT";
+    public static final String LOGIN_2FA_LOCKOUT = "LOGIN_2FA_LOCKOUT";
     public static final String EINLADUNG_GESENDET = "EINLADUNG_GESENDET";
     public static final String ANFRAGE_ANGENOMMEN = "ANFRAGE_ANGENOMMEN";
     public static final String ANFRAGE_ABGELEHNT = "ANFRAGE_ABGELEHNT";

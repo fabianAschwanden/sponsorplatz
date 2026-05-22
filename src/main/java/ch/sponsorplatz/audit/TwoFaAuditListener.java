@@ -41,4 +41,25 @@ public class TwoFaAuditListener {
         auditService.protokolliereMitBenutzer(AuditAktion.TOTP_BACKUP_CODES_NEU, BEREICH,
                 ev.userId(), ev.email(), ev.userId(), ZIEL_TYP, null);
     }
+
+    @EventListener
+    public void onLoginOk(TwoFaEvents.TwoFaLoginOkEvent ev) {
+        String aktion = ev.backupCodeGenutzt() ? AuditAktion.TOTP_BACKUP_CODE_GENUTZT : AuditAktion.TOTP_LOGIN_OK;
+        auditService.protokolliereMitBenutzer(aktion, BEREICH,
+                ev.userId(), ev.email(), ev.userId(), ZIEL_TYP, null);
+    }
+
+    @EventListener
+    public void onLoginFail(TwoFaEvents.TwoFaLoginFailEvent ev) {
+        auditService.protokolliereMitBenutzer(AuditAktion.TOTP_LOGIN_FAIL, BEREICH,
+                ev.userId(), ev.email(), ev.userId(), ZIEL_TYP,
+                "Versuch " + ev.versuchNummer() + "/5");
+    }
+
+    @EventListener
+    public void onLockout(TwoFaEvents.TwoFaLockoutEvent ev) {
+        auditService.protokolliereMitBenutzer(AuditAktion.LOGIN_2FA_LOCKOUT, BEREICH,
+                ev.userId(), ev.email(), ev.userId(), ZIEL_TYP,
+                "Session terminate nach 5 Fehlversuchen");
+    }
 }

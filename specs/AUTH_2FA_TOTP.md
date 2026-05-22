@@ -140,5 +140,5 @@ POST /login (Username + Passwort)
 ## Status
 
 - [x] Slice A — Schema + TotpService + Setup-Flow + DIP-Audit-Events (AUTH-2FA-01..09, AUTH-2FA-S-01..06)
-- [ ] Slice B — Login-Integration (AUTH-2FA-10..11)
+- [x] Slice B — Login-Integration: SuccessHandler-Stash + `/login/2fa` + Lockout (AUTH-2FA-S-07..11, AUTH-2FA-10..11)
 - [ ] Slice C — PLATFORM_ADMIN-Pflicht + Admin-Reset (AUTH-2FA-12..13)

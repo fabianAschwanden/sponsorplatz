@@ -122,6 +122,77 @@ class TwoFaServiceTest {
     }
 
     @Test
+    @DisplayName("AUTH-2FA-S-07: verifyForLogin — TOTP-Hit publiziert LoginOk(backup=false)")
+    void verifyForLoginTotpHit() throws Exception {
+        String secret = totpService.generateSecret();
+        user.setTotpSecret(secret);
+        user.setTotpAktiviertAm(Instant.now());
+        user.setTotpBackupCodesHashed("[]");
+        String code = totpService.generateCodeFor(secret, System.currentTimeMillis() / 1000);
+
+        TwoFaService.LoginVerifyResult result = service.verifyForLogin(EMAIL, code, 1);
+
+        assertThat(result.matched()).isTrue();
+        assertThat(result.backupCodeGenutzt()).isFalse();
+
+        ArgumentCaptor<Object> ev = ArgumentCaptor.forClass(Object.class);
+        verify(events).publishEvent(ev.capture());
+        TwoFaEvents.TwoFaLoginOkEvent ok = (TwoFaEvents.TwoFaLoginOkEvent) ev.getValue();
+        assertThat(ok.backupCodeGenutzt()).isFalse();
+    }
+
+    @Test
+    @DisplayName("AUTH-2FA-S-08: verifyForLogin — Backup-Code-Hit verbraucht Code, publiziert LoginOk(backup=true)")
+    void verifyForLoginBackupHit() {
+        String secret = totpService.generateSecret();
+        TotpService.BackupCodeBatch batch = totpService.generateBackupCodes();
+        user.setTotpSecret(secret);
+        user.setTotpAktiviertAm(Instant.now());
+        user.setTotpBackupCodesHashed(batch.hashedJson());
+        String backupCode = batch.codes().get(3);
+
+        TwoFaService.LoginVerifyResult result = service.verifyForLogin(EMAIL, backupCode, 1);
+
+        assertThat(result.matched()).isTrue();
+        assertThat(result.backupCodeGenutzt()).isTrue();
+        // Code wurde verbraucht — zweiter Hit darf nicht klappen
+        TwoFaService.LoginVerifyResult zweiter = service.verifyForLogin(EMAIL, backupCode, 2);
+        assertThat(zweiter.matched()).isFalse();
+    }
+
+    @Test
+    @DisplayName("AUTH-2FA-S-09: verifyForLogin — Miss publiziert LoginFail mit Versuch-Nummer")
+    void verifyForLoginMiss() {
+        String secret = totpService.generateSecret();
+        user.setTotpSecret(secret);
+        user.setTotpAktiviertAm(Instant.now());
+        user.setTotpBackupCodesHashed("[]");
+
+        TwoFaService.LoginVerifyResult result = service.verifyForLogin(EMAIL, "000000", 3);
+
+        assertThat(result.matched()).isFalse();
+        ArgumentCaptor<Object> ev = ArgumentCaptor.forClass(Object.class);
+        verify(events).publishEvent(ev.capture());
+        TwoFaEvents.TwoFaLoginFailEvent fail = (TwoFaEvents.TwoFaLoginFailEvent) ev.getValue();
+        assertThat(fail.versuchNummer()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("AUTH-2FA-S-10: verifyForLogin — User ohne aktives 2FA → MISS, kein Event")
+    void verifyForLoginOhneAktivesTotp() {
+        TwoFaService.LoginVerifyResult result = service.verifyForLogin(EMAIL, "123456", 1);
+        assertThat(result.matched()).isFalse();
+        verify(events, never()).publishEvent(any());
+    }
+
+    @Test
+    @DisplayName("AUTH-2FA-S-11: protokolliereLockout publiziert TwoFaLockoutEvent")
+    void protokolliereLockout() {
+        service.protokolliereLockout(EMAIL);
+        verify(events).publishEvent(any(TwoFaEvents.TwoFaLockoutEvent.class));
+    }
+
+    @Test
     @DisplayName("AUTH-2FA-S-06: regeneriereBackupCodes — falscher Code = empty, korrekt = 10 frische Codes")
     void regeneriereBackupCodes() throws Exception {
         String secret = totpService.generateSecret();

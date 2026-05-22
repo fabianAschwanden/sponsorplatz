@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2-Faktor-Authentifizierung — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="public-body">
+
+<a th:replace="~{fragments/a11y :: skip-link}"></a>
+
+<header class="public-topbar">
+    <div class="public-topbar-inner">
+        <a class="public-logo" th:href="@{/}">
+            <img class="dash-logo-icon" th:src="@{/images/logo/icon-ringe.svg}" alt="">
+            <span>Sponsorplatz</span>
+        </a>
+    </div>
+</header>
+
+<main class="public-main" id="inhalt">
+    <section class="public-auth-card" style="max-width:420px;">
+        <h1 style="margin-top:0;">Zwei-Faktor-Code</h1>
+        <p class="app-muted">
+            Bitte gib den aktuellen 6-stelligen Code aus deiner Authenticator-
+            App ein. Falls du keinen Zugriff darauf hast, kannst du einen
+            deiner 8-stelligen Backup-Codes verwenden.
+        </p>
+
+        <div th:if="${param.error}" class="app-meldung fehler" style="margin-bottom:1rem;">
+            Code falsch. Verbleibende Versuche: <strong th:text="${verbleibend}">5</strong>.
+        </div>
+
+        <form th:action="@{/login/2fa}" method="post" class="public-auth-form">
+            <label for="code">Code</label>
+            <input type="text" id="code" name="code" required autocomplete="one-time-code"
+                   inputmode="text" minlength="6" maxlength="8" autofocus
+                   placeholder="123456 oder XXXXXXXX"
+                   style="font-size:1.4rem; letter-spacing:0.3em; padding:0.6rem; text-align:center;">
+
+            <button type="submit" class="app-btn" style="margin-top:1rem;">Anmelden</button>
+        </form>
+
+        <p class="app-muted" style="margin-top:1.5rem; font-size:0.85rem;">
+            <a th:href="@{/logout}">Abbrechen</a>
+        </p>
+    </section>
+</main>
+
+<th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
+</body>
+</html>

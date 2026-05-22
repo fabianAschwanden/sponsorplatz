@@ -21,7 +21,8 @@ public class BenutzerSecurityConfig {
 
     @Bean
     public AuthenticationSuccessHandler loginSuccessHandler(LoginBruteForceSchutz bruteForceSchutz,
-            AppUserRepository appUserRepository) {
-        return new LoginSuccessHandler(bruteForceSchutz, appUserRepository);
+            AppUserRepository appUserRepository,
+            TwoFaService twoFaService) {
+        return new TwoFaAuthenticationSuccessHandler(bruteForceSchutz, appUserRepository, twoFaService);
     }
 }

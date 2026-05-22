@@ -40,9 +40,18 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
     public void onAuthenticationSuccess(HttpServletRequest request,
             HttpServletResponse response,
             Authentication authentication) throws IOException, ServletException {
+        postLoginBookkeeping(authentication, response);
+        super.onAuthenticationSuccess(request, response, authentication);
+    }
+
+    /**
+     * Hook für Subklassen: setzt Brute-Force-Zähler zurück + sync Sprache.
+     * Wird auch von der 2FA-Variante aufgerufen, bevor die Authentication
+     * für den 2.-Faktor-Schritt stashed wird.
+     */
+    protected final void postLoginBookkeeping(Authentication authentication, HttpServletResponse response) {
         bruteForceSchutz.erfolgreichenLoginRegistrieren(authentication.getName());
         synchronisiereSprache(authentication, response);
-        super.onAuthenticationSuccess(request, response, authentication);
     }
 
     private void synchronisiereSprache(Authentication auth, HttpServletResponse response) {
