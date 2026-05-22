@@ -61,6 +61,24 @@ public class AppUser {
     @Column(name = "reset_token_gueltig_bis")
     private Instant resetTokenGueltigBis;
 
+    /**
+     * TOTP-Secret (Base32-encoded, RFC 6238). NULL = 2FA nicht aktiv.
+     * Klartext gespeichert — DB-Vollkompromittierung wäre für Passwörter
+     * eh Game-Over (siehe specs/AUTH_2FA_TOTP.md Trade-offs).
+     */
+    @Column(name = "totp_secret", length = 64)
+    private String totpSecret;
+
+    @Column(name = "totp_aktiviert_am")
+    private Instant totpAktiviertAm;
+
+    /**
+     * BCrypt-Hashes der unverbrauchten Backup-Codes als JSON-Array.
+     * Verbrauchter Code wird aus dem Array entfernt (hard delete).
+     */
+    @Column(name = "totp_backup_codes_hashed", columnDefinition = "TEXT")
+    private String totpBackupCodesHashed;
+
     @Column(name = "registriert_am", nullable = false, updatable = false)
     private Instant registriertAm;
 
@@ -145,6 +163,17 @@ public class AppUser {
 
     public Instant getResetTokenGueltigBis() { return resetTokenGueltigBis; }
     public void setResetTokenGueltigBis(Instant resetTokenGueltigBis) { this.resetTokenGueltigBis = resetTokenGueltigBis; }
+
+    public String getTotpSecret() { return totpSecret; }
+    public void setTotpSecret(String totpSecret) { this.totpSecret = totpSecret; }
+
+    public Instant getTotpAktiviertAm() { return totpAktiviertAm; }
+    public void setTotpAktiviertAm(Instant totpAktiviertAm) { this.totpAktiviertAm = totpAktiviertAm; }
+
+    public String getTotpBackupCodesHashed() { return totpBackupCodesHashed; }
+    public void setTotpBackupCodesHashed(String totpBackupCodesHashed) { this.totpBackupCodesHashed = totpBackupCodesHashed; }
+
+    public boolean hatTotpAktiv() { return totpSecret != null && totpAktiviertAm != null; }
 
     public Instant getRegistriertAm() { return registriertAm; }
     public void setRegistriertAm(Instant registriertAm) { this.registriertAm = registriertAm; }

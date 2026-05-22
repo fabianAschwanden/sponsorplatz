@@ -644,6 +644,32 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **AUDIT-05** | `AuditServiceTest` | `protokolliereMitBenutzer` setzt `umgebung` ebenfalls |
 | **VIEW-AUDIT-01** | `AuditLogViewTest` | `AuditLogView.von` mappt `umgebung` inkl. anderer Felder |
 
+### 2-Faktor-Authentifizierung TOTP (AUTH-2FA) — Phase 13.2 Slice A
+
+> Spec [`specs/AUTH_2FA_TOTP.md`](AUTH_2FA_TOTP.md). Slice A deckt
+> TOTP-Setup, Backup-Codes + Audit-Eventing ab. Slice B (Login-Flow) +
+> Slice C (Admin-Pflicht + Reset) folgen separat.
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **AUTH-2FA-01** | `TotpServiceTest` | `generateSecret` liefert Base32-konformes ≥ 32-Zeichen-Secret |
+| **AUTH-2FA-02** | `TotpServiceTest` | `verifyCode` akzeptiert aktuellen Code, lehnt falschen + leeren + null ab |
+| **AUTH-2FA-03** | `TotpServiceTest` | Replay-Window ±1 Step (30s) — −30s akzeptiert, −60s abgelehnt |
+| **AUTH-2FA-04** | `TotpServiceTest` | `generateBackupCodes` liefert 10 unique 8-stellige Codes, BCrypt-Hashes als JSON serialisiert |
+| **AUTH-2FA-05** | `TotpServiceTest` | `consumeBackupCode` entfernt verwendeten Code, Wiederverwendung schlägt fehl |
+| **AUTH-2FA-S-01** | `TwoFaServiceTest` | `findStatus` liefert `aktiv=false` ohne Secret |
+| **AUTH-2FA-S-02** | `TwoFaServiceTest` | `bereiteSetupVor` liefert frisches Secret + QR-Data-URL + Manuell-Code |
+| **AUTH-2FA-S-03** | `TwoFaServiceTest` | `aktivieren` mit korrektem Code setzt Secret + publiziert `TwoFaAktiviertEvent` |
+| **AUTH-2FA-S-04** | `TwoFaServiceTest` | `aktivieren` mit falschem Code → UNGUELTIG, kein Save, kein Event |
+| **AUTH-2FA-S-05** | `TwoFaServiceTest` | `deaktivieren` verlangt korrektes Passwort UND TOTP, publiziert `TwoFaDeaktiviertEvent` nur bei Erfolg |
+| **AUTH-2FA-S-06** | `TwoFaServiceTest` | `regeneriereBackupCodes` — falscher Code → empty, korrekt → 10 frische Codes + Event |
+| **AUTH-2FA-06**   | `TwoFaSetupControllerTest` | GET `/einstellungen/2fa` rendert Setup-Seite für nicht-aktiven User |
+| **AUTH-2FA-06b**  | `TwoFaSetupControllerTest` | GET `/einstellungen/2fa` rendert Status-Seite für aktiven User |
+| **AUTH-2FA-07**   | `TwoFaSetupControllerTest` | POST `/aktivieren` mit Service-Success → Flash-Codes + Redirect |
+| **AUTH-2FA-08**   | `TwoFaSetupControllerTest` | POST `/aktivieren` mit Service-UNGUELTIG → Fehler-Flash, keine Codes |
+| **AUTH-2FA-09**   | `TwoFaSetupControllerTest` | POST `/deaktivieren` — Service-False → Fehler, Service-True → Erfolg |
+| **AUTH-2FA-09b**  | `TwoFaSetupControllerTest` | POST `/backup-codes/regenerieren` — empty → Fehler, present → Flash-Codes |
+
 ### Phase Operational — Feature-Backlog (BL)
 
 | ID | Test-Klasse | Beschreibung |

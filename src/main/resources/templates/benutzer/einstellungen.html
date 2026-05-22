@@ -101,6 +101,17 @@
             </form>
         </section>
 
+        <!-- ── 2-Faktor-Authentifizierung ────────────────────────────── -->
+        <section class="app-card">
+            <h2>2-Faktor-Authentifizierung (TOTP)</h2>
+            <p class="app-muted">
+                Zweiter Faktor per Authenticator-App — schützt dein Konto auch bei kompromittiertem Passwort.
+            </p>
+            <a th:href="@{/einstellungen/2fa}" class="app-btn app-btn-ghost">
+                2FA verwalten
+            </a>
+        </section>
+
         <!-- ── Passwort ─────────────────────────────────────────────── -->
         <section class="app-card">
             <h2 th:text="#{einstellungen.passwort.titel}">Passwort ändern</h2>

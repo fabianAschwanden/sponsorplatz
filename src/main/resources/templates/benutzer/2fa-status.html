@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>2-Faktor-Authentifizierung — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('einstellungen', null)}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">Mein Konto · Sicherheit</p>
+                <h1>2-Faktor-Authentifizierung</h1>
+                <p class="app-muted">
+                    <span style="color:#16a34a;">●</span> Aktiv seit
+                    <strong th:text="${aktiviertAm != null ? #temporals.format(aktiviertAm, 'dd.MM.yyyy HH:mm') : '—'}">01.01.2026 12:00</strong>
+                </p>
+            </div>
+        </header>
+
+        <div th:if="${erfolgsMeldung}" class="app-card" style="border-left:4px solid #16a34a;"
+             th:text="${erfolgsMeldung}"></div>
+        <div th:if="${fehlermeldung}" class="app-card" style="border-left:4px solid #dc2626;"
+             th:text="${fehlermeldung}"></div>
+
+        <!-- ── Frische Backup-Codes (nur im Flash, einmalig sichtbar) ── -->
+        <section th:if="${neueBackupCodes}" class="app-card"
+                 style="border-left:4px solid #f59e0b; background:#fffbeb;">
+            <h2 style="margin-top:0;">Deine neuen Backup-Codes</h2>
+            <p>
+                Speichere diese Codes JETZT sicher (Passwort-Manager, ausgedruckt im Tresor).
+                Jeder Code funktioniert <strong>einmalig</strong> als Ersatz für den TOTP-Code,
+                falls du Zugang zu deinem Authenticator verlierst.
+                <strong>Nach dem Verlassen dieser Seite werden sie nicht mehr angezeigt.</strong>
+            </p>
+            <ul style="list-style:none; padding:0; columns:2; column-gap:2rem; font-family:monospace; font-size:1.1rem;">
+                <li th:each="c : ${neueBackupCodes}" th:text="${c}" style="padding:0.25rem 0;">XXXX-XXXX</li>
+            </ul>
+        </section>
+
+        <section class="app-card">
+            <h2 style="margin-top:0;">Backup-Codes</h2>
+            <p class="app-muted">
+                Verbleibend: <strong th:text="${backupCodesVerbleibend}">10</strong> von 10
+            </p>
+            <p class="app-muted" th:if="${backupCodesVerbleibend lt 3}" style="color:#dc2626;">
+                Wenige Codes übrig — empfehlen wir, jetzt einen neuen Satz zu erzeugen.
+            </p>
+            <form th:action="@{/einstellungen/2fa/backup-codes/regenerieren}" method="post" style="margin:0;">
+                <div style="margin-bottom:1rem;">
+                    <label for="codeRegen">Aktueller 6-stelliger TOTP-Code</label>
+                    <input type="text" id="codeRegen" name="code" required autocomplete="one-time-code"
+                           inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6"
+                           placeholder="123456"
+                           style="font-size:1.2rem; letter-spacing:0.3em; padding:0.4rem;
+                                  width:7em; text-align:center;">
+                </div>
+                <button type="submit" class="app-btn app-btn-ghost">Backup-Codes neu erzeugen</button>
+                <p class="app-muted" style="margin-top:0.5rem; font-size:0.85rem;">
+                    Alte Codes werden ab sofort ungültig.
+                </p>
+            </form>
+        </section>
+
+        <section class="app-card" style="border-left:4px solid #dc2626;">
+            <h2 style="margin-top:0;">2FA deaktivieren</h2>
+            <p class="app-muted">
+                Wenn du 2FA ausschaltest, schützt nur noch dein Passwort dein Konto.
+                Wir empfehlen das nur bei einem Geräte-Wechsel und mit anschliessender Neueinrichtung.
+            </p>
+            <form th:action="@{/einstellungen/2fa/deaktivieren}" method="post" style="margin:0;"
+                  onsubmit="return confirm('2FA wirklich deaktivieren? Dein Konto ist danach nur noch passwortgeschützt.');">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                    <div>
+                        <label for="pw">Aktuelles Passwort</label>
+                        <input type="password" id="pw" name="aktuellesPasswort" required
+                               autocomplete="current-password">
+                    </div>
+                    <div>
+                        <label for="codeDeakt">Aktueller TOTP-Code</label>
+                        <input type="text" id="codeDeakt" name="code" required autocomplete="one-time-code"
+                               inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6"
+                               placeholder="123456"
+                               style="letter-spacing:0.3em; text-align:center;">
+                    </div>
+                </div>
+                <button type="submit" class="app-btn" style="background:#dc2626; color:white;">
+                    2FA deaktivieren
+                </button>
+            </form>
+        </section>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
+</body>
+</html>

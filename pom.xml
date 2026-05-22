@@ -30,6 +30,7 @@
         <oci-sdk.version>3.86.0</oci-sdk.version>
         <azure-storage-blob.version>12.29.0</azure-storage-blob.version>
         <azure-identity.version>1.14.2</azure-identity.version>
+        <samstevens-totp.version>1.7.1</samstevens-totp.version>
 
         <!-- Security-Patches über Spring-Boot-3.5.3-BOM (siehe Trivy-Findings):
              tomcat → 10.1.55 (CVE-2026-29145, CVE-2025-48989, CVE-2026-34483, CVE-2026-34487,
@@ -224,6 +225,13 @@
             <groupId>com.azure</groupId>
             <artifactId>azure-identity</artifactId>
             <version>${azure-identity.version}</version>
+        </dependency>
+
+        <!-- TOTP (RFC 6238) für 2-Faktor-Authentifizierung (Phase 13.2) -->
+        <dependency>
+            <groupId>dev.samstevens.totp</groupId>
+            <artifactId>totp</artifactId>
+            <version>${samstevens-totp.version}</version>
         </dependency>
 
         <!-- Tests -->
