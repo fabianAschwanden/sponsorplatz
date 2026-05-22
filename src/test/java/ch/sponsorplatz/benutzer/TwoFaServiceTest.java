@@ -193,6 +193,48 @@ class TwoFaServiceTest {
     }
 
     @Test
+    @DisplayName("AUTH-2FA-S-12: adminResetFuerUser löscht totp-Felder + liefert AdminResetErgebnis")
+    void adminResetFuerUserMitAktivem2FA() {
+        user.setTotpSecret("ABCDEFGH");
+        user.setTotpAktiviertAm(Instant.now());
+        user.setTotpBackupCodesHashed("[\"$2a$10$dummy\"]");
+        when(repository.findById(user.getId())).thenReturn(Optional.of(user));
+
+        Optional<TwoFaService.AdminResetErgebnis> ergebnis = service.adminResetFuerUser(user.getId());
+
+        assertThat(ergebnis).isPresent();
+        assertThat(ergebnis.get().email()).isEqualTo(EMAIL);
+        assertThat(ergebnis.get().warVorhAktiv()).isTrue();
+        assertThat(user.getTotpSecret()).isNull();
+        assertThat(user.getTotpAktiviertAm()).isNull();
+        assertThat(user.getTotpBackupCodesHashed()).isNull();
+        verify(repository).save(user);
+    }
+
+    @Test
+    @DisplayName("AUTH-2FA-S-13: adminResetFuerUser idempotent — warVorhAktiv=false wenn 2FA gar nicht aktiv war")
+    void adminResetFuerUserOhneAktives2FA() {
+        when(repository.findById(user.getId())).thenReturn(Optional.of(user));
+
+        Optional<TwoFaService.AdminResetErgebnis> ergebnis = service.adminResetFuerUser(user.getId());
+
+        assertThat(ergebnis).isPresent();
+        assertThat(ergebnis.get().warVorhAktiv()).isFalse();
+        verify(repository).save(user);
+    }
+
+    @Test
+    @DisplayName("AUTH-2FA-S-14: adminResetFuerUser liefert empty wenn User nicht existiert")
+    void adminResetFuerUserUnbekannt() {
+        UUID fremdeId = UUID.randomUUID();
+        when(repository.findById(fremdeId)).thenReturn(Optional.empty());
+
+        Optional<TwoFaService.AdminResetErgebnis> ergebnis = service.adminResetFuerUser(fremdeId);
+
+        assertThat(ergebnis).isEmpty();
+    }
+
+    @Test
     @DisplayName("AUTH-2FA-S-06: regeneriereBackupCodes — falscher Code = empty, korrekt = 10 frische Codes")
     void regeneriereBackupCodes() throws Exception {
         String secret = totpService.generateSecret();

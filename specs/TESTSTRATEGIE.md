@@ -679,6 +679,11 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **AUTH-2FA-10c**  | `TwoFaLoginControllerTest` | POST `/login/2fa` korrekter Code → Auth installiert + Redirect `/dashboard` |
 | **AUTH-2FA-10d**  | `TwoFaLoginControllerTest` | POST `/login/2fa` falscher Code → Counter +1, Redirect `/login/2fa?error` |
 | **AUTH-2FA-11**   | `TwoFaLoginControllerTest` | POST `/login/2fa` 5. Fehlversuch → Lockout-Audit + Session-Invalidate + Redirect `/login?error=2fa_locked` |
+| **AUTH-2FA-S-12** | `TwoFaServiceTest` | `adminResetFuerUser` löscht totp-Felder + liefert `AdminResetErgebnis(email, warVorhAktiv=true)` |
+| **AUTH-2FA-S-13** | `TwoFaServiceTest` | `adminResetFuerUser` idempotent — `warVorhAktiv=false` wenn 2FA nicht aktiv war |
+| **AUTH-2FA-S-14** | `TwoFaServiceTest` | `adminResetFuerUser` liefert `empty` wenn User nicht existiert |
+| **AUSER-07**      | `AdminBenutzerControllerTest` | POST `/admin/benutzer/{id}/2fa-reset` ruft Service + Audit `TOTP_RECOVERY_DURCH_ADMIN`, Flash-Erfolg |
+| **AUSER-08**      | `AdminBenutzerControllerTest` | `2fa-reset` für unbekannten User → Fehler-Flash, kein Audit |
 
 ### Phase Operational — Feature-Backlog (BL)
 

@@ -17,7 +17,8 @@ public record AdminBenutzerView(
         boolean aktiv,
         boolean emailVerifiziert,
         Instant registriertAm,
-        String profilbildUrl
+        String profilbildUrl,
+        boolean totpAktiv
 ) {
 
     public static AdminBenutzerView von(AppUser user) {
@@ -32,7 +33,8 @@ public record AdminBenutzerView(
                 user.isAktiv(),
                 user.isEmailVerifiziert(),
                 user.getRegistriertAm(),
-                bildUrl
+                bildUrl,
+                user.hatTotpAktiv()
         );
     }
 

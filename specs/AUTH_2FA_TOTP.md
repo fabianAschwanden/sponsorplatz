@@ -141,4 +141,5 @@ POST /login (Username + Passwort)
 
 - [x] Slice A — Schema + TotpService + Setup-Flow + DIP-Audit-Events (AUTH-2FA-01..09, AUTH-2FA-S-01..06)
 - [x] Slice B — Login-Integration: SuccessHandler-Stash + `/login/2fa` + Lockout (AUTH-2FA-S-07..11, AUTH-2FA-10..11)
-- [ ] Slice C — PLATFORM_ADMIN-Pflicht + Admin-Reset (AUTH-2FA-12..13)
+- [x] Slice C *(Teil 1)* — **Admin-Reset-Pfad** unter `/admin/benutzer/{id}/2fa-reset` + 2FA-Status-Badge in der Admin-Benutzerliste (AUTH-2FA-S-12..14, AUSER-07..08)
+- [ ] Slice C *(Teil 2)* — **PLATFORM_ADMIN-Pflicht** (kein Skip nach Login ohne 2FA) — bewusst nach hinten verschoben, kommt später

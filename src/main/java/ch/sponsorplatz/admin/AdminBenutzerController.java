@@ -17,6 +17,7 @@ import ch.sponsorplatz.audit.AuditService;
 import ch.sponsorplatz.benutzer.AdminBenutzerView;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.PlatformRolle;
+import ch.sponsorplatz.benutzer.TwoFaService;
 import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.organisation.OrganisationView;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
@@ -32,13 +33,16 @@ public class AdminBenutzerController {
     private final AppUserService appUserService;
     private final OrganisationService organisationService;
     private final AuditService auditService;
+    private final TwoFaService twoFaService;
 
     public AdminBenutzerController(AppUserService appUserService,
             OrganisationService organisationService,
-            AuditService auditService) {
+            AuditService auditService,
+            TwoFaService twoFaService) {
         this.appUserService = appUserService;
         this.organisationService = organisationService;
         this.auditService = auditService;
+        this.twoFaService = twoFaService;
     }
 
     // --- Benutzer-Verwaltung ---
@@ -83,6 +87,27 @@ public class AdminBenutzerController {
                 alteRolle + " → " + (rolle != null ? rolle : "KEINE"));
         redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                 "Rolle von «" + v.anzeigename() + "» geändert.");
+        return "redirect:/admin/benutzer";
+    }
+
+    /**
+     * Recovery: PLATFORM_ADMIN setzt 2FA eines anderen Users zurück, wenn
+     * dieser Authenticator + alle Backup-Codes verloren hat. Idempotent —
+     * funktioniert auch wenn 2FA bereits inaktiv ist.
+     */
+    @PostMapping("/benutzer/{id}/2fa-reset")
+    public String zweiFaktorZuruecksetzen(@PathVariable UUID id, RedirectAttributes redirect) {
+        twoFaService.adminResetFuerUser(id).ifPresentOrElse(ergebnis -> {
+            String detail = "2FA-Reset (Recovery) für " + ergebnis.email()
+                    + (ergebnis.warVorhAktiv() ? "" : " — war bereits inaktiv");
+            auditService.protokolliere(AuditAktion.TOTP_RECOVERY_DURCH_ADMIN, "BENUTZER",
+                    id, "AppUser", detail);
+            redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
+                    "2FA für «" + ergebnis.email() + "» zurückgesetzt. "
+                            + "Der User loggt sich beim nächsten Mal nur mit Passwort ein "
+                            + "und kann 2FA neu einrichten.");
+        }, () -> redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
+                "Benutzer nicht gefunden."));
         return "redirect:/admin/benutzer";
     }
 

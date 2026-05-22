@@ -6,6 +6,7 @@ import ch.sponsorplatz.benutzer.AdminBenutzerView;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.benutzer.PlatformRolle;
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
+import ch.sponsorplatz.benutzer.TwoFaService;
 import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.shared.config.SecurityConfig;
 import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
@@ -54,6 +55,9 @@ class AdminBenutzerControllerTest {
     private AuditService auditService;
 
     @MockitoBean
+    private TwoFaService twoFaService;
+
+    @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
 
     private static final UUID USER_ID = UUID.randomUUID();
@@ -62,7 +66,7 @@ class AdminBenutzerControllerTest {
         return new AdminBenutzerView(
                 USER_ID, "test@example.ch", "Test User",
                 PlatformRolle.PLATFORM_ADMIN, true, true,
-                Instant.now(), null
+                Instant.now(), null, false
         );
     }
 
@@ -152,6 +156,39 @@ class AdminBenutzerControllerTest {
     void nichtAdminVerboten() throws Exception {
         mockMvc.perform(get("/admin/benutzer"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "PLATFORM_ADMIN")
+    @DisplayName("AUSER-07: POST /admin/benutzer/{id}/2fa-reset ruft TwoFaService + Audit, Flash-Erfolg")
+    void zweiFaktorZuruecksetzenErfolgreich() throws Exception {
+        when(twoFaService.adminResetFuerUser(USER_ID))
+                .thenReturn(java.util.Optional.of(new TwoFaService.AdminResetErgebnis("ziel@sp.ch", true)));
+
+        mockMvc.perform(post("/admin/benutzer/" + USER_ID + "/2fa-reset").with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/benutzer"))
+                .andExpect(flash().attributeExists("erfolgsMeldung"));
+
+        verify(twoFaService).adminResetFuerUser(USER_ID);
+        verify(auditService).protokolliere(
+                eq(AuditAktion.TOTP_RECOVERY_DURCH_ADMIN), eq("BENUTZER"),
+                eq(USER_ID), eq("AppUser"), any());
+    }
+
+    @Test
+    @WithMockUser(roles = "PLATFORM_ADMIN")
+    @DisplayName("AUSER-08: 2FA-Reset für unbekannten User → Fehler-Flash, kein Audit")
+    void zweiFaktorZuruecksetzenUnbekannt() throws Exception {
+        when(twoFaService.adminResetFuerUser(USER_ID)).thenReturn(java.util.Optional.empty());
+
+        mockMvc.perform(post("/admin/benutzer/" + USER_ID + "/2fa-reset").with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/benutzer"))
+                .andExpect(flash().attributeExists("fehlermeldung"));
+
+        verify(auditService, org.mockito.Mockito.never()).protokolliere(
+                eq(AuditAktion.TOTP_RECOVERY_DURCH_ADMIN), any(), any(), any(), any());
     }
 }
 

@@ -155,6 +155,29 @@ public class TwoFaService {
     }
 
     /**
+     * Recovery-Pfad: PLATFORM_ADMIN setzt 2FA eines anderen Users zurück
+     * (z.B. wenn der User Authenticator + alle Backup-Codes verloren hat).
+     * Löscht Secret + aktiviertAm + Backup-Codes; idempotent.
+     *
+     * <p>Das Audit-Log-Eintrag schreibt der Aufrufer (AdminBenutzerController
+     * hat den Admin im SecurityContext), nicht dieser Service — die
+     * Quell-Identität liegt nicht in benutzer/, sondern in admin/.
+     *
+     * @return die E-Mail des Zielnutzers (für die Flash-Meldung), oder
+     *         {@link Optional#empty()} wenn der User nicht existiert.
+     */
+    public Optional<AdminResetErgebnis> adminResetFuerUser(java.util.UUID targetUserId) {
+        return repository.findById(targetUserId).map(user -> {
+            boolean warAktiv = user.hatTotpAktiv();
+            user.setTotpSecret(null);
+            user.setTotpAktiviertAm(null);
+            user.setTotpBackupCodesHashed(null);
+            repository.save(user);
+            return new AdminResetErgebnis(user.getEmail(), warAktiv);
+        });
+    }
+
+    /**
      * Erzeugt einen frischen Satz Backup-Codes. Verlangt einen gültigen
      * TOTP-Code. Alte Codes werden ersetzt (alle ungültig).
      */
@@ -203,4 +226,11 @@ public class TwoFaService {
         public static final LoginVerifyResult MISS = new LoginVerifyResult(false, false);
         public static final LoginVerifyResult NICHT_AKTIV = new LoginVerifyResult(false, false);
     }
+
+    /**
+     * Ergebnis von {@link #adminResetFuerUser}: E-Mail des Zielnutzers (für
+     * UI-Meldung) + Flag ob der User vorher überhaupt 2FA aktiv hatte
+     * (für Audit-Detail "war bereits ohne 2FA").
+     */
+    public record AdminResetErgebnis(String email, boolean warVorhAktiv) {}
 }

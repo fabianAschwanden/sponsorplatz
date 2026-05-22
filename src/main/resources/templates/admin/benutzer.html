@@ -40,6 +40,7 @@
                     <th th:text="#{admin.feld.email}">E-Mail</th>
                     <th th:text="#{admin.feld.status}">Status</th>
                     <th th:text="#{admin.feld.rolle}">Rolle</th>
+                    <th>2FA</th>
                     <th th:text="#{admin.feld.registriert}">Registriert</th>
                     <th th:text="#{admin.feld.aktionen}">Aktionen</th>
                 </tr>
@@ -75,6 +76,10 @@
                             </select>
                         </form>
                     </td>
+                    <td>
+                        <span th:if="${u.totpAktiv}" class="app-chip" style="background:#dcfce7;color:#166534;">aktiv</span>
+                        <span th:unless="${u.totpAktiv}" class="app-chip" style="background:#f3f4f6;color:#6b7280;">—</span>
+                    </td>
                     <td th:text="${u.registriertAm != null ? #temporals.format(u.registriertAm, 'dd.MM.yyyy') : '—'}">01.01.2026</td>
                     <td>
                         <form th:if="${u.aktiv}" th:action="@{/admin/benutzer/{id}/sperren(id=${u.id})}"
@@ -87,6 +92,15 @@
                         <form th:unless="${u.aktiv}" th:action="@{/admin/benutzer/{id}/entsperren(id=${u.id})}"
                               method="post" style="display:inline; margin:0;">
                             <button type="submit" class="app-btn app-btn-sm" th:text="#{admin.benutzer.entsperren}">Entsperren</button>
+                        </form>
+                        <form th:if="${u.totpAktiv}" th:action="@{/admin/benutzer/{id}/2fa-reset(id=${u.id})}"
+                              method="post" style="display:inline; margin-left:0.25rem;"
+                              onsubmit="return confirm('2FA für ' + this.dataset.email + ' wirklich zurücksetzen? Der User kann sich danach nur mit Passwort anmelden und muss 2FA neu einrichten.');"
+                              th:data-email="${u.email}">
+                            <button type="submit" class="app-btn app-btn-sm" style="background:#fef3c7;color:#92400e;"
+                                    title="Recovery: löscht TOTP-Secret + Backup-Codes für diesen User">
+                                2FA-Reset
+                            </button>
                         </form>
                     </td>
                 </tr>
