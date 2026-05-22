@@ -669,6 +669,16 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **AUTH-2FA-08**   | `TwoFaSetupControllerTest` | POST `/aktivieren` mit Service-UNGUELTIG → Fehler-Flash, keine Codes |
 | **AUTH-2FA-09**   | `TwoFaSetupControllerTest` | POST `/deaktivieren` — Service-False → Fehler, Service-True → Erfolg |
 | **AUTH-2FA-09b**  | `TwoFaSetupControllerTest` | POST `/backup-codes/regenerieren` — empty → Fehler, present → Flash-Codes |
+| **AUTH-2FA-S-07** | `TwoFaServiceTest` | `verifyForLogin` — TOTP-Hit publiziert `LoginOkEvent(backup=false)` |
+| **AUTH-2FA-S-08** | `TwoFaServiceTest` | `verifyForLogin` — Backup-Code-Hit verbraucht Code (single-use) + `LoginOkEvent(backup=true)` |
+| **AUTH-2FA-S-09** | `TwoFaServiceTest` | `verifyForLogin` — Miss publiziert `LoginFailEvent` mit Versuch-Nummer |
+| **AUTH-2FA-S-10** | `TwoFaServiceTest` | `verifyForLogin` — User ohne aktives 2FA → MISS, kein Event |
+| **AUTH-2FA-S-11** | `TwoFaServiceTest` | `protokolliereLockout` publiziert `TwoFaLockoutEvent` |
+| **AUTH-2FA-10a**  | `TwoFaLoginControllerTest` | GET `/login/2fa` ohne Pending-Auth → Redirect `/login` |
+| **AUTH-2FA-10b**  | `TwoFaLoginControllerTest` | GET `/login/2fa` mit Pending-Auth zeigt Form `benutzer/2fa-login` |
+| **AUTH-2FA-10c**  | `TwoFaLoginControllerTest` | POST `/login/2fa` korrekter Code → Auth installiert + Redirect `/dashboard` |
+| **AUTH-2FA-10d**  | `TwoFaLoginControllerTest` | POST `/login/2fa` falscher Code → Counter +1, Redirect `/login/2fa?error` |
+| **AUTH-2FA-11**   | `TwoFaLoginControllerTest` | POST `/login/2fa` 5. Fehlversuch → Lockout-Audit + Session-Invalidate + Redirect `/login?error=2fa_locked` |
 
 ### Phase Operational — Feature-Backlog (BL)
 
