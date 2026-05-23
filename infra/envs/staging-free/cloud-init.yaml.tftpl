@@ -162,9 +162,10 @@ runcmd:
   - chown -R 70:70 /var/lib/sponsorplatz/db-data         # postgres-User in alpine
   - chown -R 1001:1001 /var/lib/sponsorplatz/uploads     # sponsor-User im App-Container
 
-  # OCIR-Login
-  - mkdir -p /root/.docker
-  - echo '${ocir_auth_token}' | docker login ${ocir_registry} -u '${object_storage_ns}/${ocir_username}' --password-stdin
+  # GHCR-Pull funktioniert ohne Login, sofern das Package public ist
+  # (Settings → Packages → sponsorplatz → Change visibility → Public).
+  # Falls Package private bleibt: docker login auf der VM manuell mit PAT
+  # (Pattern: echo $PAT | docker login ghcr.io -u <user> --password-stdin).
 
   # Stack starten — auf E5.Flex (4 GB) reicht paralleler Pull problemlos
   - cd /opt/sponsorplatz && docker compose pull

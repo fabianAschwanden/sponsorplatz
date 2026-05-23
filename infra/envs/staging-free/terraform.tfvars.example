@@ -14,10 +14,10 @@ acme_email = "admin@example.ch"
 # basis_url leer lassen → wird auf https://${domain} gesetzt
 basis_url = ""
 
-# OCIR-Pull (gleicher Token wie GitHub-Secret OCIR_AUTH_TOKEN)
-image_url       = "zrh.ocir.io/<NS>/sponsorplatz:staging-latest"
-ocir_username   = "default/github_actions_deploy@example.ch"
-ocir_auth_token = "PUT_OCIR_TOKEN_HERE"
+# Image-Pull aus GHCR (Standard ist Public — kein Token nötig).
+# Falls Package private bleibt: docker login auf der VM manuell mit PAT,
+# image_url-Default in variables.tf bleibt unverändert.
+image_url = "ghcr.io/fabianaschwanden/sponsorplatz:staging-latest"
 
 # DB + Initial-Admin (NIE in committed tfvars halten — siehe .gitignore)
 db_password    = "PUT_STRONG_DB_PW_HERE"

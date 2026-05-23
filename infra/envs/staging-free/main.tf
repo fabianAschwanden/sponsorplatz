@@ -12,11 +12,9 @@ locals {
     environment = local.env_name
     managed_by  = "terraform"
   }
-  # OCIR-Endpoint pro Region. Erweitern, wenn weitere Regionen verwendet werden.
-  ocir_registry = {
-    "eu-zurich-1"    = "zrh.ocir.io"
-    "eu-frankfurt-1" = "fra.ocir.io"
-  }[var.region]
+  # OCIR-Endpoint-Map entfernt (2026-05-22): wir pushen jetzt nach GHCR
+  # (OCI Always-Free unterstützt OCIR-Push nicht mehr — 'Free tier account
+  # is not supported'). Siehe cd-staging-free.yml.
 
   basis_url_effective = var.basis_url != "" ? var.basis_url : "https://${var.domain}"
 }
@@ -163,9 +161,6 @@ resource "oci_core_instance" "app" {
 locals {
   cloud_init_content = templatefile("${path.module}/cloud-init.yaml.tftpl", {
     image_url         = var.image_url
-    ocir_registry     = local.ocir_registry
-    ocir_username     = var.ocir_username
-    ocir_auth_token   = var.ocir_auth_token
     object_storage_ns = var.object_storage_namespace
     region            = var.region
 

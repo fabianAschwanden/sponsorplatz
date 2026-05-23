@@ -12,11 +12,13 @@ on:
 
 permissions:
   contents: read
+  # packages: write erlaubt push nach ghcr.io via GITHUB_TOKEN — kein PAT nötig.
+  packages: write
 
 jobs:
   # Diagnose-Job: läuft immer und logt explizit, warum der Deploy skipped wurde.
   preflight:
-    name: Preflight (vars/secrets check)
+    name: Preflight (vars check)
     runs-on: ubuntu-latest
     outputs:
       can-deploy: ${{ steps.check.outputs.can-deploy }}
@@ -25,8 +27,6 @@ jobs:
         run: |
           missing=()
           [ -z "${{ vars.STAGING_FREE_VM_IP }}" ] && missing+=("vars.STAGING_FREE_VM_IP")
-          [ -z "${{ vars.OCIR_NAMESPACE }}" ]     && missing+=("vars.OCIR_NAMESPACE")
-          [ -z "${{ vars.OCIR_USERNAME }}" ]      && missing+=("vars.OCIR_USERNAME")
           if [ ${#missing[@]} -gt 0 ]; then
             echo "::warning::CD skipped — fehlende Repo-Variablen: ${missing[*]}. Setup siehe infra/staging-free/README.md"
             echo "can-deploy=false" >> "$GITHUB_OUTPUT"
@@ -43,7 +43,11 @@ jobs:
       name: staging-free
       url: https://${{ vars.STAGING_FREE_DOMAIN || vars.STAGING_FREE_VM_IP }}
     env:
-      IMAGE_BASE: zrh.ocir.io/${{ vars.OCIR_NAMESPACE }}/sponsorplatz
+      # GHCR statt OCIR (2026-05-22): OCI Always-Free unterstützt OCIR-Push nicht
+      # mehr — 'unknown: Free tier account is not supported'. GHCR ist gratis,
+      # via GITHUB_TOKEN authentifiziert (kein PAT, kein Secret-Setup), Pull
+      # auf der VM funktioniert ohne Login wenn das Package public ist.
+      IMAGE_BASE: ghcr.io/fabianaschwanden/sponsorplatz
       IMAGE_TAG:  ${{ github.event.workflow_run.head_sha || github.sha }}
 
     steps:
@@ -74,12 +78,12 @@ jobs:
           exit-code: '1'
           ignore-unfixed: true
 
-      - name: Log in to OCIR
-        run: |
-          echo "${{ secrets.OCIR_AUTH_TOKEN }}" | \
-            docker login zrh.ocir.io \
-              --username "${{ vars.OCIR_NAMESPACE }}/${{ vars.OCIR_USERNAME }}" \
-              --password-stdin
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push image
         run: |
@@ -158,51 +162,8 @@ jobs:
           echo "Smoke check failed at $SMOKE_URL"
           exit 1
 
-      # OCIR füllt sich sonst pro Commit um ~300 MB; Always-Free hat 25 GB.
-      # Behält die `RETENTION_KEEP` neuesten Images im Repo `sponsorplatz` und
-      # löscht den Rest. Bricht den Deploy nicht — wenn die Secrets fehlen,
-      # nur Warning. Permissions: CICD-Group hat bereits "manage repos" via
-      # infra/shared/bootstrap/main.tf.
-      - name: OCIR-Retention (alte Images aufräumen)
-        if: success()
-        continue-on-error: true
-        env:
-          OCI_CLI_USER: ${{ secrets.OCI_USER_OCID }}
-          OCI_CLI_TENANCY: ${{ secrets.OCI_TENANCY_OCID }}
-          OCI_CLI_FINGERPRINT: ${{ secrets.OCI_KEY_FINGERPRINT }}
-          OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_API_PRIVATE_KEY }}
-          OCI_CLI_REGION: eu-zurich-1
-          RETENTION_KEEP: '10'
-        run: |
-          if [ -z "$OCI_CLI_USER" ] || [ -z "$OCI_CLI_KEY_CONTENT" ]; then
-            echo "::warning::OCIR-Retention skipped — Secrets OCI_USER_OCID / OCI_API_PRIVATE_KEY / OCI_TENANCY_OCID / OCI_KEY_FINGERPRINT fehlen. Setup-Anleitung in infra/staging-free/README.md."
-            exit 0
-          fi
-
-          python3 -m pip install --quiet oci-cli
-
-          # Alle Images im Repo, sortiert nach Erstellungszeit (neueste zuerst).
-          # Dedupe nach Image-OCID (Tags teilen sich denselben Digest).
-          oci artifacts container image list \
-            --compartment-id "$OCI_CLI_TENANCY" --repository-name sponsorplatz --all \
-            --query 'data.items[].{ocid:id,created:"time-created"}' \
-            --output json > /tmp/raw.json
-
-          jq -s '.[0] | unique_by(.ocid) | sort_by(.created) | reverse' /tmp/raw.json > /tmp/uniq.json
-          TOTAL=$(jq 'length' /tmp/uniq.json)
-          echo "OCIR sponsorplatz: $TOTAL eindeutige Images vorhanden"
-
-          if [ "$TOTAL" -le "$RETENTION_KEEP" ]; then
-            echo "✓ Unter Retention-Schwelle ($RETENTION_KEEP) — kein Cleanup nötig"
-            exit 0
-          fi
-
-          DELETE_COUNT=$(( TOTAL - RETENTION_KEEP ))
-          echo "→ Lösche $DELETE_COUNT älteste Images (behalte $RETENTION_KEEP neueste)"
-
-          jq -r ".[${RETENTION_KEEP}:][] | .ocid" /tmp/uniq.json | while read -r ocid; do
-            echo "  - $ocid"
-            oci artifacts container image delete --image-id "$ocid" --force 2>&1 | tail -1 || true
-          done
-
-          echo "✓ Retention durch"
+      # GHCR-Retention läuft über GitHubs eigene Package-Retention-Policy
+      # (Settings → Packages → sponsorplatz → Manage versions). Standard:
+      # alle Versionen bleiben — bei Bedarf manuell prunen via `gh api`.
+      # Kein automatischer Cleanup-Step nötig, weil das VM-Disk-Limit nicht
+      # mehr betroffen ist (Pull ist on-demand).

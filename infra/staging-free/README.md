@@ -65,7 +65,7 @@ Alle drei Container laufen auf derselben VM. Persistente Daten unter `/var/lib/s
    BASIS_URL=https://sponsorplatz.example.ch
    ACME_EMAIL=admin@example.ch
    DOMAIN=sponsorplatz.example.ch
-   IMAGE_URL=zrh.ocir.io/<NAMESPACE>/sponsorplatz:staging-latest
+   IMAGE_URL=ghcr.io/fabianaschwanden/sponsorplatz:staging-latest
    SPONSORPLATZ_ADMIN_EMAIL=admin@example.ch
    SPONSORPLATZ_ADMIN_PASSWORD=<starkes-pw-für-erste-Anmeldung>
 
@@ -83,12 +83,18 @@ Alle drei Container laufen auf derselben VM. Persistente Daten unter `/var/lib/s
    # OCI_BUCKET_BACKUPS=sponsorplatz-backups
    ```
 
-7. **OCIR-Login + Pull + Start:**
+7. **Pull + Start:**
    ```bash
-   sudo docker login zrh.ocir.io -u '<NS>/<USER>' -p '<auth-token>'
    cd /opt/sponsorplatz
    sudo docker compose pull
    sudo docker compose up -d
+   ```
+
+   GHCR-Pull funktioniert ohne Login solange das Package `sponsorplatz`
+   public ist (GitHub → Profile → Packages → sponsorplatz → Package
+   settings → Change visibility → Public). Falls private, vorher:
+   ```bash
+   echo '<github-pat>' | sudo docker login ghcr.io -u '<github-user>' --password-stdin
    ```
 
 8. **Verifikation:**
@@ -100,34 +106,55 @@ Alle drei Container laufen auf derselben VM. Persistente Daten unter `/var/lib/s
 
 `cd-staging-free.yml` triggert nach jedem grünen CI-Run auf `main`:
 1. Image bauen → Trivy-Scan
-2. Push nach OCIR (`zrh.ocir.io/<NS>/sponsorplatz:<sha>` + `:staging-latest`)
+2. Push nach **GHCR** (`ghcr.io/fabianaschwanden/sponsorplatz:<sha>` + `:staging-latest`)
 3. SSH auf VM → `docker compose pull && up -d` für den App-Service
+
+> **Migration von OCIR → GHCR (2026-05-22):** OCI Always-Free lehnt seit
+> Mai 2026 Pushes nach OCIR ab (`Free tier account is not supported`).
+> Pipeline pusht jetzt nach GHCR via `GITHUB_TOKEN` (`permissions:
+> packages: write`). Live-VM-Update siehe Abschnitt "Umstieg auf GHCR"
+> weiter unten.
 
 **Erforderliche GitHub-Variablen** (Settings → Secrets and variables → Actions):
 
 | Type | Name | Wert |
 |---|---|---|
 | Variable | `STAGING_FREE_VM_IP` | öffentliche IP der VM |
-| Variable | `OCIR_NAMESPACE` | OCI Object-Storage-Namespace |
-| Variable | `OCIR_USERNAME` | OCI-User für OCIR-Push (z.B. `oracleidentitycloudservice/user@x`) |
-| Secret | `OCIR_AUTH_TOKEN` | OCI-Auth-Token (User Settings → Auth Tokens) |
 | Secret | `STAGING_FREE_SSH_PRIVATE_KEY` | SSH-Key für `opc@<VM-IP>` |
 | Secret | `SLACK_WEBHOOK_URL` (optional) | für Failure-Notifications |
 
-**Optional — OCIR-Retention** (cleant alte Images im Repo `sponsorplatz` nach
-jedem Deploy, behält die 10 neuesten). Skipt mit Warning, wenn nicht gesetzt:
+Für GHCR braucht es **keine** Secrets: `GITHUB_TOKEN` ist automatisch
+verfügbar, und das Package wird nach erstem Push (manuell einmalig) auf
+`public` gestellt → Pull auf der VM funktioniert ohne Login.
 
-| Type | Name | Wert |
-|---|---|---|
-| Secret | `OCI_USER_OCID` | OCID des CICD-Service-Users |
-| Secret | `OCI_TENANCY_OCID` | OCID der Tenancy |
-| Secret | `OCI_KEY_FINGERPRINT` | Fingerprint des API-Keys (Console → User → API Keys) |
-| Secret | `OCI_API_PRIVATE_KEY` | PEM-Inhalt des privaten API-Keys (inkl. Header/Footer) |
+## Umstieg auf GHCR (einmalig, nach Migration)
 
-API-Key-Upload: Console → Identity → Users → CICD-User → API Keys → Add. Den
-Public-Key hochladen, den private Key als `OCI_API_PRIVATE_KEY` ins GitHub-Repo.
-Die `manage repos in tenancy`-Policy ist bereits in
-`infra/shared/bootstrap/main.tf` enthalten — kein Policy-Update nötig.
+Nach dem ersten erfolgreichen CD-Run auf GHCR:
+
+1. **Package auf public stellen** (sonst kann die VM nicht pullen ohne PAT):
+   GitHub → Profil → Packages → `sponsorplatz` → Package settings →
+   Danger Zone → Change visibility → Public.
+
+2. **Live-VM: docker-compose.yml umstellen** auf den neuen Image-Pfad:
+   ```bash
+   ssh opc@<VM-IP>
+   sudo sed -i 's|zrh\.ocir\.io/[^/]*/sponsorplatz|ghcr.io/fabianaschwanden/sponsorplatz|' \
+     /opt/sponsorplatz/docker-compose.yml
+   grep image: /opt/sponsorplatz/docker-compose.yml
+   # erwartet: image: ghcr.io/fabianaschwanden/sponsorplatz:staging-latest
+   ```
+
+3. **Alten OCIR-docker-login auf der VM aufräumen** (optional, schadet aber sonst nichts):
+   ```bash
+   sudo docker logout zrh.ocir.io
+   ```
+
+4. **Pull + Restart** mit neuem Image:
+   ```bash
+   cd /opt/sponsorplatz
+   sudo docker compose pull app
+   sudo docker compose up -d --force-recreate app
+   ```
 
 ## REST-API freischalten (CD-managed)
 

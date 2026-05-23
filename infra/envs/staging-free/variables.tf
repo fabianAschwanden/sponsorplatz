@@ -39,20 +39,10 @@ variable "acme_email" {
 
 variable "image_url" {
   type        = string
-  description = "OCIR-Image-Referenz; CD-Workflow setzt staging-latest, Initial-Boot zieht den"
-  default     = "zrh.ocir.io/REPLACE_NS/sponsorplatz:staging-latest"
+  description = "GHCR-Image-Referenz; CD-Workflow setzt :staging-latest, Initial-Boot zieht den (Package muss public sein, sonst docker login auf der VM nötig)."
+  default     = "ghcr.io/fabianaschwanden/sponsorplatz:staging-latest"
 }
 
-variable "ocir_username" {
-  type        = string
-  description = "OCI-Login für `docker pull` von OCIR (z.B. default/github_actions_deploy@example.ch)"
-}
-
-variable "ocir_auth_token" {
-  type        = string
-  sensitive   = true
-  description = "OCIR Auth Token für `docker pull`"
-}
 
 variable "db_password" {
   type        = string
