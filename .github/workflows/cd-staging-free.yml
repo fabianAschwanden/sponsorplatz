@@ -25,8 +25,12 @@ jobs:
     steps:
       - id: check
         run: |
+          # 'if'-Pattern statt '[ test ] && cmd' — letzteres bricht unter
+          # 'set -e' (GH-Actions-Default) ab, wenn der Test false ist.
           missing=()
-          [ -z "${{ vars.STAGING_FREE_VM_IP }}" ] && missing+=("vars.STAGING_FREE_VM_IP")
+          if [ -z "${{ vars.STAGING_FREE_VM_IP }}" ]; then
+            missing+=("vars.STAGING_FREE_VM_IP")
+          fi
           if [ ${#missing[@]} -gt 0 ]; then
             echo "::warning::CD skipped — fehlende Repo-Variablen: ${missing[*]}. Setup siehe infra/staging-free/README.md"
             echo "can-deploy=false" >> "$GITHUB_OUTPUT"

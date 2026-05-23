@@ -28,9 +28,15 @@ jobs:
     steps:
       - id: check
         run: |
+          # 'if'-Pattern statt '[ test ] && cmd' — letzteres bricht unter
+          # 'set -e' (GH-Actions-Default) ab, wenn der Test false ist.
           missing=()
-          [ -z "${{ vars.AZURE_VM_IP }}" ]            && missing+=("vars.AZURE_VM_IP")
-          [ -z "${{ vars.AZURE_ACR_LOGIN_SERVER }}" ] && missing+=("vars.AZURE_ACR_LOGIN_SERVER")
+          if [ -z "${{ vars.AZURE_VM_IP }}" ]; then
+            missing+=("vars.AZURE_VM_IP")
+          fi
+          if [ -z "${{ vars.AZURE_ACR_LOGIN_SERVER }}" ]; then
+            missing+=("vars.AZURE_ACR_LOGIN_SERVER")
+          fi
           if [ ${#missing[@]} -gt 0 ]; then
             echo "::warning::CD-Azure skipped — fehlende Repo-Variablen: ${missing[*]}. Setup siehe infra/envs/azure-staging/README.md"
             echo "can-deploy=false" >> "$GITHUB_OUTPUT"
