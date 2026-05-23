@@ -91,7 +91,7 @@
 
         <!-- Admin-Bereich (nur für PLATFORM_ADMIN) -->
         <div sec:authorize="hasRole('PLATFORM_ADMIN')" style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1);">
-            <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; opacity:0.5; padding:0 0.75rem;"
+            <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; color:rgba(255,255,255,0.9); padding:0 0.75rem;"
                   th:text="#{sidebar.admin}">Admin</span>
             <a th:href="@{/admin}" class="dash-nav-item"
                th:classappend="${aktiv == 'admin'} ? 'aktiv'">

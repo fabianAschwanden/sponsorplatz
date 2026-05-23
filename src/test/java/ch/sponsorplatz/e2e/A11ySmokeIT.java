@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *       wenn die a11y-Grundwerte unterschritten werden.</li>
  * </ul>
  *
- * <p>Geprüfte Seiten (alle public, ohne Auth):
+ * <p>Geprüfte Seiten (public, ohne Auth):
  * <ul>
  *   <li>{@code /} — Home/Marketing</li>
  *   <li>{@code /login} — Authentifizierungs-Einstieg</li>
@@ -46,9 +46,25 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   <li>{@code /impressum}, {@code /datenschutz}, {@code /agb} — Legal-Pages</li>
  * </ul>
  *
+ * <p>Auth-pflichtige Seiten (Phase 13.1, Backlog-V40) — Login via
+ * {@code dev@sponsorplatz.ch}/{@code dev} aus dem {@code DevSeedRunner}:
+ * <ul>
+ *   <li>{@code /dashboard} — Eingelogged-Hub</li>
+ *   <li>{@code /aufgaben} — Task-Inbox</li>
+ *   <li>{@code /meine-anfragen} — Anfrage-Übersicht</li>
+ *   <li>{@code /einstellungen} — Profil + Sicherheit + 2FA-Eingang</li>
+ * </ul>
+ *
+ * <p>{@code /onboarding} wurde aus dem Auth-Suite-Coverage bewusst raus-
+ * gehalten: der Dev-Seed-User ist {@code PLATFORM_ADMIN} und wird vom
+ * {@code OnboardingController} grundsätzlich auf {@code /dashboard}
+ * umgeleitet (Plattform-Admins durchlaufen kein Onboarding). Ein
+ * dedizierter Non-Admin-Test-User ist Folge-Arbeit (TODO via
+ * E2EFixtures).
+ *
  * <p>Liegt im {@code e2e}-Paket, läuft via {@code mvn verify -P e2e -Dit.test=A11ySmokeIT}.
  *
- * <p>Test-IDs: A11Y-01..06 in {@code specs/TESTSTRATEGIE.md}.
+ * <p>Test-IDs: A11Y-01..06 (public) + A11Y-07..10 (auth) in {@code specs/TESTSTRATEGIE.md}.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
         properties = "server.port=18086")
@@ -79,6 +95,7 @@ class A11ySmokeIT {
     private Playwright playwright;
     private Browser browser;
     private BrowserContext context;
+    private BrowserContext authContext;
     private String axeSource;
 
     @Value("${server.port:18086}")
@@ -89,6 +106,7 @@ class A11ySmokeIT {
         playwright = Playwright.create();
         browser = playwright.chromium().launch();
         context = browser.newContext();
+        authContext = browser.newContext();
         try (var in = getClass().getResourceAsStream(AXE_RESOURCE)) {
             if (in == null) {
                 throw new IllegalStateException(
@@ -97,10 +115,26 @@ class A11ySmokeIT {
             }
             axeSource = new String(in.readAllBytes());
         }
+        loginAuthContext();
+    }
+
+    /**
+     * Loggt den Dev-Seed-User in {@link #authContext} ein. Session-Cookie
+     * bleibt für alle Auth-Tests bestehen.
+     */
+    private void loginAuthContext() {
+        try (Page page = authContext.newPage()) {
+            page.navigate("http://localhost:" + port + "/login");
+            page.locator("#username").fill("dev@sponsorplatz.ch");
+            page.locator("#password").fill("dev");
+            page.locator("button[type=submit]").first().click();
+            page.waitForFunction("() => !location.pathname.endsWith('/login')");
+        }
     }
 
     @AfterAll
     void tearDownBrowser() {
+        if (authContext != null) authContext.close();
         if (context != null) context.close();
         if (browser != null) browser.close();
         if (playwright != null) playwright.close();
@@ -142,9 +176,43 @@ class A11ySmokeIT {
         pruefeSeite("/agb");
     }
 
-    @SuppressWarnings("unchecked")
+    // ── Phase 13.1 — Auth-pflichtige Seiten (Backlog-V40) ─────────────
+
+    @Test
+    @DisplayName("A11Y-07: /dashboard (auth) hat keine kritischen WCAG-Verstösse")
+    void dashboard() {
+        pruefeAuthSeite("/dashboard");
+    }
+
+    @Test
+    @DisplayName("A11Y-08: /aufgaben (auth) hat keine kritischen WCAG-Verstösse")
+    void aufgaben() {
+        pruefeAuthSeite("/aufgaben");
+    }
+
+    @Test
+    @DisplayName("A11Y-09: /meine-anfragen (auth) hat keine kritischen WCAG-Verstösse")
+    void meineAnfragen() {
+        pruefeAuthSeite("/meine-anfragen");
+    }
+
+    @Test
+    @DisplayName("A11Y-10: /einstellungen (auth) hat keine kritischen WCAG-Verstösse")
+    void einstellungen() {
+        pruefeAuthSeite("/einstellungen");
+    }
+
     private void pruefeSeite(String pfad) {
-        try (Page page = context.newPage()) {
+        pruefeMitContext(pfad, context);
+    }
+
+    private void pruefeAuthSeite(String pfad) {
+        pruefeMitContext(pfad, authContext);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void pruefeMitContext(String pfad, BrowserContext ctx) {
+        try (Page page = ctx.newPage()) {
             page.navigate("http://localhost:" + port + pfad);
             // Inline injection — CSP blockiert Cross-Origin-Scripts, daher die Quelle direkt.
             page.addScriptTag(new Page.AddScriptTagOptions().setContent(axeSource));

@@ -7,7 +7,7 @@
 
 - **Phasen 0 – 9, 11, 12**: ✅ abgeschlossen
 - **Phase 10** (Production-Readiness, ohne 10.4): ✅ 10.1–10.3 + 10.5 fertig
-- **Phase 13** (Pre-Pilot-Hardening): ⏳ aktiv — A11y für auth-Seiten, 2FA, OIDC
+- **Phase 13** (Pre-Pilot-Hardening): ⏳ aktiv — 13.1 A11y-auth ✅ / 13.2 2FA-Reset ✅ (Pflicht parkt) / 13.3 OIDC offen
 - **Phase 14** (Produktivschaltung, **war 10.4**): 🔜 sobald Phase 13 durch
 - **Phase 15** (Post-Pilot): teilweise vorgezogen
   - 15.1 echtes Zahlungs-Provider-Wiring + 15.2 Mahnwesen: 📋 geplant
@@ -560,14 +560,15 @@ Der ursprüngliche „Pilot-Launch"-Block lebt jetzt als **Phase 14 (Produktivsc
 > Identitäten und Zugänglichkeit sind die Themen, die ein Reviewer
 > oder Sicherheitsbeauftragter zuerst anschaut.
 
-### 13.1 — A11y-Smoke-Suite für authentifizierte Seiten
+### 13.1 — A11y-Smoke-Suite für authentifizierte Seiten ✅
 
 > Backlog-Eintrag in V40 (`A11y-Smoke-Suite für authentifizierte Seiten`).
 
-- [ ] Login-Helper in der Test-Suite (`@WithUserDetails` oder dedizierte Demo-Seed-Methode)
-- [ ] `A11ySmokeIT` um eine zweite Schleife auf `/dashboard`, `/aufgaben`, `/meine-anfragen`, `/onboarding`, `/einstellungen` erweitert
-- [ ] Test-IDs A11Y-07..12 in TESTSTRATEGIE.md eintragen
-- [ ] Falls Playwright-Sessions inkompatibel mit MockMvc: Form-Login-Helper via `E2EFixtures` aufrufen
+- [x] Login-Helper in der Test-Suite — Playwright form-login mit `dev@sponsorplatz.ch`/`dev` (DevSeedRunner) in dedicated `authContext`
+- [x] `A11ySmokeIT` um eine zweite Schleife auf `/dashboard`, `/aufgaben`, `/meine-anfragen`, `/einstellungen` erweitert
+- [x] Test-IDs A11Y-07..10 in TESTSTRATEGIE.md eingetragen
+- [x] WCAG-AA-Fixes für Befunde aus dem ersten Lauf: `--dash-muted` heller, `.dash-chart-axis` explizit `#3F3A8C`, `.dash-avatar-plus`/`.dash-btn-pill` auf `--dash-coral-text`, Sidebar-Lang ohne Wrapper-Opacity, Dashboard-Selects mit `aria-label` (i18n in de_CH/en/fr_CH/it_CH)
+- [ ] `/onboarding` bewusst raus — Dev-Seed-User ist `PLATFORM_ADMIN`, wird vom `OnboardingController` direkt auf `/dashboard` umgeleitet; dedizierter Non-Admin-Test-User ist Folge-Arbeit via `E2EFixtures`
 
 ### 13.2 — Zwei-Faktor-Authentifizierung (TOTP)
 

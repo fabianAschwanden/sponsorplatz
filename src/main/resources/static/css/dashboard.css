@@ -15,7 +15,7 @@
     --dash-card:          #FFFFFF;
     --dash-border:        #E2DAD0;
     --dash-text:          #1A202C;
-    --dash-muted:         #64748B;
+    --dash-muted:         #475569;   /* slate-600 — WCAG-AA-safe (>4.5:1 auf #fff) */
 
     --dash-violet:        #B8B5FF;
     --dash-violet-light:  #ECEAFF;
@@ -595,7 +595,8 @@ body.dashboard-body {
 
 .dash-chart-axis span {
     background: var(--dash-violet-light);
-    color: var(--dash-violet-dark);
+    /* WCAG-AA-safe: #3F3A8C auf #ECEAFF ≈ 7.5:1 (vorher #6E68C2 ≈ 3.2:1) */
+    color: #3F3A8C;
     padding: 0.1rem 0;
     border-radius: 50%;
     width: 22px;
@@ -903,7 +904,8 @@ a.dash-todo-label:hover {
 .dash-mini-avatar:first-child { margin-left: 0; }
 
 .dash-avatar-plus {
-    background: var(--dash-coral);
+    /* WCAG-AA: weiss auf #8B3A1F ≈ 9.5:1 (vorher var(--dash-coral) #E07A5F ≈ 3.0:1). */
+    background: var(--dash-coral-text);
     color: #fff;
 }
 
@@ -923,7 +925,8 @@ a.dash-todo-label:hover {
 
 .dash-btn-pill {
     background: var(--dash-coral-light);
-    color: var(--dash-coral);
+    /* WCAG-AA: #8B3A1F auf #FBE3DB ≈ 8:1 (vorher var(--dash-coral) ≈ 2.5:1). */
+    color: var(--dash-coral-text);
     border: none;
     padding: 0.35rem 0.85rem;
     border-radius: var(--dash-radius-pill);
@@ -932,7 +935,7 @@ a.dash-todo-label:hover {
     cursor: pointer;
     margin-left: 0.25rem;
 }
-.dash-btn-pill:hover { background: var(--dash-coral); color: #fff; }
+.dash-btn-pill:hover { background: var(--dash-coral-text); color: #fff; }
 
 /* Wissensdatenbank */
 .dash-rail-knowledge {
@@ -992,21 +995,22 @@ a.dash-todo-label:hover {
 }
 .dash-logout-btn:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
 
-/* Sprachumschalter unten in der Sidebar — minimal, dezent */
+/* Sprachumschalter unten in der Sidebar — minimal, dezent.
+ * Wrapper-Opacity entfernt: senkte den effektiven Kontrast unter WCAG-AA.
+ * Stattdessen explizit gemuteter Link-Color (#C2C8D2 ≈ 9.5:1 auf #0F172A). */
 .dash-sidebar-lang {
     padding: 0.5rem 0.75rem;
     font-size: 0.7rem;
     text-align: center;
-    opacity: 0.55;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 .dash-sidebar-lang a {
-    color: var(--dash-sidebar-text);
+    color: #C2C8D2;
     text-decoration: none;
     padding: 0 0.35rem;
 }
-.dash-sidebar-lang a:hover { color: #fff; opacity: 1; }
-.dash-sidebar-lang span { opacity: 0.4; }
+.dash-sidebar-lang a:hover { color: #fff; }
+.dash-sidebar-lang span { color: #6B7280; }
 
 /* =========================== Hierarchie-Tree (Org-Detail) =========================== */
 /* Visuelle Darstellung der Konzern-Struktur:

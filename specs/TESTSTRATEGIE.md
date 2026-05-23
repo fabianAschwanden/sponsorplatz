@@ -530,6 +530,10 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **A11Y-04** | `A11ySmokeIT` | /impressum hat keine kritischen WCAG-Verstösse |
 | **A11Y-05** | `A11ySmokeIT` | /datenschutz hat keine kritischen WCAG-Verstösse |
 | **A11Y-06** | `A11ySmokeIT` | /agb hat keine kritischen WCAG-Verstösse |
+| **A11Y-07** | `A11ySmokeIT` | /dashboard (auth) hat keine kritischen WCAG-Verstösse |
+| **A11Y-08** | `A11ySmokeIT` | /aufgaben (auth) hat keine kritischen WCAG-Verstösse |
+| **A11Y-09** | `A11ySmokeIT` | /meine-anfragen (auth) hat keine kritischen WCAG-Verstösse |
+| **A11Y-10** | `A11ySmokeIT` | /einstellungen (auth) hat keine kritischen WCAG-Verstösse |
 
 ### Phase Operational — Ops-Dashboard + Alerts (OPS)
 

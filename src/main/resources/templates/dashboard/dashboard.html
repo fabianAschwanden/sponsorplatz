@@ -182,7 +182,9 @@
                 <div class="dash-card">
                     <header class="dash-card-head">
                         <h2 class="dash-section-title" th:text="#{dashboard.entwicklung.titel}">Sponsoring-Entwicklung</h2>
-                        <select class="dash-pill-select">
+                        <select class="dash-pill-select"
+                                th:aria-label="#{dashboard.entwicklung.zeitraum.aria}"
+                                aria-label="Zeitraum für Sponsoring-Entwicklung wählen">
                             <option th:text="#{dashboard.zeitraum.woche}">Woche</option>
                             <option th:text="#{dashboard.zeitraum.monat}">Monat</option>
                             <option th:text="#{dashboard.zeitraum.jahr}">Jahr</option>
@@ -210,7 +212,9 @@
                 <div class="dash-card">
                     <header class="dash-card-head">
                         <h2 class="dash-section-title" th:text="#{dashboard.finanzierung.titel}">Finanzierungs-Status</h2>
-                        <select class="dash-pill-select">
+                        <select class="dash-pill-select"
+                                th:aria-label="#{dashboard.finanzierung.zeitraum.aria}"
+                                aria-label="Zeitraum für Finanzierungs-Status wählen">
                             <option th:text="#{dashboard.zeitraum.aktuell}">Aktuell</option>
                             <option th:text="#{dashboard.zeitraum.vorjahr}">Vorjahr</option>
                         </select>
