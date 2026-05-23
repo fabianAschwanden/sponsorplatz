@@ -25,8 +25,20 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # Diagnose vor mvn-Run — hilft bei zukünftigen 'BlobNotFound'-Log-
+      # Aussetzern (2026-05-23: drei Runs in Folge mit unzugänglichen Logs).
+      - name: Runner-Environment
+        run: |
+          echo "Java: $(java -version 2>&1 | head -1)"
+          echo "Maven: $(mvn --version | head -1)"
+          echo "Free RAM: $(free -h | awk 'NR==2 {print $4}')"
+          echo "Free Disk: $(df -h / | awk 'NR==2 {print $4}')"
+
+      # -q (quiet) entfernt — ohne INFO-Output ist BUILD FAILURE oft
+      # nicht reproduzierbar wenn die GitHub-Storage-API später keine
+      # Logs ausliefert. Lieber etwas mehr Logoutput akzeptieren.
       - name: Build with Maven
-        run: mvn -B -q clean verify
+        run: mvn -B clean verify
 
       - name: Upload coverage report
         if: always()
