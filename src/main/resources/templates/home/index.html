@@ -93,6 +93,25 @@
       </div>
     </section>
 
+    <section class="public-balance" aria-labelledby="balance-titel">
+      <div class="public-balance-inner">
+        <p class="public-balance-rubrik" th:text="#{index.balance.rubrik}">CSS Sponsoring</p>
+        <h2 id="balance-titel" th:text="#{index.balance.titel}">Sponsoring anfragen</h2>
+        <p class="public-balance-text">
+          <span th:text="#{index.balance.textPrefix}">Wir unterstützen Aktivitäten passend zu unserem Fokusthema</span>
+          <span class="public-balance-tag" th:text="#{index.balance.fokus}">Balance</span><span>.</span>
+        </p>
+        <div class="public-balance-cta">
+          <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn"
+             th:text="#{index.balance.cta.registrieren}">Verein registrieren</a>
+          <a sec:authorize="!isAuthenticated()" th:href="@{/kontakt}" class="app-btn app-btn-secondary"
+             th:text="#{index.balance.cta.kontakt}">Kontakt aufnehmen</a>
+          <a sec:authorize="isAuthenticated()" th:href="@{/marktplatz}" class="app-btn"
+             th:text="#{index.balance.cta.marktplatz}">Marktplatz entdecken</a>
+        </div>
+      </div>
+    </section>
+
     <section class="app-card" style="max-width: 720px; margin: 2rem auto;">
       <p style="margin: 0 0 0.5rem;"><strong th:text="#{index.aufbau.title}">Phase 0 — In Aufbau.</strong></p>
       <p style="margin: 0 0 0.5rem;" th:text="#{index.aufbau.text}">…</p>

@@ -1570,6 +1570,58 @@ body.public-body {
     letter-spacing: 0.2px;
 }
 
+/* Sponsoring-anfragen-Sektion (CSS-Fokusthema «Balance») —
+   eigene Karte unter dem Hero, visuelle Verlängerung der Hero-Palette. */
+.public-balance {
+    max-width: 760px;
+    margin: 2.5rem auto 1.5rem;
+    padding: 0 1rem;
+}
+.public-balance-inner {
+    background: var(--dash-violet-light);
+    border: 1px solid var(--dash-violet);
+    border-radius: var(--dash-radius);
+    padding: 2rem 2.25rem;
+    text-align: center;
+}
+.public-balance-rubrik {
+    font-family: var(--dash-font-head);
+    font-size: 0.85rem;
+    color: #3F3A8C;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    margin: 0 0 0.5rem;
+}
+.public-balance h2 {
+    font-family: var(--dash-font-head);
+    font-size: 1.85rem;
+    color: var(--dash-text);
+    margin: 0 0 0.75rem;
+    line-height: 1.2;
+}
+.public-balance-text {
+    font-size: 1.05rem;
+    color: var(--dash-text);
+    line-height: 1.55;
+    margin: 0 auto 1.25rem;
+    max-width: 540px;
+}
+.public-balance-tag {
+    display: inline-block;
+    padding: 0.15rem 0.65rem;
+    background: #3F3A8C;
+    color: #fff;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+.public-balance-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    justify-content: center;
+}
+
 /* Health-Chip im Admin-Verifizierungsworkflow */
 .app-chip-health {
     background: var(--dash-coral-soft, rgba(224, 122, 95, 0.15));
