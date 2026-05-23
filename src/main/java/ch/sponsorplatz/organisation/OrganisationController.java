@@ -41,7 +41,8 @@ public class OrganisationController {
     }
 
     /**
-     * Org-Liste — gefiltert nach Berechtigung.
+     * Org-Liste — gefiltert nach Berechtigung, dann optional weiter
+     * eingeschränkt durch Query-Filter (Typ, Status, Branche, Suche).
      *
      * <ul>
      *   <li><b>Anonyme User:</b> alle Orgs (öffentliche Übersicht).</li>
@@ -50,11 +51,36 @@ public class OrganisationController {
      *   <li><b>Plattform-Admins:</b> alle Orgs (für Admin-Zwecke wie
      *       Verifizierungs-Queue).</li>
      * </ul>
+     *
+     * <p>Filter-Parameter sind alle optional und werden mit UND verknüpft.
+     * Reihenfolge: Auth-Sichtbarkeit zuerst, dann Filter — der Filter kann
+     * also nie Orgs zeigen, die der User sonst nicht sehen dürfte.
      */
     @GetMapping
-    public String liste(Authentication auth, Model model) {
+    public String liste(Authentication auth,
+                        @RequestParam(required = false) OrgTyp typ,
+                        @RequestParam(required = false) OrgStatus status,
+                        @RequestParam(required = false) String branche,
+                        @RequestParam(required = false) String q,
+                        Model model) {
+        OrganisationFilter filter = new OrganisationFilter(typ, status, branche, q);
+        List<OrganisationView> sichtbar = ladeListeViews(auth);
+        List<OrganisationView> gefiltert = filter.istLeer()
+                ? sichtbar
+                : sichtbar.stream().filter(filter::matcht).toList();
+
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
-        model.addAttribute("organisationen", ladeListeViews(auth));
+        model.addAttribute("organisationen", gefiltert);
+        model.addAttribute("anzahlGesamt", sichtbar.size());
+        model.addAttribute("filterAktiv", !filter.istLeer());
+        model.addAttribute("filterTyp", typ);
+        model.addAttribute("filterStatus", status);
+        model.addAttribute("filterBranche", branche);
+        model.addAttribute("filterSuche", q);
+        model.addAttribute("typen", OrgTyp.values());
+        model.addAttribute("statusWerte", OrgStatus.values());
+        model.addAttribute("branchen", Branche.values());
+        model.addAttribute("sponsorBranchen", SponsorBranche.values());
         return "organisation/organisationen";
     }
 

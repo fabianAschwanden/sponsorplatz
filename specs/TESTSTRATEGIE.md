@@ -76,6 +76,22 @@ Default-Lauf, damit `mvn test` schnell + Docker-frei bleibt.
 | **ORG-11** | `OrganisationServiceTest` | loesche wirft IllegalStateException wenn Mitgliedschaften vorhanden |
 | **ORG-12** | `OrganisationControllerTest` | GET /organisationen/{slug}/bearbeiten ohne ORG_EDITOR → 403 |
 
+#### Organisations-Filter (ORG-FILTER)
+
+`OrganisationFilter` ist ein Predicate-Record auf `OrganisationView`, der die Liste serverseitig per `?typ=…&status=…&branche=…&q=…` einschränkt. Logik isoliert getestet, Service/Controller wenden sie via Stream-Filter auf die bereits Auth-gefilterte Liste an.
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **ORG-FILTER-01** | `OrganisationFilterTest` | leer-Filter matcht jede Org |
+| **ORG-FILTER-02** | `OrganisationFilterTest` | leerstring-Felder zählen als leer |
+| **ORG-FILTER-03** | `OrganisationFilterTest` | Typ-Filter — nur passender Typ |
+| **ORG-FILTER-04** | `OrganisationFilterTest` | Status-Filter — nur passender Status |
+| **ORG-FILTER-05** | `OrganisationFilterTest` | Branche-Filter matcht Vereins-Branche |
+| **ORG-FILTER-06** | `OrganisationFilterTest` | Branche-Filter matcht Sponsor-Branche |
+| **ORG-FILTER-07** | `OrganisationFilterTest` | Suche — case-insensitive Substring auf Name |
+| **ORG-FILTER-08** | `OrganisationFilterTest` | Kombi Typ + Branche + Suche — alle müssen matchen |
+| **ORG-FILTER-09** | `OrganisationFilterTest` | Org ohne Branche matcht nicht wenn Branche-Filter gesetzt |
+
 ### Phase 0.2 (AppUser, Mitgliedschaft, AccessControl)
 
 #### AppUser (AU)

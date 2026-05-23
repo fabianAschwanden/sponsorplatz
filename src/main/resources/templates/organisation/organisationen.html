@@ -25,9 +25,87 @@
 
         <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
-        <div th:if="${#lists.isEmpty(organisationen)}" class="app-empty">
+        <!-- Filter-Leiste (GET-Form, bookmarkable URLs) -->
+        <form method="get" th:action="@{/organisationen}" class="app-filter">
+            <div class="app-filter-felder">
+                <label>
+                    <span th:text="#{orgListe.filter.typ}">Typ</span>
+                    <select name="typ"
+                            th:aria-label="#{orgListe.filter.typ.aria}"
+                            aria-label="Nach Typ filtern">
+                        <option value="" th:text="#{orgListe.filter.alle}">Alle</option>
+                        <option th:each="t : ${typen}"
+                                th:value="${t}"
+                                th:selected="${filterTyp != null and filterTyp == t}"
+                                th:text="#{'orgTyp.' + ${t}}">VEREIN</option>
+                    </select>
+                </label>
+
+                <label>
+                    <span th:text="#{orgListe.filter.status}">Status</span>
+                    <select name="status"
+                            th:aria-label="#{orgListe.filter.status.aria}"
+                            aria-label="Nach Status filtern">
+                        <option value="" th:text="#{orgListe.filter.alle}">Alle</option>
+                        <option th:each="s : ${statusWerte}"
+                                th:value="${s}"
+                                th:selected="${filterStatus != null and filterStatus == s}"
+                                th:text="#{'orgStatus.' + ${s}}">ACTIVE</option>
+                    </select>
+                </label>
+
+                <label>
+                    <span th:text="#{orgListe.filter.branche}">Branche</span>
+                    <select name="branche"
+                            th:aria-label="#{orgListe.filter.branche.aria}"
+                            aria-label="Nach Branche filtern">
+                        <option value="" th:text="#{orgListe.filter.alle}">Alle</option>
+                        <optgroup th:label="#{orgListe.filter.branche.verein}">
+                            <option th:each="b : ${branchen}"
+                                    th:value="${b.name()}"
+                                    th:selected="${filterBranche != null and filterBranche == b.name()}"
+                                    th:text="${b.anzeige}">Sport</option>
+                        </optgroup>
+                        <optgroup th:label="#{orgListe.filter.branche.sponsor}">
+                            <option th:each="b : ${sponsorBranchen}"
+                                    th:value="${b.name()}"
+                                    th:selected="${filterBranche != null and filterBranche == b.name()}"
+                                    th:text="${b.anzeige}">Bank</option>
+                        </optgroup>
+                    </select>
+                </label>
+
+                <label>
+                    <span th:text="#{orgListe.filter.suche}">Suche</span>
+                    <input type="search" name="q"
+                           th:value="${filterSuche}"
+                           th:placeholder="#{orgListe.filter.suche.platzhalter}"
+                           th:aria-label="#{orgListe.filter.suche.aria}"
+                           aria-label="Name durchsuchen">
+                </label>
+            </div>
+            <div class="app-filter-aktionen">
+                <button type="submit" class="app-btn" th:text="#{orgListe.filter.anwenden}">Filtern</button>
+                <a th:if="${filterAktiv}" th:href="@{/organisationen}"
+                   class="app-btn app-btn-secondary"
+                   th:text="#{orgListe.filter.zuruecksetzen}">Zurücksetzen</a>
+            </div>
+        </form>
+
+        <p th:if="${filterAktiv}" class="app-muted" style="margin: 0.5rem 0 1rem;">
+            <span th:text="|#{orgListe.filter.treffer} ${#lists.size(organisationen)} / ${anzahlGesamt}|">
+                Treffer: 3 / 12
+            </span>
+        </p>
+
+        <div th:if="${#lists.isEmpty(organisationen) and !filterAktiv}" class="app-empty">
             <strong th:text="#{orgListe.empty.titel}">Noch keine Organisationen erfasst.</strong>
             <span th:text="#{orgListe.empty.text}">Lege die erste an — Verein, Unternehmen oder Stiftung.</span>
+        </div>
+
+        <div th:if="${#lists.isEmpty(organisationen) and filterAktiv}" class="app-empty">
+            <strong th:text="#{orgListe.filter.empty.titel}">Keine Treffer für diese Filter.</strong>
+            <span th:text="#{orgListe.filter.empty.text}">Lockere die Filter-Kriterien oder setze sie zurück.</span>
         </div>
 
         <table th:if="${not #lists.isEmpty(organisationen)}" class="app-table">
@@ -47,7 +125,7 @@
                     <div class="app-muted" th:text="${org.slug}">slug</div>
                 </td>
                 <td><span class="app-chip" th:text="${org.typ}">VEREIN</span></td>
-                <td th:text="${org.branche != null ? org.branche.anzeige : '—'}">—</td>
+                <td th:text="${org.branche != null ? org.branche.anzeige : (org.sponsorBranche != null ? org.sponsorBranche.anzeige : '—')}">—</td>
                 <td>
                     <span class="app-status" th:classappend="${'status-' + #strings.toLowerCase(org.status)}"
                           th:text="${org.status}">PENDING</span>

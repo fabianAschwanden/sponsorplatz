@@ -1168,6 +1168,49 @@ body.app-body {
     margin-bottom: 1.5rem;
 }
 
+/* Filter-Leiste über Listen (Organisationen-Liste, später ggf. mehr) */
+.app-filter {
+    background: var(--dash-card);
+    border: 1px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.app-filter-felder {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+.app-filter-felder label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    color: var(--dash-muted);
+}
+.app-filter-felder select,
+.app-filter-felder input {
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--dash-border);
+    border-radius: var(--dash-radius-pill);
+    background: #fff;
+    font-size: 0.9rem;
+    color: var(--dash-text);
+}
+.app-filter-felder select:focus,
+.app-filter-felder input:focus {
+    outline: 2px solid var(--dash-violet);
+    outline-offset: 1px;
+}
+.app-filter-aktionen {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
 /* Tabelle im neuen Stil */
 .app-table {
     width: 100%;
