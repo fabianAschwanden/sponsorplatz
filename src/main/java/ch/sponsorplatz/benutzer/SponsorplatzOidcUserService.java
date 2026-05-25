@@ -86,7 +86,17 @@ public class SponsorplatzOidcUserService extends OidcUserService {
                 extrahiereGroups(oidc),
                 provider);
 
-        return new DefaultOidcUser(buildAuthorities(user), oidc.getIdToken(), oidc.getUserInfo());
+        // 'email' als nameAttributeKey: Spring-Default ist 'sub' (IdP-interne ID).
+        // Der Rest der App nutzt aber 'authentication.getName()' als Email-Lookup-
+        // Schlüssel (CurrentUserAdvice, LoginSuccessHandler, EinstellungenController
+        // etc.) — mit 'sub' würde dort 'Benutzer nicht gefunden' fliegen.
+        // Voraussetzung: Provider liefert 'email' im ID-Token (gilt für alle in
+        // IdentityProvider registrierten — scope=openid,profile,email).
+        return new DefaultOidcUser(
+                buildAuthorities(user),
+                oidc.getIdToken(),
+                oidc.getUserInfo(),
+                "email");
     }
 
     /**
