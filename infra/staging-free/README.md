@@ -242,6 +242,20 @@ Logins von Emails ausserhalb dieser Domains werden mit 401 abgewiesen.
 `infra/envs/staging-free/cloud-init.yaml.tftpl` und brauchen keinen
 Secret-Roundtrip — nur die wirklich geheimen Werte fliessen durch GitHub.
 
+**Auf laufender VM (ohne Terraform-Re-Apply):** falls die VM vor dem
+Google-OIDC-Wiring (2026-05-25) bereitgestellt wurde, fehlen die 5
+`SPRING_SECURITY_OAUTH2_CLIENT_*_GOOGLE_*`-Einträge in der laufenden
+`/opt/sponsorplatz/docker-compose.yml`. Der Helper patcht das idempotent:
+
+```bash
+./infra/scripts/patch-vm-compose-envs.sh opc@<OCI-VM-IP> --restart
+```
+
+Fügt Sentry- und Google-OIDC-Blöcke vor `JAVA_OPTS:` ein (no-op wenn schon
+da), validiert via `docker compose config`, restartet die App. Backup
+mit Timestamp wird unter `/opt/sponsorplatz/docker-compose.yml.bak.*`
+hinterlegt — Rollback bei Bedarf via `sudo cp -a <backup> docker-compose.yml`.
+
 **Key-Rotation:** Secret-Wert im Repo aktualisieren, Workflow neu triggern.
 Google-Side: in der Cloud Console → Credentials → "Add Secret" + altes
 Secret nach erfolgreichem Roll-Out löschen.

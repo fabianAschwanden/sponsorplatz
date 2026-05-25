@@ -189,6 +189,14 @@ Unterschiede für Azure:
 Sentry-Release-Tagging läuft identisch — siehe Sentry-Abschnitt in der
 OCI-README.
 
+OIDC Google-Login ebenfalls identisch zu OCI — siehe
+[`infra/staging-free/README.md`](../../staging-free/README.md#oidc-google-login-cd-managed).
+Compose-Patch-Helper auf laufende VM:
+
+```bash
+./infra/scripts/patch-vm-compose-envs.sh sponsoradmin@<AZURE_VM_IP> --restart
+```
+
 ## Cleanup
 
 ```bash
