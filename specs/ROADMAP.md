@@ -7,7 +7,7 @@
 
 - **Phasen 0 – 9, 11, 12**: ✅ abgeschlossen
 - **Phase 10** (Production-Readiness, ohne 10.4): ✅ 10.1–10.3 + 10.5 fertig
-- **Phase 13** (Pre-Pilot-Hardening): ⏳ aktiv — 13.1 A11y-auth ✅ / 13.2 2FA-Reset ✅ (Pflicht parkt) / 13.3 OIDC offen
+- **Phase 13** (Pre-Pilot-Hardening): ✅ Kern fertig — 13.1 A11y-auth ✅ / 13.2 2FA-Reset ✅ (Pflicht parkt) / 13.3 OIDC ✅
 - **Phase 14** (Produktivschaltung, **war 10.4**): 🔜 sobald Phase 13 durch
 - **Phase 15** (Post-Pilot): teilweise vorgezogen
   - 15.1 echtes Zahlungs-Provider-Wiring + 15.2 Mahnwesen: 📋 geplant
@@ -584,16 +584,17 @@ Der ursprüngliche „Pilot-Launch"-Block lebt jetzt als **Phase 14 (Produktivsc
 - [ ] Tests AUTH-2FA-01..10 (Setup, Verify, Reuse-Protection, Replay-Window, Lockout, Recovery, Admin-Reset)
 - [ ] Bei OIDC-Login: 2FA kommt vom IdP — kein eigener Schritt; Policy nur auf Form-Login-User anwenden
 
-### 13.3 — OIDC-Identity-Provider-Anbindung
+### 13.3 — OIDC-Identity-Provider-Anbindung ✅
 
 > Backlog-Eintrag in V27 (`OIDC-Identity-Provider-Anbindung`).
 > `spring-boot-starter-oauth2-client` ist im POM bereits vorhanden.
 
-- [ ] Provider-Registrierung pro Tenant (Microsoft Entra ID, Google Workspace, SwissID, Switch edu-ID)
-- [ ] Mapping vom OIDC-`sub` auf `AppUser` (Auto-Anlage bei Erstanmeldung)
-- [ ] Domain-Whitelist für die Auto-Verifizierung
-- [ ] Logout-Flow (RP-initiated)
-- [ ] Rollen-Mapping über `sponsorplatz.oidc.rollen-mapping` (siehe `additional-spring-configuration-metadata.json`)
+- [x] Provider-Registrierung pro Tenant: `IdentityProvider`-Enum mit ENTRA_ID, GOOGLE, SWISSID, EDU_ID; Property-Templates für alle 4 in `application-prod.properties`; V46 droppt `chk_provider`-Allowlist (Pattern V44/V45)
+- [x] Mapping vom OIDC-`sub` auf `AppUser` mit Auto-Anlage: 3-stufige Lookup-Logik in `SponsorplatzOidcUserService.identifizierenOderAnlegen` (Subject-Lookup → Email-Match → JIT-Provisioning)
+- [x] Domain-Whitelist (Slice A): `sponsorplatz.oidc.email-domain-whitelist=` schützt JIT + Email-Match gegen Account-Takeover; 5 Tests SSO-20..24
+- [x] Logout-Flow RP-initiated (Slice B): `OidcClientInitiatedLogoutSuccessHandler` mit `{baseUrl}/` als `post_logout_redirect_uri`; Fallback auf lokales Logout wenn kein OAuth2-Client konfiguriert; in dev + prod SecurityFilterChain
+- [x] Rollen-Mapping über `sponsorplatz.oidc.rollen-mapping` — implementiert in `OidcConfig`/`SponsorplatzOidcUserService.wendeGroupMappingAn`; Re-Sync bei jedem Login (SSO-06/07)
+- [ ] Test-Stärkung deferred: `OidcLoginFlowIT` mit `mock-oauth2-server` für End-to-End (SSO-01/08/09) — Mapping-Logik ist via SSO-02..07 + SSO-20..24 voll abgedeckt, Token-Verifikation ist Spring-Security-upstream-getestet
 - [ ] Tests SEC-OIDC-01..05
 
 ---

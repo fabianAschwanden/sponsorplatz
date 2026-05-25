@@ -19,10 +19,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 /**
  * Sicherheits-Konfiguration für Sponsorplatz.
@@ -127,9 +129,18 @@ public class SecurityConfig {
                         .successHandler(loginSuccessHandler)
                         .failureHandler(loginFailureHandler)
                         .permitAll())
-                .logout(logout -> logout
-                        .logoutSuccessUrl("/")
-                        .permitAll())
+                .logout(logout -> {
+                    LogoutSuccessHandler oidcLogout = oidcLogoutHandler(oauth2Clients);
+                    if (oidcLogout != null) {
+                        // RP-initiated Logout (Spec §11): nach lokalem Session-Kill
+                        // wird der User zum end_session_endpoint des IdP geleitet —
+                        // verhindert Auto-Re-Login via noch aktive IdP-Session.
+                        logout.logoutSuccessHandler(oidcLogout);
+                    } else {
+                        logout.logoutSuccessUrl("/");
+                    }
+                    logout.permitAll();
+                })
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/h2-console/**", "/benachrichtigungen/**", "/payment/webhook/**", "/api/**"))
                 // Filter-Reihenfolge explizit linear: LoginSperre → RateLimit →
@@ -238,7 +249,12 @@ public class SecurityConfig {
                             "frame-ancestors 'none'"
                     ));
                 })
-                .logout(Customizer.withDefaults());
+                .logout(logout -> {
+                    LogoutSuccessHandler oidcLogout = oidcLogoutHandler(oauth2Clients);
+                    if (oidcLogout != null) {
+                        logout.logoutSuccessHandler(oidcLogout);
+                    }
+                });
 
         wendeOidcLoginAn(http, oauth2Clients, oidcUserService, loginSuccessHandler, loginFailureHandler);
         return http.build();
@@ -247,6 +263,25 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * Liefert einen {@link OidcClientInitiatedLogoutSuccessHandler} wenn ein
+     * {@link ClientRegistrationRepository} im Context ist, sonst {@code null}.
+     * Konfiguriert {@code {baseUrl}/} als post_logout_redirect_uri — die URI
+     * muss beim IdP als "Logout URI" registriert sein (Spec §4.1).
+     * Aufrufer entscheiden ob sie auf den Default-Logout zurückfallen.
+     */
+    private LogoutSuccessHandler oidcLogoutHandler(
+            ObjectProvider<ClientRegistrationRepository> oauth2Clients) {
+        ClientRegistrationRepository repo = oauth2Clients.getIfAvailable();
+        if (repo == null) {
+            return null;
+        }
+        OidcClientInitiatedLogoutSuccessHandler handler =
+                new OidcClientInitiatedLogoutSuccessHandler(repo);
+        handler.setPostLogoutRedirectUri("{baseUrl}/");
+        return handler;
     }
 
     /**

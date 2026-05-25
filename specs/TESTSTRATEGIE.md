@@ -900,9 +900,19 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **SSO-12** | `FederierteIdentitaetRepositoryTest` | UNIQUE-Constraint auf `(provider, subject)` — zweiter Eintrag wirft `ConstraintViolationException` ✅ |
 
 **Spätere Tests (Phase 1.4 fortgesetzt):**
-- **SSO-13** (TBD): Single Logout — Provider-initiated `end_session_endpoint`-Aufruf entfernt Session lokal und beim Provider
+- **SSO-13** ✅ (Slice B, Phase 13.3): RP-initiated Logout — `OidcClientInitiatedLogoutSuccessHandler` ruft `end_session_endpoint` des IdP auf, `post_logout_redirect_uri={baseUrl}/`. Aktiv sobald `ClientRegistrationRepository` im Context, sonst Fallback auf `logoutSuccessUrl("/")`. SecurityConfig.oidcLogoutHandler.
 - **SSO-14** (TBD): User-UI für manuelle Verknüpfung/Trennung der Entra-Identität in `/einstellungen`
-- **SSO-15** (TBD): Multi-Provider — Erweiterung um Google/Apple, Provider-Auswahl auf `/login`
+- **SSO-15** ✅ (Slice C, Phase 13.3): Multi-Provider — `IdentityProvider`-Enum um GOOGLE, SWISSID, EDU_ID erweitert; V46 droppt `chk_provider` (Pattern V44/V45). `SponsorplatzOidcUserService.resolveProvider` mappt Spring-`registrationId` auf Enum (case-insensitive, mit Kurz-IDs `entra`/`edu`). Property-Templates für alle 4 Provider in `application-prod.properties`.
+
+#### SSO — Domain-Whitelist (Slice A, Phase 13.3)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **SSO-20** | `SponsorplatzOidcUserServiceTest` | Leere Whitelist → JIT für jede Domain erlaubt (Backward-Compat) ✅ |
+| **SSO-21** | `SponsorplatzOidcUserServiceTest` | Whitelist gesetzt + Email in Whitelist → JIT erlaubt ✅ |
+| **SSO-22** | `SponsorplatzOidcUserServiceTest` | Whitelist gesetzt + Email NICHT in Whitelist → `OAuth2AuthenticationException`, kein DB-Side-Effect ✅ |
+| **SSO-23** | `SponsorplatzOidcUserServiceTest` | Whitelist greift auch bei Email-Match auf bestehenden AppUser (Account-Takeover-Schutz) ✅ |
+| **SSO-24** | `SponsorplatzOidcUserServiceTest` | Whitelist-Check ist case-insensitive (RFC 5321 — Domain-Teil) ✅ |
 
 ### Persönliche Anfragen-Übersicht + Anfrage-Erstellung (MANF)
 

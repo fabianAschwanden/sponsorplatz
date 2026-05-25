@@ -8,12 +8,16 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -41,7 +45,8 @@ class SponsorplatzOidcUserServiceTest {
         service = new SponsorplatzOidcUserService(
                 appUserRepository,
                 identitaetRepository,
-                Map.of(PlatformRolle.PLATFORM_ADMIN, "sponsorplatz-admins"));
+                Map.of(PlatformRolle.PLATFORM_ADMIN, "sponsorplatz-admins"),
+                Set.of()); // leere Whitelist → alle Domains erlaubt (Backward-Compat)
     }
 
     @Test
@@ -153,6 +158,92 @@ class SponsorplatzOidcUserServiceTest {
                 IdentityProvider.ENTRA_ID);
 
         assertThat(ergebnis.getPlatformRolle()).isNull();
+    }
+
+    // ── Domain-Whitelist (Slice A, Spec §6.2/§6.3) ───────────────────────
+
+    @Test
+    @DisplayName("SSO-20: Leere Whitelist → JIT für jede Domain erlaubt (Backward-Compat)")
+    void leereWhitelistErlaubtAlles() {
+        // Default-setUp() liefert leere Whitelist — Verhalten identisch zu SSO-03
+        when(identitaetRepository.findByProviderAndSubject(IdentityProvider.ENTRA_ID, "subject-new"))
+                .thenReturn(Optional.empty());
+        when(appUserRepository.findByEmail("any@beliebig.com")).thenReturn(Optional.empty());
+        when(appUserRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        AppUser ergebnis = service.identifizierenOderAnlegen(
+                "subject-new", "any@beliebig.com", "Any User", List.of(),
+                IdentityProvider.ENTRA_ID);
+
+        assertThat(ergebnis.getEmail()).isEqualTo("any@beliebig.com");
+    }
+
+    @Test
+    @DisplayName("SSO-21: Whitelist gesetzt + Email in Whitelist → JIT erlaubt")
+    void whitelistMitMatchErlaubtJit() {
+        SponsorplatzOidcUserService whitelisted = new SponsorplatzOidcUserService(
+                appUserRepository, identitaetRepository,
+                Map.of(), Set.of("css.ch", "sponsorplatz.ch"));
+        when(identitaetRepository.findByProviderAndSubject(IdentityProvider.ENTRA_ID, "subject-1"))
+                .thenReturn(Optional.empty());
+        when(appUserRepository.findByEmail("neu@css.ch")).thenReturn(Optional.empty());
+        when(appUserRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        AppUser ergebnis = whitelisted.identifizierenOderAnlegen(
+                "subject-1", "neu@css.ch", "Neu CSS", List.of(),
+                IdentityProvider.ENTRA_ID);
+
+        assertThat(ergebnis.getEmail()).isEqualTo("neu@css.ch");
+    }
+
+    @Test
+    @DisplayName("SSO-22: Whitelist gesetzt + Email NICHT in Whitelist → OAuth2AuthenticationException, kein DB-Side-Effect")
+    void whitelistOhneMatchWirftException() {
+        SponsorplatzOidcUserService whitelisted = new SponsorplatzOidcUserService(
+                appUserRepository, identitaetRepository,
+                Map.of(), Set.of("css.ch"));
+
+        assertThatThrownBy(() -> whitelisted.identifizierenOderAnlegen(
+                "subject-evil", "attacker@evil.ch", "Eve", List.of(),
+                IdentityProvider.ENTRA_ID))
+                .isInstanceOf(OAuth2AuthenticationException.class)
+                .hasMessageContaining("evil.ch");
+        verify(appUserRepository, never()).save(any());
+        verify(identitaetRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("SSO-23: Whitelist greift auch bei Email-Match auf bestehenden AppUser (Account-Takeover-Schutz)")
+    void whitelistGiltAuchBeiEmailMatch() {
+        SponsorplatzOidcUserService whitelisted = new SponsorplatzOidcUserService(
+                appUserRepository, identitaetRepository,
+                Map.of(), Set.of("css.ch"));
+
+        assertThatThrownBy(() -> whitelisted.identifizierenOderAnlegen(
+                "subject-evil", "victim@beliebig.com", "Victim", List.of(),
+                IdentityProvider.ENTRA_ID))
+                .isInstanceOf(OAuth2AuthenticationException.class);
+        // Whitelist greift VOR allen Lookups — also weder findBy noch save
+        verify(identitaetRepository, never()).findByProviderAndSubject(any(), any());
+        verify(appUserRepository, never()).findByEmail(any());
+    }
+
+    @Test
+    @DisplayName("SSO-24: Whitelist-Check ist case-insensitive (RFC 5321 — Domain-Teil)")
+    void whitelistIstCaseInsensitive() {
+        SponsorplatzOidcUserService whitelisted = new SponsorplatzOidcUserService(
+                appUserRepository, identitaetRepository,
+                Map.of(), Set.of("css.ch"));
+        when(identitaetRepository.findByProviderAndSubject(IdentityProvider.ENTRA_ID, "subject-x"))
+                .thenReturn(Optional.empty());
+        when(appUserRepository.findByEmail("Anna@CSS.CH")).thenReturn(Optional.empty());
+        when(appUserRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        AppUser ergebnis = whitelisted.identifizierenOderAnlegen(
+                "subject-x", "Anna@CSS.CH", "Anna", List.of(),
+                IdentityProvider.ENTRA_ID);
+
+        assertThat(ergebnis.getEmail()).isEqualTo("Anna@CSS.CH");
     }
 
     private AppUser appUser(String email, String anzeigename) {

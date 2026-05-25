@@ -7,6 +7,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -50,14 +53,23 @@ public class SponsorplatzOidcUserService extends OidcUserService {
     private final FederierteIdentitaetRepository identitaetRepository;
     /** Map<PlatformRolle, Entra-Group-Name>. Leer → kein Group-Mapping aktiv. */
     private final Map<PlatformRolle, String> rollenMapping;
+    /**
+     * Erlaubte Email-Domains für OIDC-Logins. Leer → keine Beschränkung
+     * (Backward-Compat). Gefüllt → jeder Login (auch bestehender User per
+     * Email-Match) muss eine Email mit einer dieser Domains haben — schützt
+     * vor Account-Takeover in Multi-Tenant-IdPs (Spec §6.3).
+     */
+    private final Set<String> emailDomainWhitelist;
 
     public SponsorplatzOidcUserService(
             AppUserRepository appUserRepository,
             FederierteIdentitaetRepository identitaetRepository,
-            @Qualifier("oidcRollenMapping") Map<PlatformRolle, String> rollenMapping) {
+            @Qualifier("oidcRollenMapping") Map<PlatformRolle, String> rollenMapping,
+            @Qualifier("oidcEmailDomainWhitelist") Set<String> emailDomainWhitelist) {
         this.appUserRepository = appUserRepository;
         this.identitaetRepository = identitaetRepository;
         this.rollenMapping = rollenMapping;
+        this.emailDomainWhitelist = emailDomainWhitelist;
     }
 
     @Override
@@ -65,15 +77,41 @@ public class SponsorplatzOidcUserService extends OidcUserService {
         // Spring's OidcUserService verifiziert ID-Token (JWKS-Signatur, Issuer,
         // Audience, Expiry, Nonce) — ist der das durchläuft, ist der Token valid.
         OidcUser oidc = super.loadUser(userRequest);
+        IdentityProvider provider = resolveProvider(userRequest.getClientRegistration().getRegistrationId());
 
         AppUser user = identifizierenOderAnlegen(
                 oidc.getSubject(),
                 oidc.getEmail(),
                 oidc.getFullName(),
                 extrahiereGroups(oidc),
-                IdentityProvider.ENTRA_ID);
+                provider);
 
         return new DefaultOidcUser(buildAuthorities(user), oidc.getIdToken(), oidc.getUserInfo());
+    }
+
+    /**
+     * Mappt die Spring-{@code registrationId} (der Property-Key in
+     * {@code spring.security.oauth2.client.registration.X}) auf den
+     * {@link IdentityProvider}-Enum-Wert. Erlaubt mehrere Provider mit
+     * konsistentem Mapping — case-insensitive Match.
+     *
+     * <p>Unbekannte registrationIds werfen {@link OAuth2AuthenticationException}
+     * — verhindert dass ein versehentlich registrierter Provider ohne Enum-
+     * Eintrag Login-Versuche mit unbekanntem Provider in der DB landen lässt.
+     */
+    private IdentityProvider resolveProvider(String registrationId) {
+        String normalisiert = registrationId.toUpperCase(Locale.ROOT).replace('-', '_');
+        // Spring-übliche Kurz-IDs: 'entra' → ENTRA_ID, 'edu' → EDU_ID
+        if (normalisiert.equals("ENTRA")) return IdentityProvider.ENTRA_ID;
+        if (normalisiert.equals("EDU"))   return IdentityProvider.EDU_ID;
+        try {
+            return IdentityProvider.valueOf(normalisiert);
+        } catch (IllegalArgumentException ex) {
+            log.warn("OIDC-Login mit unbekanntem registrationId '{}' — kein Mapping auf IdentityProvider", registrationId);
+            throw new OAuth2AuthenticationException(new OAuth2Error("server_error",
+                    "OIDC-Provider '" + registrationId + "' ist nicht in IdentityProvider-Enum registriert.",
+                    null));
+        }
     }
 
     /**
@@ -83,6 +121,8 @@ public class SponsorplatzOidcUserService extends OidcUserService {
      */
     public AppUser identifizierenOderAnlegen(String subject, String email, String name,
                                              List<String> groups, IdentityProvider provider) {
+        pruefeWhitelist(email);
+
         // Stufe 1: stabiler Lookup via (provider, subject)
         Optional<FederierteIdentitaet> bestehende =
                 identitaetRepository.findByProviderAndSubject(provider, subject);
@@ -162,6 +202,35 @@ public class SponsorplatzOidcUserService extends OidcUserService {
             return ((List<Object>) claim).stream().map(Object::toString).toList();
         }
         return List.of();
+    }
+
+    /**
+     * Wirft {@link OAuth2AuthenticationException} wenn die Whitelist aktiv ist
+     * und die Email-Domain nicht in der Allowlist steht. Greift vor allen
+     * Lookups — auch bestehende AppUser werden über die Whitelist geschützt
+     * (Account-Takeover-Mitigation, Spec §6.3).
+     */
+    private void pruefeWhitelist(String email) {
+        if (emailDomainWhitelist.isEmpty()) {
+            return;
+        }
+        if (email == null) {
+            throw new OAuth2AuthenticationException(new OAuth2Error("access_denied",
+                    "OIDC-Login ohne Email-Claim — Whitelist-Check nicht möglich.", null));
+        }
+        int at = email.lastIndexOf('@');
+        if (at <= 0 || at == email.length() - 1) {
+            throw new OAuth2AuthenticationException(new OAuth2Error("access_denied",
+                    "OIDC-Email '" + email + "' ohne Domain — Whitelist-Check fehlgeschlagen.", null));
+        }
+        String domain = email.substring(at + 1).toLowerCase(Locale.ROOT);
+        if (!emailDomainWhitelist.contains(domain)) {
+            log.warn("OIDC-Login verweigert: Email-Domain '{}' nicht in Whitelist {}",
+                    domain, emailDomainWhitelist);
+            throw new OAuth2AuthenticationException(new OAuth2Error("access_denied",
+                    "OIDC-Email-Domain '" + domain + "' ist für diese Plattform nicht freigeschaltet.",
+                    null));
+        }
     }
 
     private Set<GrantedAuthority> buildAuthorities(AppUser user) {
