@@ -39,10 +39,15 @@ soll). Bei jedem Lauf wird ein Backup mit Timestamp angelegt — Rollback bei
 docker-compose-Syntaxfehler erfolgt automatisch.
 
 Options:
-  --no-restart    Container nicht neu starten (nur compose-File-Patch).
-  --key <path>    SSH-Identitätsdatei. Auto-Default für 'sponsoradmin@'-User:
-                  ~/.ssh/sponsorplatz-azure (falls vorhanden). 'opc@'-User nutzt
-                  den Default-Key (keine -i-Option).
+  --no-restart        Container nicht neu starten (nur compose-File-Patch).
+  --key <path>        SSH-Identitätsdatei. Auto-Default für 'sponsoradmin@'-User:
+                      ~/.ssh/sponsorplatz-azure (falls vorhanden). 'opc@'-User
+                      nutzt den Default-Key (keine -i-Option).
+  --umgebung <name>   SENTRY_ENVIRONMENT-Wert (z.B. oci-staging-free,
+                      azure-staging). Falls weggelassen: zuerst aus compose-File
+                      (SPONSORPLATZ_UMGEBUNG) gelesen, sonst aus SSH-User
+                      geraten (opc@ → oci-staging-free, sponsoradmin@ →
+                      azure-staging).
 
 Beispiele:
   ./patch-vm-compose-envs.sh opc@144.24.246.244
@@ -56,6 +61,7 @@ SSH_TARGET="$1"
 shift
 RESTART=true
 SSH_KEY=""
+UMGEBUNG_OVERRIDE=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -72,12 +78,26 @@ while [ $# -gt 0 ]; do
       SSH_KEY="$2"
       shift 2
       ;;
+    --umgebung)
+      UMGEBUNG_OVERRIDE="$2"
+      shift 2
+      ;;
     *)
       echo "✗ Unbekanntes Argument: $1" >&2
       exit 1
       ;;
   esac
 done
+
+# UMGEBUNG aus SSH-User-Prefix raten (Fallback für VMs ohne SPONSORPLATZ_UMGEBUNG
+# im compose-File — die wurden vor V41/Phase-15 provisioniert).
+UMGEBUNG_GUESS=""
+if [ -z "$UMGEBUNG_OVERRIDE" ]; then
+  case "$SSH_TARGET" in
+    opc@*)          UMGEBUNG_GUESS="oci-staging-free" ;;
+    sponsoradmin@*) UMGEBUNG_GUESS="azure-staging" ;;
+  esac
+fi
 
 # Auto-Default für Azure-User: sponsoradmin@ → ~/.ssh/sponsorplatz-azure
 if [ -z "$SSH_KEY" ] && [[ "$SSH_TARGET" == sponsoradmin@* ]] && [ -f "$HOME/.ssh/sponsorplatz-azure" ]; then
@@ -97,8 +117,8 @@ fi
 echo "→ SSH zu $SSH_TARGET${SSH_KEY:+ (key: $SSH_KEY)}, patche /opt/sponsorplatz/docker-compose.yml …"
 echo
 
-# Übergibt RESTART als Umgebungsvariable an die remote-Seite.
-ssh ${SSH_OPTS[@]+"${SSH_OPTS[@]}"} "$SSH_TARGET" "RESTART=$RESTART bash -s" <<'REMOTE'
+# Übergibt RESTART + Umgebungs-Hinweise als Umgebungsvariablen an die remote-Seite.
+ssh ${SSH_OPTS[@]+"${SSH_OPTS[@]}"} "$SSH_TARGET" "RESTART=$RESTART UMGEBUNG_OVERRIDE='$UMGEBUNG_OVERRIDE' UMGEBUNG_GUESS='$UMGEBUNG_GUESS' bash -s" <<'REMOTE'
 set -euo pipefail
 COMPOSE=/opt/sponsorplatz/docker-compose.yml
 
@@ -129,14 +149,28 @@ fi
 INDENT_LEN=${#INDENT}
 echo "✓ Detected indent: $INDENT_LEN spaces"
 
-# SENTRY_ENVIRONMENT pro Cloud — aus dem bestehenden SPONSORPLATZ_UMGEBUNG-Wert.
-echo "→ Lese SPONSORPLATZ_UMGEBUNG aus $COMPOSE …"
-UMGEBUNG=$(sudo awk '/SPONSORPLATZ_UMGEBUNG:/ {print $2; exit}' "$COMPOSE")
-if [ -z "$UMGEBUNG" ]; then
-  echo "✗ SPONSORPLATZ_UMGEBUNG nicht in $COMPOSE gefunden — Abbruch" >&2
-  exit 1
+# SENTRY_ENVIRONMENT pro Cloud — Reihenfolge der Quellen:
+#   1. --umgebung-Override (vom User explizit gesetzt)
+#   2. SPONSORPLATZ_UMGEBUNG im laufenden compose-File (V41+ provisionierte VMs)
+#   3. Aus dem SSH-User-Prefix geraten (opc → oci-staging-free, sponsoradmin → azure-staging)
+#   4. Fail mit Hinweis auf --umgebung-Flag
+if [ -n "$UMGEBUNG_OVERRIDE" ]; then
+  UMGEBUNG="$UMGEBUNG_OVERRIDE"
+  echo "✓ Cloud-Zone (via --umgebung): $UMGEBUNG"
+else
+  echo "→ Lese SPONSORPLATZ_UMGEBUNG aus $COMPOSE …"
+  UMGEBUNG=$(sudo awk '/SPONSORPLATZ_UMGEBUNG:/ {print $2; exit}' "$COMPOSE")
+  if [ -n "$UMGEBUNG" ]; then
+    echo "✓ Cloud-Zone (aus compose): $UMGEBUNG"
+  elif [ -n "$UMGEBUNG_GUESS" ]; then
+    UMGEBUNG="$UMGEBUNG_GUESS"
+    echo "ℹ SPONSORPLATZ_UMGEBUNG nicht im compose (VM vor V41 provisioniert)"
+    echo "✓ Cloud-Zone (aus SSH-User geraten): $UMGEBUNG"
+  else
+    echo "✗ Cloud-Zone nicht bestimmbar — bitte --umgebung <oci-staging-free|azure-staging> setzen" >&2
+    exit 1
+  fi
 fi
-echo "✓ Cloud-Zone: $UMGEBUNG"
 
 # ── 1. Backup ─────────────────────────────────────────────────────────────
 BACKUP="$COMPOSE.bak.$(date +%Y%m%d-%H%M%S)"
