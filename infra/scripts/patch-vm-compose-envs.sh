@@ -112,17 +112,26 @@ fi
 # Template-Einrückung 6 oder 12 Spaces im finalen File liefern. Wir lesen den
 # tatsächlichen Indent der 'JAVA_OPTS:'-Zeile und benutzen ihn für die Inserts —
 # damit ist YAML-Konsistenz garantiert.
-JAVA_LINE=$(sudo grep -E '^[[:space:]]+JAVA_OPTS:' "$COMPOSE" | head -1)
-if [ -z "$JAVA_LINE" ]; then
+#
+# Atomic awk statt 'grep | head | awk' — Pipeline mit head verursacht SIGPIPE
+# in grep, und 'set -o pipefail' macht das zum hard fail mit 'set -e'.
+INDENT=$(sudo awk '
+  /^[[:space:]]+JAVA_OPTS:/ {
+    match($0, /^[[:space:]]+/)
+    print substr($0, 1, RLENGTH)
+    exit
+  }
+' "$COMPOSE")
+if [ -z "$INDENT" ]; then
   echo "✗ 'JAVA_OPTS:'-Anker nicht in $COMPOSE gefunden — Abbruch" >&2
   exit 1
 fi
-INDENT=$(printf '%s\n' "$JAVA_LINE" | sed -E 's/^([[:space:]]*).*/\1/')
 INDENT_LEN=${#INDENT}
 echo "✓ Detected indent: $INDENT_LEN spaces"
 
 # SENTRY_ENVIRONMENT pro Cloud — aus dem bestehenden SPONSORPLATZ_UMGEBUNG-Wert.
-UMGEBUNG=$(sudo grep -oE 'SPONSORPLATZ_UMGEBUNG: [a-z-]+' "$COMPOSE" | head -1 | awk '{print $2}')
+echo "→ Lese SPONSORPLATZ_UMGEBUNG aus $COMPOSE …"
+UMGEBUNG=$(sudo awk '/SPONSORPLATZ_UMGEBUNG:/ {print $2; exit}' "$COMPOSE")
 if [ -z "$UMGEBUNG" ]; then
   echo "✗ SPONSORPLATZ_UMGEBUNG nicht in $COMPOSE gefunden — Abbruch" >&2
   exit 1
