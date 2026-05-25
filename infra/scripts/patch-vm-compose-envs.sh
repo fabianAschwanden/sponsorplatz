@@ -23,27 +23,74 @@ set -euo pipefail
 
 if [ $# -lt 1 ] || [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
   cat <<'USAGE' >&2
-Usage: patch-vm-compose-envs.sh <user@host> [--restart]
+Usage: patch-vm-compose-envs.sh <user@host> [--restart] [--key <path>]
 
 Patcht /opt/sponsorplatz/docker-compose.yml idempotent um:
   - Sentry-Block (SENTRY_DSN, SENTRY_RELEASE, SENTRY_ENVIRONMENT)
   - Google-OIDC-Block (SPRING_SECURITY_OAUTH2_CLIENT_*_GOOGLE_*)
 
+Options:
+  --restart       Container nach erfolgreichem Patch via docker compose up
+                  -d --force-recreate neu starten (sonst nur compose-File-Patch).
+  --key <path>    SSH-Identitätsdatei. Auto-Default für 'sponsoradmin@'-User:
+                  ~/.ssh/sponsorplatz-azure (falls vorhanden). 'opc@'-User nutzt
+                  den Default-Key (keine -i-Option).
+
 Beispiele:
   ./patch-vm-compose-envs.sh opc@144.24.246.244
   ./patch-vm-compose-envs.sh sponsoradmin@135.116.65.6 --restart
+  ./patch-vm-compose-envs.sh sponsoradmin@<ip> --key ~/.ssh/other-key
 USAGE
   exit 1
 fi
 
 SSH_TARGET="$1"
-RESTART_FLAG="${2:-}"
+shift
+RESTART_FLAG=""
+SSH_KEY=""
 
-echo "→ SSH zu $SSH_TARGET, patche /opt/sponsorplatz/docker-compose.yml …"
+# Verbleibende Flags parsen — Reihenfolge egal
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --restart)
+      RESTART_FLAG="--restart"
+      shift
+      ;;
+    --key)
+      SSH_KEY="$2"
+      shift 2
+      ;;
+    *)
+      echo "✗ Unbekanntes Argument: $1" >&2
+      exit 1
+      ;;
+  esac
+done
+
+# Auto-Default für Azure-User: sponsoradmin@ → ~/.ssh/sponsorplatz-azure
+# (die VM ist mit einem dedizierten Key provisioniert, der nicht der Default ist).
+# OCI-VMs (opc@) nutzen den Default-Key — kein Auto-Override hier.
+if [ -z "$SSH_KEY" ] && [[ "$SSH_TARGET" == sponsoradmin@* ]] && [ -f "$HOME/.ssh/sponsorplatz-azure" ]; then
+  SSH_KEY="$HOME/.ssh/sponsorplatz-azure"
+  echo "ℹ Auto-Default Azure-Key: $SSH_KEY"
+fi
+
+# SSH_OPTS-Array — leer wenn kein -i, sonst '-i <path>'. Wichtig: Array-Expansion
+# damit Pfade mit Spaces korrekt gequotet bleiben.
+SSH_OPTS=()
+if [ -n "$SSH_KEY" ]; then
+  if [ ! -f "$SSH_KEY" ]; then
+    echo "✗ SSH-Key nicht gefunden: $SSH_KEY" >&2
+    exit 1
+  fi
+  SSH_OPTS=(-i "$SSH_KEY")
+fi
+
+echo "→ SSH zu $SSH_TARGET${SSH_KEY:+ (key: $SSH_KEY)}, patche /opt/sponsorplatz/docker-compose.yml …"
 
 # Kommandos remote ausführen via Heredoc. 'bash -s' liest stdin, 'set -e' propagiert
 # Fehler korrekt zum Aufrufer.
-ssh "$SSH_TARGET" bash -s <<'REMOTE'
+ssh "${SSH_OPTS[@]}" "$SSH_TARGET" bash -s <<'REMOTE'
 set -euo pipefail
 COMPOSE=/opt/sponsorplatz/docker-compose.yml
 
@@ -126,13 +173,14 @@ REMOTE
 # ── Optional restart ───────────────────────────────────────────────────────
 if [ "$RESTART_FLAG" = "--restart" ]; then
   echo "→ Container neu starten (--restart)"
-  ssh "$SSH_TARGET" 'cd /opt/sponsorplatz && sudo docker compose up -d --force-recreate app'
+  ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'cd /opt/sponsorplatz && sudo docker compose up -d --force-recreate app'
   echo "✓ App-Container neu gestartet"
 else
+  SSH_HINT="ssh${SSH_KEY:+ -i $SSH_KEY} $SSH_TARGET"
   cat <<HINT
 ℹ Container wurde NICHT neu gestartet — ENVs werden erst beim Re-Create wirksam.
    Entweder direkt:
-     ssh $SSH_TARGET 'cd /opt/sponsorplatz && sudo docker compose up -d --force-recreate app'
+     $SSH_HINT 'cd /opt/sponsorplatz && sudo docker compose up -d --force-recreate app'
    Oder nächsten CD-Run abwarten (--force-recreate ist im Deploy-Step gesetzt).
 HINT
 fi
