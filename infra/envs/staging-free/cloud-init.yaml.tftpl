@@ -75,6 +75,14 @@ write_files:
             SENTRY_DSN: "$${SENTRY_DSN:-}"
             SENTRY_RELEASE: "$${SENTRY_RELEASE:-}"
             SENTRY_ENVIRONMENT: oci-staging-free
+            # OIDC Google — CLIENT_ID/SECRET CD-managed (Repo-Secrets), Rest hardcoded.
+            # Spring registriert den Google-Client erst wenn client-id + secret
+            # nicht-leer sind, daher off-by-default ohne gesetzte Secrets.
+            SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID: "$${GOOGLE_CLIENT_ID:-}"
+            SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET: "$${GOOGLE_CLIENT_SECRET:-}"
+            SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_NAME: Google
+            SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_SCOPE: openid,profile,email
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_GOOGLE_ISSUER_URI: https://accounts.google.com
             JAVA_OPTS: "-Xms512m -Xmx1500m"
           volumes:
             - /var/lib/sponsorplatz/uploads:/app/uploads

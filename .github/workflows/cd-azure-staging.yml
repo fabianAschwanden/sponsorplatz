@@ -133,12 +133,16 @@ jobs:
       #   - SPONSORPLATZ_API_KEY (Secret, off-by-default → 503 wenn fehlt)
       #   - SENTRY_DSN (Secret, off-by-default → Sentry-Bean wird nicht erstellt)
       #   - SENTRY_RELEASE (immer aus github.sha → Spring-Property löst auf)
+      #   - GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (Secrets, off-by-default →
+      #     Spring registriert Google-Client nur wenn beide nicht-leer sind)
       - name: Sync managed Secrets in VM-.env (idempotent)
         if: success()
         env:
           API_KEY: ${{ secrets.SPONSORPLATZ_API_KEY }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           SENTRY_RELEASE: sponsorplatz@${{ env.IMAGE_TAG }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
         run: |
           if [ -z "$API_KEY" ]; then
             echo "::notice::SPONSORPLATZ_API_KEY-Secret nicht gesetzt — überspringe API-Key-Update. API bleibt deaktiviert (503)."
@@ -146,10 +150,13 @@ jobs:
           if [ -z "$SENTRY_DSN" ]; then
             echo "::notice::SENTRY_DSN-Secret nicht gesetzt — Sentry bleibt deaktiviert. Release-Tag wird trotzdem gesetzt."
           fi
+          if [ -z "$GOOGLE_CLIENT_ID" ]; then
+            echo "::notice::GOOGLE_CLIENT_ID-Secret nicht gesetzt — Google-OIDC-Login bleibt deaktiviert."
+          fi
           ssh sponsoradmin@${{ vars.AZURE_VM_IP }} "
             set -e
             sudo touch /opt/sponsorplatz/.env
-            sudo grep -vE '^(SPONSORPLATZ_API_KEY|SENTRY_DSN|SENTRY_RELEASE)=' /opt/sponsorplatz/.env > /tmp/env.new || true
+            sudo grep -vE '^(SPONSORPLATZ_API_KEY|SENTRY_DSN|SENTRY_RELEASE|GOOGLE_CLIENT_ID|GOOGLE_CLIENT_SECRET)=' /opt/sponsorplatz/.env > /tmp/env.new || true
             if [ -n '$API_KEY' ]; then
               echo 'SPONSORPLATZ_API_KEY=$API_KEY' >> /tmp/env.new
             fi
@@ -157,6 +164,10 @@ jobs:
               echo 'SENTRY_DSN=$SENTRY_DSN' >> /tmp/env.new
             fi
             echo 'SENTRY_RELEASE=$SENTRY_RELEASE' >> /tmp/env.new
+            if [ -n '$GOOGLE_CLIENT_ID' ]; then
+              echo 'GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID' >> /tmp/env.new
+              echo 'GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET' >> /tmp/env.new
+            fi
             sudo install -m 0600 -o root -g root /tmp/env.new /opt/sponsorplatz/.env
             rm -f /tmp/env.new
             echo 'Managed secrets synced in /opt/sponsorplatz/.env'

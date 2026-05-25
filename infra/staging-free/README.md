@@ -208,6 +208,44 @@ solange `SENTRY_DSN` nicht als Repo-Secret gesetzt ist.
 4. CD neu auslösen — beim nächsten Container-Recreate ist Sentry an, und
    bei gesetztem AUTH_TOKEN landet der Release-Marker auch im Sentry-UI.
 
+## OIDC Google-Login (CD-managed)
+
+Google-SSO ist **off-by-default** — ohne CLIENT_ID/SECRET registriert Spring
+den Client nicht, und auf `/login` erscheint kein Google-Button.
+
+**Aktivieren:**
+
+1. Google Cloud Console → APIs & Services → Credentials → **OAuth client ID**
+   (Web application). Authorized Redirect URIs:
+   ```
+   https://sponsorplatz.for-better.biz/login/oauth2/code/google
+   https://sponsorplatz.for-the.biz/login/oauth2/code/google     (Azure-Pendant)
+   http://localhost:8080/login/oauth2/code/google                (lokal/dev)
+   ```
+2. Repo-Secrets setzen (Settings → Secrets and variables → Actions):
+   - `GOOGLE_CLIENT_ID` → die `*.apps.googleusercontent.com`-ID
+   - `GOOGLE_CLIENT_SECRET` → das `GOCSPX-…`-Secret (nur 1× sichtbar nach Anlage)
+3. CD neu triggern (Push auf `main` oder `gh workflow run "CD Staging (Free Tier)"`).
+   Der `Sync managed Secrets`-Step setzt beide ENVs idempotent in
+   `/opt/sponsorplatz/.env`, `--force-recreate` startet den App-Container neu.
+4. **Verifizieren:** `/login` → "Google"-Button → Consent-Screen → eingeloggt.
+   Im App-Log: `OIDC JIT-Provisioning: neuer AppUser für …` beim Erst-Login.
+
+**Optional: Domain-Whitelist** als Account-Takeover-Schutz (Spec §6.3).
+Setze in der manuellen `/opt/sponsorplatz/.env` (nicht CD-managed):
+```
+SPONSORPLATZ_OIDC_EMAIL_DOMAIN_WHITELIST=css.ch,sponsorplatz.ch
+```
+Logins von Emails ausserhalb dieser Domains werden mit 401 abgewiesen.
+
+**Constants** (CLIENT_NAME, SCOPE, ISSUER_URI) sind hardcoded in
+`infra/envs/staging-free/cloud-init.yaml.tftpl` und brauchen keinen
+Secret-Roundtrip — nur die wirklich geheimen Werte fliessen durch GitHub.
+
+**Key-Rotation:** Secret-Wert im Repo aktualisieren, Workflow neu triggern.
+Google-Side: in der Cloud Console → Credentials → "Add Secret" + altes
+Secret nach erfolgreichem Roll-Out löschen.
+
 ## Rollback (vorheriger Image-Tag)
 
 Wenn ein Deploy ein Regression-Issue verursacht, ist der Rollback ein
