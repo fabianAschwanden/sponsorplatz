@@ -189,6 +189,69 @@ Alter Key gilt bis zum nächsten erfolgreichen Deploy.
 Eintrag bei jedem Lauf. Andere Variablen (`DB_PASSWORD`, `SMTP_*`,
 `ADMIN_*`) bleiben in der manuell gepflegten `.env` unangetastet.
 
+## Sentry-Release-Tagging (CD-managed)
+
+Jeder erfolgreiche CD-Run setzt automatisch `SENTRY_RELEASE=sponsorplatz@<git-sha>`
+in `/opt/sponsorplatz/.env`, sodass Spring beim Container-Recreate den
+Release-Tag in Sentry-Events einbettet. Sentry selbst bleibt deaktiviert,
+solange `SENTRY_DSN` nicht als Repo-Secret gesetzt ist.
+
+**Aktivieren:**
+
+1. Sentry-Projekt-DSN holen (Settings → Client Keys (DSN) → kopieren).
+2. Repo-Secrets setzen (Settings → Secrets and variables → Actions):
+   - `SENTRY_DSN` → kompletter DSN-String
+   - `SENTRY_AUTH_TOKEN` (optional) → Internal Integration Token mit `project:releases`
+3. Repo-Vars setzen für den optionalen `getsentry/action-release`-Step:
+   - `SENTRY_ORG` → Sentry-Org-Slug
+   - `SENTRY_PROJECT` → Project-Slug
+4. CD neu auslösen — beim nächsten Container-Recreate ist Sentry an, und
+   bei gesetztem AUTH_TOKEN landet der Release-Marker auch im Sentry-UI.
+
+## Rollback (vorheriger Image-Tag)
+
+Wenn ein Deploy ein Regression-Issue verursacht, ist der Rollback ein
+fixer Image-Tag auf der VM — ohne erneuten CD-Lauf. Dauer ~30 Sekunden,
+keine DB-Migration rückwärts notwendig (additive Migrations-Policy, siehe
+CLAUDE.md).
+
+1. **Vorherigen erfolgreichen Tag finden:**
+   ```bash
+   # Lokal — letzte 10 erfolgreichen CD-Runs
+   gh run list --workflow=cd-staging-free.yml --status=success --limit=10
+   # oder auf der VM — lokal vorhandene Images
+   ssh opc@<VM-IP> 'sudo docker image ls ghcr.io/fabianaschwanden/sponsorplatz --format "{{.Tag}}\t{{.CreatedSince}}"'
+   ```
+
+2. **VM-`.env` auf den Pin-Tag setzen:**
+   ```bash
+   ssh opc@<VM-IP>
+   ROLLBACK_SHA=<vorheriger-sha>     # z.B. a1c524bdfc5b...
+   sudo grep -v '^IMAGE_URL=' /opt/sponsorplatz/.env > /tmp/env.new || true
+   echo "IMAGE_URL=ghcr.io/fabianaschwanden/sponsorplatz:$ROLLBACK_SHA" >> /tmp/env.new
+   sudo install -m 0600 -o root -g root /tmp/env.new /opt/sponsorplatz/.env
+   cd /opt/sponsorplatz && sudo docker compose pull app && sudo docker compose up -d --force-recreate app
+   ```
+
+3. **Smoke verifizieren:**
+   ```bash
+   curl -fsS https://sponsorplatz.for-better.biz/login -o /dev/null -w "%{http_code}\n"  # erwartet 200
+   ```
+
+4. **Fix nachschieben + CD wieder normalisieren:**
+   - Issue in `main` fixen + pushen.
+   - Nach grünem CI/CD `IMAGE_URL`-Pin aus `.env` wieder entfernen, damit
+     der nächste CD-Run automatisch das `staging-latest`-Floating-Tag
+     pullen kann:
+     ```bash
+     ssh opc@<VM-IP> "sudo sed -i '/^IMAGE_URL=/d' /opt/sponsorplatz/.env"
+     ```
+
+**Kein Rollback der DB**: Migrationen sind strikt additiv (siehe CLAUDE.md
+Abschnitt "Migrationen"), neuer Code läuft auch gegen das alte Schema.
+Falls eine Migration einen Datenfehler produziert, gilt der Backup-Restore-
+Pfad aus dem Admin-UI (`/admin/backups`, `/admin/datei-backups`).
+
 ## Object Storage (Phase 2)
 
 Mit `STORAGE_PROVIDER=oci` werden Uploads + Backups in OCI Object Storage gespeichert:

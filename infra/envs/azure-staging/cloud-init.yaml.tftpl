@@ -48,6 +48,13 @@ write_files:
             # DefaultAzureCredentialBuilder liest diese ENV automatisch
             # und nutzt die User-Assigned Managed Identity ohne weitere Config.
             AZURE_CLIENT_ID: ${managed_identity}
+            # Sentry — DSN + Release CD-managed via /opt/sponsorplatz/.env.
+            # '$${VAR:-}'-Escape lässt Terraform den Ausdruck literal stehen;
+            # docker compose löst ihn beim 'up' aus der .env auf. Environment
+            # ist hardcoded weil es die Cloud-Zone identifiziert.
+            SENTRY_DSN: "$${SENTRY_DSN:-}"
+            SENTRY_RELEASE: "$${SENTRY_RELEASE:-}"
+            SENTRY_ENVIRONMENT: azure-staging
             JAVA_OPTS: "-Xms512m -Xmx1500m"
           volumes:
             - /var/lib/sponsorplatz/uploads:/app/uploads

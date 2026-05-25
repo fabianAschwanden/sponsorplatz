@@ -171,6 +171,24 @@ Die 3 Werte aus dem Output (zusammen mit der Subscription-ID) als die 4 Secrets
 oben hinterlegen. Das Secret ist 1 Jahr gültig — Rotation via
 `az ad sp credential reset --id <appId>`.
 
+## Rollback (vorheriger Image-Tag)
+
+Analog zur OCI-Seite, siehe Detail-Schritte in
+[`infra/staging-free/README.md`](../../staging-free/README.md#rollback-vorheriger-image-tag).
+
+Unterschiede für Azure:
+- SSH-User ist `sponsoradmin@${AZURE_VM_IP}` statt `opc@<OCI-VM-IP>`
+- Image-URL aus dem ACR statt GHCR:
+  `${AZURE_ACR_LOGIN_SERVER}/sponsorplatz:<sha>`
+- Auf der VM muss vor dem `docker compose pull` `sponsorplatz-acr-refresh`
+  laufen (MSI-Token kann abgelaufen sein):
+  ```bash
+  ssh sponsoradmin@<AZURE_VM_IP> 'sudo /usr/local/bin/sponsorplatz-acr-refresh'
+  ```
+
+Sentry-Release-Tagging läuft identisch — siehe Sentry-Abschnitt in der
+OCI-README.
+
 ## Cleanup
 
 ```bash

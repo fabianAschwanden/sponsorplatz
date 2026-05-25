@@ -616,13 +616,13 @@ Der ursprüngliche „Pilot-Launch"-Block lebt jetzt als **Phase 14 (Produktivsc
 - [ ] DNS `sponsorplatz.ch` + `www`-Redirect aufschalten, IPv6 enabled
 - [ ] CDN/Cache-Policy für `/css/`, `/images/`, `/medien/` (Caddy oder OCI LB)
 
-### 14.2 — Cutover-Validation
+### 14.2 — Cutover-Validation ✅
 
 - [x] Smoke-Test-Suite lokal (`SmokeIT` via `mvn verify -P e2e`)
-- [ ] CD-Smoke gegen Prod-URL nach jedem Deploy (`/login` als 200-Probe — `/actuator/health` ist absichtlich nicht öffentlich)
-- [ ] OCIR-Retention scharfgeschaltet (`OCI_USER_OCID`, `OCI_TENANCY_OCID`, `OCI_KEY_FINGERPRINT`, `OCI_API_PRIVATE_KEY` in GitHub-Secrets)
-- [ ] Sentry-Release-Tagging im CD-Workflow eingebaut
-- [ ] Rollback-Pfad dokumentiert (`docker compose down` + `docker compose up -d --tag <vorher-sha>`)
+- [x] CD-Smoke gegen Prod-URL nach jedem Deploy — `/login`-200-Probe seit Pre-Pilot in beiden CD-Workflows (OCI + Azure)
+- [x] ~~OCIR-Retention~~ — obsolet, Migration auf GHCR (2026-05-22); GHCR-Retention via GitHub-Packages-UI bei Bedarf
+- [x] Sentry-Release-Tagging im CD-Workflow eingebaut — SENTRY_RELEASE-Sync in beide VM-`.env`, optionaler `getsentry/action-release`-Step (off-by-default ohne SENTRY_AUTH_TOKEN); cloud-free + cloud-azure profiles ergänzt
+- [x] Rollback-Pfad dokumentiert in `infra/staging-free/README.md` + `infra/envs/azure-staging/README.md` (Image-Tag-Pin via `IMAGE_URL` in `.env`, kein DB-Rollback nötig wegen additiver Migrations-Policy)
 
 ### 14.3 — Pilot-Welle
 

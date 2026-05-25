@@ -53,6 +53,12 @@ jobs:
       # auf der VM funktioniert ohne Login wenn das Package public ist.
       IMAGE_BASE: ghcr.io/fabianaschwanden/sponsorplatz
       IMAGE_TAG:  ${{ github.event.workflow_run.head_sha || github.sha }}
+      # Sentry-CLI-Token (off-by-default) — Job-Level damit der 'if'-Check
+      # im Tag-Release-Step gegen env.SENTRY_AUTH_TOKEN auswerten kann
+      # (secrets-Kontext ist in step-if nicht direkt verfügbar).
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG:        ${{ vars.SENTRY_ORG }}
+      SENTRY_PROJECT:    ${{ vars.SENTRY_PROJECT }}
 
     steps:
       - name: Checkout
@@ -104,11 +110,12 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ vars.STAGING_FREE_VM_IP }} >> ~/.ssh/known_hosts
 
-      # GitHub-managed Secrets, die in die VM-.env wandern. Aktuell genau ein
-      # Eintrag: SPONSORPLATZ_API_KEY (off-by-default — wenn nicht gesetzt,
-      # antwortet ApiKeyFilter mit 503, und dieser Step wird übersprungen).
+      # GitHub-managed Secrets, die in die VM-.env wandern. Aktuell:
+      #   - SPONSORPLATZ_API_KEY (Secret, off-by-default → 503 wenn fehlt)
+      #   - SENTRY_DSN (Secret, off-by-default → Sentry-Bean wird nicht erstellt)
+      #   - SENTRY_RELEASE (immer aus github.sha → Spring-Property löst auf)
       # Workflow für Key-Rotation:
-      #   Settings → Secrets → SPONSORPLATZ_API_KEY aktualisieren →
+      #   Settings → Secrets → entsprechendes Secret aktualisieren →
       #   manuell `workflow_dispatch` oder beim nächsten Push auf main.
       # Andere Secrets (DB_PASSWORD, SMTP_*, ADMIN_*) bleiben bewusst in der
       # manuell gepflegten /opt/sponsorplatz/.env — die werden einmal beim
@@ -117,22 +124,35 @@ jobs:
         if: success()
         env:
           API_KEY: ${{ secrets.SPONSORPLATZ_API_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SENTRY_RELEASE: sponsorplatz@${{ env.IMAGE_TAG }}
         run: |
+          # SENTRY_RELEASE wird IMMER gesetzt (aus github.sha), SENTRY_DSN
+          # und SPONSORPLATZ_API_KEY nur falls als Secret konfiguriert.
+          # Format der Release-ID folgt der Sentry-Konvention 'name@version'
+          # (siehe https://docs.sentry.io/product/releases/setup/).
           if [ -z "$API_KEY" ]; then
-            echo "::notice::SPONSORPLATZ_API_KEY-Secret nicht gesetzt — überspringe .env-Update. API bleibt deaktiviert (503)."
-            exit 0
+            echo "::notice::SPONSORPLATZ_API_KEY-Secret nicht gesetzt — überspringe API-Key-Update. API bleibt deaktiviert (503)."
           fi
-          # SPONSORPLATZ_API_KEY zeilenweise austauschen oder anhängen.
+          if [ -z "$SENTRY_DSN" ]; then
+            echo "::notice::SENTRY_DSN-Secret nicht gesetzt — Sentry bleibt deaktiviert. Release-Tag wird trotzdem gesetzt für späteren Aktivierungs-Pfad."
+          fi
           # Atomar via /tmp-Stage + install, dann Container force-recreaten
-          # damit Spring die neue ENV beim Boot liest.
+          # damit Spring die neuen ENVs beim Boot liest.
           ssh opc@${{ vars.STAGING_FREE_VM_IP }} "
             set -e
             sudo touch /opt/sponsorplatz/.env
-            sudo grep -v '^SPONSORPLATZ_API_KEY=' /opt/sponsorplatz/.env > /tmp/env.new || true
-            echo 'SPONSORPLATZ_API_KEY=$API_KEY' >> /tmp/env.new
+            sudo grep -vE '^(SPONSORPLATZ_API_KEY|SENTRY_DSN|SENTRY_RELEASE)=' /opt/sponsorplatz/.env > /tmp/env.new || true
+            if [ -n '$API_KEY' ]; then
+              echo 'SPONSORPLATZ_API_KEY=$API_KEY' >> /tmp/env.new
+            fi
+            if [ -n '$SENTRY_DSN' ]; then
+              echo 'SENTRY_DSN=$SENTRY_DSN' >> /tmp/env.new
+            fi
+            echo 'SENTRY_RELEASE=$SENTRY_RELEASE' >> /tmp/env.new
             sudo install -m 0600 -o root -g root /tmp/env.new /opt/sponsorplatz/.env
             rm -f /tmp/env.new
-            echo 'SPONSORPLATZ_API_KEY synced in /opt/sponsorplatz/.env'
+            echo 'Managed secrets synced in /opt/sponsorplatz/.env'
           "
 
       - name: Deploy on VM (cleanup + pull + restart)
@@ -145,6 +165,19 @@ jobs:
           ssh opc@${{ vars.STAGING_FREE_VM_IP }} \
             "sudo docker system prune -af --filter 'until=24h' 2>&1 | tail -3 && \
              cd /opt/sponsorplatz && sudo docker compose pull app && sudo docker compose up -d --force-recreate app"
+
+      # Sentry-Release in der Sentry-UI registrieren — nur wenn das Secret
+      # gesetzt ist. Liefert Suspect-Commits + Deploy-Marker im Sentry-Issue-
+      # Detail. SENTRY_RELEASE auf der VM (siehe Sync-Step oben) reicht für
+      # das Event-Tagging; dieser Step ist nur das Reporting nach Sentry.
+      - name: Tag release in Sentry
+        if: env.SENTRY_AUTH_TOKEN != ''
+        uses: getsentry/action-release@v1
+        with:
+          environment: oci-staging-free
+          version: sponsorplatz@${{ env.IMAGE_TAG }}
+          ignore_missing: true
+          ignore_empty: true
 
       - name: Smoke test
         run: |
