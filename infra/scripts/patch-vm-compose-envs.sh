@@ -98,7 +98,7 @@ echo "→ SSH zu $SSH_TARGET${SSH_KEY:+ (key: $SSH_KEY)}, patche /opt/sponsorpla
 echo
 
 # Übergibt RESTART als Umgebungsvariable an die remote-Seite.
-ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "RESTART=$RESTART bash -s" <<'REMOTE'
+ssh ${SSH_OPTS[@]+"${SSH_OPTS[@]}"} "$SSH_TARGET" "RESTART=$RESTART bash -s" <<'REMOTE'
 set -euo pipefail
 COMPOSE=/opt/sponsorplatz/docker-compose.yml
 
