@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Manueller Re-Trigger ohne Code-Change (z.B. nach GitHub-Codeload-Outage,
+  # siehe Incident 2026-05-26 stspg.io/6gzfzr1dx684):
+  #   gh workflow run ci.yml --ref main
+  workflow_dispatch:
 
 permissions:
   contents: read
