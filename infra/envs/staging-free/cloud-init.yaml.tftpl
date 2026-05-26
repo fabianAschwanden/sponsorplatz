@@ -75,6 +75,8 @@ write_files:
             SENTRY_DSN: "$${SENTRY_DSN:-}"
             SENTRY_RELEASE: "$${SENTRY_RELEASE:-}"
             SENTRY_ENVIRONMENT: oci-staging-free
+            # REST-API-Key — CD-managed via .env (off-by-default → 503).
+            SPONSORPLATZ_API_KEY: "$${SPONSORPLATZ_API_KEY:-}"
             # OIDC Google — CLIENT_ID/SECRET CD-managed (Repo-Secrets), Rest hardcoded.
             # Spring registriert den Google-Client erst wenn client-id + secret
             # nicht-leer sind, daher off-by-default ohne gesetzte Secrets.

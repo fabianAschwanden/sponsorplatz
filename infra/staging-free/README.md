@@ -174,7 +174,19 @@ Die REST-API unter `/api/**` ist **off by default** — ohne Key antwortet
    `--force-recreate` sorgt dafür dass der App-Container die neue ENV beim
    Boot liest.
 
-3. **Verifizieren** nach dem Deploy:
+3. **Auf laufenden VMs** (provisioniert vor 2026-05-26): die docker-compose-
+   `environment:`-Sektion auf der VM hatte vor dem Fix keine
+   `SPONSORPLATZ_API_KEY`-Substitution — die `.env` wurde gesynct, kam aber
+   nicht in den Container (deshalb 503 trotz gesetztem Secret). Mit dem
+   Helper-Skript einmalig nachziehen:
+   ```bash
+   ./infra/scripts/patch-vm-compose-envs.sh opc@<OCI-VM-IP>
+   ./infra/scripts/patch-vm-compose-envs.sh sponsoradmin@<AZURE-VM-IP>
+   ```
+   Der Helper fügt die Substitution idempotent ein und restartet den
+   Container.
+
+4. **Verifizieren** nach dem Deploy:
    ```bash
    curl -s -o /dev/null -w "%{http_code}\n" \
      -H "X-API-Key: <dein-key>" \

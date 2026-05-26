@@ -31,6 +31,7 @@ Usage: patch-vm-compose-envs.sh <user@host> [--no-restart] [--key <path>]
 Patcht /opt/sponsorplatz/docker-compose.yml idempotent um:
   - Sentry-Block (SENTRY_DSN, SENTRY_RELEASE, SENTRY_ENVIRONMENT)
   - Google-OIDC-Block (SPRING_SECURITY_OAUTH2_CLIENT_*_GOOGLE_*)
+  - REST-API-Key (SPONSORPLATZ_API_KEY)
 
 Default: Container wird nach erfolgreichem Patch neu gestartet und die
 Container-ENVs werden via 'docker exec env' verifiziert. --no-restart
@@ -195,7 +196,22 @@ else
   sudo mv "$COMPOSE.new" "$COMPOSE"
 fi
 
-# ── 3. Google-OIDC-Block einfügen (idempotent) ────────────────────────────
+# ── 3a. REST-API-Key (SPONSORPLATZ_API_KEY) einfügen (idempotent) ─────────
+if sudo grep -q '^[[:space:]]*SPONSORPLATZ_API_KEY:' "$COMPOSE"; then
+  echo "✓ SPONSORPLATZ_API_KEY-Ref bereits vorhanden — skip"
+else
+  echo "→ SPONSORPLATZ_API_KEY-Ref einfügen ($INDENT_LEN-Space-Indent)"
+  sudo awk -v indent="$INDENT" '
+    /^[[:space:]]+JAVA_OPTS:/ && !inserted {
+      print indent "SPONSORPLATZ_API_KEY: \"${SPONSORPLATZ_API_KEY:-}\""
+      inserted = 1
+    }
+    { print }
+  ' "$COMPOSE" | sudo tee "$COMPOSE.new" > /dev/null
+  sudo mv "$COMPOSE.new" "$COMPOSE"
+fi
+
+# ── 3b. Google-OIDC-Block einfügen (idempotent) ───────────────────────────
 if sudo grep -q 'GOOGLE_CLIENT_ID' "$COMPOSE"; then
   echo "✓ Google-OIDC-ENVs bereits vorhanden — skip"
 else
@@ -230,7 +246,7 @@ echo "✓ compose-File ist valid"
 # Wenn aus irgendeinem Grund das awk-Insert silent fehlgeschlagen ist (z.B.
 # Anchor nicht gematcht), schlagen wir hier hart fehl statt false success.
 FAILED=0
-for KEY in SENTRY_DSN SENTRY_ENVIRONMENT GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET; do
+for KEY in SENTRY_DSN SENTRY_ENVIRONMENT SPONSORPLATZ_API_KEY GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET; do
   if ! sudo grep -q "$KEY" "$COMPOSE"; then
     echo "✗ Ref '$KEY' NICHT im compose-File nach Patch — etwas ist schiefgegangen" >&2
     FAILED=1
@@ -241,7 +257,7 @@ if [ "$FAILED" = "1" ]; then
   sudo cp -a "$BACKUP" "$COMPOSE"
   exit 1
 fi
-echo "✓ Alle 4 erwarteten ENV-Refs im compose-File"
+echo "✓ Alle 5 erwarteten ENV-Refs im compose-File"
 echo
 
 # ── 6. Optional Restart + Container-ENV-Sanity ────────────────────────────
@@ -265,12 +281,19 @@ for i in $(seq 1 30); do
   sleep 1
 done
 
-# Sanity: Spring-ENVs für Sentry + Google im laufenden Container
+# Sanity: Spring-ENVs für Sentry + Google + REST-API im laufenden Container
 echo "→ Verifiziere Container-ENVs:"
 if sudo docker exec sponsorplatz-app env 2>/dev/null | grep -qE '^SENTRY_'; then
   echo "  ✓ Sentry-ENVs sichtbar"
 else
   echo "  ⚠ Sentry-ENVs NICHT sichtbar im Container — docker-compose-Substitution prüfen"
+fi
+API_KEY_PRESENT=$(sudo docker exec sponsorplatz-app env 2>/dev/null | grep -c '^SPONSORPLATZ_API_KEY=' || true)
+if [ "$API_KEY_PRESENT" -gt 0 ]; then
+  # Wert nicht ausgeben (Secret) — nur das ENV-Present-Flag bestätigen
+  echo "  ✓ SPONSORPLATZ_API_KEY-ENV gesetzt (API aktiv, sofern Wert nicht leer)"
+else
+  echo "  ℹ SPONSORPLATZ_API_KEY-ENV nicht gesetzt — API antwortet mit 503 (off-by-default)"
 fi
 GOOGLE_ID=$(sudo docker exec sponsorplatz-app env 2>/dev/null | grep '^SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID=' || true)
 if [ -n "$GOOGLE_ID" ]; then
