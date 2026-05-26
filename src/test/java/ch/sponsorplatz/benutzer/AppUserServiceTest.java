@@ -19,14 +19,16 @@ class AppUserServiceTest {
 
     private AppUserRepository repository;
     private VerifikationsService verifikationsService;
+    private FederierteIdentitaetRepository federierteIdentitaetRepository;
     private AppUserService service;
 
     @BeforeEach
     void setUp() {
         repository = mock(AppUserRepository.class);
         verifikationsService = mock(VerifikationsService.class);
+        federierteIdentitaetRepository = mock(FederierteIdentitaetRepository.class);
         PasswordEncoder encoder = new BCryptPasswordEncoder();
-        service = new AppUserService(repository, encoder, verifikationsService);
+        service = new AppUserService(repository, encoder, verifikationsService, federierteIdentitaetRepository);
     }
 
     /** AU-03: registriere hasht Passwort via BCrypt (Klartext ≠ gespeicherter Hash). */

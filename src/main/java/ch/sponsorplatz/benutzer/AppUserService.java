@@ -5,8 +5,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Service für Benutzer-Verwaltung.
@@ -18,12 +20,15 @@ public class AppUserService {
     private final AppUserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final VerifikationsService verifikationsService;
+    private final FederierteIdentitaetRepository federierteIdentitaetRepository;
 
     public AppUserService(AppUserRepository repository, PasswordEncoder passwordEncoder,
-                          VerifikationsService verifikationsService) {
+                          VerifikationsService verifikationsService,
+                          FederierteIdentitaetRepository federierteIdentitaetRepository) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
         this.verifikationsService = verifikationsService;
+        this.federierteIdentitaetRepository = federierteIdentitaetRepository;
     }
 
     /**
@@ -166,10 +171,22 @@ public class AppUserService {
     /**
      * Admin-Views aller User, neueste zuerst — Controller braucht keine
      * Entity-Liste mehr ans Template zu geben (ARCH-02).
+     *
+     * <p>Ein Repository-Roundtrip lädt alle Föderationen und gruppiert sie
+     * pro User-ID (1 Query statt N+1) — damit zeigt die Liste pro User die
+     * verknüpften IdPs (UC-SSO-4).
      */
     @Transactional(readOnly = true)
     public List<AdminBenutzerView> findeAlleAdminViews() {
-        return AdminBenutzerView.von(repository.findAllByOrderByRegistriertAmDesc());
+        List<AppUser> users = repository.findAllByOrderByRegistriertAmDesc();
+        Map<UUID, List<IdentityProvider>> providerByUserId = federierteIdentitaetRepository.findAll()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        fi -> fi.getUser().getId(),
+                        Collectors.mapping(FederierteIdentitaet::getProvider, Collectors.toList())));
+        return users.stream()
+                .map(u -> AdminBenutzerView.von(u, providerByUserId.getOrDefault(u.getId(), List.of())))
+                .toList();
     }
 
     /**

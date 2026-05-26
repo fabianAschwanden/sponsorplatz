@@ -39,6 +39,7 @@
                     <th th:text="#{admin.feld.anzeigename}">Anzeigename</th>
                     <th th:text="#{admin.feld.email}">E-Mail</th>
                     <th th:text="#{admin.feld.status}">Status</th>
+                    <th th:text="#{admin.feld.auth}">Anmeldung</th>
                     <th th:text="#{admin.feld.rolle}">Rolle</th>
                     <th>2FA</th>
                     <th th:text="#{admin.feld.registriert}">Registriert</th>
@@ -64,6 +65,21 @@
                               th:text="#{admin.benutzer.gesperrt}">Gesperrt</span>
                         <span th:unless="${u.emailVerifiziert}" class="app-chip" style="background:#fef3c7;color:#92400e;"
                               th:text="#{admin.benutzer.unverifiziert}">Unverifiziert</span>
+                    </td>
+                    <td>
+                        <!-- Auth-Quellen (UC-SSO-4): Form-Login-Chip + Provider-Chips.
+                             Hybrid-User (Form + Google) zeigen beide nebeneinander. -->
+                        <div style="display:flex; flex-wrap:wrap; gap:0.25rem;">
+                            <span th:if="${u.hatFormLogin}" class="app-chip"
+                                  style="background:#e2e8f0;color:#334155;"
+                                  th:text="#{admin.benutzer.auth.form}">Intern</span>
+                            <span th:each="p : ${u.federierteProvider}" class="app-chip"
+                                  th:classappend="${'auth-chip-' + #strings.toLowerCase(p)}"
+                                  th:text="#{'admin.benutzer.auth.' + ${p}}">Provider</span>
+                            <span th:if="${!u.hatFormLogin and #lists.isEmpty(u.federierteProvider)}"
+                                  class="app-chip" style="background:#fef3c7;color:#92400e;"
+                                  th:text="#{admin.benutzer.auth.keine}">—</span>
+                        </div>
                     </td>
                     <td>
                         <form th:action="@{/admin/benutzer/{id}/rolle(id=${u.id})}" method="post"
@@ -117,6 +133,11 @@
     .admin-table th { font-weight: 600; color: var(--dash-muted, #6b7280); font-size: 0.8rem; text-transform: uppercase; letter-spacing:0.02em; }
     .admin-table tr:hover td { background: var(--dash-surface-hover, #f9fafb); }
     .app-btn-sm { font-size: 0.8rem; padding: 0.3rem 0.6rem; }
+    /* Auth-Provider-Chips — Hintergrundfarbe pro IdP, Text mit ≥4.5:1 Kontrast */
+    .auth-chip-google   { background: #DBEAFE; color: #1E3A8A; }   /* blau */
+    .auth-chip-entra_id { background: #E0E7FF; color: #312E81; }   /* indigo */
+    .auth-chip-swissid  { background: #FECACA; color: #991B1B; }   /* schweizer-rot */
+    .auth-chip-edu_id   { background: #D1FAE5; color: #065F46; }   /* edu-grün */
 </style>
 
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
