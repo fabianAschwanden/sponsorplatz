@@ -66,7 +66,8 @@ class AdminBenutzerControllerTest {
         return new AdminBenutzerView(
                 USER_ID, "test@example.ch", "Test User",
                 PlatformRolle.PLATFORM_ADMIN, true, true,
-                Instant.now(), null, false
+                Instant.now(), null, false,
+                true, java.util.List.of()
         );
     }
 
