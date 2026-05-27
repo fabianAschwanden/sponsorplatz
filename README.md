@@ -14,277 +14,120 @@ Wellness, Selbsthilfe, Patientenorganisationen.
 
 ## Was ist Sponsorplatz?
 
-Sponsorplatz ist die kuratierte Schweizer Sponsoring-Plattform für **Sport- und Health-Vereine**
-und für **Marken mit Health-Affinität** (Krankenkassen, Apotheken, Lebensmittel, Fitness, Stiftungen).
-Vereine ohne klaren Sport- oder Gesundheitsbezug werden bei der Verifizierung abgelehnt — diese
-Schärfe ist unser Vertrauens-Versprechen an die Sponsoren-Seite.
+Kuratierte Schweizer Sponsoring-Plattform für **Sport- und Health-Vereine** und für **Marken mit
+Health-Affinität** (Krankenkassen, Apotheken, Lebensmittel, Fitness, Stiftungen). Vereine ohne
+klaren Sport- oder Gesundheitsbezug werden bei der Verifizierung abgelehnt — diese Schärfe ist
+unser Vertrauens-Versprechen an die Sponsoren-Seite.
 
-Die Plattform vereint:
+**Plattform-Bausteine:**
 
-- **Kuratierter Health-Marktplatz** — auf Sport und Gesundheit fokussiert (elf Branchen)
-- **Kollaboratives CRM** für Sponsoren-Daten (geteilte Stammdaten, Edit-Rechte pro Verein)
-- **Marktplatz** mit öffentlichen Projekt-Profilen, Sponsoring-Paketen und Anfrage-Workflow
-- **Engagement-Schaufenster** — öffentliche Darstellung aktiver Sponsoring-Partnerschaften
-- **Mehrsprachigkeit** — DE, FR, IT und EN (Cookie-basiert, User-Profil-gesteuert)
-- **Werkzeuge** für Vereine: Medien-Upload, Vertrags-/Rechnungs-PDF, QR-Bill, Event-Kalender
-- **Schweizer Fokus**: CHF, DE/FR/IT/EN, Hosting in CH, DSG-konform
-
-## Phase
-
-Aktuell: **Phase 13 — Pre-Pilot-Hardening** ⏳ — Phase 10 ist bis auf
-10.4 (jetzt umnummeriert zu Phase 14 = Produktivschaltung) durch.
-Vor dem Cutover stehen 2FA, A11y-auth-Smoke und OIDC-Anbindung an.
-
-**Multi-Cloud DR-Setup vorgezogen** (Phase 15.3): Azure-Staging-Zone
-in Sweden Central läuft parallel zum OCI-Always-Free-Stack — Warm-DR-
-Modus mit eigener CD-Pipeline, App + DB + Files cross-restored. Begleitend
-`audit_log.umgebung` + Sentry-Tag damit Audit/Errors cross-cloud
-zuordenbar bleiben. Slices 5–7 (DNS-Failover, automatische Cross-
-Replication, beidseitiger Smoke) noch offen.
-
-Mahnwesen und echte Zahlungs-Provider-Integration sind in **Phase 15.1/15.2**
-nach dem ersten Pilot-Run angesetzt.
-
-Architektur statisch durchgesetzt: **13 ArchUnit-Regeln (ARCH-01..13)**, **647 Tests**, Feature-Folder-Topologie ohne Cycles (Java + Templates parallel strukturiert).
-
-### Umgesetzte Features
-
-| Phase | Inhalt | Status |
-|---|---|---|
-| 0 | Skelett, Organisation-Entity, AppUser, Mitgliedschaft, AccessControl, Dashboard | ✓ |
-| 1 | Self-Reg, Form-Login, E-Mail-Verifizierung, Admin-Verifizierung, Einladungen | ✓ |
-| 2 | Projekte, Sponsoring-Pakete, Medien-Assets (Upload/Galerie/Cover) | ✓ |
-| 3 | Öffentlicher Marktplatz, Volltextsuche, SEO/Sitemap, Vereinsprofile | ✓ |
-| 4 | Sponsoring-Anfragen, Nachrichten-Thread, E-Mail-Notifications, Sponsor-Self-Reg | ✓ |
-| 5 | Watchlist, Matching-Empfehlungen, Audit-Log, Backups, In-App-Notifications | ✓ |
-| 5+ | Passwort-Reset, Brute-Force-Schutz, Hierarchische Firmenstruktur, Verträge/Rechnungen, Postgres-Volltext | ✓ |
-| 6 | Einstellungen, DSG-Datenexport, Passwort-Änderung | ✓ |
-| 7 | Health-Story: Branche-Filter, Vereins-Health-Hero, Marken-Landing-Page | ✓ |
-| 8 | MVP-Reife: Demo-Seed, Engagement-Schaufenster, OG-Card-Generator | ✓ |
-| 9 | Mehrsprachigkeit DE/FR/IT/EN, Zahlungs-Provider, Event-Entity | ✓ |
-| 10.1 | Monitoring: TraceId-Filter mit W3C-`traceparent`, Actuator-Probes, JSON-Logs | ✓ |
-| 10.2 | Sentry Error-Tracking (Java + Browser, DSG-konform, SRI-Pinning) | ✓ |
-| 10.3 | DSG: Impressum, Datenschutz, AGB (4-sprachig), kein Cookie-Banner nötig | ✓ |
-| 10.4 | Pilot-Launch: Smoke-IT, Kontakt-Funnel ✓ — HTTPS/SMTP-prod/DNS Ops ⏳ | ⏳ |
-| 10.5 | Security-Hardening: CSP, Permissions-Policy, Referrer-Policy, SRI | ✓ |
-| 11 | Pilot-Hardening: Onboarding, Support, Anhänge, Verträge, Rechnungen | ✓ |
-| 12 | Customizable Task-Engine (Aufgaben mit Trigger-Regeln, Sidebar-Badge) | ✓ |
+- **Kollaboratives CRM** mit geteilten Sponsoren-Stammdaten + Edit-Rechten pro Verein
+- **Öffentlicher Marktplatz** mit Projekt-Profilen, Sponsoring-Paketen, Volltextsuche, SEO
+- **Anfrage-Workflow** mit Threaded Messages, Vertrag-Generator, Swiss-QR-Bill
+- **Mehrsprachigkeit** DE/FR/IT/EN (Cookie + Profil), CHF-Format, DSG-konform
+- **Auth**: Form-Login + 2FA-TOTP + OIDC (Google/Entra/SwissID/edu-ID)
+- **Multi-Cloud Warm-DR**: OCI Always-Free + Azure Sweden Central, eigene CD-Pipelines
 
 ## Tech-Stack
 
 | Schicht | Technologie |
 |---|---|
-| Sprache | Java 21 LTS |
-| Framework | Spring Boot 3.4 |
-| Frontend | Thymeleaf + Bootstrap-light |
-| DB (dev) | H2 (file-based, `MODE=PostgreSQL`) |
-| DB (prod) | PostgreSQL 17 |
-| Migrationen | Flyway (26 Versionen) |
-| Build | Maven 3.9+ |
-| Container | Docker Multi-Stage |
-| CI | GitHub Actions |
-| i18n | Spring MessageSource (DE/FR/IT/EN) |
+| Sprache / Framework | Java 21 LTS · Spring Boot 3.5 |
+| Frontend | Thymeleaf, eigenes CSS (Dashboard-Stil) |
+| DB | H2 (dev, file-based, `MODE=PostgreSQL`) · PostgreSQL 17 (prod) |
+| Migrationen | Flyway V1–V46 |
+| Build / Container | Maven 3.9+ · Docker Multi-Stage (`eclipse-temurin:21-jre-jammy`) |
+| CI/CD | GitHub Actions (CI + getrennte CDs für OCI + Azure) |
+| Cloud-Storage | OCI Object Storage · Azure Blob Storage · Local Volume |
+| Error-Tracking | Sentry (Browser + Java, off-by-default ohne DSN) |
+
+Architektur statisch durchgesetzt: **13 ArchUnit-Regeln** (ARCH-01..13), **~700 Tests**,
+Feature-Folder-Topologie ohne Cycles.
 
 ## Schnellstart
-
-### Voraussetzungen
-
-- Java 21+ (`java -version`)
-- Maven 3.9+ (`mvn -v`)
-- Docker (optional, für PostgreSQL und MailHog lokal)
-- **VS Code** (empfohlen) — siehe [VS Code Setup](#vs-code-setup) unten
-
-### Lokale Entwicklung (mit H2)
 
 ```bash
 git clone https://github.com/fabianaschwanden/sponsorplatz.git
 cd sponsorplatz
-mvn spring-boot:run
+mvn spring-boot:run                              # http://localhost:8080
 ```
 
-→ App läuft auf http://localhost:8080
-→ H2-Konsole auf http://localhost:8080/h2-console (User `sa`, Passwort leer)
-→ Dev-Login: `dev@sponsorplatz.ch` (Passwort siehe `sponsorplatz.dev.passwort` in application-dev.properties)
+- **Dev-Login:** `dev@sponsorplatz.ch` / Passwort siehe `application-dev.properties`
+- **H2-Konsole:** http://localhost:8080/h2-console (User `sa`, Passwort leer)
+- **Demo-Modus** mit Beispieldaten: `mvn spring-boot:run -Dspring-boot.run.profiles=demo`
+- **Tests:** `mvn test` · einzeln: `-Dtest=OrganisationServiceTest`
+- **Postgres + MailHog lokal:** `docker compose up -d postgres mailhog`
+- **DB-Reset bei Migrations-Konflikten:** `rm -rf data/`
 
-### Demo-Modus (mit Beispieldaten)
-
-```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=demo
-```
-
-→ Lädt 5 Vereine, 10 Projekte, 3 Sponsor-Orgs mit realistischen Daten
-→ Gelber „DEMO"-Banner im Header
-
-### Tests laufen lassen
-
-```bash
-mvn test                                    # alle (~350+ Tests)
-mvn test -Dtest=OrganisationServiceTest     # einzeln
-mvn clean verify                            # inkl. JaCoCo-Coverage
-```
-
-### Mit PostgreSQL + MailHog (Docker)
-
-```bash
-docker compose up -d postgres mailhog
-mvn spring-boot:run -Dspring-boot.run.profiles=prod \
-    -Dspring-boot.run.arguments="--spring.datasource.url=jdbc:postgresql://localhost:5432/sponsorplatz \
-                                  --spring.datasource.username=sponsor \
-                                  --spring.datasource.password=sponsor_dev"
-```
-
-→ MailHog UI: http://localhost:8025
-
-### Komplette App im Docker-Container
-
-```bash
-docker compose --profile app up --build
-```
-
-### H2-DB-Reset bei Migration-Konflikten
-
-```bash
-rm -rf data/
-```
-
-## VS Code Setup
-
-Das Projekt ist mit `.vscode/`-Konfiguration ausgestattet — beim ersten Öffnen schlägt VS Code alle nötigen Extensions automatisch vor.
-
-```bash
-code ~/git/sponsorplatz
-```
-
-**Beim ersten Start:**
-
-1. **Extensions installieren** — VS Code zeigt eine Notification *„This workspace has extension recommendations"*. → **Install All** klicken.
-   - Java Extension Pack (Microsoft)
-   - Spring Boot Extension Pack (VMware)
-   - Docker, XML, YAML, GitLens, EditorConfig, Code Spell Checker (DE+EN), Todo Tree, GitHub Actions
-
-2. **Java SDK 21 wählen** — falls VS Code mehrere JDKs findet:
-   `Cmd+Shift+P` → *„Java: Configure Java Runtime"* → JDK 21 als default.
-
-3. **Maven importieren** — VS Code lädt automatisch `pom.xml` und holt Dependencies. Status unten in der Status-Leiste prüfen.
-
-**App starten in VS Code:**
-
-| Aktion | Wie |
-|---|---|
-| App starten (dev) | `F5` → *„Sponsorplatz (dev)"* |
-| App starten (prod-lokal) | `F5` → *„Sponsorplatz (prod-lokal)"* (braucht Docker-Postgres) |
-| Tests laufen lassen | Test-Explorer (Becher-Symbol links) |
-| Tasks (Maven, Docker) | `Cmd+Shift+P` → *„Tasks: Run Task"* |
-| Spring Boot Dashboard | linker Sidebar → Spring-Symbol → Start/Stop/Debug |
-
-**Vordefinierte Tasks** (`Cmd+Shift+P` → *„Tasks: Run Task"*):
-
-- `mvn: clean` / `compile` / `test` / `package` / `verify`
-- `spring-boot:run (dev)`
-- `docker: compose up (postgres + mailhog)` / `compose down`
-- `docker: app starten (build + run)`
-
-**Code-Style:** Format-on-save aktiv. Ruler bei 120 Zeichen. Java-Formatter-Profil unter `.vscode/java-formatter.xml`.
+VS Code wird empfohlen — `.vscode/`-Konfiguration mit allen nötigen Extension-Recommendations
+ist im Repo. Erstes Öffnen: *„Install All"*-Notification akzeptieren.
 
 ## Projekt-Struktur
 
-Bounded-Context-orientiert — jedes fachliche Package hält seine eigenen Entities, Repositories, Services, Controller und DTOs zusammen.
+Bounded-Context-orientiert — jedes fachliche Package hält Entities, Repositories, Services,
+Controller und DTOs zusammen.
 
 ```
-sponsorplatz/
-├── src/main/java/ch/sponsorplatz/
-│   ├── PlatformApplication.java
-│   ├── shared/                 # Querschnitts-Infrastruktur
-│   │   ├── config/             # SecurityConfig, LocaleConfig, RateLimitFilter, LoginSuccessHandler
-│   │   ├── exception/          # NotFoundException, GlobalExceptionHandler
-│   │   ├── util/               # SlugGenerator, TokenGenerator
-│   │   ├── pdf/                # PdfGeneratorService
-│   │   ├── storage/            # StorageService + Lokal-Implementierung
-│   │   └── mail/               # MailService (SMTP-Abstraktion)
-│   │
-│   ├── benutzer/               # AppUser, Auth, Profil, Verifizierung, PasswortReset, Einstellungen
-│   ├── organisation/           # Organisation, Mitgliedschaft, AccessControl, Branche, Sponsor-Self-Reg
-│   ├── projekt/                # Projekt, SponsoringPakete, Watchlist, MedienAssets, Marktplatz,
-│   │                           # Suche, Matching, Dashboard, Sitemap, Events, OG-Images
-│   ├── anfrage/                # SponsoringAnfrage, Vertrag, Rechnung, QR-Bill, Nachrichten,
-│   │                           # Engagement-Schaufenster, PaymentProvider
-│   ├── einladung/              # Einladung + Token-basierte Annahme
-│   ├── benachrichtigung/       # In-App-Glocke (NotificationService + Badge-Polling)
-│   ├── audit/                  # AuditLog + DSG-Datenexport
-│   ├── admin/                  # Admin-UI: Verifizierungs-Queue, Audit, Backups
-│   └── home/                   # HomeController, InfoController (Impressum/DSG)
-│
-├── src/main/resources/
-│   ├── application*.properties           # default + dev + prod + demo + cloud-free
-│   ├── db/migration/V1..V26*.sql         # Flyway (26 Migrationen)
-│   ├── templates/                        # Thymeleaf
-│   ├── static/css/                       # main.css
-│   ├── messages_de_CH.properties         # Deutsch (Schweiz) — Default
-│   ├── messages_fr_CH.properties         # Französisch (Schweiz)
-│   ├── messages_it_CH.properties         # Italienisch (Schweiz)
-│   └── messages_en.properties            # Englisch
-│
-├── src/test/...                          # ~350+ Tests (Unit, Web, Repo, Integration)
-├── specs/                                # Architektur, Datenmodell, Tests, Roadmap
-├── docs/                                 # Konzept, Marketing, Naming, Pitch
-├── infra/                                # OCI-Infrastruktur, Terraform, Docker-Compose (Staging)
-├── Dockerfile
-├── docker-compose.yml
-├── .github/workflows/
-└── pom.xml
+src/main/java/ch/sponsorplatz/
+├── shared/          # Querschnitt: SecurityConfig, MailService, StorageService, PdfGenerator
+├── benutzer/        # AppUser, Auth, OIDC, 2FA, Einstellungen, Datenexport
+├── organisation/    # Organisation, Mitgliedschaft, AccessControl, Hierarchie, Sponsor-Reg
+├── projekt/         # Projekt, SponsoringPakete, Watchlist, Medien, Marktplatz, Events
+├── anfrage/         # SponsoringAnfrage, Vertrag, Rechnung, QR-Bill, Nachrichten
+├── einladung/       # Token-basierte Mitglieder-Einladung
+├── benachrichtigung/# In-App-Glocke + Mail-Notifications
+├── audit/           # AuditLog mit umgebung-Marker + DSG-Datenexport
+├── backup/          # DB + Datei-Backup, Cloud-Upload (OCI + Azure)
+├── aufgabe/         # Customizable Task-Engine
+├── ops/             # Ops-Dashboard, RecentErrors, Alerts
+├── admin/           # Verifizierungs-Queue, Audit-Viewer, Backups, Mail-Settings
+└── home/            # Public: Landing, Marktplatz, Impressum/DSG/AGB
+
+src/main/resources/
+├── application*.properties         # default, dev, prod, demo, cloud-free, cloud-azure
+├── db/migration/V1..V46__*.sql     # additive Migrationen, strikt nicht-destruktiv
+├── templates/                      # Thymeleaf nach Bounded Context
+└── messages_{de_CH,en,fr_CH,it_CH}.properties
+
+infra/
+├── envs/{staging-free,azure-staging}/   # Terraform für OCI + Azure
+├── scripts/                              # Helper (compose-Patcher, etc.)
+└── staging-free/README.md                # Setup-, Rollback-, Aktivierungs-Anleitungen
 ```
 
-## Mehrsprachigkeit
+## Roadmap
 
-Die Plattform unterstützt vier Sprachen: **Deutsch**, **Französisch**, **Italienisch** und **Englisch**.
-
-- **Cookie-basiert**: Sprache wird per `lang`-Cookie gespeichert (365 Tage)
-- **URL-Override**: `?lang=de|fr|it|en` wechselt sofort die Sprache
-- **User-Profil**: Eingeloggte Benutzer können ihre bevorzugte Sprache in den Einstellungen hinterlegen — wird beim Login automatisch synchronisiert
-- **Footer-Switcher**: DE / FR / IT / EN auf jeder öffentlichen Seite
-
-## Roadmap (kurz)
+Stand 26.05.2026. Detaillierte Plan-/Slice-Sicht in [`specs/ROADMAP.md`](specs/ROADMAP.md).
 
 | Phase | Inhalt | Status |
-|---|---|---|
-| 0–9 | Fundament bis Mehrsprachigkeit | ✓ |
-| 10.1–10.3, 10.5 | Monitoring (W3C-Trace), Sentry, DSG-Pages, Security-Hardening | ✓ |
-| 11 | Pilot-Hardening (Onboarding, Support, Anhänge, Verträge, Rechnungen) | ✓ |
-| 12 | Customizable Task-Engine (Aufgaben + Sidebar-Badge) | ✓ |
-| **13** | **Pre-Pilot-Hardening — A11y-auth-Smoke, 2FA-TOTP, OIDC-Anbindung** | ⏳ |
-| **14** | **Produktivschaltung — HTTPS, prod-SMTP, SPF/DKIM/DMARC, OCI-Backups, DNS, Pilot-Welle** (war 10.4) | 🔜 |
-| 15.3 | **Multi-Cloud Azure als Warm-DR (Slices 1–4)** — App-Schicht, Terraform, CD, cross-cloud Restore | ✓ |
-| 15.4 | **Datei-Backup + Restore als ZIP (provider-agnostisch)** + `/admin/datei-backups`-UI | ✓ |
-| 15.3-bonus | **Cross-Cloud-Sync-Schutz** — `audit_log.umgebung` + Sentry-Tag | ✓ |
-| **15.1/.2** | **Post-Pilot — echte Zahlungs-Provider-Integration, Mahnwesen, MwSt, Abos, …** | 📋 |
-
-Vollständig dokumentiert in [`specs/ROADMAP.md`](specs/ROADMAP.md) — die
-„Logische Reihenfolge"-Sektion oben am ROADMAP erklärt die Sequenz
-und warum 10.4 → 14 verschoben wurde.
+|---|---|:---:|
+| 0–9 | Fundament: Org/Mitglied/AccessControl, Self-Reg, Projekte+Pakete, Marktplatz, Anfragen, Vertrag/Rechnung, Mehrsprachigkeit | ✅ |
+| 10 | Production-Readiness: Monitoring, Sentry, DSG-Pages, Security-Hardening (10.4 → Phase 14) | ✅ |
+| 11 + 12 | Backup/Restore, Ops-Dashboard, Customizable Task-Engine | ✅ |
+| 13 | Pre-Pilot-Hardening: A11y-auth-Smoke, 2FA-TOTP (+ Admin-Reset), OIDC Multi-Provider | ✅ |
+| **14** | **Produktivschaltung sponsorplatz.ch** — HTTPS, prod-SMTP, SPF/DKIM/DMARC, DNS, Pilot-Welle | 🔜 |
+| 15.3 | Multi-Cloud Azure als Warm-DR (Slices 1–4 ✅, 5–7 DNS-Failover/Cross-Replication offen) | ⏳ |
+| 15.4 | Datei-Backup + Restore als ZIP | ✅ |
+| 15.1 / 15.2 | Echte Zahlungs-Provider-Integration, Mahnwesen | 📋 |
 
 ## Dokumentation
 
 | Datei | Inhalt |
 |---|---|
-| [`specs/PROJEKT_INFO.md`](specs/PROJEKT_INFO.md) | Produkt-Übersicht, Vision, Zielgruppen |
-| [`specs/TECHNISCHE_SPEZIFIKATION.md`](specs/TECHNISCHE_SPEZIFIKATION.md) | Stack, Routen, Profile, Sicherheit |
-| [`specs/DATENMODELL.md`](specs/DATENMODELL.md) | Entitäten, Felder, Beziehungen |
-| [`specs/ROLLENKONZEPT.md`](specs/ROLLENKONZEPT.md) | Rollen, Permissions, AccessControl |
-| [`specs/TESTSTRATEGIE.md`](specs/TESTSTRATEGIE.md) | Test-Ebenen, Testfälle, Smoke-Checkliste |
-| [`specs/ROADMAP.md`](specs/ROADMAP.md) | Phasen, Iterationen, MVP-Definition |
-| [`specs/BETA_TESTPLAN.md`](specs/BETA_TESTPLAN.md) | Pilot-Akzeptanz-Tests (manuelle Checks) |
-| [`DEPLOYMENT.md`](DEPLOYMENT.md) | Pilot-Launch-Runbook (HTTPS, SMTP, DNS, Backups) |
-| [`docs/adr/README.md`](docs/adr/README.md) | Architecture Decision Records |
-| [`docs/architektur/README.md`](docs/architektur/README.md) | C4-Diagramme (Structurizr-DSL) |
-| [`.instructions.md`](.instructions.md) | Clean Code, TDD-Workflow, Conventions |
-| [`docs/konzept.md`](docs/konzept.md) | Vollständiges Konzept-Dokument |
-| [`infra/README.md`](infra/README.md) | Infrastruktur-Übersicht (OCI) |
+| [`CLAUDE.md`](CLAUDE.md) | Stack, Phase-Status, TDD-Pflicht, ARCH-Regeln — Einstieg für neue Devs + KI-Assistenten |
+| [`.instructions.md`](.instructions.md) | Clean Code, TDD-Workflow, Naming-Conventions |
+| [`docs/konzept.md`](docs/konzept.md) | High-Level-Konzept v3 mit Rollen, Datenmodell, Vision |
+| [`specs/`](specs/) | Specs (Datenmodell, Rollenkonzept, Teststrategie, ROADMAP, AUTH_*) |
+| [`docs/adr/`](docs/adr/) | Architecture Decision Records |
+| [`infra/staging-free/README.md`](infra/staging-free/README.md) | OCI-Setup, OIDC-Aktivierung, Rollback-Pfad |
+| [`infra/envs/azure-staging/README.md`](infra/envs/azure-staging/README.md) | Azure-Setup + Cloud-spezifische Unterschiede |
+| [`DEPLOYMENT.md`](DEPLOYMENT.md) | Pilot-Launch-Runbook |
 
 ## Mitmachen
 
-Der Workflow ist strikt **Spec → Test → Implementation**.
-Details in [`.instructions.md`](.instructions.md).
+Strikter Workflow: **Spec → Test → Implementation**. Details in [`.instructions.md`](.instructions.md).
+Jede Code-Änderung braucht einen Spec-Eintrag + Test (rot zuerst), bevor die Implementation kommt.
 
 ## Lizenz
 
-[MIT](LICENSE) © 2026 Fabian Aschwanden
+MIT — siehe [LICENSE](LICENSE).
