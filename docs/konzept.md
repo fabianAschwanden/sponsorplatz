@@ -1,10 +1,11 @@
 # Sponsoring-Plattform — Konzept v3 (Kollaborative Plattform)
 
-**Version:** 3.1 — **AKTUELL** (Health-Fokus)
-**Datum:** 30.04.2026 / Schärfung 05.05.2026
+**Version:** 3.3 — **AKTUELL** (Stand der Umsetzung)
+**Datum:** 30.04.2026 / Schärfung 05.05.2026 / Umsetzungs-Sync 26.05.2026
 **Autor:** Fabian Aschwanden
 **Codebasis:** `~/git/sponsorplatz`
 **Modell:** Mehrere **Sport- und Health-Vereine**, gemeinsame Datenbasis, keine strikte Mandantentrennung
+**Live-Umgebungen:** `sponsorplatz.for-better.biz` (OCI Always-Free) + `sponsorplatz.for-the.biz` (Azure Sweden Central, Warm-DR)
 
 > **Schlüssel-Entscheidung 1 (v3.0):** Diese Plattform ist **kein Multi-Tenant-SaaS**. Mehrere Vereine arbeiten gemeinsam in einer geteilten Datenbasis. Es gibt **keine Datentrennung zwischen Vereinen** — alle Vereinsmitglieder sehen alle Vereins-, Projekt- und Sponsoren-Daten. Beschränkt werden nur **Edit-Rechte** (ein Vereinsmitglied kann nur seine eigenen Vereins-Daten ändern).
 >
@@ -13,6 +14,8 @@
 > **Schlüssel-Entscheidung 2 (v3.1, 05.05.2026):** Sponsorplatz ist **strikt auf Sport und Gesundheit** positioniert. Andere Vereinstypen werden bei der Verifizierung abgelehnt. Innerhalb des Health-Fokus ist der Themen-Umfang **breit** (`Branche`-Enum mit elf Werten):
 >
 > Sport, Bewegung, Reha, Behindertensport, Seniorensport, Prävention, Mental Health, Ernährung, Wellness, Selbsthilfe, Patientenorganisation.
+>
+> **Schlüssel-Entscheidung 3 (v3.3, 26.05.2026):** Phasen 0–13 sind umgesetzt. Sponsorplatz läuft als eigenständige Greenfield-App (keine Migration aus einer Vorgängeranwendung). Multi-Cloud-Warm-DR mit OCI + Azure ist live. Phase 14 (Produktivschaltung sponsorplatz.ch) ist der letzte Schritt vor dem Pilot.
 
 ---
 
@@ -35,18 +38,20 @@
 
 ## 1. Management Summary
 
-Die `sponsoren-app` ist heute eine produktive Single-Org-Anwendung für SCA mit 24 Test-Klassen, OCI-Cloud-Betrieb, OIDC-Auth, Word-Serienbrief, Excel-Im/Export, Diff-Reports und Zefix-Datenbereinigung.
+Sponsorplatz ist eine produktive Greenfield-Plattform für Schweizer **Sport- und Gesundheits-Vereine**, die Sponsoring kollaborativ pflegen und einen öffentlichen Marktplatz nutzen. Stand 26.05.2026: Phasen 0–13 sind umgesetzt, beide Cloud-Zonen (OCI Always-Free + Azure Sweden Central als Warm-DR) sind live, Phase 14 (DNS-Umstellung auf sponsorplatz.ch + Pilot-Welle) ist der letzte Schritt vor dem ersten echten Pilot-Verein.
 
-Die Plattform-Erweiterung öffnet sie für **mehrere Vereine** (kollaborativ, ohne Tenant-Walling) und ergänzt einen **öffentlichen Marktplatz**, auf dem Sponsoren Projekte aktiv finden und Anfragen stellen können.
-
-**Kern-Ergänzungen:**
+**Plattform-Bausteine (alle umgesetzt):**
 
 1. **`Organisation`** als Profil-Entity (Verein/Sponsor-Org) — *kein* Tenant-Marker, sondern Eigentumsnachweis für Edit-Rechte.
 2. **`Mitgliedschaft`** verbindet Benutzer ↔ Organisation ↔ Rolle — bestimmt, **wer was bearbeiten** darf.
 3. **Sponsor-Stammdaten werden geteilt** — alle Vereine sehen alle Sponsoren (Wikipedia-Modell). Notizen, Beteiligungen und Kommunikation bleiben pro Verein zugeordnet, sind aber lesbar.
-4. **`SponsoringPaket` & `SponsoringAnfrage`** für strukturierte Pakete und Self-Service-Anfragen.
-5. **Public-Marktplatz** für veröffentlichte Projekte (`sichtbarkeit = OEFFENTLICH`).
-6. **`MedienAsset`** für Cover-Bilder, Galerien, Pitch-Decks.
+4. **`SponsoringPaket` & `SponsoringAnfrage`** für strukturierte Pakete und Self-Service-Anfragen mit Threaded-Konversation.
+5. **Public-Marktplatz** für veröffentlichte Projekte (`sichtbarkeit = OEFFENTLICH`) mit Postgres-tsvector-Volltextsuche + Filter.
+6. **`MedienAsset`** für Cover-Bilder, Galerien, Pitch-Decks (lokales Volume + OCI Object Storage + Azure Blob).
+7. **Vertrag + Rechnung + QR-Bill** komplette Abrechnungs-Kette nach Anfrage-Annahme.
+8. **Auth + OIDC Multi-Provider** Form-Login + Google/Entra/SwissID/edu-ID, 2FA-TOTP mit Admin-Reset, Domain-Whitelist, RP-initiated Logout.
+9. **DSG-Compliance + Backup/Restore** Impressum, Datenschutz, AGB, Audit-Log mit Cloud-Marker, DB + Files-Backup mit Cross-Cloud-Restore.
+10. **Multi-Cloud Warm-DR** Azure als zweite Zone, manueller DNS-Switch im Notfall (Slices 5–7 für automatischen Failover noch offen).
 
 **Was diese Vereinfachung bringt:**
 
@@ -62,25 +67,52 @@ Die Plattform-Erweiterung öffnet sie für **mehrere Vereine** (kollaborativ, oh
 
 ---
 
-## 2. Was die App heute kann (Kurzfassung)
+## 2. Was die App heute kann (Stand 26.05.2026)
 
 ```
-       Saison (optional)
-         ▲
-         │
-       Projekt ──< SponsorBeteiligung >── Sponsor
-                       │
-                       │ erzeugt durch Versand
-                       ▼
-                  Kommunikation ──> EmailVorlage (optional)
+       Organisation ──< Mitgliedschaft >── AppUser ──< FederierteIdentitaet >── IdP
+            │                                  │
+            │                                  │
+            ▼                                  ▼
+       Projekt ──< SponsoringPaket >── SponsoringAnfrage ──< Nachricht >──
+                                              │
+                                              ▼ (bei Annahme)
+                                          Vertrag ──> Rechnung ──> QR-Bill
+            │
+            └──< MedienAsset > (Logo, Cover, Galerie, Pitch-Deck)
+
+       AuditLog (umgebung-Marker)   Backup (DB + Files)   Aufgabe
 ```
 
-**Bestehende Entitäten:** `Sponsor`, `Projekt`, `SponsorBeteiligung`, `Saison`, `EmailVorlage`, `Kommunikation`.
-**Stack:** Spring Boot 3.3.4, Java 17+, Thymeleaf+Bootstrap 5, Postgres (prod) / H2 (dev), Flyway V1–V7, OIDC gegen OCI IAM, Apache POI, LibreOffice (DOCX→PDF), Zefix+Nominatim.
-**Rollen:** `ROLE_ADMIN`, `ROLE_EDITOR`, `ROLE_VIEWER` (heute global).
-**Kernfeatures:** CRUD, Excel-Im/Export, Word-Serienbrief, Serien-E-Mail, Diff-Reports (Projekt/Saison), Datenbereinigung.
+**Kern-Entitäten:** `Organisation`, `Mitgliedschaft`, `AppUser`, `FederierteIdentitaet`, `Projekt`, `SponsoringPaket`, `SponsoringAnfrage`, `Nachricht`, `Vertrag`, `Rechnung`, `MedienAsset`, `Watchlist`, `Einladung`, `Benachrichtigung`, `AuditLog`, `Backup`, `Aufgabe`, `PlattformEinstellungen`.
 
-Vollständige Bestandsaufnahme im überholten v2-Dokument, Abschnitt 2.
+**Stack:**
+- **Backend:** Spring Boot 3.5.x, Java 21 LTS, Spring Security 6 (Form-Login + OAuth2-Client), Spring Data JPA, Postgres 17 (prod) / H2 (dev), Flyway V1–V46
+- **Frontend:** Thymeleaf (kein SPA), eigenes CSS (Dashboard-Stil), kein Bootstrap (intern bewusste Entscheidung — light footprint)
+- **Auth-Providers:** OIDC für Entra ID / Google / SwissID / Switch edu-ID + 2FA-TOTP (`dev.samstevens.totp`)
+- **Cloud-Storage:** Local-Volume (dev) / OCI Object Storage (prod) / Azure Blob Storage (DR)
+- **Integration:** Zefix-Client (Schweizer UID), `OciStorageService`/`AzureBlobStorageService`, Sentry (Browser + Java), MailService (Mailgun-konfigurierbar)
+- **Build/Deploy:** Maven 3.9, Docker multi-stage (`eclipse-temurin:21-jre-jammy`), GitHub Actions CI/CD, Terraform für OCI + Azure, Caddy-Reverse-Proxy mit Let's Encrypt
+
+**Rollen-Modell:**
+- **Plattform-Rollen** (`PlatformRolle`): `PLATFORM_ADMIN`, `PLATFORM_MODERATOR`, `PLATFORM_SUPPORT`
+- **Org-Rollen** (`Rolle` via `Mitgliedschaft`): `ORG_OWNER`, `ORG_EDITOR`, `ORG_VIEWER`, `SPONSOR_KONTAKT`
+
+**Kernfeatures (live in beiden Cloud-Zonen):**
+- Organisationen-CRUD inkl. Org-Hierarchie + Filter (Typ/Status/Branche/Suche)
+- Self-Registrierung Verein + Sponsor + Mitglieder-Einladung mit Mail-Verifizierung
+- Marktplatz (`/marktplatz`) öffentlich mit tsvector-Suche, Branche-/Region-Filter, SEO (Slug, Sitemap, Schema.org, OG-Tags)
+- Sponsoring-Pakete + Anfrage-Workflow mit Threaded-Konversation
+- Vertrag-Generator (PDF), Rechnung mit Swiss-QR-Bill, Kündigung
+- DSG-konformes Impressum/Datenschutz/AGB, kein Cookie-Banner nötig
+- Audit-Log mit `umgebung`-Marker (Cross-Cloud-Sync-Safe), Datenexport pro User
+- Backup-System: DB-Dump + Datei-Backup als ZIP, Restore-Pfad via Admin-UI
+- 2FA-TOTP optional + Admin-Reset, Backup-Codes (BCrypt-gehashed)
+- OIDC-SSO mit Provider-Anzeige in `/admin/benutzer`
+- Sentry-Release-Tagging im CD-Workflow (off-by-default ohne DSN)
+- A11y-Smoke gegen 10 Routen (public + auth-pflichtig) via Playwright + axe-core
+
+**Test-Disziplin:** ~700 Tests grün, 13 ArchUnit-Regeln (ARCH-01..13) statisch durchgesetzt, TDD-Pflicht in CLAUDE.md verankert.
 
 ---
 
@@ -392,32 +424,84 @@ Bestehende Routen (`/sponsoren`, `/projekte`, `/saisons`, …) bleiben — Lese-
 | `SerienbriefService` | Vertragsgenerator (Phase 5) |
 | `DiffReportService` | bleibt, ggf. Sponsor-übergreifend |
 
-### 7.4 Auth-Strategie
+### 7.4 Auth-Strategie (umgesetzt)
 
-OCI IAM Domains unterstützen Self-Service-Registrierung nur eingeschränkt. Vorschlag:
+Sponsorplatz hat **zwei Login-Pfade nebeneinander**, beide landen am gleichen `AppUser`:
 
-- **Bestehende SCA-Mitarbeiter:** OIDC gegen OCI IAM (wie heute)
-- **Neue Vereins-User & Sponsoren:** Local-Identity-Schema in PostgreSQL, Spring Security Form-Login *zusätzlich* zu OIDC. Dual-Login-Setup.
-- Alternative: Externes Keycloak / Auth0 — eine bewusste Entscheidung in Phase 1.
+**Form-Login (Default):**
+- E-Mail + Passwort (BCrypt-gehashed), Self-Reg + Mail-Verifizierung
+- Optional 2FA-TOTP (Setup unter `/einstellungen/2fa`, 10 Backup-Codes, Admin-Reset via `/admin/benutzer/{id}/2fa-reset`)
+- Login-Brute-Force-Schutz: pro E-Mail-Sperre nach N Fehlversuchen, IP-RateLimit zusätzlich
+
+**OIDC-SSO (off-by-default, opt-in pro Provider):**
+- Multi-Provider: `IdentityProvider` Enum mit ENTRA_ID, GOOGLE, SWISSID, EDU_ID (V46 droppt die historisch hartcodierte Allowlist — Enum ist alleinige Source of Truth)
+- 3-stufige Lookup-Logik in `SponsorplatzOidcUserService`: stabiler `(provider, subject)`-Lookup → Email-Match auf bestehenden AppUser → Just-in-Time-Provisionierung
+- Domain-Whitelist (`sponsorplatz.oidc.email-domain-whitelist`) als Account-Takeover-Schutz für Multi-Tenant-IdPs
+- Group-Mapping (`sponsorplatz.oidc.rollen-mapping`) — IdP-Group → PlatformRolle, Re-Sync bei jedem Login (entzogene Group entfernt die Rolle)
+- RP-initiated Logout via `OidcClientInitiatedLogoutSuccessHandler` mit `{baseUrl}/` als post-logout-redirect
+- `nameAttributeKey="email"` damit `authentication.getName()` konsistent die Email zurückgibt
+- IdP-Anzeige in `/admin/benutzer`: pro User Chips für die verknüpften Auth-Quellen (Form-Login + Provider-Liste)
+
+**CD-managed Secrets** (idempotent via `/opt/sponsorplatz/.env`-Sync im CD-Workflow):
+- `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` (oder analog für andere Provider)
+- `SPONSORPLATZ_API_KEY` für REST-API-Zugriff (off-by-default = 503)
+- `SENTRY_DSN`, `SENTRY_RELEASE` für Error-Tracking
+- `DB_PASSWORD`, `SMTP_*`, `ADMIN_*` bleiben in der manuell gepflegten VM-`.env` (nicht rotations-getrieben)
+
+Vollständige Spec: [`specs/AUTH_SSO_OIDC.md`](../specs/AUTH_SSO_OIDC.md), [`specs/AUTH_2FA_TOTP.md`](../specs/AUTH_2FA_TOTP.md).
+
+### 7.5 Multi-Cloud Warm-DR (umgesetzt)
+
+Heute laufen zwei unabhängige Cloud-Zonen mit eigener CD-Pipeline:
+
+```
+                     GitHub Actions CI
+                            │
+                ┌───────────┴───────────┐
+                ▼                       ▼
+         CD Staging-Free            CD Azure-Staging
+                │                       │
+                ▼                       ▼
+       OCI Always-Free-VM      Azure Sweden Central
+       (sponsorplatz.            (sponsorplatz.
+        for-better.biz)           for-the.biz)
+                │                       │
+                ▼                       ▼
+       Postgres Docker        Postgres Flexible Server
+       OCI Object Storage     Azure Blob Storage
+```
+
+**Designprinzipien:**
+- Beide Zonen sind eigenständig vollständig — kein Shared-Storage, kein Shared-DB
+- DR-Modus heute manuell: DB + Files mit `BackupService` von OCI nach Azure restored, DNS-Switch via Cloudflare wäre Notfallhandgriff
+- Image-Pipeline: OCI nutzt GHCR (nach OCIR-Block durch Free Tier), Azure nutzt eigenes ACR mit Service-Principal-AcrPush + VM-MSI-AcrPull
+- `umgebung`-Marker (Audit-Log + Sentry-Tag) — jedes Ereignis hat seine Cloud-Quelle, damit nach DB-Sync klar bleibt wo's entstand
+- Helper-Skript `infra/scripts/patch-vm-compose-envs.sh` synct nachträglich Sentry/Google/API-Key-Env-Refs in laufende VMs (Indent-auto-detect, Backup+Rollback)
+
+**Noch offen** (Phase 15.3 Slices 5–7): automatischer DNS-Failover via Cloudflare, kontinuierliche Cross-Replication, beidseitiger Smoke. Vollständige Architektur-Entscheidung: [`docs/adr/0009-multi-cloud-azure-als-dr-zone.md`](adr/0009-multi-cloud-azure-als-dr-zone.md).
 
 ---
 
-## 8. Migrations-Strategie (Flyway V8+)
+## 8. Migrations-Strategie (Flyway V1–V46, alle live)
 
-Bestehende V1–V7 bleiben unverändert. Plattform-Erweiterung als V8–V13.
+Sponsorplatz ist eine Greenfield-App, kein Migration-Pfad aus einer Vorgängeranwendung. Die Migrationen sind strikt **additiv** (siehe CLAUDE.md `Migrationen`): neue Spalte → Backfill → alte Spalte droppen erst in nächster V-Nummer.
 
-| Version | Inhalt |
-|---|---|
-| **V8** | `CREATE TABLE organisation`; SCA als initiale Org (`name='SCA Sponsoring', typ=VEREIN, status=ACTIVE`); `CREATE TABLE mitgliedschaft`; bestehende SCA-OIDC-Subjects als ORG_OWNER seeden |
-| **V9** | `ALTER TABLE sponsoren / projekte / saisons / email_vorlagen / kommunikationen ADD COLUMN besitzer_organisation_id UUID NULL`; Backfill mit SCA-Org-ID. Bleibt nullable — keine Cascade-Constraints nötig. |
-| **V10** | `CREATE TABLE sponsoring_paket`; SCA-Standardvorlagen (BRONZE/SILBER/GOLD) generieren |
-| **V11** | `ALTER TABLE projekte ADD COLUMN slug, sichtbarkeit, veroeffentlicht_am, cover_asset_id, branche, erwartete_besucher, zielgruppe, finanzierungsziel_chf`; Slug aus Name+Datum |
-| **V12** | `CREATE TABLE sponsoring_anfrage, nachricht, medien_asset`; Indizes |
-| **V13** | `ALTER TABLE sponsor_beteiligungen ADD COLUMN paket_id UUID NULL FK` |
+**Aktuelle Migrations-Landschaft** (Auszug, vollständig in [`src/main/resources/db/migration/`](../src/main/resources/db/migration/)):
 
-**Backfill-Prinzip:** Nullable-Spalten, gefüllt mit SCA-Org-ID. Kein `NOT NULL`-Cascade, weil Lesefilter ohnehin nicht kommen.
+| Block | Migrationen | Inhalt |
+|---|---|---|
+| Foundation | V1–V8 | AppUser, Organisation, Mitgliedschaft, Projekt, SponsoringPaket, SponsoringAnfrage, Watchlist, Einladung |
+| Public-Layer | V11, V18, V22 | Slug, Sichtbarkeit, Branche, Markplatz-Felder, tsvector-Volltextsuche (Postgres-only) |
+| Auth | V21, V27, V28, V39, V43, V46 | Backlog-Tabelle, OIDC-Backlog-Item, FederierteIdentitaet, 2FA-Backlog, TOTP-Spalten, chk_provider-Drop |
+| Anfrage-Lifecycle | V6, V16, V17, V29, V32, V33, V34, V35 | Vertrag, Rechnung, Status-Cleanup, kontakt_anfrage, erstellt_von, wunschbetrag, storno_grund, Kündigung |
+| Multi-Cloud | V41, V42 | `audit_log.umgebung`-Spalte + Backfill auf `oci-staging-free` |
+| Hygiene | V14, V44, V45 | CHECK-Constraints initial gesetzt + später gedroppt (V44 audit_aktion, V45 benachrichtigung_typ, V46 provider) — Java-Enums sind Source of Truth, doppelte Pflege brittle |
+| Misc | V13, V19, V20, V25, V26, V30, V31, V36–V38, V40 | Beteiligung-Paket-Link, Benachrichtigung, Passwort-Reset, sponsor_branche, event, aufgaben, onboarding_gesehen, plattform_aktiver_style, a11y-backlog |
 
-**Im Vergleich zu v2:** Migrationen werden ~50 % einfacher, weil keine harte Tenant-Isolation erforderlich ist.
+**Lessons learned aus der Umsetzung:**
+- **Allowlists droppen** statt synchronisieren: V44/V45/V46 droppen `CHECK (xxx IN (...))`-Constraints, weil die Java-Enums die einzige Source of Truth sind — sonst muss jeder neue Enum-Wert eine neue Migration bekommen.
+- **Postgres-only Migrationen** liegen in `db/migration_postgres/` und werden via `spring.flyway.locations` nur in prod/cloud-* geladen (z.B. tsvector). H2 (dev) fällt zur Laufzeit auf LIKE zurück.
+- **DDL-auto=validate** in beiden Profilen — Hibernate prüft strikt dass das Schema zur Annotation passt.
 
 ---
 
@@ -501,128 +585,148 @@ Priorisierung **M**ust · **S**hould · **C**ould · **W**on't. Status: ✓ vorh
 
 ## 10. Roadmap
 
-> Aufwand: Solo-Dev, 50 % Auslastung. TDD-Disziplin (Spec → Test → Impl) bleibt.
+> Detaillierte Plan- und Spec-Sicht: [`specs/ROADMAP.md`](../specs/ROADMAP.md). Hier nur die kuratierte Konzept-Sicht mit Status.
 
-### Phase 0 — Organisations-Profil & Mitgliedschaften (2 Wochen)
+### Phasen 0–9 ✅ — Foundation + CRM + Marktplatz + Anfrage-Lifecycle
 
-**Ziel:** Bestehende App bekommt Organisations-Konzept, ohne dass sich für SCA etwas ändert.
+Komplett umgesetzt. Sponsorplatz hat den Funktionsumfang den der ursprüngliche v3-Plan als "MVP" definiert hat, **plus** Vertrag/Rechnung/QR-Bill, Aufgaben-Engine, Plattform-Einstellungen.
 
-- V8: `Organisation` + `Mitgliedschaft` + SCA-Seed
-- V9: `besitzer_organisation_id`-Spalten überall (nullable, Backfill auf SCA)
-- `AccessControl`-Bean
-- `MitgliedschaftService`
-- Bestehende `@PreAuthorize`-Annotations werden auf `@accessControl.kannOrgEditieren(...)` umgestellt
-- Alle 24 bestehenden Tests bleiben grün
+- Organisations-Profil + Mitgliedschaften + AccessControl
+- Self-Reg + Mail-Verifizierung + Mitglieder-Einladung
+- Sponsoring-Pakete + Sichtbarkeit + Cover/Pitch-Deck-Upload
+- Marktplatz public (`/marktplatz`) mit tsvector-Volltextsuche, SEO (Slug/Sitemap/Schema.org/OG)
+- Anfrage-Workflow mit Threaded Messages + Mail-Notifications
+- Vertrag-Generator (PDF) + Rechnung mit Swiss-QR-Bill + Kündigung
+- Mehrsprachigkeit (de-CH/en/fr-CH/it-CH) im Public-Layer
 
-**Erfolgsmetrik:** SCA-Workflow exakt wie heute, ein zweiter Verein kann manuell per SQL angelegt werden und seine Daten bearbeiten.
+### Phase 10 — Production-Readiness ✅ (10.1–10.3, 10.5)
 
-### Phase 1 — Selbstregistrierung & Org-Profil (2 Wochen)
+- 10.1 Monitoring (TraceId-Filter, Actuator-Probes)
+- 10.2 Error-Tracking (Sentry Java + Browser, DSG-konform, SRI-Pinning)
+- 10.3 DSG-Compliance + Public-Pages (Impressum, Datenschutz, AGB)
+- 10.5 Security-Hardening (CSP, Permissions-Policy, Referrer-Policy)
+- ~~10.4~~ → in Phase 14 verschoben (HTTPS/SMTP-prod/DNS)
 
-- Vereins-Registrierungs-Flow (öffentlich)
-- E-Mail-Verifizierung
-- Org-Profil-Seite (Beschreibung, Logo, Website)
-- Manuelle Verifizierung durch Plattform-Admin
-- Auto-Verifizierung via Zefix
-- Mitglieder einladen
+### Phasen 11 + 12 ✅ — Backup/Restore + Ops-Dashboard + Alerts
 
-### Phase 2 — Sponsoring-Pakete & Sichtbarkeit (3 Wochen)
+- BackupService (DB + Files-ZIP) mit provider-agnostischem Upload
+- Admin-UI `/admin/backups` + `/admin/datei-backups` mit Restore-Pfad
+- Ops-Dashboard (RecentErrors, OpsAlertJob, System-Snapshot)
 
-- V10+V11: `sponsoring_paket`, Projekt-Felder (Sichtbarkeit, Slug, Cover)
-- Paket-CRUD-UI
-- Projekt-Wizard mit Pakete-Schritt
-- Cover-Bild- & Pitch-Deck-Upload (V12)
-- Veröffentlichungs-Flow (`PRIVAT` → `OEFFENTLICH`)
+### Phase 13 — Pre-Pilot-Hardening ✅
 
-### Phase 3 — Marktplatz Public (3–4 Wochen)
+- **13.1 A11y-Smoke für authentifizierte Seiten** — Playwright + axe-core auf 10 Routen, WCAG-AA-Fixes
+- **13.2 2FA-TOTP** (Slice A+B + Admin-Reset live; PLATFORM_ADMIN-Pflicht bewusst zurückgestellt bis erste echte Admins kommen)
+- **13.3 OIDC** (Multi-Provider, Domain-Whitelist, RP-Logout — vollständig CD-managed)
 
-- Public-Routen `/marktplatz/**` + Templates
-- Filter & Volltextsuche (Postgres `tsvector`)
-- SEO: Slugs, Sitemap, Schema.org, Open Graph
-- Public-Vereinsprofile
+### Phase 14 — Produktivschaltung sponsorplatz.ch 🔜 (anstehend)
 
-### Phase 4 — Anfragen & Konversation (3 Wochen)
+- 14.1 Infrastruktur — HTTPS via Let's Encrypt, prod-SMTP statt MailHog, SPF/DKIM/DMARC, DNS sponsorplatz.ch + IPv6
+- 14.2 Cutover-Validation ✅ — CD-Smoke (`/login`-200-Probe), Sentry-Release-Tagging, Rollback-Pfad in Infra-READMEs
+- 14.3 Pilot-Welle — 5 echte CH-Sport-/Health-Vereine + 3 Sponsoren onboarden
 
-- V12: `sponsoring_anfrage`, `nachricht`
-- Sponsor-Org-Self-Reg
-- Anfrage-Form
-- Verein-Inbox + Threaded Messages
-- E-Mail-Notifications
-- Bei Annahme: automatische Beteiligung
+### Phase 15 — Post-Pilot Wachstum (teilweise schon umgesetzt)
 
-### Phase 5 — Wachstum (laufend)
+- 15.1 echte Zahlungs-Provider-Integration: 📋 geplant
+- 15.2 Mahnwesen: 📋 geplant
+- 15.3 **Multi-Cloud Azure** — Slices 1–4 ✅ (App + Terraform + CD live), Slices 5–7 offen (DNS-Failover, Cross-Replication, beidseitiger Smoke)
+- 15.4 **Datei-Backup + Restore** ✅ ZIP-basiert, provider-agnostisch
+- **`umgebung`-Marker** ✅ Cross-Cloud-Sync-Schutz im Audit-Log + Sentry-Tag
 
-- Watchlist, Matching, Statistiken
-- Mehrsprachigkeit FR/IT
-- Vertrags-Generator (bestehende Serienbrief-Engine)
-- Phase 6: Zahlungs-Integration
+### Aufwand-Retrospektive
 
-### Aufwand
-
-| Phase | Dauer |
-|---|---|
-| 0 | 2 Wochen |
-| 1 | 2 Wochen |
-| 2 | 3 Wochen |
-| 3 | 3–4 Wochen |
-| 4 | 3 Wochen |
-| **Gesamt MVP** | **13–14 Wochen** bei Halbtags-Pensum |
-
-> Phase 0 ist gegenüber v2 deutlich kürzer, weil keine Multi-Tenant-Filter-Architektur entsteht.
+| Phase | Plan v3 (April 2026) | Ist (Mai 2026) |
+|---|---|---|
+| MVP (0–4 entspr. v3-Plan) | 13–14 Wochen | umgesetzt |
+| 5/9 (Wachstum-Themen) | "laufend" | Vertrag/Rechnung/QR-Bill + Aufgaben + Mehrsprachigkeit ⊕ vorgezogen |
+| 10–13 (Ops + Hardening) | nicht im v3-Plan | ergänzt, getrieben durch DR + DSG-Anforderungen |
+| 14 (Pilot-Launch) | "Phase 6" | wartet auf DNS+SMTP-Setup |
+| 15 (DR + Mahnwesen + Payment) | "Phase 5+6" | DR ⊕ vorgezogen, Mahnwesen/Payment open |
 
 ---
 
 ## 11. Risiken & Annahmen
 
-### Risiken
+### Aktuelle Risiken (Stand 26.05.2026)
 
 | Risiko | Auswirkung | Maßnahme |
 |---|:---:|---|
-| Vereine wollen **keine** offene Datenbasis (Konkurrenz-Sorge) | sehr hoch | klare Kommunikation des Modells *vor* Onboarding; ggf. Felder als „intern" markierbar (Phase 5) |
-| Sponsor-Stammdaten-Qualität leidet durch viele Bearbeiter | mittel | nur Eigentümer-Org darf editieren; andere können „Update vorschlagen"; Zefix-Cleanup als Wahrheitsquelle |
-| DSG-Konformität bei geteilten Sponsoren-Daten | hoch | Datenschutzerklärung + AGB explizit; sensitive Felder (Notizen?) optional org-private |
-| Bestehender SCA-Betrieb gestört | hoch | Phase 0 streng additiv; Feature-Flags; Rollback-Skripte |
-| Henne-Ei: zu wenige Vereine/Sponsoren | hoch | SCA als Reference-Tenant; Verbands-Partnerschaften vor Launch |
-| Auth-Komplexität (OIDC + Self-Reg) | mittel | Phase 1: einfacher Local-Identity-Pfad zusätzlich zu OIDC; oder Keycloak |
+| Vereine akzeptieren das offene Modell nicht | sehr hoch | im Pilot validieren (Phase 14.3); Notausgang: in v3 wurden bewusst keine Multi-Tenant-Filter eingebaut, ein Rückzug wäre teuer |
+| Sponsor-Stammdaten-Qualität leidet durch viele Bearbeiter | mittel | nur Eigentümer-Org darf editieren; Zefix-Cleanup als Wahrheitsquelle; "Update vorschlagen" als Backlog |
+| DSG-Konformität bei geteilten Sponsoren-Daten | hoch | DSG-Pages (Impressum/Datenschutz/AGB) ✅, Audit-Log mit Datenexport pro User ✅, Sentry ohne PII ✅ |
+| Henne-Ei: zu wenige Vereine/Sponsoren beim Launch | hoch | Pilot-Welle 1 mit 5 ausgewählten Vereinen, Sponsor-Wave folgt |
+| OIDC-IdP-Konfigurationsfehler beim Provider-Kunden | mittel | Multi-Provider-Setup mit Domain-Whitelist + JIT-Provisioning + Account-Takeover-Schutz |
+| Cloud-Single-Point-of-Failure (OCI-VM) | mittel | Warm-DR via Azure-Zone live, DNS-Failover manuell (automatisiert in 15.3) |
+| GitHub-Actions-Outage blockt CD | niedrig | manueller Deploy via `IMAGE_URL`-Pin in `.env` + `force-recreate` dokumentiert (Rollback-Pfad) |
 
 ### Annahmen
 
-- SCA bleibt aktiver Anwender während der Evolution.
-- OCI bleibt Cloud-Plattform.
-- Spring Boot bleibt 3.x; Java-Upgrade auf 21 LTS optional in Phase 0.
-- Mindestens 5–10 weitere Vereine in Phase 1+2 erreichbar.
-- TDD-Workflow bleibt erhalten.
-- **Vereine akzeptieren das offene Modell** — wenn nicht, müsste auf v2-Multi-Tenant zurückgegangen werden.
+- Spring Boot bleibt 3.5.x; Java 21 LTS ist gesetzt.
+- OCI Always-Free + Azure als Warm-DR — kostenlos im Pilot.
+- TDD + ArchUnit-Pflicht bleiben — keine Architektur-Entscheidung ohne Test.
+- **Vereine akzeptieren das offene Modell** — wird im Pilot validiert (Phase 14.3).
 
 ---
 
-## 12. Offene Entscheidungen
+## 12. Bisherige Entscheidungen + offene Fragen
 
-1. **Sensitive Felder in Sponsor-Daten:** Sind alle Sponsor-Felder (inkl. Notizen, Bemerkungen, Telefon) tatsächlich öffentlich für alle eingeloggten User? Oder gibt es Felder, die als „intern" markiert werden sollten? → Empfehlung: Phase 0 alles offen; in Phase 5 ggf. `notiz_visibility`-Flag pro Notiz.
+### Geklärt (in der Umsetzung entschieden)
 
-2. **OIDC vs. Local Identity:** OCI IAM ist nicht für Self-Reg designed.
-   - (a) OCI IAM mit Self-Reg-Flow (umständlich)
-   - (b) Lokales User-Schema + Spring Security zusätzlich zu OIDC (Dual-Auth)
-   - (c) Externes Keycloak/Auth0 vor OCI
+1. **OIDC vs. Local Identity:** beides — Form-Login als Default + OIDC Multi-Provider als opt-in. Keine Auth0/Keycloak-Komplexität dazwischen.
+2. **Java-21-Migration:** früh durchgezogen, alle Module nutzen Records + Pattern Matching.
+3. **Domainname & Branding:** sponsorplatz.ch (Pilot-Aliases: `*.for-better.biz` / `*.for-the.biz`), eigene Brand-Identity (`/`-Hero), CSS-Theme dashboard-orientiert ohne Bootstrap.
+4. **Verein-Verifizierung:** Zefix-Auto-Check + manueller Fallback durch Plattform-Admin — beide live.
+5. **Branchen-Fokus:** strikt Sport/Gesundheit (`Branche`-Enum hartcodiert), andere Typen werden bei der Verifizierung abgelehnt.
+6. **Multi-Cloud:** Azure als zweite Zone — Warm-DR, kein Active-Active. ADR-0009 dokumentiert die Entscheidung.
 
-3. **Sponsoren-Org-Verlinkung:** Soll eine Sponsor-Stammdaten-Karteikarte automatisch mit einer öffentlichen Sponsor-Organisation verlinken (per E-Mail-Domain-Match)? → Empfehlung: manuell, mit Vorschlag durch Plattform.
+### Noch offen
 
-4. **Geschäftsmodell:** Bleibt MVP kostenlos? Provision auf vermittelte Anfragen erst mit Zahlungs-Integration in Phase 5.
-
-5. **Java-21-Migration:** Sinnvoll am Start von Phase 0 (Records, Pattern Matching, Virtual Threads).
-
-6. **Domainname & Branding:** Eigene Domain für Plattform (nicht `sca.ch`), separates Logo & Brand-Identity.
-
-7. **Verein-Verifizierung:** Auto via Zefix (UID-Match) reicht für CH-Vereine? Vereine ohne UID (kleine, nicht eingetragen) → manuelle Prüfung als Fallback.
+1. **Sensitive Felder in Sponsor-Daten:** aktuell alles offen für eingeloggte User. Wenn Pilot-Feedback "zu offen" sagt → `notiz_visibility`-Flag pro Notiz (kleiner Backlog-Slice).
+2. **Sponsoren-Org-Verlinkung:** automatisch per E-Mail-Domain-Match oder manuell? Heute manuell, kein dringender Bedarf.
+3. **Geschäftsmodell:** MVP/Pilot kostenlos, Provisions-Modell erst nach Zahlungs-Provider-Integration (Phase 15.1).
+4. **DR-Aktivierung:** ab wann automatischer DNS-Failover (Cloudflare-Health-Check) statt manueller Switch? Heute reicht der manuelle Pfad für die Pilot-Phase.
+5. **PLATFORM_ADMIN-2FA-Pflicht:** erzwungen sobald erste echte Admin-Accounts angelegt werden (out of pilot, in 13.2 Slice C Teil 2 dokumentiert).
 
 ---
 
-## Datei-Übersicht im Workspace
+## Wo finde ich was
 
-| Datei | Status |
+Das Konzept ist eine kuratierte Zusammenfassung. Maßgeblich für Umsetzung + Entscheidungen sind die folgenden Dokumente im Repo:
+
+**Konzept-Dokumente** (`docs/`):
+| Datei | Inhalt |
 |---|---|
-| **`00_Konzept_v3_Kollaborative-Plattform.md`** ← dieses | **AKTUELL** |
-| `00_Konzept_v2_Plattform-Evolution.md` | überholt (Multi-Tenant-Variante) |
-| `00_Konzept.md` | überholt (Greenfield-Variante; Wettbewerbsanalyse weiter gültig) |
-| `01_Architektur_Konzept.md`, `02_Datenmodell.md`, `03_schema.sql`, `04_Sichtbarkeit_und_Roadmap.md` | überholt (Greenfield) |
+| **`konzept.md`** ← dieses | High-Level-Konzept + Roadmap-Übersicht |
+| `roadmap-detailliert.md` | Ausführliche Roadmap (Aufwandsabschätzungen, Diskussionen) |
+| `naming.md` | Begründung der Markennamen-Entscheidung |
+| `marketing.md` | Marketing-Strategie für den Pilot-Launch |
+| `architektur/` | C4-Diagramme als Structurizr-DSL + Auto-Render |
+| `adr/` | Architecture Decision Records (numeriert, ADR-0009 = Multi-Cloud) |
+| `a11y-bekannt.md` | A11y-Baseline-Findings, die der Smoke nicht als Failure zählt |
 
-**Empfehlung für nächsten Schritt:** Wenn dieses Konzept passt, schreibe ich entweder einen konkreten **Spec-Entwurf für Phase 0** im Stil der bestehenden `specs/`-Dokumente (TDD-konform), oder lege direkt die **Flyway V8-Migration mit ersten JPA-Entity-Erweiterungen** als Code in der `sponsoren-app` an.
+**Specs** (`specs/`, **maßgeblich für Code-Disziplin**):
+| Datei | Inhalt |
+|---|---|
+| `ROADMAP.md` | aktiv gepflegte Phase-/Slice-Sicht mit Status |
+| `TECHNISCHE_SPEZIFIKATION.md` | Stack-Details + Routen |
+| `DATENMODELL.md` | Schema + Beziehungen |
+| `ROLLENKONZEPT.md` | Berechtigungs-Matrix |
+| `TESTSTRATEGIE.md` | Test-IDs (`ORG-*`, `SSO-*`, `A11Y-*`, …) als Referenzschlüssel zwischen Spec + Code |
+| `AUTH_SSO_OIDC.md` | OIDC-Spec mit allen Lookup-Stufen + Mitigations |
+| `AUTH_2FA_TOTP.md` | 2FA-Spec mit Backup-Codes + Admin-Reset |
+
+**Code-Dokumentation** (Root):
+| Datei | Inhalt |
+|---|---|
+| `CLAUDE.md` | Maßgeblich für KI-Assistenten + neue Devs: Stack, Phasen-Status, TDD-Pflicht, ARCH-Regeln |
+| `.instructions.md` | Clean-Code-Konventionen (deutsche Domain-Sprache, Guard-Clauses, View-DTO-Pflicht) |
+| `infra/README.md` | Infrastruktur-Übersicht (OCI + Azure) |
+| `infra/staging-free/README.md` | OCI-Setup, REST-API-Aktivierung, Google-OIDC-Aktivierung, Rollback-Pfad |
+| `infra/envs/azure-staging/README.md` | Azure-Setup, Querverweis auf OCI für gemeinsame Operationen |
+
+**Historisch** (nicht mehr maßgeblich, nur als Begründung der Entscheidungen):
+- `00_Konzept.md` (Greenfield-Variante), `00_Konzept_v2_*` (Multi-Tenant-Variante) — beide überholt, v3 (dieses Dokument) hat gewonnen.
+
+---
+
+**Stand:** Phase 13 ist durch, Phase 14 (Produktivschaltung) anstehend. Pilot kann starten sobald DNS + prod-SMTP konfiguriert sind.
