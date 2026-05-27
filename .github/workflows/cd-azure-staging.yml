@@ -179,12 +179,21 @@ jobs:
           # — das übernimmt /usr/local/bin/sponsorplatz-acr-refresh, das von
           # cloud-init installiert wurde (MSI-basierter `az acr login`).
           # Pre-Pull-Cleanup: alte ungenutzte Images älter als 24h löschen.
+          # Stale-Container-Cleanup: ein abgebrochener --force-recreate-Lauf
+          # kann einen Container mit hash-prefix-Namen liegen lassen
+          # ('<hash>_sponsorplatz-app'), der den Original-Namen blockt
+          # ('Error when allocating new name'). 'docker compose down app'
+          # entfernt sowohl den laufenden als auch alle compose-getrackten
+          # Renames sauber; ein nachgeschobenes 'rm -f' fängt die seltenen
+          # Fälle wo down nicht weiterhilft.
           # --force-recreate: ENV-Änderungen aus dem .env-Sync-Step werden
           # nur beim Container-Re-Create wirksam (Image-Tag kann gleich bleiben).
           ssh sponsoradmin@${{ vars.AZURE_VM_IP }} \
             "sudo /usr/local/bin/sponsorplatz-acr-refresh && \
              sudo docker system prune -af --filter 'until=24h' 2>&1 | tail -3 && \
-             cd /opt/sponsorplatz && sudo docker compose pull app && sudo docker compose up -d --force-recreate app"
+             cd /opt/sponsorplatz && sudo docker compose pull app && \
+             (sudo docker compose down app || sudo docker rm -f sponsorplatz-app || true) && \
+             sudo docker compose up -d --force-recreate app"
 
       # Sentry-Release in der Sentry-UI registrieren — nur wenn das Secret
       # gesetzt ist. Liefert Suspect-Commits + Deploy-Marker im Sentry-Issue-

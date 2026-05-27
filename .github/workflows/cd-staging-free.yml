@@ -169,12 +169,19 @@ jobs:
         run: |
           # Pre-Pull-Cleanup: alte ungenutzte Images älter als 24h löschen.
           # Free-Tier-VM hat nur 30 GB Boot-Volume.
+          # Stale-Container-Cleanup vor up: ein abgebrochener --force-recreate
+          # kann einen Container mit hash-prefix-Namen liegen lassen
+          # ('<hash>_sponsorplatz-app'), der den Original-Namen blockt
+          # ('Error when allocating new name'). 'compose down app' räumt
+          # sowohl den laufenden als auch alle Rename-Stages sauber.
           # --force-recreate: ENV-Änderungen aus dem .env-Sync-Step werden
           # nur beim Container-Re-Create wirksam — auch wenn der Image-Tag
           # gleich bleibt (z.B. CD-Re-Run für denselben Commit).
           ssh opc@${{ vars.STAGING_FREE_VM_IP }} \
             "sudo docker system prune -af --filter 'until=24h' 2>&1 | tail -3 && \
-             cd /opt/sponsorplatz && sudo docker compose pull app && sudo docker compose up -d --force-recreate app"
+             cd /opt/sponsorplatz && sudo docker compose pull app && \
+             (sudo docker compose down app || sudo docker rm -f sponsorplatz-app || true) && \
+             sudo docker compose up -d --force-recreate app"
 
       # Sentry-Release in der Sentry-UI registrieren — nur wenn das Secret
       # gesetzt ist. Liefert Suspect-Commits + Deploy-Marker im Sentry-Issue-
