@@ -96,7 +96,7 @@ Sponsorplatz ist eine produktive Greenfield-Plattform für Schweizer **Sport- un
 
 **Rollen-Modell:**
 - **Plattform-Rollen** (`PlatformRolle`): `PLATFORM_ADMIN`, `PLATFORM_MODERATOR`, `PLATFORM_SUPPORT`
-- **Org-Rollen** (`Rolle` via `Mitgliedschaft`): `ORG_OWNER`, `ORG_EDITOR`, `ORG_VIEWER`, `SPONSOR_KONTAKT`
+- **Org-Rollen** (`Rolle` via `Mitgliedschaft`): `ORG_OWNER`, `ORG_EDITOR`, `ORG_VIEWER` (keine `SPONSOR_KONTAKT` mehr — Sponsor-Org-Mitglieder nutzen direkt `ORG_OWNER`/`ORG_EDITOR` ihrer Sponsor-Org)
 
 **Kernfeatures (live in beiden Cloud-Zonen):**
 - Organisationen-CRUD inkl. Org-Hierarchie + Filter (Typ/Status/Branche/Suche)
@@ -178,8 +178,7 @@ Eine `Mitgliedschaft(user_subject, organisation_id, rolle)` definiert, **welche 
 |---|---|
 | `ORG_OWNER` | Alles (inkl. Mitglieder verwalten) |
 | `ORG_EDITOR` | CRUD auf Sponsoren, Projekte, Pakete, Anfragen, Kommunikation |
-| `ORG_VIEWER` | Nur lesen — kein zusätzlicher Vorteil ggü. anderen authentifizierten Usern |
-| `SPONSOR_KONTAKT` | Sponsor-Org-Profil + eigene Anfragen |
+| `ORG_VIEWER` | Nur lesen — kein zusätzlicher Vorteil ggü. anderen authentifizierten Usern, aber Aufgaben-Sicht (Reporting-Use-Case für Vorstand) |
 
 Globaler Plattform-Admin (`PLATFORM_ADMIN`) bleibt eine IdP-Gruppe (OIDC).
 
@@ -284,7 +283,7 @@ Alle bestehenden Tabellen bekommen `besitzer_organisation_id UUID` als Audit-/Ed
 | `id` | UUID |
 | `user_subject` | VARCHAR(255) (OIDC-Subject oder lokale User-ID) |
 | `organisation_id` | UUID FK |
-| `rolle` | ENUM (`ORG_OWNER`, `ORG_EDITOR`, `ORG_VIEWER`, `SPONSOR_KONTAKT`) |
+| `rolle` | ENUM (`ORG_OWNER`, `ORG_EDITOR`, `ORG_VIEWER`) |
 | `eingeladen_von` | VARCHAR(255) NULL |
 | `created_at` | TIMESTAMPTZ |
 
