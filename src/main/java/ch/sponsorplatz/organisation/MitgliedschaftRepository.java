@@ -30,6 +30,24 @@ public interface MitgliedschaftRepository extends JpaRepository<Mitgliedschaft, 
     List<Mitgliedschaft> findByUserId(UUID userId);
 
     /**
+     * Slugs der Sponsor-Orgs eines bestimmten Typs, auf denen der User
+     * (per E-Mail) eine der angegebenen Rollen hat — Projektion nur auf den
+     * Slug, kein Entity-Load. Für die Sidebar: zeigt den CRM-Einstieg nur
+     * Mitgliedern einer Firma mit Bearbeitungsrechten. Nach Org-Name sortiert,
+     * damit der erste Treffer deterministisch ist.
+     */
+    @Query("""
+            select m.org.slug from Mitgliedschaft m
+             where lower(m.user.email) = :email
+               and m.rolle in :rollen
+               and m.org.typ = :typ
+             order by m.org.name asc
+            """)
+    List<String> findSponsorOrgSlugs(@Param("email") String email,
+                                     @Param("rollen") Collection<Rolle> rollen,
+                                     @Param("typ") OrgTyp typ);
+
+    /**
      * Mitgliedschaften eines Users gefiltert nach Rolle, mit eager geladener
      * Org — für UI-Listen, die Org-Namen ausserhalb der Service-Tx brauchen
      * (z.B. Anfrage-Erstellungs-Form, die den anfragenderOrg-Select aufbaut).

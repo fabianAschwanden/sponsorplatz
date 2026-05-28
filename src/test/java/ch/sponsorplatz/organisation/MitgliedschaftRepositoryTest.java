@@ -63,6 +63,27 @@ class MitgliedschaftRepositoryTest {
                 .isFalse();
     }
 
+    /** MG-03: findSponsorOrgSlugs liefert nur Firmen (UNTERNEHMEN) mit Edit-Rolle, sortiert. */
+    @Test
+    void findSponsorOrgSlugsNurFirmaMitEditRolle() {
+        AppUser user = erstelleUser("crm-user@example.com", "CRM User");
+        Organisation firmaZeta = erstelleFirma("Zeta AG", "zeta-ag");
+        Organisation firmaAlpha = erstelleFirma("Alpha AG", "alpha-ag");
+        Organisation firmaViewer = erstelleFirma("Viewer AG", "viewer-ag");
+        Organisation verein = erstelleOrg("FC Edit", "fc-edit");
+
+        mitgliedschaftRepository.saveAndFlush(neueMitgliedschaft(user, firmaZeta, Rolle.ORG_OWNER));
+        mitgliedschaftRepository.saveAndFlush(neueMitgliedschaft(user, firmaAlpha, Rolle.ORG_EDITOR));
+        mitgliedschaftRepository.saveAndFlush(neueMitgliedschaft(user, firmaViewer, Rolle.ORG_VIEWER));
+        mitgliedschaftRepository.saveAndFlush(neueMitgliedschaft(user, verein, Rolle.ORG_OWNER));
+
+        var slugs = mitgliedschaftRepository.findSponsorOrgSlugs(
+                "crm-user@example.com", Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR), OrgTyp.UNTERNEHMEN);
+
+        // Viewer-Firma + Verein fallen raus; alphabetisch nach Name sortiert.
+        assertThat(slugs).containsExactly("alpha-ag", "zeta-ag");
+    }
+
     private AppUser erstelleUser(String email, String name) {
         AppUser user = new AppUser();
         user.setEmail(email);
@@ -77,6 +98,15 @@ class MitgliedschaftRepositoryTest {
         org.setSlug(slug);
         org.setTyp(OrgTyp.VEREIN);
         org.setBranche(Branche.SPORT);
+        return organisationRepository.saveAndFlush(org);
+    }
+
+    private Organisation erstelleFirma(String name, String slug) {
+        Organisation org = new Organisation();
+        org.setName(name);
+        org.setSlug(slug);
+        org.setTyp(OrgTyp.UNTERNEHMEN);
+        org.setSponsorBranche(SponsorBranche.VERSICHERUNG);
         return organisationRepository.saveAndFlush(org);
     }
 

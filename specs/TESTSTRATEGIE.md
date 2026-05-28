@@ -363,6 +363,18 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **RENEWAL-03** | `RenewalServiceTest` | fragt Status UNTERZEICHNET + Stichtag heute+90 Tage ab |
 | **RENEWAL-04** | `RenewalServiceTest` | fremder Sponsor → `AccessDeniedException`, Repository unberührt |
 
+#### CRM — Sidebar-Einstieg (CRM-NAV) — nur Firmen-Mitglieder mit Edit-Rolle
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **CRM-NAV-01** | `CrmZugangAdviceTest` | Firmen-Editor → erster Slug, E-Mail normalisiert (lowercase) |
+| **CRM-NAV-02** | `CrmZugangAdviceTest` | keine Firma/Edit-Rolle → `null` (kein CRM-Eintrag) |
+| **CRM-NAV-03** | `CrmZugangAdviceTest` | anonymer User → `null`, kein Repo-Aufruf |
+| **CRM-NAV-04** | `CrmZugangAdviceTest` | Repository fehlt im Slice (ObjectProvider null) → `null` |
+| **CRM-NAV-IT-01** | `CrmSidebarIT` | Firmen-Editor sieht `/crm/{slug}` in der Sidebar (voller Stack, /dashboard) |
+| **CRM-NAV-IT-02** | `CrmSidebarIT` | Verein-Owner sieht keinen `/crm/`-Link |
+| **MG-03** | `MitgliedschaftRepositoryTest` | `findSponsorOrgSlugs` nur UNTERNEHMEN mit Edit-Rolle, nach Name sortiert |
+
 #### Organisation-Controller (ORG)
 
 | ID | Test-Klasse | Beschreibung |
