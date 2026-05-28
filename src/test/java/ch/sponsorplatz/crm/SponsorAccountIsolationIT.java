@@ -43,12 +43,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class SponsorAccountIsolationIT {
 
     @Autowired private SponsorAccountService service;
+    @Autowired private KontaktPersonService kontaktService;
     @Autowired private OrganisationRepository organisationRepository;
     @Autowired private AppUserRepository appUserRepository;
     @Autowired private MitgliedschaftRepository mitgliedschaftRepository;
 
     private UUID sponsorAId;
     private UUID sponsorBId;
+    private UUID accountAId;
     private Authentication authUA;
     private Authentication authUB;
 
@@ -68,8 +70,10 @@ class SponsorAccountIsolationIT {
         authUA = auth(uA.getEmail());
         authUB = auth(uB.getEmail());
 
-        // A legt einen CRM-Account für den Verein an
-        service.erstelle(sponsorAId, verein.getId(), authUA);
+        // A legt einen CRM-Account für den Verein an + einen Kontakt darauf
+        accountAId = service.erstelle(sponsorAId, verein.getId(), authUA).id();
+        kontaktService.erstelle(accountAId, "Anna", "Muster", "Präsidentin",
+                KontaktRolle.HAUPTANSPRECHPARTNER, "anna@v.ch", "044", "079", authUA);
     }
 
     /** CRM-ISO-01: Eigentümer-Sponsor sieht seinen Account im Portfolio. */
@@ -95,6 +99,23 @@ class SponsorAccountIsolationIT {
     void keinLeakInsFremdePortfolio() {
         List<SponsorAccountView> portfolioB = service.findePortfolio(sponsorBId, authUB);
         assertThat(portfolioB).isEmpty();
+    }
+
+    /** CRM-ISO-04: Eigentümer sieht die Kontakte seines Accounts. */
+    @Test
+    @DisplayName("CRM-ISO-04: Sponsor A sieht Kontakte des eigenen Accounts")
+    void eigentuemerSiehtKontakte() {
+        assertThat(kontaktService.findeKontakte(accountAId, authUA))
+                .extracting(KontaktPersonView::name)
+                .containsExactly("Anna Muster");
+    }
+
+    /** CRM-ISO-05: Konkurrent B darf die Kontakte von A's Account NICHT lesen. */
+    @Test
+    @DisplayName("CRM-ISO-05: Sponsor B darf A's Kontakte NICHT lesen")
+    void konkurrentSiehtKeineKontakte() {
+        assertThatThrownBy(() -> kontaktService.findeKontakte(accountAId, authUB))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     // --- Fixtures ---

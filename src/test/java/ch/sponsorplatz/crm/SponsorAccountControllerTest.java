@@ -35,6 +35,7 @@ class SponsorAccountControllerTest {
     @Autowired private MockMvc mockMvc;
 
     @MockitoBean private SponsorAccountService accountService;
+    @MockitoBean private KontaktPersonService kontaktService;
     @MockitoBean private OrganisationService organisationService;
     @MockitoBean private ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService userDetailsService;
 

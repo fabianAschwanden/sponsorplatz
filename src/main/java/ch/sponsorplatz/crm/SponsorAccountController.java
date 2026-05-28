@@ -28,11 +28,14 @@ import java.util.UUID;
 public class SponsorAccountController {
 
     private final SponsorAccountService accountService;
+    private final KontaktPersonService kontaktService;
     private final OrganisationService organisationService;
 
     public SponsorAccountController(SponsorAccountService accountService,
+                                    KontaktPersonService kontaktService,
                                     OrganisationService organisationService) {
         this.accountService = accountService;
+        this.kontaktService = kontaktService;
         this.organisationService = organisationService;
     }
 
@@ -87,6 +90,49 @@ public class SponsorAccountController {
                                RedirectAttributes redirectAttributes) {
         accountService.aktualisiere(accountId, status, tier, notiz, auth);
         redirectAttributes.addFlashAttribute("erfolgsMeldung", "Account aktualisiert");
-        return "redirect:/crm/" + sponsorSlug;
+        return "redirect:/crm/" + sponsorSlug + "/" + accountId;
+    }
+
+    /** Account-Detail (Master-Detail): Account-Daten + Kontakte (Dynamics Account↔Contact). */
+    @GetMapping("/{accountId}")
+    public String accountDetail(@PathVariable String sponsorSlug, @PathVariable UUID accountId,
+                                Authentication auth, Model model) {
+        // findeAccount zieht die Mandanten-Schranke; findeKontakte ebenfalls.
+        model.addAttribute("account", accountService.findeAccount(accountId, auth));
+        model.addAttribute("kontakte", kontaktService.findeKontakte(accountId, auth));
+        model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
+        model.addAttribute("sponsorSlug", sponsorSlug);
+        model.addAttribute("statusWerte", AccountStatus.values());
+        model.addAttribute("tierWerte", AccountTier.values());
+        model.addAttribute("kontaktRollen", KontaktRolle.values());
+        return "crm/account-detail";
+    }
+
+    /** Kontakt anlegen (Dynamics Contact unter Account). */
+    @PostMapping("/{accountId}/kontakte")
+    public String kontaktErstellen(@PathVariable String sponsorSlug, @PathVariable UUID accountId,
+                                   @RequestParam String vorname,
+                                   @RequestParam String nachname,
+                                   @RequestParam(required = false) String funktion,
+                                   @RequestParam(required = false) KontaktRolle kontaktRolle,
+                                   @RequestParam(required = false) String email,
+                                   @RequestParam(required = false) String telefon,
+                                   @RequestParam(required = false) String mobile,
+                                   Authentication auth,
+                                   RedirectAttributes redirectAttributes) {
+        kontaktService.erstelle(accountId, vorname, nachname, funktion, kontaktRolle,
+                email, telefon, mobile, auth);
+        redirectAttributes.addFlashAttribute("erfolgsMeldung", "Kontakt angelegt");
+        return "redirect:/crm/" + sponsorSlug + "/" + accountId;
+    }
+
+    /** Kontakt löschen. */
+    @PostMapping("/{accountId}/kontakte/{kontaktId}/loeschen")
+    public String kontaktLoeschen(@PathVariable String sponsorSlug, @PathVariable UUID accountId,
+                                  @PathVariable UUID kontaktId, Authentication auth,
+                                  RedirectAttributes redirectAttributes) {
+        kontaktService.loesche(kontaktId, auth);
+        redirectAttributes.addFlashAttribute("erfolgsMeldung", "Kontakt entfernt");
+        return "redirect:/crm/" + sponsorSlug + "/" + accountId;
     }
 }

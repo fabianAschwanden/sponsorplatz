@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${account.vereinName} + ' — CRM'">Account</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('organisationen', ${anzahlOffeneAnfragen})}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">
+                    <a th:href="@{/crm/{slug}(slug=${sponsorSlug})}" th:text="#{crm.portfolio.titel}">Portfolio</a>
+                </p>
+                <h1 th:text="${account.vereinName}">FC Beispiel</h1>
+            </div>
+            <a th:href="@{/organisationen/{slug}(slug=${account.vereinSlug})}" class="app-btn app-btn-secondary"
+               th:text="#{crm.account.zumVerein}">Öffentliches Profil</a>
+        </header>
+
+        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+
+        <!-- Account-Stammdaten editieren -->
+        <section class="app-card" style="max-width:640px;">
+            <h2 class="app-section-title" th:text="#{crm.account.stammdaten}">Account</h2>
+            <form th:action="@{/crm/{slug}/{id}(slug=${sponsorSlug}, id=${account.id})}" method="post"
+                  style="display:flex; flex-direction:column; gap:0.75rem;">
+                <label class="app-label" th:text="#{crm.feld.status}">Status</label>
+                <select name="status" class="app-input">
+                    <option th:each="s : ${statusWerte}" th:value="${s}"
+                            th:selected="${account.status == s}" th:text="#{'crm.status.' + ${s}}">LEAD</option>
+                </select>
+                <label class="app-label" th:text="#{crm.feld.tier}">Tier</label>
+                <select name="tier" class="app-input">
+                    <option value="" th:text="#{crm.tier.keine}">— Tier —</option>
+                    <option th:each="t : ${tierWerte}" th:value="${t}"
+                            th:selected="${account.tier == t}" th:text="#{'crm.tier.' + ${t}}">CORE</option>
+                </select>
+                <label class="app-label" th:text="#{crm.feld.notiz}">Notiz</label>
+                <textarea name="notiz" rows="3" class="app-input" th:text="${account.notiz}"></textarea>
+                <div><button type="submit" class="app-btn" th:text="#{crm.speichern}">Speichern</button></div>
+            </form>
+        </section>
+
+        <!-- Kontakte (Dynamics Account↔Contact) -->
+        <section class="app-card">
+            <h2 class="app-section-title" th:text="#{crm.kontakte.titel}">Kontakte</h2>
+
+            <table th:if="${not #lists.isEmpty(kontakte)}" class="app-table" style="margin-bottom:1.5rem;">
+                <thead>
+                <tr>
+                    <th th:text="#{crm.kontakt.name}">Name</th>
+                    <th th:text="#{crm.kontakt.funktion}">Funktion</th>
+                    <th th:text="#{crm.kontakt.rolle}">Rolle</th>
+                    <th th:text="#{crm.kontakt.kontaktdaten}">Kontakt</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="k : ${kontakte}">
+                    <td th:text="${k.name()}">Anna Muster</td>
+                    <td th:text="${k.funktion}">Präsidentin</td>
+                    <td>
+                        <span class="app-chip" th:text="#{'crm.kontaktRolle.' + ${k.kontaktRolle}}">Hauptkontakt</span>
+                    </td>
+                    <td>
+                        <span th:if="${k.email}" th:text="${k.email}">a@v.ch</span>
+                        <span th:if="${k.telefon}" th:text="${' · ' + k.telefon}"></span>
+                        <span th:if="${k.mobile}" th:text="${' · ' + k.mobile}"></span>
+                    </td>
+                    <td>
+                        <form th:action="@{/crm/{slug}/{aid}/kontakte/{kid}/loeschen(slug=${sponsorSlug}, aid=${account.id}, kid=${k.id})}"
+                              method="post" style="margin:0;"
+                              onsubmit="return confirm(this.querySelector('.confirm-msg').textContent);">
+                            <span class="confirm-msg" hidden th:text="#{crm.kontakt.loeschen.bestaetigung}"></span>
+                            <button type="submit" class="app-btn app-btn-danger app-btn-sm"
+                                    th:text="#{crm.kontakt.loeschen}">Entfernen</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <p th:if="${#lists.isEmpty(kontakte)}" class="app-muted" style="margin-bottom:1.5rem;"
+               th:text="#{crm.kontakte.empty}">Noch keine Kontakte.</p>
+
+            <!-- Kontakt anlegen -->
+            <h3 style="font-size:1rem; margin:0 0 0.75rem;" th:text="#{crm.kontakt.neuTitel}">Kontakt hinzufügen</h3>
+            <form th:action="@{/crm/{slug}/{id}/kontakte(slug=${sponsorSlug}, id=${account.id})}" method="post"
+                  style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:0.6rem; align-items:end;">
+                <label class="app-label">
+                    <span th:text="#{crm.kontakt.vorname}">Vorname</span>
+                    <input type="text" name="vorname" required class="app-input">
+                </label>
+                <label class="app-label">
+                    <span th:text="#{crm.kontakt.nachname}">Nachname</span>
+                    <input type="text" name="nachname" required class="app-input">
+                </label>
+                <label class="app-label">
+                    <span th:text="#{crm.kontakt.funktion}">Funktion</span>
+                    <input type="text" name="funktion" class="app-input">
+                </label>
+                <label class="app-label">
+                    <span th:text="#{crm.kontakt.rolle}">Rolle</span>
+                    <select name="kontaktRolle" class="app-input">
+                        <option th:each="r : ${kontaktRollen}" th:value="${r}"
+                                th:text="#{'crm.kontaktRolle.' + ${r}}">Sonstige</option>
+                    </select>
+                </label>
+                <label class="app-label">
+                    <span th:text="#{crm.kontakt.email}">E-Mail</span>
+                    <input type="email" name="email" class="app-input">
+                </label>
+                <label class="app-label">
+                    <span th:text="#{crm.kontakt.telefon}">Telefon</span>
+                    <input type="text" name="telefon" class="app-input">
+                </label>
+                <label class="app-label">
+                    <span th:text="#{crm.kontakt.mobile}">Mobile</span>
+                    <input type="text" name="mobile" class="app-input">
+                </label>
+                <button type="submit" class="app-btn" th:text="#{crm.kontakt.anlegen}">Hinzufügen</button>
+            </form>
+        </section>
+    </main>
+</div>
+
+<style>
+    .app-table { width:100%; border-collapse:collapse; }
+    .app-table th, .app-table td { padding:0.6rem 0.5rem; text-align:left; border-bottom:1px solid var(--dash-border, #e5e7eb); vertical-align:middle; }
+    .app-btn-sm { font-size:0.8rem; padding:0.3rem 0.7rem; }
+</style>
+
+<th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
+</body>
+</html>

@@ -41,34 +41,18 @@
                 <th th:text="#{crm.feld.status}">Status</th>
                 <th th:text="#{crm.feld.tier}">Tier</th>
                 <th th:text="#{crm.feld.notiz}">Notiz</th>
-                <th th:text="#{crm.feld.aktionen}">Aktionen</th>
             </tr>
             </thead>
             <tbody>
+            <!-- Master-Detail: Verein-Name verlinkt auf die Account-Detail (Status/Tier/
+                 Notiz + Kontakte werden dort gepflegt). -->
             <tr th:each="a : ${accounts}">
                 <td>
-                    <a th:href="@{/organisationen/{slug}(slug=${a.vereinSlug})}" th:text="${a.vereinName}">FC Beispiel</a>
+                    <a th:href="@{/crm/{slug}/{id}(slug=${sponsorSlug}, id=${a.id})}" th:text="${a.vereinName}">FC Beispiel</a>
                 </td>
-                <!-- Inline-Update-Form: Status + Tier + Notiz in einem POST -->
-                <td colspan="4">
-                    <form th:action="@{/crm/{slug}/{id}(slug=${sponsorSlug}, id=${a.id})}" method="post"
-                          style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-                        <select name="status" class="app-input" style="width:auto;">
-                            <option th:each="s : ${statusWerte}" th:value="${s}"
-                                    th:selected="${a.status == s}"
-                                    th:text="#{'crm.status.' + ${s}}">LEAD</option>
-                        </select>
-                        <select name="tier" class="app-input" style="width:auto;">
-                            <option value="" th:text="#{crm.tier.keine}">— Tier —</option>
-                            <option th:each="t : ${tierWerte}" th:value="${t}"
-                                    th:selected="${a.tier == t}"
-                                    th:text="#{'crm.tier.' + ${t}}">CORE</option>
-                        </select>
-                        <input type="text" name="notiz" th:value="${a.notiz}"
-                               th:placeholder="#{crm.feld.notiz}" class="app-input" style="flex:1; min-width:160px;">
-                        <button type="submit" class="app-btn app-btn-sm" th:text="#{crm.speichern}">Speichern</button>
-                    </form>
-                </td>
+                <td><span class="app-chip" th:text="#{'crm.status.' + ${a.status}}">Lead</span></td>
+                <td th:text="${a.tier != null ? #messages.msg('crm.tier.' + a.tier) : '—'}">Kern</td>
+                <td class="app-muted" th:text="${a.notiz}"></td>
             </tr>
             </tbody>
         </table>

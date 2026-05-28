@@ -323,6 +323,19 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **CRM-ISO-01** | `SponsorAccountIsolationIT` | Eigentümer-Sponsor sieht eigenen Account (echte DB) |
 | **CRM-ISO-02** | `SponsorAccountIsolationIT` | Konkurrierender Sponsor → `AccessDeniedException` auf fremdes Portfolio |
 | **CRM-ISO-03** | `SponsorAccountIsolationIT` | Kein Leak: fremdes Portfolio enthält den Account nicht |
+| **CRM-ISO-04** | `SponsorAccountIsolationIT` | Eigentümer sieht die Kontakte des eigenen Accounts |
+| **CRM-ISO-05** | `SponsorAccountIsolationIT` | Konkurrent → `AccessDeniedException` auf fremde Kontakte |
+
+#### CRM — KontaktPerson (Contact, MS-Dynamics Account↔Contact)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **VIEW-KONTAKT-01** | `KontaktPersonViewTest` | Mapping + `name()`, Mandanten-Schlüssel nicht im Output |
+| **KONTAKT-SVC-01** | `KontaktPersonServiceTest` | `findeKontakte` ohne Zugriff → `AccessDeniedException` |
+| **KONTAKT-SVC-02** | `KontaktPersonServiceTest` | `findeKontakte` mit Zugriff → Kontaktliste |
+| **KONTAKT-SVC-03** | `KontaktPersonServiceTest` | `erstelle` ohne Zugriff → `AccessDeniedException`, kein save |
+| **KONTAKT-SVC-04** | `KontaktPersonServiceTest` | `erstelle` denormalisiert Mandanten-Schlüssel vom Account |
+| **KONTAKT-SVC-05** | `KontaktPersonServiceTest` | `loesche` prüft Zugriff über Kontakt-Besitzer |
 
 #### Organisation-Controller (ORG)
 

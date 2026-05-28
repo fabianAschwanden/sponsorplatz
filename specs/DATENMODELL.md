@@ -50,6 +50,7 @@
 | V45 | `chk_benachrichtigung_typ`-Allowlist gedroppt | Hygiene ✓ |
 | V46 | `chk_provider`-Allowlist gedroppt (Multi-Provider OIDC) | 13.3 ✓ |
 | V47 | `sponsor_account` (CRM private Sponsor-Layer, ADR-0011) | CRM-1 ✓ |
+| V48 | `kontakt_person` (CRM Contact unter Account, MS-Dynamics-Pattern) | CRM-2 ✓ |
 
 > **Hinweis:** V22 wurde reserviert für die Postgres-`tsvector`-Migration (Phase 5+). Die Datei ist für H2 nicht relevant und liegt nur als Postgres-spezifische Variante vor (siehe TECHNISCHE_SPEZIFIKATION.md → Volltextsuche).
 
@@ -216,7 +217,8 @@ Die untenstehenden Tabellen sind ab V5 stabil im Code; Field-Detail-Dokumentatio
 | `plattform_einstellungen` | `PlattformEinstellungen` | `shared/einstellungen/` | Singleton-Row mit SMTP-Settings (V15) — DB > ENV > leer. |
 | `aufgaben_definition` | `AufgabenDefinition` | `aufgabe/` | „Workflow-Vorlage" (V36, Phase 12): `trigger_entity_typ` ENUM (ORG/ANFRAGE/VERTRAG/RECHNUNG/PROJEKT), `trigger_status` + optional `ziel_status` (freie Strings, weil pro Domain-Aggregat eigene Status-Enums), `assignee_regel` ENUM (PLATFORM_ADMIN, ORG_MITGLIEDER, ANFRAGE_EMPFAENGER_ORG, ANFRAGE_ANFRAGENDER_ORG, VERTRAG_VEREIN_ORG, VERTRAG_SPONSOR_ORG, RECHNUNG_VEREIN_ORG), `aktiv` + `system_definition` (V36-Seeds nicht löschbar). |
 | `aufgabe` | `Aufgabe` | `aufgabe/` | Instanz einer Definition (V36): polymorphe Entity-Referenz via `entity_typ` + `entity_id` (kein FK — typunabhängig), `status` OFFEN/ERLEDIGT/ENTFALLEN, Sichtbarkeit via `assignee_org_id` (alle Org-Mitglieder) oder `nur_platform_admin=true`. |
-| `sponsor_account` | `SponsorAccount` | `crm/` | **Private Sponsor-CRM-Layer** (V47, ADR-0011). Beziehung Sponsor-Org ↔ gesponsertem Verein: `besitzer_sponsor_org_id` (Mandanten-Schlüssel), `verein_org_id`, `account_owner_user_id`, `status` (LEAD/AKTIV/IN_RENEWAL/VERLOREN/DO_NOT_ENGAGE), `tier` (STRATEGIC/CORE/LONG_TAIL), `notiz`. **Nicht** kollaborativ — Zugriff nur via `AccessControl.kannSponsorDatenSehen`, erscheint nie im Marktplatz. UNIQUE(besitzer, verein). |
+| `sponsor_account` | `SponsorAccount` | `crm/` | **Private Sponsor-CRM-Layer** (V47, ADR-0011). Beziehung Sponsor-Org ↔ gesponsertem Verein: `besitzer_sponsor_org_id` (Mandanten-Schlüssel), `verein_org_id`, `account_owner_user_id`, `status` (LEAD/AKTIV/IN_RENEWAL/VERLOREN/DO_NOT_ENGAGE), `tier` (STRATEGIC/CORE/LONG_TAIL), `notiz`. **Nicht** kollaborativ — Zugriff nur via `AccessControl.kannSponsorDatenSehen`, erscheint nie im Marktplatz. UNIQUE(besitzer, verein). MS-Dynamics „Account". |
+| `kontakt_person` | `KontaktPerson` | `crm/` | **CRM-Contact** (V48, MS-Dynamics „Contact" unter Account). Externer Ansprechpartner ohne Plattform-Account: `sponsor_account_id` (Dynamics `parentcustomerid`), `besitzer_sponsor_org_id` (denormalisierter Mandanten-Schlüssel), `vorname`/`nachname`, `funktion` (jobtitle), `kontakt_rolle` (HAUPTANSPRECHPARTNER ≙ Primary Contact / STELLVERTRETER / BUCHHALTUNG / PRESSE / SONSTIGE), `email`/`telefon`/`mobile`. Zugriff via `KontaktPersonService` → `kannSponsorDatenSehen`. |
 
 ### `aufgabe` + `aufgaben_definition` — generische Task-Engine (V36)
 

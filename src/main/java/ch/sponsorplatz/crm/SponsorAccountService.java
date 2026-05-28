@@ -43,6 +43,15 @@ public class SponsorAccountService {
                 repository.findByBesitzerSponsorOrgIdOrderByErstelltAmDesc(sponsorOrgId));
     }
 
+    /** Einzel-Account für die Detail-Seite — Zugriff über den Mandanten-Key des Accounts. */
+    @Transactional(readOnly = true)
+    public SponsorAccountView findeAccount(UUID accountId, Authentication auth) {
+        SponsorAccount account = repository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account nicht gefunden: " + accountId));
+        pruefeZugriff(account.getBesitzerSponsorOrgId(), auth);
+        return SponsorAccountView.von(account);
+    }
+
     /**
      * Legt einen Account für einen Verein an. {@link AccountStatus#LEAD} als
      * Start. Dublette (Sponsor↔Verein-Paar existiert schon) → IllegalArgument.
