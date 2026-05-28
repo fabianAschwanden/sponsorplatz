@@ -21,6 +21,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -72,6 +74,19 @@ class EngagementServiceTest {
         assertThat(ansicht.nachRegion().keySet()).containsExactly("Bern", "Zürich");
         assertThat(ansicht.anzahlVereine()).isEqualTo(2);
         assertThat(ansicht.verfuegbareRegionen()).containsExactly("Bern", "Zürich");
+    }
+
+    @Test
+    @DisplayName("ENG-05: findeNeuesteEngagements mappt ANGENOMMEN-Anfragen quer über alle Marken")
+    void neuesteEngagements() {
+        Organisation sponsor = erstelleOrg("css-versicherung", Branche.PRAEVENTION);
+        when(anfrageRepository.findNeuesteNachStatus(eq(AnfrageStatus.ANGENOMMEN), any()))
+                .thenReturn(List.of(erstelleAnfrage(sponsor)));
+
+        List<EngagementView> result = service.findeNeuesteEngagements(6);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).sponsorSlug()).isEqualTo("css-versicherung");
     }
 
     private Organisation erstelleOrg(String slug, Branche branche) {

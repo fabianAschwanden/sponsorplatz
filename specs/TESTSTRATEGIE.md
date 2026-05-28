@@ -56,7 +56,8 @@ Default-Lauf, damit `mvn test` schnell + Docker-frei bleibt.
 | ID | Test-Klasse | Beschreibung |
 |---|---|---|
 | SP-01 | `PlatformApplicationTests` | Spring-Context startet sauber |
-| SP-02 | `HomeControllerTest` | GET / → 200 + index-Template |
+| SP-02 | `HomeControllerTest` | GET / → 200 + index-Template + `featuredEngagements` |
+| SP-03 | `HomeControllerTest` | Startseite rendert den Engagement-Teaser (Verein-Karte + Link ins Marken-Schaufenster) |
 
 ### Phase 0.1 (Organisation)
 
@@ -901,6 +902,7 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **ENG-01** | `EngagementServiceTest` | `findeNachSponsorSlug` liefert nur ANGENOMMEN-Anfragen |
 | **ENG-02** | `EngagementServiceTest` | `findeNachSponsorSlug` mit unbekanntem Slug → NotFoundException |
 | **ENG-04** | `EngagementServiceTest` | `findeSchaufenster` baut Marken-Kopf + Logo + Region-Gruppen |
+| **ENG-05** | `EngagementServiceTest` | `findeNeuesteEngagements` mappt ANGENOMMEN-Anfragen quer über alle Marken (Startseiten-Teaser) |
 | **ENG-01-CTRL** | `EngagementControllerTest` | GET `/marken/{slug}/engagements` → 200 + Schaufenster-View + `ansicht` |
 | **ENG-02-CTRL** | `EngagementControllerTest` | Region-Filter wird an `findeSchaufenster` delegiert |
 | **ENG-03-CTRL** | `EngagementControllerTest` | Branche-Filter wird an `findeSchaufenster` delegiert |

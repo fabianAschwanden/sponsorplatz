@@ -5,6 +5,7 @@ import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationRepository;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.shared.medien.OrganisationLogoLookup;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +39,15 @@ public class EngagementService {
                 .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
         return anfrageRepository.findByAnfragenderOrgIdAndStatusOrderByCreatedAtDesc(
                 org.getId(), AnfrageStatus.ANGENOMMEN);
+    }
+
+    /**
+     * Neueste öffentliche Engagements quer über alle Marken — für den
+     * Engagement-Teaser auf der anonymen Startseite. Nur ANGENOMMEN-Anfragen.
+     */
+    public List<EngagementView> findeNeuesteEngagements(int anzahl) {
+        return EngagementView.von(anfrageRepository.findNeuesteNachStatus(
+                AnfrageStatus.ANGENOMMEN, PageRequest.of(0, anzahl)));
     }
 
     /**

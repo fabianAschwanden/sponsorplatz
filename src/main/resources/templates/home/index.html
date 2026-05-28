@@ -112,6 +112,40 @@
       </div>
     </section>
 
+    <!-- Engagement-Teaser: macht reale Sponsorings auch anonym sichtbar (PROJEKT_INFO
+         §"Öffentliches Schaufenster"). Karten verlinken in die Marken-Schaufenster. -->
+    <section class="public-engagements" th:if="${not #lists.isEmpty(featuredEngagements)}"
+             aria-labelledby="eng-titel">
+      <div class="public-engagements-inner">
+        <p class="public-engagements-rubrik" th:text="#{index.engagements.rubrik}">Bereits gefördert</p>
+        <h2 id="eng-titel" th:text="#{index.engagements.titel}">Diese Vereine werden schon unterstützt</h2>
+        <p class="public-engagements-sub" th:text="#{index.engagements.text}">
+          Sponsoring sichtbar machen statt verstecken — ein Blick auf das, was auf Sponsorplatz schon gefördert wird.</p>
+        <div class="pe-grid">
+          <article class="pe-karte" th:each="e : ${featuredEngagements}"
+                   th:classappend="'branche-' + ${e.vereinBranche()}">
+            <span class="pe-akzent"></span>
+            <div class="pe-kopf">
+              <span class="pe-avatar" th:text="${#strings.substring(e.vereinName(), 0, 1)}">F</span>
+              <div class="pe-titel">
+                <a class="pe-verein" th:href="@{/vereine/{slug}(slug=${e.vereinSlug()})}"
+                   th:text="${e.vereinName()}">FC Beispiel</a>
+                <span class="pe-chip" th:if="${e.vereinBranche() != null}"
+                      th:text="${e.vereinBranche().getAnzeige()}">Sport</span>
+              </div>
+            </div>
+            <p class="pe-meta" th:if="${e.region() != null}">
+              <span aria-hidden="true">📍</span> <span th:text="${e.region()}">Zürich</span>
+            </p>
+            <a class="pe-sponsor" th:href="@{/marken/{slug}/engagements(slug=${e.sponsorSlug()})}">
+              <span th:text="#{index.engagements.von}">unterstützt von</span>
+              <strong th:text="${e.sponsorName()}">CSS</strong>
+            </a>
+          </article>
+        </div>
+      </div>
+    </section>
+
     <section class="app-card" style="max-width: 720px; margin: 2rem auto;">
       <p style="margin: 0 0 0.5rem;"><strong th:text="#{index.aufbau.title}">Phase 0 — In Aufbau.</strong></p>
       <p style="margin: 0 0 0.5rem;" th:text="#{index.aufbau.text}">…</p>
@@ -139,6 +173,59 @@
       </nav>
     </div>
   </footer>
+
+<style>
+  /* ===== Engagement-Teaser auf der Startseite ===== */
+  .public-engagements { padding: 2.5rem 1.5rem; }
+  .public-engagements-inner { max-width: 1080px; margin: 0 auto; }
+  .public-engagements-rubrik {
+    margin: 0; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--farbe-akzent, #6d28d9); font-weight: 700;
+  }
+  .public-engagements h2 { margin: 0.3rem 0 0.4rem; font-size: 1.55rem; }
+  .public-engagements-sub { margin: 0 0 1.6rem; color: var(--farbe-text-leicht, #475569); max-width: 60ch; }
+
+  .pe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.1rem; }
+  .pe-karte {
+    --bc: #6366f1; position: relative; overflow: hidden;
+    background: #fff; border: 1px solid var(--farbe-rand, #e5e7eb); border-radius: 16px;
+    padding: 1.2rem 1.25rem 1rem; transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  .pe-karte:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(15,23,42,0.10); border-color: var(--bc); }
+  .pe-akzent { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--bc); }
+  .pe-kopf { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.25rem; }
+  .pe-avatar {
+    flex: 0 0 auto; width: 46px; height: 46px; border-radius: 13px; background: var(--bc);
+    color: #fff; font-weight: 800; font-size: 1.25rem; display: flex; align-items: center; justify-content: center;
+  }
+  .pe-titel { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+  .pe-verein { font-weight: 700; color: var(--farbe-text, #0f172a); text-decoration: none; font-size: 1.03rem; }
+  .pe-verein:hover { color: var(--bc); }
+  .pe-chip {
+    align-self: flex-start; font-size: 0.72rem; font-weight: 600; padding: 0.12rem 0.55rem;
+    border-radius: 999px; color: var(--bc); background: color-mix(in srgb, var(--bc) 13%, #fff);
+  }
+  .pe-meta { margin: 0.9rem 0 0; color: var(--farbe-text-leicht, #475569); font-size: 0.9rem; }
+  .pe-sponsor {
+    display: flex; align-items: baseline; gap: 0.35rem; margin-top: 0.85rem; padding-top: 0.7rem;
+    border-top: 1px solid var(--farbe-rand, #eef0f4); font-size: 0.82rem;
+    color: var(--farbe-text-leicht, #64748b); text-decoration: none;
+  }
+  .pe-sponsor strong { color: var(--bc); }
+  .pe-sponsor:hover strong { text-decoration: underline; }
+
+  .pe-karte.branche-SPORT { --bc: #2563eb; }
+  .pe-karte.branche-BEWEGUNG { --bc: #0891b2; }
+  .pe-karte.branche-REHA { --bc: #0d9488; }
+  .pe-karte.branche-BEHINDERTENSPORT { --bc: #7c3aed; }
+  .pe-karte.branche-SENIORENSPORT { --bc: #c026d3; }
+  .pe-karte.branche-PRAEVENTION { --bc: #16a34a; }
+  .pe-karte.branche-MENTAL_HEALTH { --bc: #db2777; }
+  .pe-karte.branche-ERNAEHRUNG { --bc: #ea580c; }
+  .pe-karte.branche-WELLNESS { --bc: #ca8a04; }
+  .pe-karte.branche-SELBSTHILFE { --bc: #4f46e5; }
+  .pe-karte.branche-PATIENTENORGANISATION { --bc: #dc2626; }
+</style>
 
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
 </body>

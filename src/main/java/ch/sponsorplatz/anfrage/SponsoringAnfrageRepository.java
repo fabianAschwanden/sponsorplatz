@@ -1,5 +1,6 @@
 package ch.sponsorplatz.anfrage;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -66,6 +67,22 @@ public interface SponsoringAnfrageRepository extends JpaRepository<SponsoringAnf
     List<SponsoringAnfrage> findByEmpfaengerOrgIdAndStatusOrderByCreatedAtDesc(
             @Param("empfaengerOrgId") UUID empfaengerOrgId,
             @Param("status") AnfrageStatus status);
+
+    /**
+     * Neueste Anfragen in einem Status quer über alle Sponsoren — für den
+     * öffentlichen Engagement-Teaser auf der Startseite. Nur to-one-Fetches,
+     * daher paginiert {@link Pageable} sauber in SQL (keine In-Memory-Paginierung).
+     */
+    @Query("""
+            select a from SponsoringAnfrage a
+              left join fetch a.paket pk
+              left join fetch pk.projekt
+              left join fetch a.anfragenderOrg
+              left join fetch a.empfaengerOrg
+             where a.status = :status
+             order by a.createdAt desc
+            """)
+    List<SponsoringAnfrage> findNeuesteNachStatus(@Param("status") AnfrageStatus status, Pageable pageable);
 
     long countByEmpfaengerOrgIdAndStatus(UUID empfaengerOrgId, AnfrageStatus status);
 

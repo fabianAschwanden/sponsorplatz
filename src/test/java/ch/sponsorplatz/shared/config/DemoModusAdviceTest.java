@@ -1,5 +1,6 @@
 package ch.sponsorplatz.shared.config;
 
+import ch.sponsorplatz.anfrage.EngagementService;
 import ch.sponsorplatz.home.HomeController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -24,6 +26,9 @@ class DemoModusAdviceTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private EngagementService engagementService;
 
     @Test
     @DisplayName("SEED-02: Demo-Disclaimer rendert bei sponsorplatz.demo-modus=true")
