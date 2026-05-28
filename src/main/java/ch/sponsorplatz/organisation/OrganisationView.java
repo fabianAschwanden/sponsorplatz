@@ -23,7 +23,8 @@ public record OrganisationView(
         Instant verifiziertAm,
         UUID uebergeordneteOrgId,
         String uebergeordneteOrgName,
-        String uebergeordneteOrgSlug
+        String uebergeordneteOrgSlug,
+        String logoUrl
 ) {
 
     public static OrganisationView von(Organisation org) {
@@ -43,12 +44,26 @@ public record OrganisationView(
                 org.getVerifiziertAm(),
                 eltern != null ? eltern.getId() : null,
                 eltern != null ? eltern.getName() : null,
-                eltern != null ? eltern.getSlug() : null
+                eltern != null ? eltern.getSlug() : null,
+                null
         );
     }
 
     public static List<OrganisationView> von(List<Organisation> orgs) {
         return orgs.stream().map(OrganisationView::von).toList();
+    }
+
+    /**
+     * Kopie der View mit ergänztem {@code logoUrl} — für Detail-/Listen-Mapping
+     * ohne Entity-Touch. Logo ist ein separates {@code MedienAsset} (AssetTyp.LOGO),
+     * das der Controller nachreicht (analog {@code ProjektView.mitCoverUrl}).
+     */
+    public OrganisationView mitLogoUrl(String logoUrl) {
+        return new OrganisationView(
+                id, name, slug, typ, status, rechtsform, branche, sponsorBranche,
+                beschreibung, websiteUrl, registriertAm, verifiziertAm,
+                uebergeordneteOrgId, uebergeordneteOrgName, uebergeordneteOrgSlug,
+                logoUrl);
     }
 
     /** Prüft ob diese Org eine Unterorganisation ist. */

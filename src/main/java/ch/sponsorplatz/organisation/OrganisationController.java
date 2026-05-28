@@ -3,6 +3,7 @@ package ch.sponsorplatz.organisation;
 import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.shared.exception.NotFoundException;
+import ch.sponsorplatz.shared.medien.OrganisationLogoLookup;
 import jakarta.validation.Valid;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -30,14 +31,17 @@ public class OrganisationController {
     private final AccessControl accessControl;
     private final OrgHierarchieService hierarchieService;
     private final AppUserService appUserService;
+    private final OrganisationLogoLookup logoLookup;
 
     public OrganisationController(OrganisationService service, AccessControl accessControl,
                                   OrgHierarchieService hierarchieService,
-                                  AppUserService appUserService) {
+                                  AppUserService appUserService,
+                                  OrganisationLogoLookup logoLookup) {
         this.service = service;
         this.accessControl = accessControl;
         this.hierarchieService = hierarchieService;
         this.appUserService = appUserService;
+        this.logoLookup = logoLookup;
     }
 
     /**
@@ -193,12 +197,14 @@ public class OrganisationController {
     }
 
     @GetMapping("/{slug}")
-    public String detail(@PathVariable String slug, Model model) {
+    public String detail(@PathVariable String slug, Authentication auth, Model model) {
         OrganisationView org = service.findeViewNachSlug(slug)
             .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
+        org = org.mitLogoUrl(logoLookup.findeLogoUrl(org.id()).orElse(null));
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("org", org);
         model.addAttribute("statusOk", org.status() == OrgStatus.ACTIVE || org.status() == OrgStatus.VERIFIED);
+        model.addAttribute("kannEditieren", accessControl.kannOrgEditierenNachSlug(slug, auth));
         model.addAttribute("untergeordneteOrgs", service.findeUntergeordneteViews(org.id()));
         model.addAttribute("elternkette", hierarchieService.findeElternketteNachSlug(slug));
         return "organisation/organisation-detail";

@@ -144,6 +144,18 @@ public class MedienAssetService {
         return findeCover(entityTyp, entityId).map(a -> "/medien/" + a.getId());
     }
 
+    /**
+     * Liefert den Auslieferungs-Pfad des Logo-Assets (AssetTyp.LOGO). Pro Entity
+     * gilt das erste nach Sortierung — Logos werden nicht als Galerie gepflegt,
+     * also faktisch das einzige. {@code Optional.empty()} wenn kein Logo da.
+     */
+    @Transactional(readOnly = true)
+    public Optional<String> findeLogoUrl(EntityTyp entityTyp, UUID entityId) {
+        return repository.findFirstByEntityTypAndEntityIdAndAssetTypOrderBySortierungAsc(
+                        entityTyp, entityId, AssetTyp.LOGO)
+                .map(a -> "/medien/" + a.getId());
+    }
+
     /** View-Variante von {@link #findeAnhaenge} (ARCH-02). */
     @Transactional(readOnly = true)
     public List<MedienAssetView> findeAnhaengeViews(EntityTyp entityTyp, UUID entityId) {

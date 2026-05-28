@@ -239,6 +239,6 @@ class MeineAnfragenControllerTest {
         return new OrganisationView(id, name, slug,
                 null, null, null, null, null,
                 null, null, null, null,
-                null, null, null);
+                null, null, null, null);
     }
 }

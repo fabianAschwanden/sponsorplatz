@@ -22,7 +22,7 @@ class OrganisationFilterTest {
         return new OrganisationView(
                 UUID.randomUUID(), name, name.toLowerCase().replace(' ', '-'),
                 typ, status, null, branche, sponsorBranche, null, null,
-                Instant.now(), null, null, null, null);
+                Instant.now(), null, null, null, null, null);
     }
 
     @Test

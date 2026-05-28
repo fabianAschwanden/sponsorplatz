@@ -16,9 +16,14 @@
 
     <main class="app-main">
         <header class="app-page-head">
-            <div>
-                <p class="app-page-rubrik" th:text="${org.typ}">VEREIN</p>
-                <h1 th:text="${org.name}">Name</h1>
+            <div style="display:flex; gap:1rem; align-items:center;">
+                <img th:if="${org.logoUrl}" th:src="${org.logoUrl}"
+                     th:alt="|#{orgDetail.logo.alt} ${org.name}|"
+                     class="org-logo-head">
+                <div>
+                    <p class="app-page-rubrik" th:text="${org.typ}">VEREIN</p>
+                    <h1 th:text="${org.name}">Name</h1>
+                </div>
             </div>
             <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
                 <!-- Admin-Direkt-Aktion: PENDING-Org verifizieren, ohne über /admin/verifizierungen zu gehen.
@@ -126,6 +131,39 @@
                     <dd th:text="${#temporals.format(org.verifiziertAm, 'dd.MM.yyyy')}"></dd>
                 </th:block>
             </dl>
+        </section>
+
+        <!-- Logo-Verwaltung — nur für Editoren der Org. Upload via MedienController
+             (/organisationen/{slug}/medien, assetTyp=LOGO). -->
+        <section th:if="${kannEditieren}" class="app-card">
+            <h2 class="app-section-title" th:text="#{orgDetail.logo.titel}">Logo</h2>
+
+            <div style="display:flex; gap:1.5rem; align-items:flex-start; flex-wrap:wrap;">
+                <div th:if="${org.logoUrl}" style="text-align:center;">
+                    <img th:src="${org.logoUrl}" th:alt="|#{orgDetail.logo.alt} ${org.name}|"
+                         class="org-logo-vorschau">
+                    <form th:action="@{/medien/{id}/loeschen(id=${#strings.substringAfter(org.logoUrl, '/medien/')})}"
+                          method="post" style="margin-top:0.5rem;"
+                          onsubmit="return confirm(this.querySelector('.confirm-msg').textContent);">
+                        <span class="confirm-msg" hidden th:text="#{orgDetail.logo.loeschen.bestaetigung}"></span>
+                        <button type="submit" class="app-btn app-btn-danger app-btn-sm"
+                                th:text="#{orgDetail.logo.loeschen}">Logo entfernen</button>
+                    </form>
+                </div>
+
+                <form th:action="@{/organisationen/{slug}/medien(slug=${org.slug})}"
+                      method="post" enctype="multipart/form-data"
+                      style="flex:1; min-width:240px;">
+                    <input type="hidden" name="assetTyp" value="LOGO">
+                    <label for="logo-datei" class="app-label"
+                           th:text="${org.logoUrl} ? #{orgDetail.logo.ersetzen} : #{orgDetail.logo.hochladen}">Logo hochladen</label>
+                    <input id="logo-datei" type="file" name="datei" accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                           required class="app-input">
+                    <p class="app-muted" style="margin:0.35rem 0 0.75rem; font-size:0.85rem;"
+                       th:text="#{orgDetail.logo.hinweis}">PNG, JPG, SVG oder WebP.</p>
+                    <button type="submit" class="app-btn" th:text="#{orgDetail.logo.speichern}">Hochladen</button>
+                </form>
+            </div>
         </section>
 
         <form th:action="@{/organisationen/{slug}/loeschen(slug=${org.slug})}"

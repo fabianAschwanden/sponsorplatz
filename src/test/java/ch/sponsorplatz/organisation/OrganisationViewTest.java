@@ -75,6 +75,28 @@ class OrganisationViewTest {
         assertThat(view.istUnterorganisation()).isTrue();
     }
 
+    /** VIEW-03b: von(entity) liefert logoUrl=null (Logo wird im Controller nachgereicht). */
+    @Test
+    void mappingOhneLogo() {
+        OrganisationView view = OrganisationView.von(neueOrg("FC Test", "fc-test"));
+        assertThat(view.logoUrl()).isNull();
+    }
+
+    /** VIEW-03c: mitLogoUrl() kopiert die View mit ergänztem logoUrl, alle anderen Felder bleiben. */
+    @Test
+    void mitLogoUrlKopiert() {
+        OrganisationView original = OrganisationView.von(neueOrg("FC Test", "fc-test"));
+
+        OrganisationView mitLogo = original.mitLogoUrl("/medien/abc-123");
+
+        assertThat(mitLogo.logoUrl()).isEqualTo("/medien/abc-123");
+        assertThat(mitLogo.slug()).isEqualTo("fc-test");
+        assertThat(mitLogo.name()).isEqualTo("FC Test");
+        assertThat(mitLogo.id()).isEqualTo(original.id());
+        // Original bleibt unverändert (immutable record)
+        assertThat(original.logoUrl()).isNull();
+    }
+
     private Organisation neueOrg(String name, String slug) {
         Organisation o = new Organisation();
         o.setId(UUID.randomUUID());

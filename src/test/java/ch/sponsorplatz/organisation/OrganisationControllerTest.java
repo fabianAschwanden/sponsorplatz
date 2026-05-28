@@ -51,6 +51,9 @@ class OrganisationControllerTest {
     @MockitoBean
     private MitgliedschaftService mitgliedschaftService;
 
+    @MockitoBean
+    private ch.sponsorplatz.shared.medien.OrganisationLogoLookup logoLookup;
+
     /** ORG-08: GET /organisationen → 200 + Liste. */
     @Test
     @WithMockUser
