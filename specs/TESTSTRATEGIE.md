@@ -304,6 +304,21 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **AC-SPONSOR-03** | `AccessControlTest` | ORG_VIEWER der Sponsor-Org → `kannSponsorDatenSehen` true (Lesen reicht jede Rolle) |
 | **AC-SPONSOR-04** | `AccessControlTest` | kein Mitglied der Sponsor-Org → `kannSponsorDatenSehen` false (Konkurrenz-Schutz) |
 
+#### CRM — SponsorAccount (private Sponsor-Layer, ADR-0011)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **VIEW-CRM-01** | `SponsorAccountViewTest` | `von(account)` flacht Verein ein, Mandanten-Schlüssel nicht im Output |
+| **VIEW-CRM-02** | `SponsorAccountViewTest` | `tier=null` (nicht eingestuft) bleibt null |
+| **CRM-SVC-01** | `SponsorAccountServiceTest` | `findePortfolio` ohne Zugriff → `AccessDeniedException`, kein Query |
+| **CRM-SVC-02** | `SponsorAccountServiceTest` | `findePortfolio` mit Zugriff → Portfolio des Sponsors |
+| **CRM-SVC-03** | `SponsorAccountServiceTest` | `erstelle` ohne Zugriff → `AccessDeniedException`, kein save |
+| **CRM-SVC-04** | `SponsorAccountServiceTest` | `erstelle` speichert mit Mandanten-Schlüssel + Status LEAD |
+| **CRM-SVC-05** | `SponsorAccountServiceTest` | `erstelle` bei Dublette (Sponsor↔Verein) → `IllegalArgumentException` |
+| **CRM-ISO-01** | `SponsorAccountIsolationIT` | Eigentümer-Sponsor sieht eigenen Account (echte DB) |
+| **CRM-ISO-02** | `SponsorAccountIsolationIT` | Konkurrierender Sponsor → `AccessDeniedException` auf fremdes Portfolio |
+| **CRM-ISO-03** | `SponsorAccountIsolationIT` | Kein Leak: fremdes Portfolio enthält den Account nicht |
+
 #### Organisation-Controller (ORG)
 
 | ID | Test-Klasse | Beschreibung |
