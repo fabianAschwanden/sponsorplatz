@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{crm.neu.titel} + ' — Sponsorplatz'">Verein hinzufügen</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('organisationen', ${anzahlOffeneAnfragen})}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik" th:text="#{crm.portfolio.titel}">Sponsoring-Portfolio</p>
+                <h1 th:text="#{crm.neu.titel}">Verein hinzufügen</h1>
+            </div>
+        </header>
+
+        <section class="app-card" style="max-width:560px;">
+            <form th:action="@{/crm/{slug}(slug=${sponsorSlug})}" method="post">
+                <label for="verein" class="app-label" th:text="#{crm.neu.verein}">Verein</label>
+                <select id="verein" name="vereinOrgId" required class="app-input">
+                    <option value="" th:text="#{crm.neu.vereinPlaceholder}">— Verein wählen —</option>
+                    <option th:each="v : ${vereine}" th:value="${v.id}" th:text="${v.name}">FC Beispiel</option>
+                </select>
+                <p class="app-muted" style="margin:0.35rem 0 1rem; font-size:0.85rem;"
+                   th:text="#{crm.neu.hinweis}">Der Account startet im Status „Lead".</p>
+                <div style="display:flex; gap:0.5rem;">
+                    <button type="submit" class="app-btn" th:text="#{crm.neu.anlegen}">Anlegen</button>
+                    <a th:href="@{/crm/{slug}(slug=${sponsorSlug})}" class="app-btn app-btn-secondary"
+                       th:text="#{crm.neu.abbrechen}">Abbrechen</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
+</body>
+</html>

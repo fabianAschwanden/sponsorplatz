@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de-CH"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{crm.portfolio.titel} + ' — ' + ${sponsorName}">CRM-Portfolio</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('organisationen', ${anzahlOffeneAnfragen})}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik" th:text="${sponsorName}">CSS</p>
+                <h1 th:text="#{crm.portfolio.titel}">Sponsoring-Portfolio</h1>
+            </div>
+            <a th:href="@{/crm/{slug}/neu(slug=${sponsorSlug})}" class="app-btn"
+               th:text="#{crm.portfolio.neuBtn}">+ Verein hinzufügen</a>
+        </header>
+
+        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+
+        <p class="app-muted" style="margin-bottom:1rem;"
+           th:text="#{crm.portfolio.hinweis}">Privates CRM — nur für dein Sponsor-Team sichtbar.</p>
+
+        <div th:if="${#lists.isEmpty(accounts)}" class="app-empty">
+            <strong th:text="#{crm.portfolio.empty.titel}">Noch keine Vereine im Portfolio.</strong>
+            <span th:text="#{crm.portfolio.empty.text}">Füge den ersten gesponserten Verein hinzu.</span>
+        </div>
+
+        <table th:if="${not #lists.isEmpty(accounts)}" class="app-table">
+            <thead>
+            <tr>
+                <th th:text="#{crm.feld.verein}">Verein</th>
+                <th th:text="#{crm.feld.status}">Status</th>
+                <th th:text="#{crm.feld.tier}">Tier</th>
+                <th th:text="#{crm.feld.notiz}">Notiz</th>
+                <th th:text="#{crm.feld.aktionen}">Aktionen</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="a : ${accounts}">
+                <td>
+                    <a th:href="@{/organisationen/{slug}(slug=${a.vereinSlug})}" th:text="${a.vereinName}">FC Beispiel</a>
+                </td>
+                <!-- Inline-Update-Form: Status + Tier + Notiz in einem POST -->
+                <td colspan="4">
+                    <form th:action="@{/crm/{slug}/{id}(slug=${sponsorSlug}, id=${a.id})}" method="post"
+                          style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                        <select name="status" class="app-input" style="width:auto;">
+                            <option th:each="s : ${statusWerte}" th:value="${s}"
+                                    th:selected="${a.status == s}"
+                                    th:text="#{'crm.status.' + ${s}}">LEAD</option>
+                        </select>
+                        <select name="tier" class="app-input" style="width:auto;">
+                            <option value="" th:text="#{crm.tier.keine}">— Tier —</option>
+                            <option th:each="t : ${tierWerte}" th:value="${t}"
+                                    th:selected="${a.tier == t}"
+                                    th:text="#{'crm.tier.' + ${t}}">CORE</option>
+                        </select>
+                        <input type="text" name="notiz" th:value="${a.notiz}"
+                               th:placeholder="#{crm.feld.notiz}" class="app-input" style="flex:1; min-width:160px;">
+                        <button type="submit" class="app-btn app-btn-sm" th:text="#{crm.speichern}">Speichern</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </main>
+</div>
+
+<style>
+    .app-table { width:100%; border-collapse:collapse; }
+    .app-table th, .app-table td { padding:0.6rem 0.5rem; text-align:left; border-bottom:1px solid var(--dash-border, #e5e7eb); vertical-align:middle; }
+    .app-btn-sm { font-size:0.8rem; padding:0.3rem 0.7rem; }
+</style>
+
+<th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
+</body>
+</html>

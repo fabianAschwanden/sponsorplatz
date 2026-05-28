@@ -205,6 +205,9 @@ public class OrganisationController {
         model.addAttribute("org", org);
         model.addAttribute("statusOk", org.status() == OrgStatus.ACTIVE || org.status() == OrgStatus.VERIFIED);
         model.addAttribute("kannEditieren", accessControl.kannOrgEditierenNachSlug(slug, auth));
+        // CRM-Einstieg nur für Sponsor-Orgs (UNTERNEHMEN) und nur für Team-Mitglieder.
+        model.addAttribute("kannCrmSehen",
+                org.typ() == OrgTyp.UNTERNEHMEN && accessControl.kannSponsorDatenSehen(org.id(), auth));
         model.addAttribute("untergeordneteOrgs", service.findeUntergeordneteViews(org.id()));
         model.addAttribute("elternkette", hierarchieService.findeElternketteNachSlug(slug));
         return "organisation/organisation-detail";

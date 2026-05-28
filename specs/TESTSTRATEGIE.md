@@ -315,6 +315,11 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **CRM-SVC-03** | `SponsorAccountServiceTest` | `erstelle` ohne Zugriff → `AccessDeniedException`, kein save |
 | **CRM-SVC-04** | `SponsorAccountServiceTest` | `erstelle` speichert mit Mandanten-Schlüssel + Status LEAD |
 | **CRM-SVC-05** | `SponsorAccountServiceTest` | `erstelle` bei Dublette (Sponsor↔Verein) → `IllegalArgumentException` |
+| **CRM-SVC-06** | `SponsorAccountServiceTest` | `aktualisiere` ohne Zugriff (Check gegen Mandanten-Key des Accounts) → `AccessDeniedException` |
+| **CRM-SVC-07** | `SponsorAccountServiceTest` | `aktualisiere` mit Zugriff → Status/Tier/Notiz gesetzt |
+| **CRM-CTRL-01** | `SponsorAccountControllerTest` | Service-`AccessDeniedException` schlägt als 403 durch |
+| **CRM-CTRL-02** | `SponsorAccountControllerTest` | POST ohne CSRF-Token → 403 |
+| **CRM-CTRL-03** | `SponsorAccountControllerTest` | POST mit CSRF + Zugriff → Redirect aufs Portfolio |
 | **CRM-ISO-01** | `SponsorAccountIsolationIT` | Eigentümer-Sponsor sieht eigenen Account (echte DB) |
 | **CRM-ISO-02** | `SponsorAccountIsolationIT` | Konkurrierender Sponsor → `AccessDeniedException` auf fremdes Portfolio |
 | **CRM-ISO-03** | `SponsorAccountIsolationIT` | Kein Leak: fremdes Portfolio enthält den Account nicht |

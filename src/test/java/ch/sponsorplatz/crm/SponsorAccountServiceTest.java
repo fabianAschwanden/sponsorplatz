@@ -121,6 +121,39 @@ class SponsorAccountServiceTest {
         verify(repository, never()).save(any());
     }
 
+    /** CRM-SVC-06: aktualisiere ohne Zugriff (fremder Account) → AccessDenied, kein save. */
+    @Test
+    @DisplayName("CRM-SVC-06: aktualisiere ohne Zugriff wirft AccessDenied")
+    void aktualisiereOhneZugriffWirft() {
+        UUID accountId = UUID.randomUUID();
+        SponsorAccount bestehend = account("FC X", "fc-x");
+        bestehend.setId(accountId);
+        when(repository.findById(accountId)).thenReturn(Optional.of(bestehend));
+        when(accessControl.kannSponsorDatenSehen(sponsorOrgId, auth)).thenReturn(false);
+
+        assertThatThrownBy(() -> service.aktualisiere(accountId, AccountStatus.AKTIV, AccountTier.CORE, "x", auth))
+                .isInstanceOf(AccessDeniedException.class);
+        verify(repository, never()).save(any());
+    }
+
+    /** CRM-SVC-07: aktualisiere mit Zugriff → Status/Tier/Notiz gesetzt. */
+    @Test
+    @DisplayName("CRM-SVC-07: aktualisiere setzt Status/Tier/Notiz")
+    void aktualisiereSetztFelder() {
+        UUID accountId = UUID.randomUUID();
+        SponsorAccount bestehend = account("FC Y", "fc-y");
+        bestehend.setId(accountId);
+        when(repository.findById(accountId)).thenReturn(Optional.of(bestehend));
+        when(accessControl.kannSponsorDatenSehen(sponsorOrgId, auth)).thenReturn(true);
+        when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        SponsorAccountView view = service.aktualisiere(accountId, AccountStatus.IN_RENEWAL, AccountTier.STRATEGIC, "Notiz", auth);
+
+        assertThat(view.status()).isEqualTo(AccountStatus.IN_RENEWAL);
+        assertThat(view.tier()).isEqualTo(AccountTier.STRATEGIC);
+        assertThat(view.notiz()).isEqualTo("Notiz");
+    }
+
     private SponsorAccount account(String vereinName, String slug) {
         Organisation verein = new Organisation();
         verein.setId(UUID.randomUUID());

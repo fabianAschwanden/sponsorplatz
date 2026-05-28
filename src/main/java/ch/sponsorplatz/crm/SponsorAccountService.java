@@ -62,6 +62,22 @@ public class SponsorAccountService {
         return SponsorAccountView.von(repository.save(account));
     }
 
+    /**
+     * Aktualisiert Status / Tier / Notiz eines Accounts. Der Zugriffs-Check
+     * läuft gegen den Mandanten-Schlüssel des geladenen Accounts — ein User
+     * kann nie einen fremd-besessenen Account ändern, auch nicht per ID-Guessing.
+     */
+    public SponsorAccountView aktualisiere(UUID accountId, AccountStatus status,
+                                           AccountTier tier, String notiz, Authentication auth) {
+        SponsorAccount account = repository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account nicht gefunden: " + accountId));
+        pruefeZugriff(account.getBesitzerSponsorOrgId(), auth);
+        account.setStatus(status);
+        account.setTier(tier);
+        account.setNotiz(notiz);
+        return SponsorAccountView.von(repository.save(account));
+    }
+
     private void pruefeZugriff(UUID sponsorOrgId, Authentication auth) {
         if (!accessControl.kannSponsorDatenSehen(sponsorOrgId, auth)) {
             throw new AccessDeniedException(

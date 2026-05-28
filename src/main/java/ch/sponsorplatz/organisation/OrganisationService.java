@@ -97,6 +97,14 @@ public class OrganisationService {
         return OrganisationView.von(findeAktiveSponsoren());
     }
 
+    /** Aktive/verifizierte Vereine als Views — für den CRM-Account-Verein-Picker. */
+    @Transactional(readOnly = true)
+    public List<OrganisationView> findeAktiveVereineAlsViews() {
+        return OrganisationView.von(repository.findByTypAndStatusInOrderByNameAsc(
+                OrgTyp.VEREIN,
+                List.of(OrgStatus.VERIFIED, OrgStatus.ACTIVE)));
+    }
+
     @Transactional(readOnly = true)
     public Optional<Organisation> findeNachId(UUID id) {
         return repository.findById(id);

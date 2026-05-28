@@ -37,6 +37,8 @@
                         <button type="submit" class="app-btn app-btn-danger" th:text="#{orgDetail.aktion.ablehnen}">Ablehnen</button>
                     </form>
                 </th:block>
+                <a th:if="${kannCrmSehen}" th:href="@{/crm/{slug}(slug=${org.slug})}" class="app-btn"
+                   th:text="#{crm.crmButton}">CRM-Portfolio</a>
                 <a th:href="@{/organisationen/{slug}/mitglieder(slug=${org.slug})}" class="app-btn-secondary app-btn"
                    th:text="#{orgDetail.aktion.mitglieder}">Mitglieder</a>
                 <a th:href="@{/organisationen/{slug}/projekte(slug=${org.slug})}" class="app-btn-secondary app-btn"
