@@ -352,6 +352,15 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **AKT-SVC-05** | `AktivitaetServiceTest` | `erstelle` mit account-fremdem Kontakt → `IllegalArgumentException` |
 | **AKT-SVC-06** | `AktivitaetServiceTest` | `loesche` prüft Zugriff über Aktivitäts-Besitzer |
 
+#### CRM — Renewal-Pipeline (RENEWAL) — Quick-Win auf `vertrag.laufzeit_bis`
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **RENEWAL-01** | `RenewalServiceTest` | `findeAuslaufende` mappt + rechnet `tageVerbleibend`, nicht überfällig |
+| **RENEWAL-02** | `RenewalServiceTest` | abgelaufener Vertrag → negative Tage + `istUeberfaellig` |
+| **RENEWAL-03** | `RenewalServiceTest` | fragt Status UNTERZEICHNET + Stichtag heute+90 Tage ab |
+| **RENEWAL-04** | `RenewalServiceTest` | fremder Sponsor → `AccessDeniedException`, Repository unberührt |
+
 #### Organisation-Controller (ORG)
 
 | ID | Test-Klasse | Beschreibung |

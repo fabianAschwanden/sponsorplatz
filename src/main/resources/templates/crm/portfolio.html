@@ -29,6 +29,38 @@
         <p class="app-muted" style="margin-bottom:1rem;"
            th:text="#{crm.portfolio.hinweis}">Privates CRM — nur für dein Sponsor-Team sichtbar.</p>
 
+        <!-- Renewal-Pipeline: auslaufende unterzeichnete Verträge (nächste 90 Tage,
+             inkl. überfälliger). Quick-Win auf Basis vertrag.laufzeit_bis. -->
+        <section th:if="${not #lists.isEmpty(renewals)}" class="crm-renewal">
+            <h2 th:text="#{crm.renewal.titel}">Anstehende Renewals</h2>
+            <p class="app-muted" th:text="#{crm.renewal.hinweis}">Verträge, deren Laufzeit bald endet.</p>
+            <table class="app-table">
+                <thead>
+                <tr>
+                    <th th:text="#{crm.feld.verein}">Verein</th>
+                    <th th:text="#{crm.renewal.paket}">Paket</th>
+                    <th th:text="#{crm.renewal.wert}">Wert</th>
+                    <th th:text="#{crm.renewal.laufzeitBis}">Endet</th>
+                    <th th:text="#{crm.renewal.frist}">Frist</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="r : ${renewals}" th:classappend="${r.istUeberfaellig} ? 'crm-renewal-faellig' : ''">
+                    <td><a th:href="@{/organisationen/{slug}(slug=${r.vereinSlug})}" th:text="${r.vereinName}">FC Beispiel</a></td>
+                    <td th:text="${r.paketName}">Goldpaket</td>
+                    <td th:text="'CHF ' + ${#numbers.formatDecimal(r.preisChf, 1, 'NONE', 2, 'POINT')}">CHF 5000.00</td>
+                    <td th:text="${#temporals.format(r.laufzeitBis, 'dd.MM.yyyy')}">31.12.2026</td>
+                    <td>
+                        <span th:if="${r.istUeberfaellig}" class="app-chip crm-chip-faellig"
+                              th:text="#{crm.renewal.ueberfaellig(${-r.tageVerbleibend})}">überfällig</span>
+                        <span th:unless="${r.istUeberfaellig}" class="app-chip"
+                              th:text="#{crm.renewal.inTagen(${r.tageVerbleibend})}">in 30 Tagen</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+
         <div th:if="${#lists.isEmpty(accounts)}" class="app-empty">
             <strong th:text="#{crm.portfolio.empty.titel}">Noch keine Vereine im Portfolio.</strong>
             <span th:text="#{crm.portfolio.empty.text}">Füge den ersten gesponserten Verein hinzu.</span>
@@ -63,6 +95,11 @@
     .app-table { width:100%; border-collapse:collapse; }
     .app-table th, .app-table td { padding:0.6rem 0.5rem; text-align:left; border-bottom:1px solid var(--dash-border, #e5e7eb); vertical-align:middle; }
     .app-btn-sm { font-size:0.8rem; padding:0.3rem 0.7rem; }
+    .crm-renewal { margin:1.5rem 0; padding:1rem 1.2rem; border:1px solid #fbbf24; border-radius:8px; background:#fffbeb; }
+    .crm-renewal h2 { margin:0 0 0.2rem; font-size:1.05rem; }
+    .crm-renewal .app-table { margin-top:0.8rem; }
+    .crm-renewal-faellig td { background:#fef2f2; }
+    .crm-chip-faellig { background:#fecaca; color:#991b1b; }
 </style>
 
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>

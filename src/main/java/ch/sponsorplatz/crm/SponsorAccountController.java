@@ -30,15 +30,18 @@ public class SponsorAccountController {
     private final SponsorAccountService accountService;
     private final KontaktPersonService kontaktService;
     private final AktivitaetService aktivitaetService;
+    private final RenewalService renewalService;
     private final OrganisationService organisationService;
 
     public SponsorAccountController(SponsorAccountService accountService,
                                     KontaktPersonService kontaktService,
                                     AktivitaetService aktivitaetService,
+                                    RenewalService renewalService,
                                     OrganisationService organisationService) {
         this.accountService = accountService;
         this.kontaktService = kontaktService;
         this.aktivitaetService = aktivitaetService;
+        this.renewalService = renewalService;
         this.organisationService = organisationService;
     }
 
@@ -53,6 +56,7 @@ public class SponsorAccountController {
         model.addAttribute("sponsorSlug", sponsorSlug);
         model.addAttribute("sponsorName", organisationService.findeKopfNachSlug(sponsorSlug).name());
         model.addAttribute("accounts", accounts);
+        model.addAttribute("renewals", renewalService.findeAuslaufende(sponsorOrgId, auth));
         model.addAttribute("statusWerte", AccountStatus.values());
         model.addAttribute("tierWerte", AccountTier.values());
         return "crm/portfolio";

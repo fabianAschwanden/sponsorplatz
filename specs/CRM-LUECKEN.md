@@ -309,9 +309,11 @@ Damit sind Lücken #1, #2, #3 geschlossen.
 
 ### Cluster 3 — Portfolio-Steuerung (Tooling auf Cluster 2 + bestehenden Daten)
 
-- **Renewals (#6)** — **Quick Win**, weil `laufzeit_bis` schon existiert:
-  Reminder-Job (analog `OpsAlertJob`) + Renewal-Pipeline-View
-  («23 Verträge laufen H2 aus»). Kein Schema-Umbau.
+- **Renewals (#6)** — ✅ **Quick Win umgesetzt** (`RenewalService` + Renewal-
+  Pipeline-Panel im CRM-Portfolio): unterzeichnete Verträge mit `laufzeit_bis`
+  innerhalb 90 Tagen (überfällige zuerst), Mandanten-isoliert über
+  `kannSponsorDatenSehen`. Kein Schema-Umbau. *Offen:* proaktiver Reminder-Job
+  (analog `OpsAlertJob`) + Renewal-Conversion-Tracking.
 - **Pipeline-Stages (#4)** — Stages *vor* der Anfrage auf `SponsorAccount`
   (LEAD → QUALIFIZIERT → ANGEBOT → GEWONNEN/VERLOREN) + Forecast-Betrag +
   Win/Loss-Grund-Enum.

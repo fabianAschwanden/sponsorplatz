@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +14,15 @@ import java.util.UUID;
 public interface VertragRepository extends JpaRepository<Vertrag, UUID> {
 
     Optional<Vertrag> findByAnfrageId(UUID anfrageId);
+
+    /**
+     * Renewal-Pipeline (CRM): unterzeichnete Verträge eines Sponsors mit
+     * Laufzeit-Ende bis zum Stichtag (inkl. bereits überfälliger). Dringendste
+     * (frühestes Ende) zuerst. {@code laufzeitBis is not null}, weil ältere
+     * Verträge ohne erfasste Laufzeit kein Renewal-Datum haben.
+     */
+    List<Vertrag> findBySponsorOrgIdAndStatusAndLaufzeitBisNotNullAndLaufzeitBisLessThanEqualOrderByLaufzeitBisAsc(
+            UUID sponsorOrgId, VertragsStatus status, LocalDate stichtag);
 
     /** Alle Verträge in einem bestimmten Status — für den Aufgaben-Backfill beim App-Start. */
     List<Vertrag> findByStatus(VertragsStatus status);

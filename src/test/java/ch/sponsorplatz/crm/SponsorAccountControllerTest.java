@@ -37,6 +37,7 @@ class SponsorAccountControllerTest {
     @MockitoBean private SponsorAccountService accountService;
     @MockitoBean private KontaktPersonService kontaktService;
     @MockitoBean private AktivitaetService aktivitaetService;
+    @MockitoBean private RenewalService renewalService;
     @MockitoBean private OrganisationService organisationService;
     @MockitoBean private ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService userDetailsService;
 
