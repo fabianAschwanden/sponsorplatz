@@ -26,45 +26,81 @@
 
         <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
+        <!-- Überblick: aktuelle Werte des Accounts auf einen Blick -->
+        <div class="crm-overview">
+            <div class="crm-stat">
+                <span class="crm-stat-label" th:text="#{crm.feld.status}">Status</span>
+                <span><span class="app-chip" th:text="#{'crm.status.' + ${account.status}}">Lead</span></span>
+            </div>
+            <div class="crm-stat">
+                <span class="crm-stat-label" th:text="#{crm.feld.pipelineStage}">Pipeline-Stufe</span>
+                <span><span class="app-chip" th:text="#{'crm.pipelineStage.' + ${account.pipelineStage}}">Lead</span></span>
+            </div>
+            <div class="crm-stat">
+                <span class="crm-stat-label" th:text="#{crm.feld.tier}">Tier</span>
+                <span class="crm-stat-value"
+                      th:text="${account.tier != null ? #messages.msg('crm.tier.' + account.tier) : '—'}">Kern</span>
+            </div>
+            <div class="crm-stat">
+                <span class="crm-stat-label" th:text="#{crm.account.gewichteterForecast}">Gewichtet</span>
+                <span class="crm-stat-value"
+                      th:text="${account.gewichteterForecastChf != null ? 'CHF ' + #numbers.formatDecimal(account.gewichteterForecastChf, 1, 'NONE', 2, 'POINT') : '—'}">CHF 6000.00</span>
+            </div>
+        </div>
+
         <!-- Account-Stammdaten editieren -->
-        <section class="app-card" style="max-width:640px;">
-            <h2 class="app-section-title" th:text="#{crm.account.stammdaten}">Account</h2>
+        <section class="app-card">
+            <h2 class="crm-card-title" th:text="#{crm.account.stammdaten}">Account</h2>
             <form th:action="@{/crm/{slug}/{id}(slug=${sponsorSlug}, id=${account.id})}" method="post"
-                  style="display:flex; flex-direction:column; gap:0.75rem;">
-                <label class="app-label" th:text="#{crm.feld.status}">Status</label>
-                <select name="status" class="app-input">
-                    <option th:each="s : ${statusWerte}" th:value="${s}"
-                            th:selected="${account.status == s}" th:text="#{'crm.status.' + ${s}}">LEAD</option>
-                </select>
-                <label class="app-label" th:text="#{crm.feld.tier}">Tier</label>
-                <select name="tier" class="app-input">
-                    <option value="" th:text="#{crm.tier.keine}">— Tier —</option>
-                    <option th:each="t : ${tierWerte}" th:value="${t}"
-                            th:selected="${account.tier == t}" th:text="#{'crm.tier.' + ${t}}">CORE</option>
-                </select>
-                <label class="app-label" th:text="#{crm.feld.pipelineStage}">Pipeline-Stufe</label>
-                <select name="pipelineStage" class="app-input">
-                    <option th:each="p : ${pipelineStageWerte}" th:value="${p}"
-                            th:selected="${account.pipelineStage == p}"
-                            th:text="#{'crm.pipelineStage.' + ${p}}">Lead</option>
-                </select>
-                <label class="app-label" th:text="#{crm.feld.forecastBetrag}">Forecast-Betrag (CHF)</label>
-                <input type="number" name="forecastBetragChf" min="0" step="0.01" class="app-input"
-                       th:value="${account.forecastBetragChf}" placeholder="0.00">
-                <p th:if="${account.gewichteterForecastChf != null}" class="app-muted" style="margin:0;"
-                   th:text="#{crm.account.gewichteterForecast} + ': CHF ' + ${#numbers.formatDecimal(account.gewichteterForecastChf, 1, 'NONE', 2, 'POINT')}">
-                    Gewichtet: CHF 6000.00</p>
-                <label class="app-label" th:text="#{crm.feld.notiz}">Notiz</label>
-                <textarea name="notiz" rows="3" class="app-input" th:text="${account.notiz}"></textarea>
-                <div><button type="submit" class="app-btn" th:text="#{crm.speichern}">Speichern</button></div>
+                  class="app-form" style="max-width:none;">
+                <div class="crm-form-grid">
+                    <div class="app-form-group">
+                        <label for="status" th:text="#{crm.feld.status}">Status</label>
+                        <select id="status" name="status">
+                            <option th:each="s : ${statusWerte}" th:value="${s}"
+                                    th:selected="${account.status == s}" th:text="#{'crm.status.' + ${s}}">LEAD</option>
+                        </select>
+                    </div>
+                    <div class="app-form-group">
+                        <label for="pipelineStage" th:text="#{crm.feld.pipelineStage}">Pipeline-Stufe</label>
+                        <select id="pipelineStage" name="pipelineStage">
+                            <option th:each="p : ${pipelineStageWerte}" th:value="${p}"
+                                    th:selected="${account.pipelineStage == p}"
+                                    th:text="#{'crm.pipelineStage.' + ${p}}">Lead</option>
+                        </select>
+                    </div>
+                    <div class="app-form-group">
+                        <label for="tier" th:text="#{crm.feld.tier}">Tier</label>
+                        <select id="tier" name="tier">
+                            <option value="" th:text="#{crm.tier.keine}">— Tier —</option>
+                            <option th:each="t : ${tierWerte}" th:value="${t}"
+                                    th:selected="${account.tier == t}" th:text="#{'crm.tier.' + ${t}}">CORE</option>
+                        </select>
+                    </div>
+                    <div class="app-form-group">
+                        <label for="forecastBetragChf" th:text="#{crm.feld.forecastBetrag}">Forecast (CHF)</label>
+                        <input type="number" id="forecastBetragChf" name="forecastBetragChf" min="0" step="0.01"
+                               th:value="${account.forecastBetragChf}" placeholder="0.00">
+                        <span class="hint" th:if="${account.gewichteterForecastChf != null}"
+                              th:text="#{crm.account.gewichteterForecast} + ': CHF ' + ${#numbers.formatDecimal(account.gewichteterForecastChf, 1, 'NONE', 2, 'POINT')}">
+                            Gewichtet: CHF 6000.00</span>
+                    </div>
+                </div>
+                <div class="app-form-group">
+                    <label for="notiz" th:text="#{crm.feld.notiz}">Notiz</label>
+                    <textarea id="notiz" name="notiz" rows="3" th:text="${account.notiz}"></textarea>
+                </div>
+                <div class="app-form-actions">
+                    <button type="submit" class="app-btn" th:text="#{crm.speichern}">Speichern</button>
+                </div>
             </form>
         </section>
 
         <!-- Kontakte (Dynamics Account↔Contact) -->
         <section class="app-card">
-            <h2 class="app-section-title" th:text="#{crm.kontakte.titel}">Kontakte</h2>
+            <h2 class="crm-card-title" th:text="#{crm.kontakte.titel}">Kontakte</h2>
 
-            <table th:if="${not #lists.isEmpty(kontakte)}" class="app-table" style="margin-bottom:1.5rem;">
+            <table th:if="${not #lists.isEmpty(kontakte)}" class="app-table">
                 <thead>
                 <tr>
                     <th th:text="#{crm.kontakt.name}">Name</th>
@@ -86,7 +122,7 @@
                         <span th:if="${k.telefon}" th:text="${' · ' + k.telefon}"></span>
                         <span th:if="${k.mobile}" th:text="${' · ' + k.mobile}"></span>
                     </td>
-                    <td>
+                    <td style="text-align:right;">
                         <form th:action="@{/crm/{slug}/{aid}/kontakte/{kid}/loeschen(slug=${sponsorSlug}, aid=${account.id}, kid=${k.id})}"
                               method="post" style="margin:0;"
                               onsubmit="return confirm(this.querySelector('.confirm-msg').textContent);">
@@ -99,51 +135,57 @@
                 </tbody>
             </table>
 
-            <p th:if="${#lists.isEmpty(kontakte)}" class="app-muted" style="margin-bottom:1.5rem;"
+            <p th:if="${#lists.isEmpty(kontakte)}" class="app-muted"
                th:text="#{crm.kontakte.empty}">Noch keine Kontakte.</p>
 
-            <!-- Kontakt anlegen -->
-            <h3 style="font-size:1rem; margin:0 0 0.75rem;" th:text="#{crm.kontakt.neuTitel}">Kontakt hinzufügen</h3>
-            <form th:action="@{/crm/{slug}/{id}/kontakte(slug=${sponsorSlug}, id=${account.id})}" method="post"
-                  style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:0.6rem; align-items:end;">
-                <label class="app-label">
-                    <span th:text="#{crm.kontakt.vorname}">Vorname</span>
-                    <input type="text" name="vorname" required class="app-input">
-                </label>
-                <label class="app-label">
-                    <span th:text="#{crm.kontakt.nachname}">Nachname</span>
-                    <input type="text" name="nachname" required class="app-input">
-                </label>
-                <label class="app-label">
-                    <span th:text="#{crm.kontakt.funktion}">Funktion</span>
-                    <input type="text" name="funktion" class="app-input">
-                </label>
-                <label class="app-label">
-                    <span th:text="#{crm.kontakt.rolle}">Rolle</span>
-                    <select name="kontaktRolle" class="app-input">
-                        <option th:each="r : ${kontaktRollen}" th:value="${r}"
-                                th:text="#{'crm.kontaktRolle.' + ${r}}">Sonstige</option>
-                    </select>
-                </label>
-                <label class="app-label">
-                    <span th:text="#{crm.kontakt.email}">E-Mail</span>
-                    <input type="email" name="email" class="app-input">
-                </label>
-                <label class="app-label">
-                    <span th:text="#{crm.kontakt.telefon}">Telefon</span>
-                    <input type="text" name="telefon" class="app-input">
-                </label>
-                <label class="app-label">
-                    <span th:text="#{crm.kontakt.mobile}">Mobile</span>
-                    <input type="text" name="mobile" class="app-input">
-                </label>
-                <button type="submit" class="app-btn" th:text="#{crm.kontakt.anlegen}">Hinzufügen</button>
-            </form>
+            <!-- Kontakt anlegen — eingeklappt, sobald schon Kontakte existieren -->
+            <details class="crm-add" th:open="${#lists.isEmpty(kontakte)}">
+                <summary th:text="#{crm.kontakt.neuTitel}">Kontakt hinzufügen</summary>
+                <form th:action="@{/crm/{slug}/{id}/kontakte(slug=${sponsorSlug}, id=${account.id})}" method="post"
+                      class="app-form">
+                    <div class="crm-form-grid">
+                        <div class="app-form-group">
+                            <label for="vorname" th:text="#{crm.kontakt.vorname}">Vorname</label>
+                            <input type="text" id="vorname" name="vorname" required>
+                        </div>
+                        <div class="app-form-group">
+                            <label for="nachname" th:text="#{crm.kontakt.nachname}">Nachname</label>
+                            <input type="text" id="nachname" name="nachname" required>
+                        </div>
+                        <div class="app-form-group">
+                            <label for="funktion" th:text="#{crm.kontakt.funktion}">Funktion</label>
+                            <input type="text" id="funktion" name="funktion">
+                        </div>
+                        <div class="app-form-group">
+                            <label for="kontaktRolle" th:text="#{crm.kontakt.rolle}">Rolle</label>
+                            <select id="kontaktRolle" name="kontaktRolle">
+                                <option th:each="r : ${kontaktRollen}" th:value="${r}"
+                                        th:text="#{'crm.kontaktRolle.' + ${r}}">Sonstige</option>
+                            </select>
+                        </div>
+                        <div class="app-form-group">
+                            <label for="email" th:text="#{crm.kontakt.email}">E-Mail</label>
+                            <input type="email" id="email" name="email">
+                        </div>
+                        <div class="app-form-group">
+                            <label for="telefon" th:text="#{crm.kontakt.telefon}">Telefon</label>
+                            <input type="text" id="telefon" name="telefon">
+                        </div>
+                        <div class="app-form-group">
+                            <label for="mobile" th:text="#{crm.kontakt.mobile}">Mobile</label>
+                            <input type="text" id="mobile" name="mobile">
+                        </div>
+                    </div>
+                    <div class="app-form-actions">
+                        <button type="submit" class="app-btn" th:text="#{crm.kontakt.anlegen}">Hinzufügen</button>
+                    </div>
+                </form>
+            </details>
         </section>
 
         <!-- Aktivitäts-Timeline (Dynamics Activity, regarding Account + Contact) -->
         <section class="app-card">
-            <h2 class="app-section-title" th:text="#{crm.aktivitaet.titel}">Aktivitäten</h2>
+            <h2 class="crm-card-title" th:text="#{crm.aktivitaet.titel}">Aktivitäten</h2>
 
             <ul th:if="${not #lists.isEmpty(aktivitaeten)}" class="crm-timeline">
                 <li th:each="akt : ${aktivitaeten}" class="crm-timeline-item">
@@ -165,53 +207,78 @@
                 </li>
             </ul>
 
-            <p th:if="${#lists.isEmpty(aktivitaeten)}" class="app-muted" style="margin-bottom:1.5rem;"
+            <p th:if="${#lists.isEmpty(aktivitaeten)}" class="app-muted"
                th:text="#{crm.aktivitaet.empty}">Noch keine Aktivitäten erfasst.</p>
 
-            <!-- Aktivität erfassen -->
-            <h3 style="font-size:1rem; margin:0 0 0.75rem;" th:text="#{crm.aktivitaet.neuTitel}">Aktivität erfassen</h3>
-            <form th:action="@{/crm/{slug}/{id}/aktivitaeten(slug=${sponsorSlug}, id=${account.id})}" method="post"
-                  style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:0.6rem; align-items:end;">
-                <label class="app-label">
-                    <span th:text="#{crm.aktivitaet.typ}">Typ</span>
-                    <select name="typ" class="app-input">
-                        <option th:each="t : ${aktivitaetTypen}" th:value="${t}"
-                                th:text="#{'crm.aktivitaetTyp.' + ${t}}">Anruf</option>
-                    </select>
-                </label>
-                <label class="app-label">
-                    <span th:text="#{crm.aktivitaet.datum}">Datum</span>
-                    <input type="date" name="datum" th:value="${heute}" required class="app-input">
-                </label>
-                <label class="app-label">
-                    <span th:text="#{crm.aktivitaet.kontakt}">Kontakt</span>
-                    <select name="kontaktPersonId" class="app-input">
-                        <option value="" th:text="#{crm.aktivitaet.keinKontakt}">— optional —</option>
-                        <option th:each="k : ${kontakte}" th:value="${k.id}" th:text="${k.name()}">Anna Muster</option>
-                    </select>
-                </label>
-                <label class="app-label" style="grid-column:1 / -1;">
-                    <span th:text="#{crm.aktivitaet.betreff}">Betreff</span>
-                    <input type="text" name="betreff" required class="app-input">
-                </label>
-                <label class="app-label" style="grid-column:1 / -1;">
-                    <span th:text="#{crm.feld.notiz}">Notiz</span>
-                    <textarea name="notiz" rows="2" class="app-input"></textarea>
-                </label>
-                <button type="submit" class="app-btn" th:text="#{crm.aktivitaet.erfassen}">Erfassen</button>
-            </form>
+            <!-- Aktivität erfassen — eingeklappt, sobald schon Aktivitäten existieren -->
+            <details class="crm-add" th:open="${#lists.isEmpty(aktivitaeten)}">
+                <summary th:text="#{crm.aktivitaet.neuTitel}">Aktivität erfassen</summary>
+                <form th:action="@{/crm/{slug}/{id}/aktivitaeten(slug=${sponsorSlug}, id=${account.id})}" method="post"
+                      class="app-form">
+                    <div class="crm-form-grid">
+                        <div class="app-form-group">
+                            <label for="typ" th:text="#{crm.aktivitaet.typ}">Typ</label>
+                            <select id="typ" name="typ">
+                                <option th:each="t : ${aktivitaetTypen}" th:value="${t}"
+                                        th:text="#{'crm.aktivitaetTyp.' + ${t}}">Anruf</option>
+                            </select>
+                        </div>
+                        <div class="app-form-group">
+                            <label for="datum" th:text="#{crm.aktivitaet.datum}">Datum</label>
+                            <input type="date" id="datum" name="datum" th:value="${heute}" required>
+                        </div>
+                        <div class="app-form-group">
+                            <label for="kontaktPersonId" th:text="#{crm.aktivitaet.kontakt}">Kontakt</label>
+                            <select id="kontaktPersonId" name="kontaktPersonId">
+                                <option value="" th:text="#{crm.aktivitaet.keinKontakt}">— optional —</option>
+                                <option th:each="k : ${kontakte}" th:value="${k.id}" th:text="${k.name()}">Anna Muster</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="app-form-group">
+                        <label for="betreff" th:text="#{crm.aktivitaet.betreff}">Betreff</label>
+                        <input type="text" id="betreff" name="betreff" required>
+                    </div>
+                    <div class="app-form-group">
+                        <label for="aktNotiz" th:text="#{crm.feld.notiz}">Notiz</label>
+                        <textarea id="aktNotiz" name="notiz" rows="2"></textarea>
+                    </div>
+                    <div class="app-form-actions">
+                        <button type="submit" class="app-btn" th:text="#{crm.aktivitaet.erfassen}">Erfassen</button>
+                    </div>
+                </form>
+            </details>
         </section>
     </main>
 </div>
 
 <style>
-    .app-table { width:100%; border-collapse:collapse; }
-    .app-table th, .app-table td { padding:0.6rem 0.5rem; text-align:left; border-bottom:1px solid var(--dash-border, #e5e7eb); vertical-align:middle; }
-    .app-btn-sm { font-size:0.8rem; padding:0.3rem 0.7rem; }
-    .crm-timeline { list-style:none; margin:0 0 1.5rem; padding:0; }
-    .crm-timeline-item { padding:0.6rem 0; border-bottom:1px solid var(--dash-border, #e5e7eb); }
+    /* Überblick-Leiste */
+    .crm-overview { display:flex; flex-wrap:wrap; gap:1.1rem 2.5rem; background:var(--dash-card); border:1px solid var(--dash-border); border-radius:var(--dash-radius); padding:1.1rem 1.5rem; margin-bottom:1.5rem; }
+    .crm-stat { display:flex; flex-direction:column; gap:0.4rem; }
+    .crm-stat-label { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--dash-muted); font-weight:600; }
+    .crm-stat-value { font-size:1.05rem; font-weight:600; color:var(--dash-text); }
+
+    /* Karten-Titel + Feld-Raster */
+    .crm-card-title { margin:0 0 1.25rem; font-size:1.05rem; }
+    .crm-form-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:1.1rem 1.25rem; }
+
+    /* Aufklappbares Erfassungs-Formular */
+    .crm-add { margin-top:1.5rem; border-top:1px solid var(--dash-border); padding-top:1.25rem; }
+    .crm-add > summary { cursor:pointer; font-weight:600; font-size:0.95rem; color:var(--dash-violet-dark); display:inline-flex; align-items:center; gap:0.45rem; list-style:none; }
+    .crm-add > summary::-webkit-details-marker { display:none; }
+    .crm-add > summary::before { content:'+'; display:inline-flex; align-items:center; justify-content:center; width:1.25rem; height:1.25rem; border-radius:999px; background:var(--dash-violet-light); color:var(--dash-violet-dark); font-weight:700; line-height:1; }
+    .crm-add[open] > summary::before { content:'\2212'; }
+    .crm-add .app-form { margin-top:1.1rem; max-width:none; }
+
+    /* Aktivitäts-Timeline */
+    .crm-timeline { list-style:none; margin:0; padding:0; }
+    .crm-timeline-item { padding:0.7rem 0; border-bottom:1px solid var(--dash-border); }
+    .crm-timeline-item:last-child { border-bottom:none; }
     .crm-timeline-kopf { display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; }
-    .crm-timeline-notiz { margin:0.3rem 0 0; color:var(--dash-muted, #475569); white-space:pre-line; }
+    .crm-timeline-notiz { margin:0.35rem 0 0; color:var(--dash-muted); white-space:pre-line; }
+
+    .app-btn-sm { font-size:0.8rem; padding:0.3rem 0.7rem; }
 </style>
 
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>

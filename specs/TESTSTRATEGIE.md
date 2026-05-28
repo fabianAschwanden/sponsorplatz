@@ -322,6 +322,8 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **CRM-CTRL-02** | `SponsorAccountControllerTest` | POST ohne CSRF-Token → 403 |
 | **CRM-CTRL-03** | `SponsorAccountControllerTest` | POST mit CSRF + Zugriff → Redirect aufs Portfolio |
 | **CRM-CTRL-04** | `SponsorAccountControllerTest` | Portfolio rendert mit Accounts + Renewals + gewichtetem Forecast (Thymeleaf-Smoke) |
+| **CRM-CTRL-05** | `SponsorAccountControllerTest` | Account-Detail rendert (Stammdaten-Grid + Kontakt-/Aktivitäts-Erfassung) |
+| **CRM-CTRL-06** | `SponsorAccountControllerTest` | Account-Anlege-Formular rendert (Verein-Picker) |
 | **CRM-ISO-01** | `SponsorAccountIsolationIT` | Eigentümer-Sponsor sieht eigenen Account (echte DB) |
 | **CRM-ISO-02** | `SponsorAccountIsolationIT` | Konkurrierender Sponsor → `AccessDeniedException` auf fremdes Portfolio |
 | **CRM-ISO-03** | `SponsorAccountIsolationIT` | Kein Leak: fremdes Portfolio enthält den Account nicht |

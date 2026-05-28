@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -74,6 +75,36 @@ class SponsorAccountControllerTest {
                         java.time.LocalDate.now().plusDays(30), 30, false)));
 
         mockMvc.perform(get("/crm/css"))
+                .andExpect(status().isOk());
+    }
+
+    /** CRM-CTRL-05: Account-Detail rendert (Stammdaten-Form + Kontakt-/Aktivitäts-Erfassung, Thymeleaf-Smoke). */
+    @Test
+    @WithMockUser
+    void accountDetailRendert() throws Exception {
+        UUID accountId = UUID.randomUUID();
+        when(accountService.findeAccount(eq(accountId), any())).thenReturn(
+                new SponsorAccountView(accountId, UUID.randomUUID(), "FC Test", "fc-test",
+                        null, AccountStatus.AKTIV, AccountTier.CORE, PipelineStage.ANGEBOT,
+                        new java.math.BigDecimal("10000.00"), new java.math.BigDecimal("6000.00"),
+                        "Notiz", java.time.Instant.now(), null));
+        // findeKontakte/findeTimeline liefern per Mockito-Default leere Listen.
+
+        mockMvc.perform(get("/crm/css/" + accountId))
+                .andExpect(status().isOk())
+                // Redesign-Struktur ist wirklich gerendert: Überblick-Leiste + Feld-Raster + kanonische Form-Gruppen.
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("crm-overview")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("crm-form-grid")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("app-form-group")));
+    }
+
+    /** CRM-CTRL-06: Account-Anlege-Formular rendert (Verein-Picker, Thymeleaf-Smoke). */
+    @Test
+    @WithMockUser
+    void accountFormRendert() throws Exception {
+        when(organisationService.findeIdNachSlug("css")).thenReturn(sponsorOrgId);
+
+        mockMvc.perform(get("/crm/css/neu"))
                 .andExpect(status().isOk());
     }
 
