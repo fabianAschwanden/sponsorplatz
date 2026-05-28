@@ -43,8 +43,17 @@ public record EngagementView(
         );
     }
 
+    /**
+     * Mappt eine Anfrage-Liste auf Engagement-Views. Anfragen ohne {@code paket}
+     * (Kontakt-Anfragen) bzw. ohne Projekt sind keine Projekt-Sponsorings und
+     * haben keine Schaufenster-Daten — sie werden übersprungen statt eine
+     * {@link NullPointerException} in {@link #von(SponsoringAnfrage)} auszulösen.
+     */
     public static List<EngagementView> von(List<SponsoringAnfrage> anfragen) {
-        return anfragen.stream().map(EngagementView::von).toList();
+        return anfragen.stream()
+                .filter(a -> a.getPaket() != null && a.getPaket().getProjekt() != null)
+                .map(EngagementView::von)
+                .toList();
     }
 }
 

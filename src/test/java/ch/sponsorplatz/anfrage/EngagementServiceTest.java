@@ -89,6 +89,24 @@ class EngagementServiceTest {
         assertThat(result.get(0).sponsorSlug()).isEqualTo("css-versicherung");
     }
 
+    /** ENG-06: Kontakt-Anfragen (paket == null) werden übersprungen, kein NPE (500-Regression). */
+    @Test
+    @DisplayName("ENG-06: Kontakt-Anfrage ohne Paket wird übersprungen statt NPE")
+    void kontaktAnfrageOhnePaketWirdUebersprungen() {
+        Organisation sponsor = erstelleOrg("css-versicherung", Branche.PRAEVENTION);
+        SponsoringAnfrage kontaktOhnePaket = new SponsoringAnfrage();
+        kontaktOhnePaket.setAnfragenderOrg(sponsor);
+        kontaktOhnePaket.setEmpfaengerOrg(erstelleOrg("verein-kontakt", Branche.SPORT));
+        kontaktOhnePaket.setStatus(AnfrageStatus.ANGENOMMEN);
+        // paket bleibt null (Kontakt-Anfrage)
+        when(anfrageRepository.findNeuesteNachStatus(eq(AnfrageStatus.ANGENOMMEN), any()))
+                .thenReturn(List.of(kontaktOhnePaket, erstelleAnfrage(sponsor)));
+
+        List<EngagementView> result = service.findeNeuesteEngagements(6);
+
+        assertThat(result).hasSize(1);
+    }
+
     private Organisation erstelleOrg(String slug, Branche branche) {
         Organisation org = new Organisation();
         org.setId(UUID.randomUUID());

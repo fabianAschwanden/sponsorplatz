@@ -903,6 +903,7 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **ENG-02** | `EngagementServiceTest` | `findeNachSponsorSlug` mit unbekanntem Slug → NotFoundException |
 | **ENG-04** | `EngagementServiceTest` | `findeSchaufenster` baut Marken-Kopf + Logo + Region-Gruppen |
 | **ENG-05** | `EngagementServiceTest` | `findeNeuesteEngagements` mappt ANGENOMMEN-Anfragen quer über alle Marken (Startseiten-Teaser) |
+| **ENG-06** | `EngagementServiceTest` | Kontakt-Anfrage ohne Paket wird übersprungen statt NPE (Startseiten-500-Regression) |
 | **ENG-01-CTRL** | `EngagementControllerTest` | GET `/marken/{slug}/engagements` → 200 + Schaufenster-View + `ansicht` |
 | **ENG-02-CTRL** | `EngagementControllerTest` | Region-Filter wird an `findeSchaufenster` delegiert |
 | **ENG-03-CTRL** | `EngagementControllerTest` | Branche-Filter wird an `findeSchaufenster` delegiert |

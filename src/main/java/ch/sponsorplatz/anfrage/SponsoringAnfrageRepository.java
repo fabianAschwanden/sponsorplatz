@@ -75,8 +75,8 @@ public interface SponsoringAnfrageRepository extends JpaRepository<SponsoringAnf
      */
     @Query("""
             select a from SponsoringAnfrage a
-              left join fetch a.paket pk
-              left join fetch pk.projekt
+              join fetch a.paket pk
+              join fetch pk.projekt
               left join fetch a.anfragenderOrg
               left join fetch a.empfaengerOrg
              where a.status = :status
