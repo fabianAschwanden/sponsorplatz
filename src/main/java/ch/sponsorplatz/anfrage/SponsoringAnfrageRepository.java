@@ -69,14 +69,15 @@ public interface SponsoringAnfrageRepository extends JpaRepository<SponsoringAnf
             @Param("status") AnfrageStatus status);
 
     /**
-     * Neueste Anfragen in einem Status quer über alle Sponsoren — für den
-     * öffentlichen Engagement-Teaser auf der Startseite. Nur to-one-Fetches,
-     * daher paginiert {@link Pageable} sauber in SQL (keine In-Memory-Paginierung).
+     * Neueste Anfragen in einem Status quer über alle Marken — für den
+     * öffentlichen Engagement-Teaser auf der Startseite. Schliesst Kontakt-
+     * Anfragen (ohne Paket) bewusst ein, daher {@code left join fetch} auf
+     * Paket/Projekt. Nur to-one-Fetches → {@link Pageable} paginiert sauber in SQL.
      */
     @Query("""
             select a from SponsoringAnfrage a
-              join fetch a.paket pk
-              join fetch pk.projekt
+              left join fetch a.paket pk
+              left join fetch pk.projekt
               left join fetch a.anfragenderOrg
               left join fetch a.empfaengerOrg
              where a.status = :status

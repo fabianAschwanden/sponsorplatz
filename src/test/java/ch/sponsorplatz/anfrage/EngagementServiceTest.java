@@ -1,6 +1,7 @@
 package ch.sponsorplatz.anfrage;
 
 import ch.sponsorplatz.organisation.Branche;
+import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationRepository;
 import ch.sponsorplatz.projekt.Projekt;
@@ -89,10 +90,10 @@ class EngagementServiceTest {
         assertThat(result.get(0).sponsorSlug()).isEqualTo("css-versicherung");
     }
 
-    /** ENG-06: Kontakt-Anfragen (paket == null) werden übersprungen, kein NPE (500-Regression). */
+    /** ENG-06: Kontakt-Anfrage ohne Paket wird inkl. gemappt (null Projekt-Felder), kein NPE (500-Regression). */
     @Test
-    @DisplayName("ENG-06: Kontakt-Anfrage ohne Paket wird übersprungen statt NPE")
-    void kontaktAnfrageOhnePaketWirdUebersprungen() {
+    @DisplayName("ENG-06: Kontakt-Anfrage ohne Paket wird gemappt statt NPE")
+    void kontaktAnfrageOhnePaketWirdGemappt() {
         Organisation sponsor = erstelleOrg("css-versicherung", Branche.PRAEVENTION);
         SponsoringAnfrage kontaktOhnePaket = new SponsoringAnfrage();
         kontaktOhnePaket.setAnfragenderOrg(sponsor);
@@ -104,7 +105,9 @@ class EngagementServiceTest {
 
         List<EngagementView> result = service.findeNeuesteEngagements(6);
 
-        assertThat(result).hasSize(1);
+        assertThat(result).hasSize(2);
+        assertThat(result).anyMatch(e -> e.projektName() == null);  // Kontakt-Engagement
+        assertThat(result).anyMatch(e -> e.projektName() != null);  // Paket-Engagement
     }
 
     private Organisation erstelleOrg(String slug, Branche branche) {
@@ -113,6 +116,9 @@ class EngagementServiceTest {
         org.setSlug(slug);
         org.setName("Test " + slug);
         org.setBranche(branche);
+        // Org-Typ steuert die Rollen-Auflösung in EngagementView.von:
+        // Vereins-Slugs → VEREIN, Marken (Sponsoren) → UNTERNEHMEN.
+        org.setTyp(slug.startsWith("verein") ? OrgTyp.VEREIN : OrgTyp.UNTERNEHMEN);
         return org;
     }
 

@@ -97,11 +97,12 @@
                                   th:text="${e.vereinBranche().getAnzeige()}">Sport</span>
                         </div>
                     </div>
-                    <a class="sf-projekt" th:href="@{/marktplatz/{slug}(slug=${e.projektSlug()})}">
+                    <a class="sf-projekt" th:if="${e.projektName() != null}"
+                       th:href="@{/marktplatz/{slug}(slug=${e.projektSlug()})}">
                         <span class="sf-projekt-label" th:text="#{engagement.projektLabel}">Projekt:</span>
                         <span th:text="${e.projektName()}">Sommerfest</span>
                     </a>
-                    <div class="sf-karte-fuss">
+                    <div class="sf-karte-fuss" th:if="${e.paketName() != null}">
                         <span class="sf-paket" th:text="${e.paketName()}">Gold</span>
                     </div>
                 </article>

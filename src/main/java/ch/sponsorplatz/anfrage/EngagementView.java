@@ -1,6 +1,10 @@
 package ch.sponsorplatz.anfrage;
 
 import ch.sponsorplatz.organisation.Branche;
+import ch.sponsorplatz.organisation.OrgTyp;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.projekt.Projekt;
+import ch.sponsorplatz.projekt.SponsoringPaket;
 
 import java.time.Instant;
 import java.util.List;
@@ -8,7 +12,12 @@ import java.util.UUID;
 
 /**
  * Öffentliche Ansicht eines aktiven Engagements (aus angenommener Anfrage).
- * Zeigt, welcher Sponsor welchen Verein/welches Projekt unterstützt.
+ * Zeigt, welche Marke welchen Verein (und ggf. welches Projekt) unterstützt.
+ *
+ * <p>Projekt-/Paket-/Region-Felder sind {@code null}, wenn das Engagement aus
+ * einer Kontakt-Anfrage stammt (kein Marktplatz-Paket). Die Verein-/Marken-Rolle
+ * wird über den {@link OrgTyp} bestimmt, weil bei Kontakt-Anfragen der Verein der
+ * Anfragende sein kann (Verein → Marke), bei Paket-Anfragen der Empfänger.
  */
 public record EngagementView(
         UUID id,
@@ -24,10 +33,15 @@ public record EngagementView(
         Instant angenommenAm
 ) {
     public static EngagementView von(SponsoringAnfrage anfrage) {
-        var sponsor = anfrage.getAnfragenderOrg();
-        var verein = anfrage.getEmpfaengerOrg();
-        var paket = anfrage.getPaket();
-        var projekt = paket.getProjekt();
+        Organisation empfaenger = anfrage.getEmpfaengerOrg();
+        Organisation anfragender = anfrage.getAnfragenderOrg();
+        boolean empfaengerIstVerein = empfaenger.getTyp() == OrgTyp.VEREIN;
+        Organisation verein = empfaengerIstVerein ? empfaenger : anfragender;
+        Organisation sponsor = empfaengerIstVerein ? anfragender : empfaenger;
+
+        SponsoringPaket paket = anfrage.getPaket();
+        Projekt projekt = (paket != null) ? paket.getProjekt() : null;
+
         return new EngagementView(
                 anfrage.getId(),
                 sponsor.getName(),
@@ -35,25 +49,16 @@ public record EngagementView(
                 verein.getName(),
                 verein.getSlug(),
                 verein.getBranche(),
-                projekt.getName(),
-                projekt.getSlug(),
-                paket.getName(),
-                projekt.getOrt(),
+                projekt != null ? projekt.getName() : null,
+                projekt != null ? projekt.getSlug() : null,
+                paket != null ? paket.getName() : null,
+                projekt != null ? projekt.getOrt() : null,
                 anfrage.getBeantwortetAm()
         );
     }
 
-    /**
-     * Mappt eine Anfrage-Liste auf Engagement-Views. Anfragen ohne {@code paket}
-     * (Kontakt-Anfragen) bzw. ohne Projekt sind keine Projekt-Sponsorings und
-     * haben keine Schaufenster-Daten — sie werden übersprungen statt eine
-     * {@link NullPointerException} in {@link #von(SponsoringAnfrage)} auszulösen.
-     */
     public static List<EngagementView> von(List<SponsoringAnfrage> anfragen) {
-        return anfragen.stream()
-                .filter(a -> a.getPaket() != null && a.getPaket().getProjekt() != null)
-                .map(EngagementView::von)
-                .toList();
+        return anfragen.stream().map(EngagementView::von).toList();
     }
 }
 
