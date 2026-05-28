@@ -77,12 +77,16 @@ public class SponsorAccountService {
      * kann nie einen fremd-besessenen Account ändern, auch nicht per ID-Guessing.
      */
     public SponsorAccountView aktualisiere(UUID accountId, AccountStatus status,
-                                           AccountTier tier, String notiz, Authentication auth) {
+                                           AccountTier tier, PipelineStage pipelineStage,
+                                           java.math.BigDecimal forecastBetragChf,
+                                           String notiz, Authentication auth) {
         SponsorAccount account = repository.findById(accountId)
                 .orElseThrow(() -> new NotFoundException("Account nicht gefunden: " + accountId));
         pruefeZugriff(account.getBesitzerSponsorOrgId(), auth);
         account.setStatus(status);
         account.setTier(tier);
+        if (pipelineStage != null) account.setPipelineStage(pipelineStage);
+        account.setForecastBetragChf(forecastBetragChf);
         account.setNotiz(notiz);
         return SponsorAccountView.von(repository.save(account));
     }

@@ -56,6 +56,15 @@ public class SponsorAccount {
     @Column(name = "tier", length = 20)
     private AccountTier tier;
 
+    /** Vertriebs-Pipeline-Stufe (CRM-Lücke #4). LEAD als Start. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "pipeline_stage", nullable = false, length = 20)
+    private PipelineStage pipelineStage = PipelineStage.LEAD;
+
+    /** Erwartetes Sponsoring-Volumen dieses Deals (CHF, optional). */
+    @Column(name = "forecast_betrag_chf", precision = 12, scale = 2)
+    private java.math.BigDecimal forecastBetragChf;
+
     @Column(name = "notiz")
     private String notiz;
 
@@ -92,6 +101,12 @@ public class SponsorAccount {
 
     public AccountTier getTier() { return tier; }
     public void setTier(AccountTier tier) { this.tier = tier; }
+
+    public PipelineStage getPipelineStage() { return pipelineStage; }
+    public void setPipelineStage(PipelineStage pipelineStage) { this.pipelineStage = pipelineStage; }
+
+    public java.math.BigDecimal getForecastBetragChf() { return forecastBetragChf; }
+    public void setForecastBetragChf(java.math.BigDecimal forecastBetragChf) { this.forecastBetragChf = forecastBetragChf; }
 
     public String getNotiz() { return notiz; }
     public void setNotiz(String notiz) { this.notiz = notiz; }

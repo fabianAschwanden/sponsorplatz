@@ -5,6 +5,7 @@ import ch.sponsorplatz.organisation.OrgTyp;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -73,5 +74,32 @@ class SponsorAccountViewTest {
 
         assertThat(view.tier()).isNull();
         assertThat(view.status()).isEqualTo(AccountStatus.LEAD);
+        // Default-Pipeline-Stufe ist LEAD, ohne Betrag kein gewichteter Forecast
+        assertThat(view.pipelineStage()).isEqualTo(PipelineStage.LEAD);
+        assertThat(view.gewichteterForecastChf()).isNull();
+    }
+
+    /** VIEW-CRM-03: gewichteter Forecast = Betrag × Stufen-Wahrscheinlichkeit / 100. */
+    @Test
+    @DisplayName("VIEW-CRM-03: gewichteter Forecast nach Pipeline-Stufe")
+    void gewichteterForecastNachStufe() {
+        Organisation verein = new Organisation();
+        verein.setId(UUID.randomUUID());
+        verein.setName("FC Forecast");
+        verein.setSlug("fc-forecast");
+        verein.setTyp(OrgTyp.VEREIN);
+
+        SponsorAccount account = new SponsorAccount();
+        account.setId(UUID.randomUUID());
+        account.setBesitzerSponsorOrgId(UUID.randomUUID());
+        account.setVerein(verein);
+        account.setStatus(AccountStatus.AKTIV);
+        account.setPipelineStage(PipelineStage.ANGEBOT); // 60 %
+        account.setForecastBetragChf(new BigDecimal("10000.00"));
+
+        SponsorAccountView view = SponsorAccountView.von(account);
+
+        assertThat(view.forecastBetragChf()).isEqualByComparingTo("10000.00");
+        assertThat(view.gewichteterForecastChf()).isEqualByComparingTo("6000.00");
     }
 }

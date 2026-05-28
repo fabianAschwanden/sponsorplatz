@@ -71,22 +71,34 @@
             <tr>
                 <th th:text="#{crm.feld.verein}">Verein</th>
                 <th th:text="#{crm.feld.status}">Status</th>
+                <th th:text="#{crm.feld.pipelineStage}">Pipeline-Stufe</th>
                 <th th:text="#{crm.feld.tier}">Tier</th>
+                <th th:text="#{crm.feld.forecastBetrag}">Forecast</th>
                 <th th:text="#{crm.feld.notiz}">Notiz</th>
             </tr>
             </thead>
             <tbody>
             <!-- Master-Detail: Verein-Name verlinkt auf die Account-Detail (Status/Tier/
-                 Notiz + Kontakte werden dort gepflegt). -->
+                 Pipeline/Forecast/Notiz + Kontakte werden dort gepflegt). -->
             <tr th:each="a : ${accounts}">
                 <td>
                     <a th:href="@{/crm/{slug}/{id}(slug=${sponsorSlug}, id=${a.id})}" th:text="${a.vereinName}">FC Beispiel</a>
                 </td>
                 <td><span class="app-chip" th:text="#{'crm.status.' + ${a.status}}">Lead</span></td>
+                <td><span class="app-chip" th:text="#{'crm.pipelineStage.' + ${a.pipelineStage}}">Lead</span></td>
                 <td th:text="${a.tier != null ? #messages.msg('crm.tier.' + a.tier) : '—'}">Kern</td>
+                <td th:text="${a.gewichteterForecastChf != null ? 'CHF ' + #numbers.formatDecimal(a.gewichteterForecastChf, 1, 'NONE', 2, 'POINT') : '—'}">CHF 6000.00</td>
                 <td class="app-muted" th:text="${a.notiz}"></td>
             </tr>
             </tbody>
+            <tfoot th:if="${pipelineForecastChf != null and pipelineForecastChf.signum() > 0}">
+            <tr>
+                <td colspan="4" style="text-align:right; font-weight:600;"
+                    th:text="#{crm.pipeline.forecastSumme}">Gewichteter Pipeline-Forecast</td>
+                <td colspan="2" style="font-weight:600;"
+                    th:text="'CHF ' + ${#numbers.formatDecimal(pipelineForecastChf, 1, 'NONE', 2, 'POINT')}">CHF 12000.00</td>
+            </tr>
+            </tfoot>
         </table>
     </main>
 </div>

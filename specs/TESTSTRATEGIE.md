@@ -309,17 +309,19 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | ID | Test-Klasse | Beschreibung |
 |---|---|---|
 | **VIEW-CRM-01** | `SponsorAccountViewTest` | `von(account)` flacht Verein ein, Mandanten-Schlüssel nicht im Output |
-| **VIEW-CRM-02** | `SponsorAccountViewTest` | `tier=null` (nicht eingestuft) bleibt null |
+| **VIEW-CRM-02** | `SponsorAccountViewTest` | `tier=null` (nicht eingestuft) bleibt null; Default-Pipeline-Stufe LEAD, kein Forecast |
+| **VIEW-CRM-03** | `SponsorAccountViewTest` | gewichteter Forecast = `Betrag × Stufen-Wahrscheinlichkeit / 100` (ANGEBOT 60 %) |
 | **CRM-SVC-01** | `SponsorAccountServiceTest` | `findePortfolio` ohne Zugriff → `AccessDeniedException`, kein Query |
 | **CRM-SVC-02** | `SponsorAccountServiceTest` | `findePortfolio` mit Zugriff → Portfolio des Sponsors |
 | **CRM-SVC-03** | `SponsorAccountServiceTest` | `erstelle` ohne Zugriff → `AccessDeniedException`, kein save |
 | **CRM-SVC-04** | `SponsorAccountServiceTest` | `erstelle` speichert mit Mandanten-Schlüssel + Status LEAD |
 | **CRM-SVC-05** | `SponsorAccountServiceTest` | `erstelle` bei Dublette (Sponsor↔Verein) → `IllegalArgumentException` |
 | **CRM-SVC-06** | `SponsorAccountServiceTest` | `aktualisiere` ohne Zugriff (Check gegen Mandanten-Key des Accounts) → `AccessDeniedException` |
-| **CRM-SVC-07** | `SponsorAccountServiceTest` | `aktualisiere` mit Zugriff → Status/Tier/Notiz gesetzt |
+| **CRM-SVC-07** | `SponsorAccountServiceTest` | `aktualisiere` mit Zugriff → Status/Tier/Pipeline-Stufe/Forecast/Notiz gesetzt |
 | **CRM-CTRL-01** | `SponsorAccountControllerTest` | Service-`AccessDeniedException` schlägt als 403 durch |
 | **CRM-CTRL-02** | `SponsorAccountControllerTest` | POST ohne CSRF-Token → 403 |
 | **CRM-CTRL-03** | `SponsorAccountControllerTest` | POST mit CSRF + Zugriff → Redirect aufs Portfolio |
+| **CRM-CTRL-04** | `SponsorAccountControllerTest` | Portfolio rendert mit Accounts + Renewals + gewichtetem Forecast (Thymeleaf-Smoke) |
 | **CRM-ISO-01** | `SponsorAccountIsolationIT` | Eigentümer-Sponsor sieht eigenen Account (echte DB) |
 | **CRM-ISO-02** | `SponsorAccountIsolationIT` | Konkurrierender Sponsor → `AccessDeniedException` auf fremdes Portfolio |
 | **CRM-ISO-03** | `SponsorAccountIsolationIT` | Kein Leak: fremdes Portfolio enthält den Account nicht |

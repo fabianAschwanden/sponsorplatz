@@ -12,6 +12,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -53,6 +54,27 @@ class SponsorAccountControllerTest {
 
         mockMvc.perform(get("/crm/css"))
                 .andExpect(status().isForbidden());
+    }
+
+    /** CRM-CTRL-04: Portfolio rendert mit Accounts + Renewals + gewichtetem Forecast (Thymeleaf-Smoke). */
+    @Test
+    @WithMockUser
+    void portfolioRendertMitPipelineUndRenewals() throws Exception {
+        when(organisationService.findeIdNachSlug("css")).thenReturn(sponsorOrgId);
+        when(organisationService.findeKopfNachSlug("css"))
+                .thenReturn(new OrganisationService.OrgKopf(sponsorOrgId, "CSS"));
+        when(accountService.findePortfolio(eq(sponsorOrgId), any())).thenReturn(List.of(
+                new SponsorAccountView(UUID.randomUUID(), UUID.randomUUID(), "FC Test", "fc-test",
+                        null, AccountStatus.AKTIV, AccountTier.CORE, PipelineStage.ANGEBOT,
+                        new java.math.BigDecimal("10000.00"), new java.math.BigDecimal("6000.00"),
+                        "Notiz", java.time.Instant.now(), null)));
+        when(renewalService.findeAuslaufende(eq(sponsorOrgId), any())).thenReturn(List.of(
+                new RenewalView(UUID.randomUUID(), UUID.randomUUID(), "FC Test", "fc-test",
+                        "Goldpaket", new java.math.BigDecimal("5000.00"),
+                        java.time.LocalDate.now().plusDays(30), 30, false)));
+
+        mockMvc.perform(get("/crm/css"))
+                .andExpect(status().isOk());
     }
 
     /** CRM-CTRL-02: erstelle ohne CSRF-Token → 403 (CSRF-Schutz greift). */

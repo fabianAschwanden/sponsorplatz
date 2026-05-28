@@ -57,9 +57,19 @@ public class SponsorAccountController {
         model.addAttribute("sponsorName", organisationService.findeKopfNachSlug(sponsorSlug).name());
         model.addAttribute("accounts", accounts);
         model.addAttribute("renewals", renewalService.findeAuslaufende(sponsorOrgId, auth));
+        model.addAttribute("pipelineForecastChf", summiereGewichtetenForecast(accounts));
         model.addAttribute("statusWerte", AccountStatus.values());
         model.addAttribute("tierWerte", AccountTier.values());
         return "crm/portfolio";
+    }
+
+    /** Summe der gewichteten Forecasts über das Portfolio — Pipeline-Gesamtwert. */
+    private static java.math.BigDecimal summiereGewichtetenForecast(
+            java.util.List<SponsorAccountView> accounts) {
+        return accounts.stream()
+                .map(SponsorAccountView::gewichteterForecastChf)
+                .filter(java.util.Objects::nonNull)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
     }
 
     /** Formular: neuen Account anlegen (Verein-Picker). */
@@ -92,10 +102,12 @@ public class SponsorAccountController {
                                @PathVariable UUID accountId,
                                @RequestParam AccountStatus status,
                                @RequestParam(required = false) AccountTier tier,
+                               @RequestParam(required = false) PipelineStage pipelineStage,
+                               @RequestParam(required = false) java.math.BigDecimal forecastBetragChf,
                                @RequestParam(required = false) String notiz,
                                Authentication auth,
                                RedirectAttributes redirectAttributes) {
-        accountService.aktualisiere(accountId, status, tier, notiz, auth);
+        accountService.aktualisiere(accountId, status, tier, pipelineStage, forecastBetragChf, notiz, auth);
         redirectAttributes.addFlashAttribute("erfolgsMeldung", "Account aktualisiert");
         return "redirect:/crm/" + sponsorSlug + "/" + accountId;
     }
@@ -112,6 +124,7 @@ public class SponsorAccountController {
         model.addAttribute("sponsorSlug", sponsorSlug);
         model.addAttribute("statusWerte", AccountStatus.values());
         model.addAttribute("tierWerte", AccountTier.values());
+        model.addAttribute("pipelineStageWerte", PipelineStage.values());
         model.addAttribute("kontaktRollen", KontaktRolle.values());
         model.addAttribute("aktivitaetTypen", AktivitaetTyp.values());
         model.addAttribute("heute", java.time.LocalDate.now());

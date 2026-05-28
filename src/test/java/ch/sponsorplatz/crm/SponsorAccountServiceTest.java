@@ -20,7 +20,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -131,14 +130,15 @@ class SponsorAccountServiceTest {
         when(repository.findById(accountId)).thenReturn(Optional.of(bestehend));
         when(accessControl.kannSponsorDatenSehen(sponsorOrgId, auth)).thenReturn(false);
 
-        assertThatThrownBy(() -> service.aktualisiere(accountId, AccountStatus.AKTIV, AccountTier.CORE, "x", auth))
+        assertThatThrownBy(() -> service.aktualisiere(accountId, AccountStatus.AKTIV, AccountTier.CORE,
+                null, null, "x", auth))
                 .isInstanceOf(AccessDeniedException.class);
         verify(repository, never()).save(any());
     }
 
-    /** CRM-SVC-07: aktualisiere mit Zugriff → Status/Tier/Notiz gesetzt. */
+    /** CRM-SVC-07: aktualisiere mit Zugriff → Status/Tier/Pipeline/Forecast/Notiz gesetzt. */
     @Test
-    @DisplayName("CRM-SVC-07: aktualisiere setzt Status/Tier/Notiz")
+    @DisplayName("CRM-SVC-07: aktualisiere setzt Status/Tier/Pipeline/Forecast/Notiz")
     void aktualisiereSetztFelder() {
         UUID accountId = UUID.randomUUID();
         SponsorAccount bestehend = account("FC Y", "fc-y");
@@ -147,10 +147,14 @@ class SponsorAccountServiceTest {
         when(accessControl.kannSponsorDatenSehen(sponsorOrgId, auth)).thenReturn(true);
         when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        SponsorAccountView view = service.aktualisiere(accountId, AccountStatus.IN_RENEWAL, AccountTier.STRATEGIC, "Notiz", auth);
+        SponsorAccountView view = service.aktualisiere(accountId, AccountStatus.IN_RENEWAL,
+                AccountTier.STRATEGIC, PipelineStage.ANGEBOT, new java.math.BigDecimal("10000.00"),
+                "Notiz", auth);
 
         assertThat(view.status()).isEqualTo(AccountStatus.IN_RENEWAL);
         assertThat(view.tier()).isEqualTo(AccountTier.STRATEGIC);
+        assertThat(view.pipelineStage()).isEqualTo(PipelineStage.ANGEBOT);
+        assertThat(view.gewichteterForecastChf()).isEqualByComparingTo("6000.00");
         assertThat(view.notiz()).isEqualTo("Notiz");
     }
 

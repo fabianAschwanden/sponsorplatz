@@ -314,9 +314,10 @@ Damit sind Lücken #1, #2, #3 geschlossen.
   innerhalb 90 Tagen (überfällige zuerst), Mandanten-isoliert über
   `kannSponsorDatenSehen`. Kein Schema-Umbau. *Offen:* proaktiver Reminder-Job
   (analog `OpsAlertJob`) + Renewal-Conversion-Tracking.
-- **Pipeline-Stages (#4)** — Stages *vor* der Anfrage auf `SponsorAccount`
-  (LEAD → QUALIFIZIERT → ANGEBOT → GEWONNEN/VERLOREN) + Forecast-Betrag +
-  Win/Loss-Grund-Enum.
+- **Pipeline-Stages (#4)** — ✅ **umgesetzt** (V50): `PipelineStage` auf
+  `SponsorAccount` (LEAD → QUALIFIZIERT → ANGEBOT → GEWONNEN/VERLOREN) +
+  `forecast_betrag_chf`. Gewichteter Forecast (Betrag × Stufen-Wahrscheinlichkeit)
+  pro Account + Portfolio-Summe. *Offen:* expliziter Win/Loss-Grund-Enum.
 - **Budget-Cockpit (#7) + Reporting-Export (#8)** — Soll-Ist auf Account-Ebene,
   CSV/Excel-Export der bestehenden `/statistiken`.
 - **Wirkungsmessung (#9)** — strukturierter Deliverable-Katalog statt

@@ -42,6 +42,18 @@
                     <option th:each="t : ${tierWerte}" th:value="${t}"
                             th:selected="${account.tier == t}" th:text="#{'crm.tier.' + ${t}}">CORE</option>
                 </select>
+                <label class="app-label" th:text="#{crm.feld.pipelineStage}">Pipeline-Stufe</label>
+                <select name="pipelineStage" class="app-input">
+                    <option th:each="p : ${pipelineStageWerte}" th:value="${p}"
+                            th:selected="${account.pipelineStage == p}"
+                            th:text="#{'crm.pipelineStage.' + ${p}}">Lead</option>
+                </select>
+                <label class="app-label" th:text="#{crm.feld.forecastBetrag}">Forecast-Betrag (CHF)</label>
+                <input type="number" name="forecastBetragChf" min="0" step="0.01" class="app-input"
+                       th:value="${account.forecastBetragChf}" placeholder="0.00">
+                <p th:if="${account.gewichteterForecastChf != null}" class="app-muted" style="margin:0;"
+                   th:text="#{crm.account.gewichteterForecast} + ': CHF ' + ${#numbers.formatDecimal(account.gewichteterForecastChf, 1, 'NONE', 2, 'POINT')}">
+                    Gewichtet: CHF 6000.00</p>
                 <label class="app-label" th:text="#{crm.feld.notiz}">Notiz</label>
                 <textarea name="notiz" rows="3" class="app-input" th:text="${account.notiz}"></textarea>
                 <div><button type="submit" class="app-btn" th:text="#{crm.speichern}">Speichern</button></div>
