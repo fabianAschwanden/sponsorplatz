@@ -50,6 +50,9 @@ class SecurityConfigTest {
     @MockitoBean
     private ch.sponsorplatz.organisation.MitgliedschaftService mitgliedschaftService;
 
+    @MockitoBean
+    private ch.sponsorplatz.shared.medien.OrganisationLogoLookup logoLookup;
+
     /** SEC-01: GET /login → 200. */
     @Test
     void loginSeiteErreichbar() throws Exception {
