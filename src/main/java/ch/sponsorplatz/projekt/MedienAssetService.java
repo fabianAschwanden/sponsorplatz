@@ -21,7 +21,7 @@ public class MedienAssetService {
     private static final long MAX_DOKUMENT_BYTES = 20 * 1024 * 1024; // 20 MB
     private static final int MAX_ASSETS_PRO_ENTITY = 10;
     private static final Set<String> ERLAUBTE_BILD_TYPES = Set.of(
-            "image/jpeg", "image/png", "image/webp"
+            "image/jpeg", "image/png", "image/webp", "image/svg+xml"
     );
     private static final Set<String> ERLAUBTE_DOKUMENT_TYPES = Set.of(
             "application/pdf",

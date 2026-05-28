@@ -59,7 +59,34 @@ class MedienControllerTest {
         mockMvc.perform(get("/medien/{id}", id))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", "image/png"))
-                .andExpect(header().string("Cache-Control", "public, max-age=86400"));
+                .andExpect(header().string("Cache-Control", "public, max-age=86400"))
+                .andExpect(header().string("X-Content-Type-Options", "nosniff"))
+                // Raster-Bild wird inline ausgeliefert
+                .andExpect(header().string("Content-Disposition", "inline"));
+    }
+
+    /**
+     * MA-07b: SVG wird als attachment ausgeliefert (XSS-Schutz). Inline würde ein
+     * SVG mit eingebettetem &lt;script&gt; beim direkten URL-Aufruf im Plattform-
+     * Origin ausgeführt — die globale CSP erlaubt 'script-src self unsafe-inline'.
+     * Als attachment lädt der direkte Aufruf herunter; '&lt;img src&gt;' rendert
+     * trotzdem (Content-Disposition gilt nicht für Subresources).
+     */
+    @Test
+    void ausliefernSvgAlsAttachment() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(medienAssetService.findeAuslieferungsSnapshot(id))
+                .thenReturn(new MedienAssetService.AuslieferungsSnapshot(
+                        "organisation/9/logo.svg", "image/svg+xml", "logo.svg"));
+        when(storageService.ladeAlsResource("organisation/9/logo.svg"))
+                .thenReturn(new ByteArrayResource(new byte[] { 1, 2, 3 }));
+
+        mockMvc.perform(get("/medien/{id}", id))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", "image/svg+xml"))
+                .andExpect(header().string("X-Content-Type-Options", "nosniff"))
+                .andExpect(header().string("Content-Disposition",
+                        org.hamcrest.Matchers.containsString("attachment")));
     }
 
     /** MA-08: GET /medien/{id} mit unbekannter ID → 404. */

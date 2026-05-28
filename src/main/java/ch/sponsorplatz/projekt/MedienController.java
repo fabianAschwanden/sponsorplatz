@@ -63,11 +63,23 @@ public class MedienController {
             return ResponseEntity.notFound().build();
         }
 
+        // SVG kann <script> + externe Refs enthalten. Würde es inline
+        // ausgeliefert, könnte ein direkter Aufruf von /medien/{id}
+        // (Top-Level-Navigation) das SVG als Dokument im Plattform-Origin
+        // rendern → Stored XSS, weil die globale CSP 'script-src self
+        // unsafe-inline' inline-Scripts erlaubt. Daher SVG IMMER als
+        // attachment: '<img src>' rendert es trotzdem (Content-Disposition
+        // gilt nicht für Subresource-Loads), ein direkter URL-Aufruf lädt
+        // dagegen herunter statt auszuführen.
+        boolean istSvg = "image/svg+xml".equals(snap.contentType());
+        boolean istInlineBild = snap.contentType() != null
+                && snap.contentType().startsWith("image/")
+                && !istSvg;
+
         // Spring's ContentDisposition.builder() encoded den Filename gemäss
         // RFC 5987 (UTF-8) und filtert Quotes/Newlines — schützt gegen
         // Header-Injection durch user-uploaded Dateinamen.
-        boolean istBild = snap.contentType() != null && snap.contentType().startsWith("image/");
-        ContentDisposition disposition = istBild
+        ContentDisposition disposition = istInlineBild
                 ? ContentDisposition.inline().build()
                 : ContentDisposition.attachment().filename(snap.dateiname()).build();
 
@@ -75,6 +87,9 @@ public class MedienController {
                 .header(HttpHeaders.CONTENT_TYPE, snap.contentType())
                 .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
                 .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400")
+                // Kein MIME-Sniffing — Browser respektiert den deklarierten Typ,
+                // verhindert dass ein als image/png getarntes HTML als HTML läuft.
+                .header("X-Content-Type-Options", "nosniff")
                 .body(resource);
     }
 

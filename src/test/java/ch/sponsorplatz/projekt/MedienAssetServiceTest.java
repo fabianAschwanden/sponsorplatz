@@ -63,6 +63,23 @@ class MedienAssetServiceTest {
                 .hasMessageContaining("Ungültiger Dateityp");
     }
 
+    /** MA-02b: SVG ist als Bild-Typ erlaubt (Org-Logo-Upload). */
+    @Test
+    void speichernSvgWirdAkzeptiert() {
+        MockMultipartFile datei = new MockMultipartFile(
+                "datei", "logo.svg", "image/svg+xml",
+                "<svg xmlns='http://www.w3.org/2000/svg'></svg>".getBytes());
+        UUID entityId = UUID.randomUUID();
+        when(repository.countByEntityTypAndEntityId(EntityTyp.ORGANISATION, entityId)).thenReturn(0L);
+        when(storageService.speichere(any(), anyString())).thenReturn("organisation/" + entityId + "/logo.svg");
+        when(repository.save(any(MedienAsset.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        MedienAsset asset = service.speichere(datei, EntityTyp.ORGANISATION, entityId, AssetTyp.LOGO);
+
+        assertThat(asset.getContentType()).isEqualTo("image/svg+xml");
+        assertThat(asset.getAssetTyp()).isEqualTo(AssetTyp.LOGO);
+    }
+
     /** MA-03: Datei über 5 MB wird abgelehnt. */
     @Test
     void speichernZuGrossWirft() {
