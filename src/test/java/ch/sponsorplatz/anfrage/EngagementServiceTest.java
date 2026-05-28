@@ -6,6 +6,7 @@ import ch.sponsorplatz.organisation.OrganisationRepository;
 import ch.sponsorplatz.projekt.Projekt;
 import ch.sponsorplatz.projekt.SponsoringPaket;
 import ch.sponsorplatz.shared.exception.NotFoundException;
+import ch.sponsorplatz.shared.medien.OrganisationLogoLookup;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +28,7 @@ class EngagementServiceTest {
 
     @Mock private SponsoringAnfrageRepository anfrageRepository;
     @Mock private OrganisationRepository orgRepository;
+    @Mock private OrganisationLogoLookup logoLookup;
     @InjectMocks private EngagementService service;
 
     @Test
@@ -53,19 +55,23 @@ class EngagementServiceTest {
     }
 
     @Test
-    @DisplayName("ENG-03: findeNachSponsorSlugUndRegion filtert nach Region")
-    void regionFilter() {
+    @DisplayName("ENG-04: findeSchaufenster baut Marken-Kopf + Logo + Region-Gruppen")
+    void schaufensterMitLogoUndGruppen() {
         Organisation sponsor = erstelleOrg("css-versicherung", Branche.PRAEVENTION);
         when(orgRepository.findBySlug("css-versicherung")).thenReturn(Optional.of(sponsor));
-
-        SponsoringAnfrage zurich = erstelleAnfrageMitOrt(sponsor, "Zürich");
-        SponsoringAnfrage bern = erstelleAnfrageMitOrt(sponsor, "Bern");
         when(anfrageRepository.findByAnfragenderOrgIdAndStatusOrderByCreatedAtDesc(
                 sponsor.getId(), AnfrageStatus.ANGENOMMEN))
-                .thenReturn(List.of(zurich, bern));
+                .thenReturn(List.of(erstelleAnfrageMitOrt(sponsor, "Zürich"),
+                        erstelleAnfrageMitOrt(sponsor, "Bern")));
+        when(logoLookup.findeLogoUrl(sponsor.getId())).thenReturn(Optional.of("/medien/logo-1"));
 
-        List<SponsoringAnfrage> result = service.findeNachSponsorSlugUndRegion("css-versicherung", "Zürich");
-        assertThat(result).hasSize(1);
+        SchaufensterAnsicht ansicht = service.findeSchaufenster("css-versicherung", null, null);
+
+        assertThat(ansicht.sponsorName()).isEqualTo("Test css-versicherung");
+        assertThat(ansicht.sponsorLogoUrl()).isEqualTo("/medien/logo-1");
+        assertThat(ansicht.nachRegion().keySet()).containsExactly("Bern", "Zürich");
+        assertThat(ansicht.anzahlVereine()).isEqualTo(2);
+        assertThat(ansicht.verfuegbareRegionen()).containsExactly("Bern", "Zürich");
     }
 
     private Organisation erstelleOrg(String slug, Branche branche) {

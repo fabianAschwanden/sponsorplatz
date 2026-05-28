@@ -9,11 +9,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.List;
-
 /**
- * Öffentliches Engagement-Schaufenster: zeigt welche Vereine ein Sponsor unterstützt.
- * Route: /marken/{slug}/engagements (permitAll)
+ * Öffentliches Engagement-Schaufenster: zeigt, welche Vereine eine Marke in
+ * welcher Region unterstützt (PROJEKT_INFO §"Öffentliches Schaufenster").
+ * Route: /marken/{slug}/engagements (permitAll).
  */
 @Controller
 @RequestMapping("/marken/{slug}/engagements")
@@ -30,23 +29,9 @@ public class EngagementController {
                                @RequestParam(required = false) String region,
                                @RequestParam(required = false) Branche branche,
                                Model model) {
-        List<SponsoringAnfrage> anfragen;
-
-        if (region != null && !region.isBlank()) {
-            anfragen = engagementService.findeNachSponsorSlugUndRegion(slug, region);
-        } else if (branche != null) {
-            anfragen = engagementService.findeNachSponsorSlugUndBranche(slug, branche);
-        } else {
-            anfragen = engagementService.findeNachSponsorSlug(slug);
-        }
-
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "marktplatz");
-        model.addAttribute("engagements", EngagementView.von(anfragen));
+        model.addAttribute("ansicht", engagementService.findeSchaufenster(slug, region, branche));
         model.addAttribute("sponsorSlug", slug);
-        model.addAttribute("filterRegion", region);
-        model.addAttribute("filterBranche", branche);
-        model.addAttribute("alleBranchen", Branche.values());
         return "anfrage/engagement-schaufenster";
     }
 }
-

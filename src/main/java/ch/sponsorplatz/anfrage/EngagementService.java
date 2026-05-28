@@ -4,6 +4,7 @@ import ch.sponsorplatz.organisation.Branche;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationRepository;
 import ch.sponsorplatz.shared.exception.NotFoundException;
+import ch.sponsorplatz.shared.medien.OrganisationLogoLookup;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,11 +20,14 @@ public class EngagementService {
 
     private final SponsoringAnfrageRepository anfrageRepository;
     private final OrganisationRepository orgRepository;
+    private final OrganisationLogoLookup logoLookup;
 
     public EngagementService(SponsoringAnfrageRepository anfrageRepository,
-                             OrganisationRepository orgRepository) {
+                             OrganisationRepository orgRepository,
+                             OrganisationLogoLookup logoLookup) {
         this.anfrageRepository = anfrageRepository;
         this.orgRepository = orgRepository;
+        this.logoLookup = logoLookup;
     }
 
     /**
@@ -37,21 +41,18 @@ public class EngagementService {
     }
 
     /**
-     * Alle Engagements einer Sponsor-Organisation gefiltert nach Region.
+     * Aufbereitete Schaufenster-Ansicht einer Marke: Marken-Kopf (Name + Logo),
+     * nach Region gruppierte Engagements und die Filter-Optionen. Region- und
+     * Branche-Filter wirken kombiniert; die Filter-Optionen kommen stets aus dem
+     * ungefilterten Set, bleiben also vollständig.
      */
-    public List<SponsoringAnfrage> findeNachSponsorSlugUndRegion(String slug, String region) {
-        return findeNachSponsorSlug(slug).stream()
-                .filter(a -> region.equalsIgnoreCase(a.getPaket().getProjekt().getOrt()))
-                .toList();
-    }
-
-    /**
-     * Alle Engagements einer Sponsor-Organisation gefiltert nach Branche.
-     */
-    public List<SponsoringAnfrage> findeNachSponsorSlugUndBranche(String slug, Branche branche) {
-        return findeNachSponsorSlug(slug).stream()
-                .filter(a -> branche == a.getEmpfaengerOrg().getBranche())
-                .toList();
+    public SchaufensterAnsicht findeSchaufenster(String slug, String region, Branche branche) {
+        Organisation org = orgRepository.findBySlug(slug)
+                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
+        List<EngagementView> alle = EngagementView.von(
+                anfrageRepository.findByAnfragenderOrgIdAndStatusOrderByCreatedAtDesc(
+                        org.getId(), AnfrageStatus.ANGENOMMEN));
+        String logoUrl = logoLookup.findeLogoUrl(org.getId()).orElse(null);
+        return SchaufensterAnsicht.erstelle(org.getName(), slug, logoUrl, alle, region, branche);
     }
 }
-
