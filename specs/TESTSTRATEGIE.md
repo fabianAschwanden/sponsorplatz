@@ -299,6 +299,10 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **AC-10** | `AccessControlTest` | `kannOrgEditierenNachSlug` mit unbekanntem Slug → false (kein Throw) |
 | **AC-11** | `AccessControlTest` | `kannOrgVerwaltenNachSlug` delegiert analog für bekannten Slug |
 | **AC-12** | `AccessControlTest` | `kannOrgVerwaltenNachSlug` mit unbekanntem Slug → false |
+| **AC-SPONSOR-01** | `AccessControlTest` | nicht eingeloggt → `kannSponsorDatenSehen` false (ADR-0011) |
+| **AC-SPONSOR-02** | `AccessControlTest` | PLATFORM_ADMIN → `kannSponsorDatenSehen` true |
+| **AC-SPONSOR-03** | `AccessControlTest` | ORG_VIEWER der Sponsor-Org → `kannSponsorDatenSehen` true (Lesen reicht jede Rolle) |
+| **AC-SPONSOR-04** | `AccessControlTest` | kein Mitglied der Sponsor-Org → `kannSponsorDatenSehen` false (Konkurrenz-Schutz) |
 
 #### Organisation-Controller (ORG)
 

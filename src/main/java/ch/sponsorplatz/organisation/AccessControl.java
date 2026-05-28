@@ -64,6 +64,29 @@ public class AccessControl {
     }
 
     /**
+     * Prüft ob der authentifizierte User die privaten CRM-Daten einer Sponsor-Org
+     * sehen darf (ADR-0011, Hybrid-Layer). Anders als beim Editieren reicht zum
+     * LESEN jede Org-Rolle — auch ORG_VIEWER (Reporting-Use-Case im Sponsor-Team).
+     * Hierarchie-Vererbung gilt: ein Owner der Konzern-Mutter sieht die CRM-Daten
+     * der Tochter-Sponsor-Org.
+     *
+     * <p>Dies ist die zentrale Isolations-Schranke: CRM-Repositories dürfen NIE
+     * ohne einen vorgeschalteten {@code kannSponsorDatenSehen}-Check ausgeliefert
+     * werden — sonst leaken Pipeline-/Forecast-Daten zwischen konkurrierenden
+     * Sponsoren.
+     */
+    public boolean kannSponsorDatenSehen(UUID sponsorOrgId, Authentication auth) {
+        if (!istAuthentifiziert(auth)) return false;
+        if (istPlattformAdmin(auth)) return true;
+
+        return findeUserId(auth)
+                .map(userId -> hatBerechtigungMitVererbung(
+                        userId, sponsorOrgId,
+                        Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR, Rolle.ORG_VIEWER)))
+                .orElse(false);
+    }
+
+    /**
      * Slug-Variante von {@link #kannOrgEditieren}. Für unbekannte Slugs → false
      * (kein Throw — der Auth-Layer leakt keine Existenz-Information).
      */

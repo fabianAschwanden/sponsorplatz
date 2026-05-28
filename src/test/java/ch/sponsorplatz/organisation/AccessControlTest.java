@@ -137,6 +137,40 @@ class AccessControlTest {
         assertThat(accessControl.kannOrgVerwaltenNachSlug("gibts-nicht", auth)).isFalse();
     }
 
+    // --- Sponsor-CRM-Datenzugriff (ADR-0011, Cluster 1) ---
+
+    /** AC-SPONSOR-01: nicht eingeloggt → kannSponsorDatenSehen false. */
+    @Test
+    void nichtEingeloggtSiehtKeineSponsorDaten() {
+        assertThat(accessControl.kannSponsorDatenSehen(orgId, null)).isFalse();
+    }
+
+    /** AC-SPONSOR-02: PLATFORM_ADMIN → kannSponsorDatenSehen true. */
+    @Test
+    void plattformAdminSiehtSponsorDaten() {
+        Authentication auth = authMitRolle("ROLE_PLATFORM_ADMIN", "admin@example.com");
+        assertThat(accessControl.kannSponsorDatenSehen(orgId, auth)).isTrue();
+    }
+
+    /**
+     * AC-SPONSOR-03: ORG_VIEWER der Sponsor-Org → true. Anders als beim Editieren
+     * reicht zum LESEN der CRM-Daten jede Org-Rolle (Reporting-Use-Case im Team).
+     */
+    @Test
+    void viewerDerSponsorOrgSiehtCrmDaten() {
+        Authentication auth = authOhneRolle("viewer@css.ch");
+        mockUserMitMitgliedschaft(auth, Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR, Rolle.ORG_VIEWER), true);
+        assertThat(accessControl.kannSponsorDatenSehen(orgId, auth)).isTrue();
+    }
+
+    /** AC-SPONSOR-04: kein Mitglied der Sponsor-Org → false (Konkurrenz-Schutz). */
+    @Test
+    void fremderSiehtKeineSponsorDaten() {
+        Authentication auth = authOhneRolle("fremd@helsana.ch");
+        mockUserMitMitgliedschaft(auth, Set.of(Rolle.ORG_OWNER, Rolle.ORG_EDITOR, Rolle.ORG_VIEWER), false);
+        assertThat(accessControl.kannSponsorDatenSehen(orgId, auth)).isFalse();
+    }
+
     // --- Hilfs-Methoden ---
 
     private Authentication authMitRolle(String rolle, String email) {

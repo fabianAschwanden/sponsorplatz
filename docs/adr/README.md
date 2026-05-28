@@ -57,3 +57,4 @@ sind ein **Audit-Trail**.
 | [0008](0008-structurizr-fuer-c4-diagramme.md) | Structurizr-DSL für C4-Architektur-Diagramme | Akzeptiert |
 | [0009](0009-multi-cloud-azure-als-dr-zone.md) | Multi-Cloud — Azure als zweite Zone (Warm-DR) | Akzeptiert |
 | [0010](0010-umgebung-marker-im-audit-log.md) | Umgebungs-Marker in Audit-Log + Sentry-Events | Akzeptiert |
+| [0011](0011-hybrid-private-sponsor-layer.md) | Hybrid — kollaborative Stammdaten + private Sponsor-CRM-Layer | Akzeptiert |

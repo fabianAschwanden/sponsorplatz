@@ -1,7 +1,7 @@
 # ADR-0003: Kollaborative Plattform statt Multi-Tenant
 
 ## Status
-Akzeptiert
+Akzeptiert — ergänzt durch [ADR-0011](0011-hybrid-private-sponsor-layer.md) (Hybrid: kollaborative Stammdaten bleiben, private Sponsor-CRM-Layer kommt additiv dazu). Die kollaborative Sichtbarkeit dieses ADR gilt unverändert für Marktplatz + Stammdaten.
 
 ## Datum
 2026-03-08 
