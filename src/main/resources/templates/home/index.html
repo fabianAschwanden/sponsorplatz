@@ -41,44 +41,23 @@
   </header>
 
   <main class="public-main" id="inhalt">
+
+    <!-- HERO -->
     <section class="public-hero">
-      <p class="public-hero-rubrik" th:text="#{index.hero.rubrik}">CSS Sponsoring-Hub · Sport und Gesundheit · Schweiz
-      </p>
+      <p class="public-hero-rubrik" th:text="#{index.hero.rubrik}">CSS Sponsoring-Hub · Sport und Gesundheit · Schweiz</p>
       <h1>
         <span th:text="#{index.hero.h1.line1}">Wo Vereine und die CSS</span><br>
         <span th:text="#{index.hero.h1.line2}">zueinander finden.</span>
       </h1>
-      <p class="public-hero-claim" th:text="#{index.hero.claim}">
-        Eine Plattform. Vier Akteure. Eine Mission. ...
-      </p>
+      <p class="public-hero-claim" th:text="#{index.hero.claim}">Kuratiert für Sport und Gesundheit.</p>
 
       <div class="public-hero-cta">
         <a sec:authorize="isAuthenticated()" th:href="@{/marktplatz}" class="app-btn"
           th:text="#{index.hero.cta.marktplatz}">Marktplatz entdecken</a>
-        <a sec:authorize="!isAuthenticated()" th:href="@{/kontakt}" class="app-btn"
-          th:text="#{index.hero.cta.kontakt}">Anfrage stellen</a>
-        <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn app-btn-secondary"
+        <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn"
           th:text="#{index.hero.cta.registrieren}">Verein registrieren</a>
-      </div>
-
-      <!-- Vier Akteure aus dem Zielbild — 2×2-Layout über die bestehende Subclaim-Grid -->
-      <div class="public-hero-subclaims">
-        <div class="public-hero-subclaim">
-          <strong th:text="#{index.hero.akteur.verein.title}">Verein.</strong>
-          <span th:text="#{index.hero.akteur.verein.text}">…</span>
-        </div>
-        <div class="public-hero-subclaim">
-          <strong th:text="#{index.hero.akteur.css.title}">CSS.</strong>
-          <span th:text="#{index.hero.akteur.css.text}">…</span>
-        </div>
-        <div class="public-hero-subclaim">
-          <strong th:text="#{index.hero.akteur.agentur.title}">Agentur.</strong>
-          <span th:text="#{index.hero.akteur.agentur.text}">…</span>
-        </div>
-        <div class="public-hero-subclaim">
-          <strong th:text="#{index.hero.akteur.versicherte.title}">Versicherte.</strong>
-          <span th:text="#{index.hero.akteur.versicherte.text}">…</span>
-        </div>
+        <a sec:authorize="!isAuthenticated()" th:href="@{/kontakt}" class="app-btn app-btn-secondary"
+          th:text="#{index.hero.cta.kontakt}">Anfrage stellen</a>
       </div>
 
       <div class="public-hero-fokus">
@@ -93,66 +72,78 @@
       </div>
     </section>
 
-    <section class="public-balance" aria-labelledby="balance-titel">
-      <div class="public-balance-inner">
-        <p class="public-balance-rubrik" th:text="#{index.balance.rubrik}">CSS Sponsoring</p>
-        <h2 id="balance-titel" th:text="#{index.balance.titel}">Sponsoring anfragen</h2>
-        <p class="public-balance-text">
-          <span th:text="#{index.balance.textPrefix}">Wir unterstützen Aktivitäten passend zu unserem Fokusthema</span>
-          <span class="public-balance-tag" th:text="#{index.balance.fokus}">Balance</span><span>.</span>
-        </p>
-        <div class="public-balance-cta">
-          <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn"
-             th:text="#{index.balance.cta.registrieren}">Verein registrieren</a>
-          <a sec:authorize="!isAuthenticated()" th:href="@{/kontakt}" class="app-btn app-btn-secondary"
-             th:text="#{index.balance.cta.kontakt}">Kontakt aufnehmen</a>
-          <a sec:authorize="isAuthenticated()" th:href="@{/marktplatz}" class="app-btn"
-             th:text="#{index.balance.cta.marktplatz}">Marktplatz entdecken</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Engagement-Teaser: macht reale Sponsorings auch anonym sichtbar (PROJEKT_INFO
-         §"Öffentliches Schaufenster"). Karten verlinken in die Marken-Schaufenster. -->
-    <section class="public-engagements" th:if="${not #lists.isEmpty(featuredEngagements)}"
-             aria-labelledby="eng-titel">
-      <div class="public-engagements-inner">
-        <p class="public-engagements-rubrik" th:text="#{index.engagements.rubrik}">Bereits gefördert</p>
-        <h2 id="eng-titel" th:text="#{index.engagements.titel}">Diese Vereine werden schon unterstützt</h2>
-        <p class="public-engagements-sub" th:text="#{index.engagements.text}">
-          Sponsoring sichtbar machen statt verstecken — ein Blick auf das, was auf Sponsorplatz schon gefördert wird.</p>
-        <div class="pe-grid">
-          <article class="pe-karte" th:each="e : ${featuredEngagements}"
-                   th:classappend="'branche-' + ${e.vereinBranche()}">
-            <span class="pe-akzent"></span>
-            <div class="pe-kopf">
-              <span class="pe-avatar" th:text="${#strings.substring(e.vereinName(), 0, 1)}">F</span>
-              <div class="pe-titel">
-                <a class="pe-verein" th:href="@{/vereine/{slug}(slug=${e.vereinSlug()})}"
-                   th:text="${e.vereinName()}">FC Beispiel</a>
-                <span class="pe-chip" th:if="${e.vereinBranche() != null}"
-                      th:text="${e.vereinBranche().getAnzeige()}">Sport</span>
-              </div>
+    <!-- PROOF: reale Engagements (PROJEKT_INFO §"Öffentliches Schaufenster") -->
+    <section class="home-section" th:if="${not #lists.isEmpty(featuredEngagements)}" aria-labelledby="eng-titel">
+      <p class="home-section-rubrik" th:text="#{index.engagements.rubrik}">Bereits gefördert</p>
+      <h2 id="eng-titel" class="home-section-titel" th:text="#{index.engagements.titel}">Diese Vereine werden schon unterstützt</h2>
+      <p class="home-section-sub" th:text="#{index.engagements.text}">Ein Blick auf das, was auf Sponsorplatz bereits gefördert wird.</p>
+      <div class="pe-grid">
+        <article class="pe-karte" th:each="e : ${featuredEngagements}"
+                 th:classappend="'branche-' + ${e.vereinBranche()}">
+          <span class="pe-akzent"></span>
+          <div class="pe-kopf">
+            <span class="pe-avatar" th:text="${#strings.substring(e.vereinName(), 0, 1)}">F</span>
+            <div class="pe-titel">
+              <a class="pe-verein" th:href="@{/vereine/{slug}(slug=${e.vereinSlug()})}"
+                 th:text="${e.vereinName()}">FC Beispiel</a>
+              <span class="pe-chip" th:if="${e.vereinBranche() != null}"
+                    th:text="${e.vereinBranche().getAnzeige()}">Sport</span>
             </div>
-            <p class="pe-meta" th:if="${e.region() != null}">
-              <span aria-hidden="true">📍</span> <span th:text="${e.region()}">Zürich</span>
-            </p>
-            <a class="pe-sponsor" th:href="@{/marken/{slug}/engagements(slug=${e.sponsorSlug()})}">
-              <span th:text="#{index.engagements.von}">unterstützt von</span>
-              <strong th:text="${e.sponsorName()}">CSS</strong>
-            </a>
-          </article>
-        </div>
+          </div>
+          <p class="pe-meta" th:if="${e.region() != null}">
+            <span aria-hidden="true">📍</span> <span th:text="${e.region()}">Zürich</span>
+          </p>
+          <a class="pe-sponsor" th:href="@{/marken/{slug}/engagements(slug=${e.sponsorSlug()})}">
+            <span th:text="#{index.engagements.von}">unterstützt von</span>
+            <strong th:text="${e.sponsorName()}">CSS</strong>
+          </a>
+        </article>
       </div>
     </section>
 
-    <section class="app-card" style="max-width: 720px; margin: 2rem auto;">
-      <p style="margin: 0 0 0.5rem;"><strong th:text="#{index.aufbau.title}">Phase 0 — In Aufbau.</strong></p>
-      <p style="margin: 0 0 0.5rem;" th:text="#{index.aufbau.text}">…</p>
-      <p style="margin: 0;">
+    <!-- FÜR WEN: die vier Akteure -->
+    <section class="home-section" aria-labelledby="akteure-titel">
+      <p class="home-section-rubrik" th:text="#{index.akteure.rubrik}">Vier Akteure</p>
+      <h2 id="akteure-titel" class="home-section-titel" th:text="#{index.akteure.titel}">Für wen Sponsorplatz ist</h2>
+      <div class="home-akteure-grid">
+        <article class="home-akteur">
+          <h3 th:text="#{index.hero.akteur.verein.title}">Verein</h3>
+          <p th:text="#{index.hero.akteur.verein.text}">…</p>
+        </article>
+        <article class="home-akteur">
+          <h3 th:text="#{index.hero.akteur.css.title}">CSS</h3>
+          <p th:text="#{index.hero.akteur.css.text}">…</p>
+        </article>
+        <article class="home-akteur">
+          <h3 th:text="#{index.hero.akteur.agentur.title}">Agentur</h3>
+          <p th:text="#{index.hero.akteur.agentur.text}">…</p>
+        </article>
+        <article class="home-akteur">
+          <h3 th:text="#{index.hero.akteur.versicherte.title}">Versicherte</h3>
+          <p th:text="#{index.hero.akteur.versicherte.text}">…</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- CTA-BAND: ein gebündelter Abschluss (ersetzt Balance- + Aufbau-Block) -->
+    <section class="home-cta-band" aria-labelledby="cta-titel">
+      <p class="home-cta-rubrik" th:text="#{index.balance.rubrik}">CSS Sponsoring</p>
+      <h2 id="cta-titel" th:text="#{index.balance.titel}">Sponsoring anfragen</h2>
+      <p class="home-cta-text">
+        <span th:text="#{index.balance.textPrefix}">Wir unterstützen Aktivitäten passend zu unserem Fokusthema</span>
+        <span class="home-cta-tag" th:text="#{index.balance.fokus}">Balance</span><span>.</span>
+      </p>
+      <div class="home-cta-buttons">
+        <a sec:authorize="!isAuthenticated()" th:href="@{/registrieren}" class="app-btn"
+           th:text="#{index.balance.cta.registrieren}">Verein registrieren</a>
+        <a sec:authorize="!isAuthenticated()" th:href="@{/kontakt}" class="app-btn app-btn-secondary"
+           th:text="#{index.balance.cta.kontakt}">Kontakt aufnehmen</a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/marktplatz}" class="app-btn"
+           th:text="#{index.balance.cta.marktplatz}">Marktplatz entdecken</a>
+      </div>
+      <p class="home-cta-pilot">
         <span th:text="#{index.aufbau.kontakt}">Du willst Pilot-Verein werden?</span>
-        <a href="mailto:fabian.aschwanden@css.ch"
-          style="color: var(--dash-violet-dark); font-weight: 600;">fabian.aschwanden@css.ch</a>
+        <a href="mailto:fabian.aschwanden@css.ch">fabian.aschwanden@css.ch</a>
       </p>
     </section>
   </main>
@@ -175,23 +166,30 @@
   </footer>
 
 <style>
-  /* ===== Engagement-Teaser auf der Startseite ===== */
-  .public-engagements { padding: 2.5rem 1.5rem; }
-  .public-engagements-inner { max-width: 1080px; margin: 0 auto; }
-  .public-engagements-rubrik {
-    margin: 0; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em;
-    color: var(--farbe-akzent, #6d28d9); font-weight: 700;
+  /* ===== Startseite — gemeinsame Sektions-Rhythmik ===== */
+  .home-section { max-width: 1000px; margin: 3.5rem auto 0; }
+  .home-section-rubrik {
+    margin: 0; text-align: center; font-family: var(--dash-font-head);
+    font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px;
+    color: var(--dash-coral-text); font-weight: 700;
   }
-  .public-engagements h2 { margin: 0.3rem 0 0.4rem; font-size: 1.55rem; }
-  .public-engagements-sub { margin: 0 0 1.6rem; color: var(--farbe-text-leicht, #475569); max-width: 60ch; }
+  .home-section-titel {
+    margin: 0.35rem 0 0.5rem; text-align: center; font-family: var(--dash-font-head);
+    font-size: clamp(1.5rem, 3vw, 2rem); color: var(--dash-text); line-height: 1.2;
+  }
+  .home-section-sub {
+    margin: 0 auto 1.75rem; text-align: center; max-width: 56ch;
+    color: var(--dash-text-muted); font-size: 1.02rem; line-height: 1.6;
+  }
 
+  /* ===== Engagement-Teaser ===== */
   .pe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.1rem; }
   .pe-karte {
-    --bc: #6366f1; position: relative; overflow: hidden;
-    background: #fff; border: 1px solid var(--farbe-rand, #e5e7eb); border-radius: 16px;
+    --bc: var(--dash-violet-dark); position: relative; overflow: hidden;
+    background: var(--dash-card); border: 1px solid var(--dash-border); border-radius: var(--dash-radius);
     padding: 1.2rem 1.25rem 1rem; transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   }
-  .pe-karte:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(15,23,42,0.10); border-color: var(--bc); }
+  .pe-karte:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(26,32,44,0.10); border-color: var(--bc); }
   .pe-akzent { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--bc); }
   .pe-kopf { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.25rem; }
   .pe-avatar {
@@ -199,17 +197,17 @@
     color: #fff; font-weight: 800; font-size: 1.25rem; display: flex; align-items: center; justify-content: center;
   }
   .pe-titel { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
-  .pe-verein { font-weight: 700; color: var(--farbe-text, #0f172a); text-decoration: none; font-size: 1.03rem; }
+  .pe-verein { font-weight: 700; color: var(--dash-text); text-decoration: none; font-size: 1.03rem; }
   .pe-verein:hover { color: var(--bc); }
   .pe-chip {
     align-self: flex-start; font-size: 0.72rem; font-weight: 600; padding: 0.12rem 0.55rem;
     border-radius: 999px; color: var(--bc); background: color-mix(in srgb, var(--bc) 13%, #fff);
   }
-  .pe-meta { margin: 0.9rem 0 0; color: var(--farbe-text-leicht, #475569); font-size: 0.9rem; }
+  .pe-meta { margin: 0.9rem 0 0; color: var(--dash-text-muted); font-size: 0.9rem; }
   .pe-sponsor {
     display: flex; align-items: baseline; gap: 0.35rem; margin-top: 0.85rem; padding-top: 0.7rem;
-    border-top: 1px solid var(--farbe-rand, #eef0f4); font-size: 0.82rem;
-    color: var(--farbe-text-leicht, #64748b); text-decoration: none;
+    border-top: 1px solid var(--dash-border); font-size: 0.82rem;
+    color: var(--dash-text-muted); text-decoration: none;
   }
   .pe-sponsor strong { color: var(--bc); }
   .pe-sponsor:hover strong { text-decoration: underline; }
@@ -225,6 +223,40 @@
   .pe-karte.branche-WELLNESS { --bc: #ca8a04; }
   .pe-karte.branche-SELBSTHILFE { --bc: #4f46e5; }
   .pe-karte.branche-PATIENTENORGANISATION { --bc: #dc2626; }
+
+  /* ===== Für wen — vier Akteure ===== */
+  .home-akteure-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+  .home-akteur {
+    background: var(--dash-card); border: 1px solid var(--dash-border); border-top: 3px solid var(--dash-coral);
+    border-radius: var(--dash-radius); padding: 1.25rem 1.3rem;
+  }
+  .home-akteur h3 {
+    margin: 0 0 0.4rem; font-family: var(--dash-font-head); font-size: 1.1rem; color: var(--dash-text);
+  }
+  .home-akteur p { margin: 0; color: var(--dash-text-muted); font-size: 0.92rem; line-height: 1.5; }
+  @media (max-width: 880px) { .home-akteure-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .home-akteure-grid { grid-template-columns: 1fr; } }
+
+  /* ===== CTA-Band ===== */
+  .home-cta-band {
+    max-width: 820px; margin: 3.5rem auto 0; padding: 2.5rem 2rem; text-align: center;
+    background: var(--dash-coral-light); border: 1px solid var(--dash-coral); border-radius: var(--dash-radius);
+  }
+  .home-cta-rubrik {
+    margin: 0 0 0.4rem; font-family: var(--dash-font-head); font-size: 0.85rem;
+    text-transform: uppercase; letter-spacing: 0.4px; color: var(--dash-coral-text); font-weight: 700;
+  }
+  .home-cta-band h2 {
+    margin: 0 0 0.75rem; font-family: var(--dash-font-head); font-size: 1.85rem; color: var(--dash-text); line-height: 1.2;
+  }
+  .home-cta-text { margin: 0 auto 1.4rem; max-width: 540px; font-size: 1.05rem; color: var(--dash-text); line-height: 1.55; }
+  .home-cta-tag {
+    display: inline-block; padding: 0.15rem 0.65rem; border-radius: 999px;
+    background: var(--dash-coral-text); color: #fff; font-weight: 700; letter-spacing: 0.3px;
+  }
+  .home-cta-buttons { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
+  .home-cta-pilot { margin: 1.5rem 0 0; font-size: 0.85rem; color: var(--dash-text-muted); }
+  .home-cta-pilot a { color: var(--dash-coral-text); font-weight: 600; }
 </style>
 
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>

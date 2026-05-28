@@ -52,7 +52,7 @@ class HomeControllerTest {
 
         mockMvc.perform(get("/"))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("public-engagements")))
+            .andExpect(content().string(containsString("pe-grid")))
             .andExpect(content().string(containsString("FC Beispiel")))
             .andExpect(content().string(containsString("/marken/css-versicherung/engagements")));
     }
