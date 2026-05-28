@@ -29,13 +29,16 @@ public class SponsorAccountController {
 
     private final SponsorAccountService accountService;
     private final KontaktPersonService kontaktService;
+    private final AktivitaetService aktivitaetService;
     private final OrganisationService organisationService;
 
     public SponsorAccountController(SponsorAccountService accountService,
                                     KontaktPersonService kontaktService,
+                                    AktivitaetService aktivitaetService,
                                     OrganisationService organisationService) {
         this.accountService = accountService;
         this.kontaktService = kontaktService;
+        this.aktivitaetService = aktivitaetService;
         this.organisationService = organisationService;
     }
 
@@ -100,11 +103,14 @@ public class SponsorAccountController {
         // findeAccount zieht die Mandanten-Schranke; findeKontakte ebenfalls.
         model.addAttribute("account", accountService.findeAccount(accountId, auth));
         model.addAttribute("kontakte", kontaktService.findeKontakte(accountId, auth));
+        model.addAttribute("aktivitaeten", aktivitaetService.findeTimeline(accountId, auth));
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("sponsorSlug", sponsorSlug);
         model.addAttribute("statusWerte", AccountStatus.values());
         model.addAttribute("tierWerte", AccountTier.values());
         model.addAttribute("kontaktRollen", KontaktRolle.values());
+        model.addAttribute("aktivitaetTypen", AktivitaetTyp.values());
+        model.addAttribute("heute", java.time.LocalDate.now());
         return "crm/account-detail";
     }
 
@@ -133,6 +139,31 @@ public class SponsorAccountController {
                                   RedirectAttributes redirectAttributes) {
         kontaktService.loesche(kontaktId, auth);
         redirectAttributes.addFlashAttribute("erfolgsMeldung", "Kontakt entfernt");
+        return "redirect:/crm/" + sponsorSlug + "/" + accountId;
+    }
+
+    /** Aktivität erfassen (Dynamics Activity: Anruf/E-Mail/Meeting/Event/Notiz). */
+    @PostMapping("/{accountId}/aktivitaeten")
+    public String aktivitaetErfassen(@PathVariable String sponsorSlug, @PathVariable UUID accountId,
+                                     @RequestParam AktivitaetTyp typ,
+                                     @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate datum,
+                                     @RequestParam String betreff,
+                                     @RequestParam(required = false) String notiz,
+                                     @RequestParam(required = false) UUID kontaktPersonId,
+                                     Authentication auth,
+                                     RedirectAttributes redirectAttributes) {
+        aktivitaetService.erstelle(accountId, typ, datum, betreff, notiz, kontaktPersonId, auth);
+        redirectAttributes.addFlashAttribute("erfolgsMeldung", "Aktivität erfasst");
+        return "redirect:/crm/" + sponsorSlug + "/" + accountId;
+    }
+
+    /** Aktivität löschen. */
+    @PostMapping("/{accountId}/aktivitaeten/{aktivitaetId}/loeschen")
+    public String aktivitaetLoeschen(@PathVariable String sponsorSlug, @PathVariable UUID accountId,
+                                     @PathVariable UUID aktivitaetId, Authentication auth,
+                                     RedirectAttributes redirectAttributes) {
+        aktivitaetService.loesche(aktivitaetId, auth);
+        redirectAttributes.addFlashAttribute("erfolgsMeldung", "Aktivität entfernt");
         return "redirect:/crm/" + sponsorSlug + "/" + accountId;
     }
 }

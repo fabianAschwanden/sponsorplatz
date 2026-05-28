@@ -325,6 +325,8 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **CRM-ISO-03** | `SponsorAccountIsolationIT` | Kein Leak: fremdes Portfolio enthält den Account nicht |
 | **CRM-ISO-04** | `SponsorAccountIsolationIT` | Eigentümer sieht die Kontakte des eigenen Accounts |
 | **CRM-ISO-05** | `SponsorAccountIsolationIT` | Konkurrent → `AccessDeniedException` auf fremde Kontakte |
+| **CRM-ISO-06** | `SponsorAccountIsolationIT` | Eigentümer sieht die Aktivitäts-Timeline des eigenen Accounts |
+| **CRM-ISO-07** | `SponsorAccountIsolationIT` | Konkurrent → `AccessDeniedException` auf fremde Timeline |
 
 #### CRM — KontaktPerson (Contact, MS-Dynamics Account↔Contact)
 
@@ -336,6 +338,19 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **KONTAKT-SVC-03** | `KontaktPersonServiceTest` | `erstelle` ohne Zugriff → `AccessDeniedException`, kein save |
 | **KONTAKT-SVC-04** | `KontaktPersonServiceTest` | `erstelle` denormalisiert Mandanten-Schlüssel vom Account |
 | **KONTAKT-SVC-05** | `KontaktPersonServiceTest` | `loesche` prüft Zugriff über Kontakt-Besitzer |
+
+#### CRM — Aktivitaet (Activity-Timeline, MS-Dynamics Activity)
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **VIEW-AKT-01** | `AktivitaetViewTest` | Mapping mit verknüpftem Kontakt flacht Namen ein |
+| **VIEW-AKT-02** | `AktivitaetViewTest` | Mapping ohne Kontakt → `kontaktName` null |
+| **AKT-SVC-01** | `AktivitaetServiceTest` | `findeTimeline` ohne Zugriff → `AccessDeniedException` |
+| **AKT-SVC-02** | `AktivitaetServiceTest` | `findeTimeline` mit Zugriff → Timeline |
+| **AKT-SVC-03** | `AktivitaetServiceTest` | `erstelle` ohne Zugriff → `AccessDeniedException`, kein save |
+| **AKT-SVC-04** | `AktivitaetServiceTest` | `erstelle` denormalisiert Mandanten-Schlüssel + setzt Felder |
+| **AKT-SVC-05** | `AktivitaetServiceTest` | `erstelle` mit account-fremdem Kontakt → `IllegalArgumentException` |
+| **AKT-SVC-06** | `AktivitaetServiceTest` | `loesche` prüft Zugriff über Aktivitäts-Besitzer |
 
 #### Organisation-Controller (ORG)
 

@@ -44,6 +44,7 @@ class SponsorAccountIsolationIT {
 
     @Autowired private SponsorAccountService service;
     @Autowired private KontaktPersonService kontaktService;
+    @Autowired private AktivitaetService aktivitaetService;
     @Autowired private OrganisationRepository organisationRepository;
     @Autowired private AppUserRepository appUserRepository;
     @Autowired private MitgliedschaftRepository mitgliedschaftRepository;
@@ -74,6 +75,8 @@ class SponsorAccountIsolationIT {
         accountAId = service.erstelle(sponsorAId, verein.getId(), authUA).id();
         kontaktService.erstelle(accountAId, "Anna", "Muster", "Präsidentin",
                 KontaktRolle.HAUPTANSPRECHPARTNER, "anna@v.ch", "044", "079", authUA);
+        aktivitaetService.erstelle(accountAId, ch.sponsorplatz.crm.AktivitaetTyp.ANRUF,
+                java.time.LocalDate.now(), "Erstkontakt", "Interessiert", null, authUA);
     }
 
     /** CRM-ISO-01: Eigentümer-Sponsor sieht seinen Account im Portfolio. */
@@ -115,6 +118,23 @@ class SponsorAccountIsolationIT {
     @DisplayName("CRM-ISO-05: Sponsor B darf A's Kontakte NICHT lesen")
     void konkurrentSiehtKeineKontakte() {
         assertThatThrownBy(() -> kontaktService.findeKontakte(accountAId, authUB))
+                .isInstanceOf(AccessDeniedException.class);
+    }
+
+    /** CRM-ISO-06: Eigentümer sieht die Aktivitäts-Timeline des eigenen Accounts. */
+    @Test
+    @DisplayName("CRM-ISO-06: Sponsor A sieht die Timeline des eigenen Accounts")
+    void eigentuemerSiehtTimeline() {
+        assertThat(aktivitaetService.findeTimeline(accountAId, authUA))
+                .extracting(AktivitaetView::betreff)
+                .containsExactly("Erstkontakt");
+    }
+
+    /** CRM-ISO-07: Konkurrent B darf die Timeline von A's Account NICHT lesen. */
+    @Test
+    @DisplayName("CRM-ISO-07: Sponsor B darf A's Timeline NICHT lesen")
+    void konkurrentSiehtKeineTimeline() {
+        assertThatThrownBy(() -> aktivitaetService.findeTimeline(accountAId, authUB))
                 .isInstanceOf(AccessDeniedException.class);
     }
 
