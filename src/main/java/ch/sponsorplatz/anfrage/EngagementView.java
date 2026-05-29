@@ -56,6 +56,13 @@ public record EngagementView(
 
         SponsoringPaket paket = anfrage.getPaket();
         Projekt projekt = (paket != null) ? paket.getProjekt() : null;
+        String projektOrt = projekt != null ? projekt.getOrt() : null;
+
+        // Kanton bestmöglich bestimmen: Verein-PLZ → Verein-Ort → Projekt-Ort.
+        Kanton kanton = PlzVerzeichnis.kantonVon(verein.getPostleitzahl())
+                .or(() -> PlzVerzeichnis.kantonVonOrt(verein.getOrt()))
+                .or(() -> PlzVerzeichnis.kantonVonOrt(projektOrt))
+                .orElse(null);
 
         return new EngagementView(
                 anfrage.getId(),
@@ -68,8 +75,8 @@ public record EngagementView(
                 projekt != null ? projekt.getName() : null,
                 projekt != null ? projekt.getSlug() : null,
                 paket != null ? paket.getName() : null,
-                projekt != null ? projekt.getOrt() : null,
-                PlzVerzeichnis.kantonVon(verein.getPostleitzahl()).orElse(null),
+                projektOrt,
+                kanton,
                 anfrage.getBeantwortetAm()
         );
     }

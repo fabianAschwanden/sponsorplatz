@@ -925,6 +925,7 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **VIEW-ENG-02** | `EngagementViewTest` | Kontakt-Anfrage (Verein → Marke): Rollen per Org-Typ, Projekt-Felder null, kein NPE |
 | **VIEW-ENG-03** | `EngagementViewTest` | Verein-Logo-URL wird durchgereicht; ohne Logo bleibt sie null |
 | **VIEW-ENG-04** | `EngagementViewTest` | Kanton wird aus der Verein-PLZ abgeleitet (null ohne/ungültige PLZ) |
+| **VIEW-ENG-05** | `EngagementViewTest` | Kanton-Fallback aus Projekt-Ort, wenn keine Verein-PLZ |
 | **ENG-01-CTRL** | `EngagementControllerTest` | GET `/marken/{slug}/engagements` → 200 + Schaufenster-View + `ansicht` |
 | **ENG-02-CTRL** | `EngagementControllerTest` | Kanton-Filter wird an `findeSchaufenster` delegiert |
 | **ENG-03-CTRL** | `EngagementControllerTest` | Branche-Filter wird an `findeSchaufenster` delegiert |
@@ -937,6 +938,8 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **PLZ-01** | `PlzVerzeichnisTest` | PLZ → korrekter Kanton (offizielle GeoNames-Daten, Querschnitt) |
 | **PLZ-02** | `PlzVerzeichnisTest` | PLZ → Ort (Adress-Auswahlhilfe) |
 | **PLZ-03** | `PlzVerzeichnisTest` | unbekannte/ungültige PLZ → empty |
+| **PLZ-04** | `PlzVerzeichnisTest` | eindeutiger Ort → Kanton (Fallback ohne PLZ) |
+| **PLZ-05** | `PlzVerzeichnisTest` | Ort case-insensitiv; mehrdeutige (z.B. „Basel"/BL+BS) + unbekannte → empty |
 | **PLZ-CTRL-01** | `PlzControllerTest` | `GET /plz/{plz}` bekannt → 200 + Ort/Kanton/Kanton-Name |
 | **PLZ-CTRL-02** | `PlzControllerTest` | `GET /plz/{plz}` unbekannt → 404 |
 

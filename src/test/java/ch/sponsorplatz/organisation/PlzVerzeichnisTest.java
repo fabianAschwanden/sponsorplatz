@@ -34,6 +34,25 @@ class PlzVerzeichnisTest {
         assertThat(PlzVerzeichnis.ortVon("7000")).contains("Chur");
     }
 
+    /** PLZ-04: eindeutiger Ort → Kanton (Fallback ohne PLZ). */
+    @ParameterizedTest
+    @CsvSource({"Zürich, ZH", "Bern, BE", "Luzern, LU", "Aarau, AG", "Chur, GR", "Genève, GE"})
+    @DisplayName("PLZ-04: eindeutiger Ort → Kanton")
+    void ortZuKanton(String ort, Kanton erwartet) {
+        assertThat(PlzVerzeichnis.kantonVonOrt(ort)).contains(erwartet);
+    }
+
+    /** PLZ-05: case-insensitiv; mehrdeutige Orte (z.B. „Basel" auch unter BL) + unbekannte → empty. */
+    @Test
+    @DisplayName("PLZ-05: case-insensitiv; mehrdeutig/unbekannt → empty")
+    void ortFallbackRobust() {
+        assertThat(PlzVerzeichnis.kantonVonOrt("zürich")).contains(Kanton.ZH);
+        assertThat(PlzVerzeichnis.kantonVonOrt("Basel")).isEmpty();   // 4040 Basel ist BL → mehrdeutig
+        assertThat(PlzVerzeichnis.kantonVonOrt("Hobbiton")).isEmpty();
+        assertThat(PlzVerzeichnis.kantonVonOrt(null)).isEmpty();
+        assertThat(PlzVerzeichnis.kantonVonOrt("  ")).isEmpty();
+    }
+
     /** PLZ-03: unbekannte/ungültige PLZ → empty. */
     @Test
     @DisplayName("PLZ-03: unbekannte/ungültige PLZ → empty")

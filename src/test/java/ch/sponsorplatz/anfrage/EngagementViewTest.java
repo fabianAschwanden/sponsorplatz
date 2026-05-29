@@ -112,6 +112,32 @@ class EngagementViewTest {
         assertThat(EngagementView.von(a).kanton()).isNull();
     }
 
+    /** VIEW-ENG-05: ohne Verein-PLZ wird der Kanton aus dem Projekt-Ort abgeleitet. */
+    @Test
+    @DisplayName("VIEW-ENG-05: Kanton-Fallback aus Projekt-Ort, wenn keine Verein-PLZ")
+    void kantonFallbackAusProjektOrt() {
+        Organisation marke = org("CSS", "css", OrgTyp.UNTERNEHMEN, null);
+        Organisation verein = org("FC Beispiel", "fc-beispiel", OrgTyp.VEREIN, Branche.SPORT);
+        // Verein ohne PLZ + ohne Ort
+        Projekt projekt = new Projekt();
+        projekt.setName("Sommerfest");
+        projekt.setSlug("sommerfest");
+        projekt.setOrt("Bern");
+        projekt.setOrg(verein);
+        SponsoringPaket paket = new SponsoringPaket();
+        paket.setName("Gold");
+        paket.setProjekt(projekt);
+
+        SponsoringAnfrage a = new SponsoringAnfrage();
+        a.setId(UUID.randomUUID());
+        a.setAnfragenderOrg(marke);
+        a.setEmpfaengerOrg(verein);
+        a.setPaket(paket);
+        a.setStatus(AnfrageStatus.ANGENOMMEN);
+
+        assertThat(EngagementView.von(a).kanton()).isEqualTo(ch.sponsorplatz.organisation.Kanton.BE);
+    }
+
     private Organisation org(String name, String slug, OrgTyp typ, Branche branche) {
         Organisation o = new Organisation();
         o.setId(UUID.randomUUID());
