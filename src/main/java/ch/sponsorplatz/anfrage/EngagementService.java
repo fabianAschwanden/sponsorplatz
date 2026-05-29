@@ -1,6 +1,7 @@
 package ch.sponsorplatz.anfrage;
 
 import ch.sponsorplatz.organisation.Branche;
+import ch.sponsorplatz.organisation.Kanton;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationRepository;
 import ch.sponsorplatz.shared.exception.NotFoundException;
@@ -9,9 +10,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -44,13 +47,42 @@ public class EngagementService {
                 org.getId(), AnfrageStatus.ANGENOMMEN);
     }
 
+    /** Obergrenze der Kandidaten für den Startseiten-Teaser (genug Kanton-Vielfalt vor dem Limit). */
+    private static final int TEASER_KANDIDATEN = 200;
+
     /**
-     * Neueste öffentliche Engagements quer über alle Marken — für den
-     * Engagement-Teaser auf der anonymen Startseite. Nur ANGENOMMEN-Anfragen.
+     * Engagement-Teaser für die anonyme Startseite: optional nach Kanton gefiltert,
+     * auf {@code anzahl} limitiert, plus die für die Inline-Auswahlbox verfügbaren
+     * Kantone (aus dem ungefilterten Kandidaten-Set, damit die Box vollständig bleibt).
+     * Nur ANGENOMMEN-Anfragen, neueste zuerst.
      */
-    public List<EngagementView> findeNeuesteEngagements(int anzahl) {
-        return mitLogos(anfrageRepository.findNeuesteNachStatus(
-                AnfrageStatus.ANGENOMMEN, PageRequest.of(0, anzahl)));
+    public StartseitenTeaser findeStartseitenEngagements(String kantonCode, int anzahl) {
+        List<EngagementView> kandidaten = mitLogos(anfrageRepository.findNeuesteNachStatus(
+                AnfrageStatus.ANGENOMMEN, PageRequest.of(0, TEASER_KANDIDATEN)));
+
+        List<Kanton> verfuegbareKantone = kandidaten.stream()
+                .map(EngagementView::kanton)
+                .filter(Objects::nonNull)
+                .distinct()
+                .sorted(Comparator.comparing(Kanton::getAnzeige))
+                .toList();
+
+        Kanton filter = parseKanton(kantonCode);
+        List<EngagementView> gefiltert = kandidaten.stream()
+                .filter(e -> filter == null || filter == e.kanton())
+                .limit(anzahl)
+                .toList();
+
+        return new StartseitenTeaser(gefiltert, verfuegbareKantone, filter, !kandidaten.isEmpty());
+    }
+
+    private static Kanton parseKanton(String code) {
+        if (code == null || code.isBlank()) return null;
+        try {
+            return Kanton.valueOf(code.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     /**

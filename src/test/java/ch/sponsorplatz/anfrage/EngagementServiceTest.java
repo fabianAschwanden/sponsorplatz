@@ -83,16 +83,36 @@ class EngagementServiceTest {
     }
 
     @Test
-    @DisplayName("ENG-05: findeNeuesteEngagements mappt ANGENOMMEN-Anfragen quer über alle Marken")
-    void neuesteEngagements() {
+    @DisplayName("ENG-05: findeStartseitenEngagements mappt ANGENOMMEN-Anfragen + liefert verfügbare Kantone")
+    void startseitenEngagements() {
         Organisation sponsor = erstelleOrg("css-versicherung", Branche.PRAEVENTION);
         when(anfrageRepository.findNeuesteNachStatus(eq(AnfrageStatus.ANGENOMMEN), any()))
-                .thenReturn(List.of(erstelleAnfrage(sponsor)));
+                .thenReturn(List.of(erstelleAnfrageMitOrt(sponsor, "Zürich", "8001")));
 
-        List<EngagementView> result = service.findeNeuesteEngagements(6);
+        StartseitenTeaser teaser = service.findeStartseitenEngagements(null, 6);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).sponsorSlug()).isEqualTo("css-versicherung");
+        assertThat(teaser.vorhanden()).isTrue();
+        assertThat(teaser.engagements()).hasSize(1);
+        assertThat(teaser.engagements().get(0).sponsorSlug()).isEqualTo("css-versicherung");
+        assertThat(teaser.verfuegbareKantone()).containsExactly(ch.sponsorplatz.organisation.Kanton.ZH);
+    }
+
+    /** ENG-08: Kanton-Filter im Startseiten-Teaser greift. */
+    @Test
+    @DisplayName("ENG-08: findeStartseitenEngagements filtert nach Kanton")
+    void startseitenEngagementsKantonFilter() {
+        Organisation sponsor = erstelleOrg("css-versicherung", Branche.PRAEVENTION);
+        when(anfrageRepository.findNeuesteNachStatus(eq(AnfrageStatus.ANGENOMMEN), any()))
+                .thenReturn(List.of(erstelleAnfrageMitOrt(sponsor, "Zürich", "8001"),
+                        erstelleAnfrageMitOrt(sponsor, "Bern", "3011")));
+
+        StartseitenTeaser nurBe = service.findeStartseitenEngagements("BE", 6);
+
+        assertThat(nurBe.filterKanton()).isEqualTo(ch.sponsorplatz.organisation.Kanton.BE);
+        assertThat(nurBe.engagements()).hasSize(1);
+        // verfügbare Kantone bleiben vollständig (aus ungefiltertem Set)
+        assertThat(nurBe.verfuegbareKantone())
+                .containsExactly(ch.sponsorplatz.organisation.Kanton.BE, ch.sponsorplatz.organisation.Kanton.ZH);
     }
 
     /** ENG-06: Kontakt-Anfrage ohne Paket wird inkl. gemappt (null Projekt-Felder), kein NPE (500-Regression). */
@@ -108,14 +128,14 @@ class EngagementServiceTest {
         when(anfrageRepository.findNeuesteNachStatus(eq(AnfrageStatus.ANGENOMMEN), any()))
                 .thenReturn(List.of(kontaktOhnePaket, erstelleAnfrage(sponsor)));
 
-        List<EngagementView> result = service.findeNeuesteEngagements(6);
+        List<EngagementView> result = service.findeStartseitenEngagements(null, 6).engagements();
 
         assertThat(result).hasSize(2);
         assertThat(result).anyMatch(e -> e.projektName() == null);  // Kontakt-Engagement
         assertThat(result).anyMatch(e -> e.projektName() != null);  // Paket-Engagement
     }
 
-    /** ENG-07: findeNeuesteEngagements reichert die Verein-Logo-URL an. */
+    /** ENG-07: Verein-Logo wird in die Engagements gemappt. */
     @Test
     @DisplayName("ENG-07: Verein-Logo wird in die Engagements gemappt")
     void neuesteEngagementsMitVereinLogo() {
@@ -126,7 +146,7 @@ class EngagementServiceTest {
                 .thenReturn(List.of(anfrage));
         when(logoLookup.findeLogoUrl(vereinId)).thenReturn(Optional.of("/medien/v"));
 
-        List<EngagementView> result = service.findeNeuesteEngagements(6);
+        List<EngagementView> result = service.findeStartseitenEngagements(null, 6).engagements();
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).vereinLogoUrl()).isEqualTo("/medien/v");

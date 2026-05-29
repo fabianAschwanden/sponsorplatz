@@ -64,12 +64,24 @@
       </div>
     </section>
 
-    <!-- PROOF: reale Engagements (PROJEKT_INFO §"Öffentliches Schaufenster") -->
-    <section class="home-section" th:if="${not #lists.isEmpty(featuredEngagements)}" aria-labelledby="eng-titel">
+    <!-- PROOF: reale Engagements (PROJEKT_INFO §"Öffentliches Schaufenster") mit Kanton-Auswahl im Satz -->
+    <section class="home-section" th:if="${teaserVorhanden}" id="engagements" aria-labelledby="eng-titel">
       <p class="home-section-rubrik" th:text="#{index.engagements.rubrik}">Bereits gefördert</p>
       <h2 id="eng-titel" class="home-section-titel" th:text="#{index.engagements.titel}">Diese Vereine werden schon unterstützt</h2>
-      <p class="home-section-sub" th:text="#{index.engagements.text}">Ein Blick auf das, was auf Sponsorplatz bereits gefördert wird.</p>
-      <div class="pe-grid">
+
+      <form method="get" action="/" class="home-section-sub home-eng-satz">
+        <span th:text="#{index.engagements.satzPrefix}">Sponsoring sichtbar machen — ein Blick auf das, was auf Sponsorplatz bereits in</span>
+        <select name="kanton" class="home-eng-kanton" aria-label="Kanton"
+                onchange="location.href='/?kanton=' + encodeURIComponent(this.value) + '#engagements'">
+          <option value="" th:text="#{index.engagements.ganzeSchweiz}">der ganzen Schweiz</option>
+          <option th:each="k : ${teaserKantone}" th:value="${k.name()}"
+                  th:selected="${k == teaserKanton}" th:text="${k.getAnzeige()}">Zürich</option>
+        </select>
+        <span th:text="#{index.engagements.satzSuffix}">gefördert wird.</span>
+        <noscript><button type="submit" class="app-btn app-btn-sm">OK</button></noscript>
+      </form>
+
+      <div th:if="${not #lists.isEmpty(featuredEngagements)}" class="pe-grid">
         <article class="pe-karte" th:each="e : ${featuredEngagements}"
                  th:classappend="'branche-' + ${e.vereinBranche()}">
           <span class="pe-akzent"></span>
@@ -94,6 +106,12 @@
           </a>
         </article>
       </div>
+
+      <p th:if="${#lists.isEmpty(featuredEngagements)}" class="home-eng-leer">
+        <span th:text="#{index.engagements.leerImKanton(${teaserKanton != null ? teaserKanton.getAnzeige() : ''})}">
+          In diesem Kanton werden noch keine Vereine gefördert.</span>
+        <a th:href="@{/}" th:text="#{index.engagements.ganzeSchweizAnzeigen}">ganze Schweiz anzeigen</a>
+      </p>
     </section>
 
     <!-- FÜR WEN: die vier Akteure -->
@@ -174,8 +192,20 @@
   }
   .home-section-sub {
     margin: 0 auto 1.75rem; text-align: center; max-width: 56ch;
-    color: var(--dash-text-muted); font-size: 1.02rem; line-height: 1.6;
+    color: var(--dash-text-muted); font-size: 1.02rem; line-height: 1.8;
   }
+  /* Kanton-Auswahl direkt im Satz */
+  .home-eng-kanton {
+    font: inherit; font-weight: 700; color: var(--dash-coral-text);
+    background: transparent; border: none; border-bottom: 2px solid currentColor;
+    padding: 0 1.4rem 0 0.15rem; margin: 0 0.15rem; cursor: pointer; max-width: 100%;
+    -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B3A1F' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat: no-repeat; background-position: right 0.15rem center;
+  }
+  .home-eng-kanton:focus { outline: 2px solid var(--dash-violet); outline-offset: 3px; }
+  .home-eng-leer { text-align: center; color: var(--dash-text-muted); margin: 0.25rem 0 0; }
+  .home-eng-leer a { color: var(--dash-coral-text); font-weight: 600; }
 
   /* ===== Engagement-Teaser ===== */
   .pe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.1rem; }
@@ -313,6 +343,11 @@
   .css-brand .home-cta-tag { background: var(--css-color-surface-accent); color: #fff; }
   .css-brand .home-cta-pilot { color: var(--css-color-text-muted); }
   .css-brand .home-cta-pilot a { color: var(--css-color-text-interactive); }
+  .css-brand .home-eng-kanton {
+    color: var(--css-color-text-interactive);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300327d' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+  }
+  .css-brand .home-eng-leer a { color: var(--css-color-text-interactive); }
 </style>
 
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>

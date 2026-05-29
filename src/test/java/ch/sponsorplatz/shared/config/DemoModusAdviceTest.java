@@ -1,6 +1,7 @@
 package ch.sponsorplatz.shared.config;
 
 import ch.sponsorplatz.anfrage.EngagementService;
+import ch.sponsorplatz.anfrage.StartseitenTeaser;
 import ch.sponsorplatz.home.HomeController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,10 @@ class DemoModusAdviceTest {
     @Test
     @DisplayName("SEED-02: Demo-Disclaimer rendert bei sponsorplatz.demo-modus=true")
     void disclaimerRendertBeiDemoModus() throws Exception {
+        org.mockito.Mockito.when(engagementService.findeStartseitenEngagements(
+                        org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyInt()))
+                .thenReturn(new StartseitenTeaser(java.util.List.of(), java.util.List.of(), null, false));
+
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
                 .andExpect(model().attribute("demoModus", true))

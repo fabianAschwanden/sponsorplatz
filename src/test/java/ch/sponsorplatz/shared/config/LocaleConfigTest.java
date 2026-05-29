@@ -1,7 +1,9 @@
 package ch.sponsorplatz.shared.config;
 
 import ch.sponsorplatz.anfrage.EngagementService;
+import ch.sponsorplatz.anfrage.StartseitenTeaser;
 import ch.sponsorplatz.home.HomeController;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import jakarta.servlet.http.Cookie;
 
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -29,6 +36,12 @@ class LocaleConfigTest {
 
     @MockitoBean
     private EngagementService engagementService;
+
+    @BeforeEach
+    void stubTeaser() {
+        when(engagementService.findeStartseitenEngagements(any(), anyInt()))
+                .thenReturn(new StartseitenTeaser(List.of(), List.of(), null, false));
+    }
 
     @Test
     @DisplayName("I18N-01: Cookie 'lang' persistiert die Sprache — nächster Request liest korrekte Locale")

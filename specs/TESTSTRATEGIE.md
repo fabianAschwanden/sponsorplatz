@@ -57,7 +57,7 @@ Default-Lauf, damit `mvn test` schnell + Docker-frei bleibt.
 |---|---|---|
 | SP-01 | `PlatformApplicationTests` | Spring-Context startet sauber |
 | SP-02 | `HomeControllerTest` | GET / → 200 + index-Template + `featuredEngagements` |
-| SP-03 | `HomeControllerTest` | Startseite rendert den Engagement-Teaser (Verein-Karte + Link ins Marken-Schaufenster) |
+| SP-03 | `HomeControllerTest` | Startseite rendert den Engagement-Teaser (Kanton-Auswahlbox + Verein-Karte + Link ins Marken-Schaufenster) |
 
 ### Phase 0.1 (Organisation)
 
@@ -902,9 +902,10 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **ENG-01** | `EngagementServiceTest` | `findeNachSponsorSlug` liefert nur ANGENOMMEN-Anfragen |
 | **ENG-02** | `EngagementServiceTest` | `findeNachSponsorSlug` mit unbekanntem Slug → NotFoundException |
 | **ENG-04** | `EngagementServiceTest` | `findeSchaufenster` baut Marken-Kopf + Logo + Kanton-Gruppen |
-| **ENG-05** | `EngagementServiceTest` | `findeNeuesteEngagements` mappt ANGENOMMEN-Anfragen quer über alle Marken (Startseiten-Teaser) |
+| **ENG-05** | `EngagementServiceTest` | `findeStartseitenEngagements` mappt ANGENOMMEN-Anfragen + liefert verfügbare Kantone |
+| **ENG-08** | `EngagementServiceTest` | `findeStartseitenEngagements` filtert nach Kanton; Kanton-Optionen bleiben vollständig |
 | **ENG-06** | `EngagementServiceTest` | Kontakt-Anfrage ohne Paket wird gemappt (null Projekt-Felder) statt NPE (Startseiten-500-Regression) |
-| **ENG-07** | `EngagementServiceTest` | `findeNeuesteEngagements` reichert die Verein-Logo-URL an |
+| **ENG-07** | `EngagementServiceTest` | Startseiten-Teaser reichert die Verein-Logo-URL an |
 | **VIEW-ENG-01** | `EngagementViewTest` | Paket-Anfrage (Marke → Verein): Rollen + Projekt/Paket/Region korrekt |
 | **VIEW-ENG-02** | `EngagementViewTest` | Kontakt-Anfrage (Verein → Marke): Rollen per Org-Typ, Projekt-Felder null, kein NPE |
 | **VIEW-ENG-03** | `EngagementViewTest` | Verein-Logo-URL wird durchgereicht; ohne Logo bleibt sie null |
