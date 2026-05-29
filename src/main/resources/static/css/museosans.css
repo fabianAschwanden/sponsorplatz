@@ -1,0 +1,29 @@
+/*
+ * Museo Sans — CSS-Markenschrift (aus @css-ch/web-shared-libs, fonts-Paket).
+ * Lizenz über CSS geklärt. Gewichte 300/500/700, woff2 + woff-Fallback.
+ * Pfade relativ zu /css/ → /fonts/.
+ */
+@font-face {
+  font-family: "Museo Sans";
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+  src: url("../fonts/MuseoSans300-webfont.woff2") format("woff2"),
+       url("../fonts/MuseoSans300-webfont.woff") format("woff");
+}
+@font-face {
+  font-family: "Museo Sans";
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url("../fonts/MuseoSans500-webfont.woff2") format("woff2"),
+       url("../fonts/MuseoSans500-webfont.woff") format("woff");
+}
+@font-face {
+  font-family: "Museo Sans";
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("../fonts/MuseoSans700-webfont.woff2") format("woff2"),
+       url("../fonts/MuseoSans700-webfont.woff") format("woff");
+}

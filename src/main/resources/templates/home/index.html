@@ -11,10 +11,13 @@
     content="CSS Sponsoring, Sportverein Sponsoring, Gesundheits-Sponsoring Schweiz, Mental Health, Bewegung, Reha, Ernährung">
   <link rel="stylesheet" th:href="@{/css/main.css}">
   <th:block th:replace="~{fragments/styles :: styles}"></th:block>
+  <!-- CSS-Markendesign: offizielle Design-Tokens (@css-ch/web-shared-libs) + Museo Sans -->
+  <link rel="stylesheet" th:href="@{/css/css-tokens.css}">
+  <link rel="stylesheet" th:href="@{/css/museosans.css}">
   <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
 </head>
 
-<body class="public-body">
+<body class="public-body css-brand">
 
   <a th:replace="~{fragments/a11y :: skip-link}"></a>
 
@@ -251,6 +254,64 @@
   .home-cta-buttons { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
   .home-cta-pilot { margin: 1.5rem 0 0; font-size: 0.85rem; color: var(--dash-text-muted); }
   .home-cta-pilot a { color: var(--dash-coral-text); font-weight: 600; }
+
+  /* ============================================================
+     CSS-Markendesign — Overrides auf Basis der offiziellen Tokens
+     (@css-ch/web-shared-libs). Bewusst auf .css-brand (nur Startseite)
+     gescoped, damit Dashboard & übrige Seiten unberührt bleiben.
+     ============================================================ */
+  body.css-brand { font-family: var(--css-font-family); background: var(--css-color-surface-subtle); }
+  .css-brand .public-main { color: var(--css-color-text-strong); }
+
+  /* Hero als kräftiges CSS-Blau-Panel, weisse Schrift (WCAG-sicher auf #00327d) */
+  .css-brand .public-hero {
+    background: var(--css-color-surface-accent); color: #fff;
+    border-radius: var(--css-border-radius-md); padding: 3.5rem 2rem 4rem; margin-bottom: 1.5rem;
+  }
+  .css-brand .public-hero-rubrik { color: rgba(255,255,255,0.85); }
+  .css-brand .public-hero h1 { color: #fff; font-family: var(--css-font-family); font-weight: 300; }
+  .css-brand .public-hero-claim { color: rgba(255,255,255,0.92); }
+
+  /* Buttons im CSS-Stil */
+  .css-brand .app-btn {
+    background: var(--css-color-surface-accent); color: #fff;
+    border: 1px solid var(--css-color-surface-accent); border-radius: var(--css-border-radius-md);
+    font-family: var(--css-font-family); font-weight: 500;
+  }
+  .css-brand .app-btn:hover {
+    background: var(--css-color-surface-accent-hover); border-color: var(--css-color-surface-accent-hover);
+  }
+  .css-brand .app-btn-secondary {
+    background: #fff; color: var(--css-color-text-interactive); border: 1px solid var(--css-color-border-accent);
+  }
+  .css-brand .app-btn-secondary:hover { background: var(--css-color-surface-hover); color: var(--css-color-text-interactive-hover); }
+
+  /* Sektions-Köpfe + Überschriften in CSS-Blau / Museo Sans (light) */
+  .css-brand .home-section-rubrik,
+  .css-brand .home-cta-rubrik { color: var(--css-color-text-interactive); font-family: var(--css-font-family); }
+  .css-brand .home-section-titel,
+  .css-brand .home-cta-band h2 { font-family: var(--css-font-family); font-weight: 300; color: var(--css-color-text-strong); }
+  .css-brand .home-section-sub { color: var(--css-color-text-muted); }
+
+  /* Karten: CSS-Radius + Rahmen */
+  .css-brand .home-akteur {
+    border: 1px solid var(--css-color-border-strong); border-top: 3px solid var(--css-color-surface-accent);
+    border-radius: var(--css-border-radius-md);
+  }
+  .css-brand .home-akteur h3 { font-family: var(--css-font-family); color: var(--css-color-text-default); }
+  .css-brand .home-akteur p { color: var(--css-color-text-muted); }
+  .css-brand .pe-karte { border-radius: var(--css-border-radius-md); border-color: var(--css-color-border-strong); }
+  .css-brand .pe-verein { color: var(--css-color-text-strong); }
+  .css-brand .pe-meta, .css-brand .pe-sponsor { color: var(--css-color-text-muted); }
+
+  /* CTA-Band: heller Info-Blau-Grund statt Coral */
+  .css-brand .home-cta-band {
+    background: var(--css-color-surface-info); border: 1px solid var(--css-color-border-accent);
+    border-radius: var(--css-border-radius-md);
+  }
+  .css-brand .home-cta-tag { background: var(--css-color-surface-accent); color: #fff; }
+  .css-brand .home-cta-pilot { color: var(--css-color-text-muted); }
+  .css-brand .home-cta-pilot a { color: var(--css-color-text-interactive); }
 </style>
 
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
