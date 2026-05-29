@@ -1,6 +1,7 @@
 package ch.sponsorplatz.anfrage;
 
 import ch.sponsorplatz.organisation.Branche;
+import ch.sponsorplatz.organisation.Kanton;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.projekt.Projekt;
@@ -31,6 +32,7 @@ public record EngagementView(
         String projektSlug,
         String paketName,
         String region,
+        Kanton kanton,
         Instant angenommenAm
 ) {
     /** Der Verein der Anfrage — über den Org-Typ aufgelöst (siehe Klassen-Doc). */
@@ -66,6 +68,7 @@ public record EngagementView(
                 projekt != null ? projekt.getSlug() : null,
                 paket != null ? paket.getName() : null,
                 projekt != null ? projekt.getOrt() : null,
+                Kanton.vonPlz(verein.getPostleitzahl()).orElse(null),
                 anfrage.getBeantwortetAm()
         );
     }

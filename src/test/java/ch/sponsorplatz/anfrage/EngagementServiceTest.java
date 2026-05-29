@@ -59,14 +59,14 @@ class EngagementServiceTest {
     }
 
     @Test
-    @DisplayName("ENG-04: findeSchaufenster baut Marken-Kopf + Logo + Region-Gruppen")
+    @DisplayName("ENG-04: findeSchaufenster baut Marken-Kopf + Logo + Kanton-Gruppen")
     void schaufensterMitLogoUndGruppen() {
         Organisation sponsor = erstelleOrg("css-versicherung", Branche.PRAEVENTION);
         when(orgRepository.findBySlug("css-versicherung")).thenReturn(Optional.of(sponsor));
         when(anfrageRepository.findByAnfragenderOrgIdAndStatusOrderByCreatedAtDesc(
                 sponsor.getId(), AnfrageStatus.ANGENOMMEN))
-                .thenReturn(List.of(erstelleAnfrageMitOrt(sponsor, "Zürich"),
-                        erstelleAnfrageMitOrt(sponsor, "Bern")));
+                .thenReturn(List.of(erstelleAnfrageMitOrt(sponsor, "Zürich", "8001"),
+                        erstelleAnfrageMitOrt(sponsor, "Bern", "3011")));
         // lenient: mitLogos schlägt zusätzlich die Verein-Logos nach (andere IDs) —
         // dieser Stub gilt nur für das Marken-Logo im Hero.
         lenient().when(logoLookup.findeLogoUrl(sponsor.getId())).thenReturn(Optional.of("/medien/logo-1"));
@@ -75,9 +75,11 @@ class EngagementServiceTest {
 
         assertThat(ansicht.sponsorName()).isEqualTo("Test css-versicherung");
         assertThat(ansicht.sponsorLogoUrl()).isEqualTo("/medien/logo-1");
-        assertThat(ansicht.nachRegion().keySet()).containsExactly("Bern", "Zürich");
+        // Sortiert nach Kanton-Anzeige: Bern < Zürich
+        assertThat(ansicht.nachKanton().keySet()).containsExactly("BE", "ZH");
         assertThat(ansicht.anzahlVereine()).isEqualTo(2);
-        assertThat(ansicht.verfuegbareRegionen()).containsExactly("Bern", "Zürich");
+        assertThat(ansicht.verfuegbareKantone())
+                .containsExactly(ch.sponsorplatz.organisation.Kanton.BE, ch.sponsorplatz.organisation.Kanton.ZH);
     }
 
     @Test
@@ -162,8 +164,9 @@ class EngagementServiceTest {
         return a;
     }
 
-    private SponsoringAnfrage erstelleAnfrageMitOrt(Organisation sponsor, String ort) {
+    private SponsoringAnfrage erstelleAnfrageMitOrt(Organisation sponsor, String ort, String plz) {
         Organisation verein = erstelleOrg("verein-" + ort.toLowerCase(), Branche.SPORT);
+        verein.setPostleitzahl(plz);
         Projekt p = new Projekt();
         p.setName("Projekt " + ort);
         p.setSlug("projekt-" + ort.toLowerCase());

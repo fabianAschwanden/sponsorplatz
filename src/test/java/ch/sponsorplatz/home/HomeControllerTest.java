@@ -47,7 +47,7 @@ class HomeControllerTest {
     void engagementTeaserRendert() throws Exception {
         EngagementView ev = new EngagementView(UUID.randomUUID(), "CSS Versicherung", "css-versicherung",
                 "FC Beispiel", "fc-beispiel", Branche.SPORT, null, "Sommerfest", "sommerfest", "Gold",
-                "Zürich", Instant.now());
+                "Zürich", ch.sponsorplatz.organisation.Kanton.ZH, Instant.now());
         when(engagementService.findeNeuesteEngagements(anyInt())).thenReturn(List.of(ev));
 
         mockMvc.perform(get("/"))

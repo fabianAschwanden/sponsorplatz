@@ -34,22 +34,22 @@
                 <div class="sf-stats" th:unless="${ansicht.istLeer()}">
                     <span class="sf-stat"><strong th:text="${ansicht.anzahlVereine}">12</strong>
                         <span th:text="#{engagement.stat.vereine}">Vereine</span></span>
-                    <span class="sf-stat"><strong th:text="${ansicht.anzahlRegionen}">5</strong>
-                        <span th:text="#{engagement.stat.regionen}">Regionen</span></span>
+                    <span class="sf-stat"><strong th:text="${ansicht.anzahlKantone}">5</strong>
+                        <span th:text="#{engagement.stat.kantone}">Kantone</span></span>
                 </div>
             </div>
         </header>
 
-        <!-- Filter-Leiste: Region + Branche, kombinierbar -->
+        <!-- Filter-Leiste: Kanton + Branche, kombinierbar -->
         <form class="sf-filter" method="get"
               th:action="@{/marken/{slug}/engagements(slug=${sponsorSlug})}"
-              th:unless="${ansicht.istLeer() and ansicht.filterRegion == null and ansicht.filterBranche == null}">
+              th:unless="${ansicht.istLeer() and ansicht.filterKanton == null and ansicht.filterBranche == null}">
             <label class="sf-filter-feld">
-                <span th:text="#{engagement.filter.region}">Region</span>
-                <select name="region" onchange="this.form.submit()">
-                    <option value="" th:text="#{engagement.filter.alleRegionen}">Alle Regionen</option>
-                    <option th:each="r : ${ansicht.verfuegbareRegionen}" th:value="${r}"
-                            th:selected="${r == ansicht.filterRegion}" th:text="${r}">Zürich</option>
+                <span th:text="#{engagement.filter.kanton}">Kanton</span>
+                <select name="kanton" onchange="this.form.submit()">
+                    <option value="" th:text="#{engagement.filter.alleKantone}">Alle Kantone</option>
+                    <option th:each="k : ${ansicht.verfuegbareKantone}" th:value="${k.name()}"
+                            th:selected="${k == ansicht.filterKanton}" th:text="${k.getAnzeige()}">Zürich</option>
                 </select>
             </label>
             <label class="sf-filter-feld">
@@ -61,7 +61,7 @@
                 </select>
             </label>
             <noscript><button type="submit" class="app-btn app-btn-sm" th:text="#{engagement.filter.anwenden}">Anwenden</button></noscript>
-            <a th:if="${ansicht.filterRegion != null or ansicht.filterBranche != null}"
+            <a th:if="${ansicht.filterKanton != null or ansicht.filterBranche != null}"
                th:href="@{/marken/{slug}/engagements(slug=${sponsorSlug})}" class="sf-reset"
                th:text="#{engagement.filter.zuruecksetzen}">Filter zurücksetzen</a>
         </form>
@@ -69,18 +69,18 @@
         <!-- Leerer Zustand -->
         <div th:if="${ansicht.istLeer()}" class="app-empty">
             <strong th:text="#{engagement.empty}">Noch keine öffentlichen Engagements vorhanden.</strong>
-            <span th:if="${ansicht.filterRegion != null or ansicht.filterBranche != null}">
+            <span th:if="${ansicht.filterKanton != null or ansicht.filterBranche != null}">
                 <a th:href="@{/marken/{slug}/engagements(slug=${sponsorSlug})}"
                    th:text="#{engagement.filter.zuruecksetzen}">Filter zurücksetzen</a>
             </span>
         </div>
 
-        <!-- Engagements nach Region gruppiert -->
-        <th:block th:each="gruppe : ${ansicht.nachRegion}">
+        <!-- Engagements nach Kanton gruppiert -->
+        <th:block th:each="gruppe : ${ansicht.nachKanton}">
             <div class="sf-region-kopf">
                 <h2>
                     <span aria-hidden="true">📍</span>
-                    <span th:text="${gruppe.key != '' ? gruppe.key : #messages.msg('engagement.regionUnbekannt')}">Zürich</span>
+                    <span th:text="${gruppe.value[0].kanton() != null ? gruppe.value[0].kanton().getAnzeige() : #messages.msg('engagement.kantonUnbekannt')}">Zürich</span>
                 </h2>
                 <span class="sf-region-anzahl" th:text="${gruppe.value.size()}">3</span>
             </div>

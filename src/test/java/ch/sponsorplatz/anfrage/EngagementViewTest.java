@@ -93,6 +93,25 @@ class EngagementViewTest {
         assertThat(EngagementView.von(a).vereinLogoUrl()).isNull();
     }
 
+    /** VIEW-ENG-04: Kanton wird aus der Verein-PLZ abgeleitet (null ohne/ungültige PLZ). */
+    @Test
+    @DisplayName("VIEW-ENG-04: Kanton aus Verein-PLZ abgeleitet")
+    void kantonAusPlz() {
+        Organisation marke = org("CSS", "css", OrgTyp.UNTERNEHMEN, null);
+        Organisation verein = org("FC Beispiel", "fc-beispiel", OrgTyp.VEREIN, Branche.SPORT);
+        verein.setPostleitzahl("8001");   // Zürich
+        SponsoringAnfrage a = new SponsoringAnfrage();
+        a.setId(UUID.randomUUID());
+        a.setAnfragenderOrg(marke);
+        a.setEmpfaengerOrg(verein);
+        a.setStatus(AnfrageStatus.ANGENOMMEN);
+
+        assertThat(EngagementView.von(a).kanton()).isEqualTo(ch.sponsorplatz.organisation.Kanton.ZH);
+
+        verein.setPostleitzahl(null);
+        assertThat(EngagementView.von(a).kanton()).isNull();
+    }
+
     private Organisation org(String name, String slug, OrgTyp typ, Branche branche) {
         Organisation o = new Organisation();
         o.setId(UUID.randomUUID());

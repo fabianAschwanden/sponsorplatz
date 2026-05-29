@@ -26,11 +26,11 @@ public class EngagementController {
 
     @GetMapping
     public String schaufenster(@PathVariable String slug,
-                               @RequestParam(required = false) String region,
+                               @RequestParam(required = false) String kanton,
                                @RequestParam(required = false) Branche branche,
                                Model model) {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "marktplatz");
-        model.addAttribute("ansicht", engagementService.findeSchaufenster(slug, region, branche));
+        model.addAttribute("ansicht", engagementService.findeSchaufenster(slug, kanton, branche));
         model.addAttribute("sponsorSlug", slug);
         return "anfrage/engagement-schaufenster";
     }

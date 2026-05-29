@@ -1,6 +1,7 @@
 package ch.sponsorplatz.anfrage;
 
 import ch.sponsorplatz.organisation.Branche;
+import ch.sponsorplatz.organisation.Kanton;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -12,34 +13,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * ENG-VIEW-01..06 — reine Filter-/Gruppierungs-/Kennzahl-Logik des
- * Schaufensters (ohne DB). Region = Ort des Projekts.
+ * Schaufensters (ohne DB). Gruppiert wird nach Kanton (aus Verein-PLZ abgeleitet).
  */
 class SchaufensterAnsichtTest {
 
-    /** ENG-VIEW-01: Gruppierung nach Region, alphabetisch, „ohne Region" zuletzt. */
+    /** ENG-VIEW-01: Gruppierung nach Kanton, nach Anzeige sortiert, „Übrige Schweiz" (null) zuletzt. */
     @Test
-    @DisplayName("ENG-VIEW-01: nach Region gruppiert + sortiert, leere Region zuletzt")
-    void gruppiertNachRegion() {
+    @DisplayName("ENG-VIEW-01: nach Kanton gruppiert + sortiert, unbekannter Kanton zuletzt")
+    void gruppiertNachKanton() {
         var ansicht = baue(List.of(
-                ev("FC Zürich", "fc-z", Branche.SPORT, "Zürich"),
-                ev("FC Aarau", "fc-a", Branche.SPORT, "Aarau"),
+                ev("FC Zürich", "fc-z", Branche.SPORT, Kanton.ZH),
+                ev("FC Aarau", "fc-a", Branche.SPORT, Kanton.AG),
                 ev("Reha X", "reha-x", Branche.REHA, null)), null, null);
 
-        assertThat(ansicht.nachRegion().keySet()).containsExactly("Aarau", "Zürich", "");
-        assertThat(ansicht.nachRegion().get("Zürich")).hasSize(1);
+        // Anzeige: "Aargau" < "Zürich"; null-Kanton ("") zuletzt
+        assertThat(ansicht.nachKanton().keySet()).containsExactly("AG", "ZH", "");
+        assertThat(ansicht.nachKanton().get("ZH")).hasSize(1);
     }
 
-    /** ENG-VIEW-02: verfügbare Regionen distinct + sortiert, ohne Leerwerte. */
+    /** ENG-VIEW-02: verfügbare Kantone distinct + nach Anzeige sortiert, ohne null. */
     @Test
-    @DisplayName("ENG-VIEW-02: verfügbare Regionen distinct + sortiert, ohne Leere")
-    void verfuegbareRegionen() {
+    @DisplayName("ENG-VIEW-02: verfügbare Kantone distinct + sortiert, ohne null")
+    void verfuegbareKantone() {
         var ansicht = baue(List.of(
-                ev("A", "a", Branche.SPORT, "Bern"),
-                ev("B", "b", Branche.SPORT, "Aarau"),
-                ev("C", "c", Branche.SPORT, "Bern"),
+                ev("A", "a", Branche.SPORT, Kanton.BE),
+                ev("B", "b", Branche.SPORT, Kanton.AG),
+                ev("C", "c", Branche.SPORT, Kanton.BE),
                 ev("D", "d", Branche.SPORT, null)), null, null);
 
-        assertThat(ansicht.verfuegbareRegionen()).containsExactly("Aarau", "Bern");
+        assertThat(ansicht.verfuegbareKantone()).containsExactly(Kanton.AG, Kanton.BE);
     }
 
     /** ENG-VIEW-03: verfügbare Branchen distinct + nach Anzeige sortiert. */
@@ -47,45 +49,45 @@ class SchaufensterAnsichtTest {
     @DisplayName("ENG-VIEW-03: verfügbare Branchen distinct + nach Anzeige sortiert")
     void verfuegbareBranchen() {
         var ansicht = baue(List.of(
-                ev("A", "a", Branche.SPORT, "Bern"),
-                ev("B", "b", Branche.REHA, "Bern"),
-                ev("C", "c", Branche.SPORT, "Bern")), null, null);
+                ev("A", "a", Branche.SPORT, Kanton.BE),
+                ev("B", "b", Branche.REHA, Kanton.BE),
+                ev("C", "c", Branche.SPORT, Kanton.BE)), null, null);
 
         // Anzeige: "Rehabilitation" < "Sport"
         assertThat(ansicht.verfuegbareBranchen()).containsExactly(Branche.REHA, Branche.SPORT);
     }
 
-    /** ENG-VIEW-04: Region- und Branche-Filter wirken kombiniert. */
+    /** ENG-VIEW-04: Kanton- und Branche-Filter wirken kombiniert; Optionen bleiben vollständig. */
     @Test
-    @DisplayName("ENG-VIEW-04: Region + Branche kombiniert gefiltert")
+    @DisplayName("ENG-VIEW-04: Kanton + Branche kombiniert gefiltert")
     void kombinierterFilter() {
         var alle = List.of(
-                ev("FC Bern Sport", "fc-bs", Branche.SPORT, "Bern"),
-                ev("Reha Bern", "reha-b", Branche.REHA, "Bern"),
-                ev("FC Aarau Sport", "fc-as", Branche.SPORT, "Aarau"));
+                ev("FC Bern Sport", "fc-bs", Branche.SPORT, Kanton.BE),
+                ev("Reha Bern", "reha-b", Branche.REHA, Kanton.BE),
+                ev("FC Aarau Sport", "fc-as", Branche.SPORT, Kanton.AG));
 
-        var nurBernSport = baue(alle, "Bern", Branche.SPORT);
+        var nurBernSport = baue(alle, "BE", Branche.SPORT);
 
-        assertThat(nurBernSport.nachRegion().keySet()).containsExactly("Bern");
-        assertThat(nurBernSport.nachRegion().get("Bern"))
+        assertThat(nurBernSport.nachKanton().keySet()).containsExactly("BE");
+        assertThat(nurBernSport.nachKanton().get("BE"))
                 .extracting(EngagementView::vereinSlug).containsExactly("fc-bs");
         // Filter-Optionen bleiben vollständig (aus dem ungefilterten Set)
-        assertThat(nurBernSport.verfuegbareRegionen()).containsExactly("Aarau", "Bern");
+        assertThat(nurBernSport.verfuegbareKantone()).containsExactly(Kanton.AG, Kanton.BE);
         assertThat(nurBernSport.verfuegbareBranchen()).contains(Branche.SPORT, Branche.REHA);
     }
 
-    /** ENG-VIEW-05: Kennzahlen — Vereine distinct, Regionen ohne Leerwert. */
+    /** ENG-VIEW-05: Kennzahlen — Vereine distinct, Kantone ohne null. */
     @Test
-    @DisplayName("ENG-VIEW-05: anzahlVereine distinct, anzahlRegionen ohne Leere")
+    @DisplayName("ENG-VIEW-05: anzahlVereine distinct, anzahlKantone ohne null")
     void kennzahlen() {
         var ansicht = baue(List.of(
-                ev("FC Bern", "fc-b", Branche.SPORT, "Bern"),
-                ev("FC Bern", "fc-b", Branche.SPORT, "Bern"),   // gleicher Verein, 2. Projekt
-                ev("FC Aarau", "fc-a", Branche.SPORT, "Aarau"),
+                ev("FC Bern", "fc-b", Branche.SPORT, Kanton.BE),
+                ev("FC Bern", "fc-b", Branche.SPORT, Kanton.BE),   // gleicher Verein, 2. Projekt
+                ev("FC Aarau", "fc-a", Branche.SPORT, Kanton.AG),
                 ev("Reha", "reha", Branche.REHA, null)), null, null);
 
         assertThat(ansicht.anzahlVereine()).isEqualTo(3); // fc-b, fc-a, reha
-        assertThat(ansicht.anzahlRegionen()).isEqualTo(2); // Bern, Aarau (leer zählt nicht)
+        assertThat(ansicht.anzahlKantone()).isEqualTo(2); // BE, AG (null zählt nicht)
     }
 
     /** ENG-VIEW-06: leeres Set → istLeer. */
@@ -95,13 +97,13 @@ class SchaufensterAnsichtTest {
         assertThat(baue(List.of(), null, null).istLeer()).isTrue();
     }
 
-    private SchaufensterAnsicht baue(List<EngagementView> alle, String region, Branche branche) {
+    private SchaufensterAnsicht baue(List<EngagementView> alle, String kantonCode, Branche branche) {
         return SchaufensterAnsicht.erstelle("CSS Versicherung", "css-versicherung",
-                "/medien/logo-id", alle, region, branche);
+                "/medien/logo-id", alle, kantonCode, branche);
     }
 
-    private EngagementView ev(String verein, String slug, Branche branche, String region) {
+    private EngagementView ev(String verein, String slug, Branche branche, Kanton kanton) {
         return new EngagementView(UUID.randomUUID(), "CSS Versicherung", "css-versicherung",
-                verein, slug, branche, null, "Projekt " + slug, "p-" + slug, "Gold", region, Instant.now());
+                verein, slug, branche, null, "Projekt " + slug, "p-" + slug, "Gold", null, kanton, Instant.now());
     }
 }

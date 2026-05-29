@@ -69,17 +69,17 @@ public class EngagementService {
 
     /**
      * Aufbereitete Schaufenster-Ansicht einer Marke: Marken-Kopf (Name + Logo),
-     * nach Region gruppierte Engagements und die Filter-Optionen. Region- und
+     * nach Kanton gruppierte Engagements und die Filter-Optionen. Kanton- und
      * Branche-Filter wirken kombiniert; die Filter-Optionen kommen stets aus dem
      * ungefilterten Set, bleiben also vollständig.
      */
-    public SchaufensterAnsicht findeSchaufenster(String slug, String region, Branche branche) {
+    public SchaufensterAnsicht findeSchaufenster(String slug, String kantonCode, Branche branche) {
         Organisation org = orgRepository.findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
         List<EngagementView> alle = mitLogos(
                 anfrageRepository.findByAnfragenderOrgIdAndStatusOrderByCreatedAtDesc(
                         org.getId(), AnfrageStatus.ANGENOMMEN));
         String logoUrl = logoLookup.findeLogoUrl(org.getId()).orElse(null);
-        return SchaufensterAnsicht.erstelle(org.getName(), slug, logoUrl, alle, region, branche);
+        return SchaufensterAnsicht.erstelle(org.getName(), slug, logoUrl, alle, kantonCode, branche);
     }
 }

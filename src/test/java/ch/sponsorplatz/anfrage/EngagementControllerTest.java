@@ -48,14 +48,14 @@ class EngagementControllerTest {
     }
 
     @Test
-    @DisplayName("ENG-02-CTRL: Region-Filter wird an Service delegiert")
-    void regionFilter() throws Exception {
-        when(engagementService.findeSchaufenster(eq("css-versicherung"), eq("Zürich"), isNull()))
-                .thenReturn(ansicht("Zürich", null));
+    @DisplayName("ENG-02-CTRL: Kanton-Filter wird an Service delegiert")
+    void kantonFilter() throws Exception {
+        when(engagementService.findeSchaufenster(eq("css-versicherung"), eq("ZH"), isNull()))
+                .thenReturn(ansicht("ZH", null));
 
-        mockMvc.perform(get("/marken/css-versicherung/engagements").param("region", "Zürich"))
+        mockMvc.perform(get("/marken/css-versicherung/engagements").param("kanton", "ZH"))
                 .andExpect(status().isOk());
-        verify(engagementService).findeSchaufenster("css-versicherung", "Zürich", null);
+        verify(engagementService).findeSchaufenster("css-versicherung", "ZH", null);
     }
 
     @Test
@@ -69,11 +69,11 @@ class EngagementControllerTest {
         verify(engagementService).findeSchaufenster("css-versicherung", null, Branche.SPORT);
     }
 
-    private SchaufensterAnsicht ansicht(String region, Branche branche) {
+    private SchaufensterAnsicht ansicht(String kantonCode, Branche branche) {
         EngagementView ev = new EngagementView(UUID.randomUUID(), "CSS Versicherung", "css-versicherung",
                 "FC Beispiel", "fc-beispiel", Branche.SPORT, null, "Sommerfest", "sommerfest", "Gold",
-                "Zürich", Instant.now());
+                "Zürich", ch.sponsorplatz.organisation.Kanton.ZH, Instant.now());
         return SchaufensterAnsicht.erstelle("CSS Versicherung", "css-versicherung", null,
-                List.of(ev), region, branche);
+                List.of(ev), kantonCode, branche);
     }
 }

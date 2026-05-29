@@ -901,22 +901,26 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 |---|---|---|
 | **ENG-01** | `EngagementServiceTest` | `findeNachSponsorSlug` liefert nur ANGENOMMEN-Anfragen |
 | **ENG-02** | `EngagementServiceTest` | `findeNachSponsorSlug` mit unbekanntem Slug → NotFoundException |
-| **ENG-04** | `EngagementServiceTest` | `findeSchaufenster` baut Marken-Kopf + Logo + Region-Gruppen |
+| **ENG-04** | `EngagementServiceTest` | `findeSchaufenster` baut Marken-Kopf + Logo + Kanton-Gruppen |
 | **ENG-05** | `EngagementServiceTest` | `findeNeuesteEngagements` mappt ANGENOMMEN-Anfragen quer über alle Marken (Startseiten-Teaser) |
 | **ENG-06** | `EngagementServiceTest` | Kontakt-Anfrage ohne Paket wird gemappt (null Projekt-Felder) statt NPE (Startseiten-500-Regression) |
 | **ENG-07** | `EngagementServiceTest` | `findeNeuesteEngagements` reichert die Verein-Logo-URL an |
 | **VIEW-ENG-01** | `EngagementViewTest` | Paket-Anfrage (Marke → Verein): Rollen + Projekt/Paket/Region korrekt |
 | **VIEW-ENG-02** | `EngagementViewTest` | Kontakt-Anfrage (Verein → Marke): Rollen per Org-Typ, Projekt-Felder null, kein NPE |
 | **VIEW-ENG-03** | `EngagementViewTest` | Verein-Logo-URL wird durchgereicht; ohne Logo bleibt sie null |
+| **VIEW-ENG-04** | `EngagementViewTest` | Kanton wird aus der Verein-PLZ abgeleitet (null ohne/ungültige PLZ) |
 | **ENG-01-CTRL** | `EngagementControllerTest` | GET `/marken/{slug}/engagements` → 200 + Schaufenster-View + `ansicht` |
-| **ENG-02-CTRL** | `EngagementControllerTest` | Region-Filter wird an `findeSchaufenster` delegiert |
+| **ENG-02-CTRL** | `EngagementControllerTest` | Kanton-Filter wird an `findeSchaufenster` delegiert |
 | **ENG-03-CTRL** | `EngagementControllerTest` | Branche-Filter wird an `findeSchaufenster` delegiert |
-| **ENG-VIEW-01** | `SchaufensterAnsichtTest` | Engagements nach Region gruppiert + sortiert, „ohne Region" zuletzt |
-| **ENG-VIEW-02** | `SchaufensterAnsichtTest` | verfügbare Regionen distinct + sortiert, ohne Leerwerte |
+| **ENG-VIEW-01** | `SchaufensterAnsichtTest` | Engagements nach Kanton gruppiert + sortiert, „Übrige Schweiz" zuletzt |
+| **ENG-VIEW-02** | `SchaufensterAnsichtTest` | verfügbare Kantone distinct + nach Anzeige sortiert, ohne null |
 | **ENG-VIEW-03** | `SchaufensterAnsichtTest` | verfügbare Branchen distinct + nach Anzeige sortiert |
-| **ENG-VIEW-04** | `SchaufensterAnsichtTest` | Region- + Branche-Filter wirken kombiniert; Optionen bleiben vollständig |
-| **ENG-VIEW-05** | `SchaufensterAnsichtTest` | Kennzahlen: Vereine distinct, Regionen ohne Leerwert |
+| **ENG-VIEW-04** | `SchaufensterAnsichtTest` | Kanton- + Branche-Filter wirken kombiniert; Optionen bleiben vollständig |
+| **ENG-VIEW-05** | `SchaufensterAnsichtTest` | Kennzahlen: Vereine distinct, Kantone ohne null |
 | **ENG-VIEW-06** | `SchaufensterAnsichtTest` | keine Engagements → `istLeer` |
+| **KANTON-01** | `KantonTest` | PLZ→Kanton: Hauptorte werden korrekt zugeordnet |
+| **KANTON-02** | `KantonTest` | 7xxx → Graubünden (klar abgegrenzter Kanton) |
+| **KANTON-03** | `KantonTest` | ungültige/leere PLZ → empty |
 
 ### Phase 8.3 — OG-Card-Generator (OG) — Backlog
 

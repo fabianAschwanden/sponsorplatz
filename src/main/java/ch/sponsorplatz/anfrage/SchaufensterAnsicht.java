@@ -1,6 +1,7 @@
 package ch.sponsorplatz.anfrage;
 
 import ch.sponsorplatz.organisation.Branche;
+import ch.sponsorplatz.organisation.Kanton;
 
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -11,48 +12,42 @@ import java.util.stream.Collectors;
 /**
  * Aufbereitete Sicht für das öffentliche Engagement-Schaufenster einer Marke
  * (PROJEKT_INFO §"Öffentliches Schaufenster"). Bündelt den Marken-Kopf
- * (Name + Logo), die nach Region gruppierten Engagements sowie die für die
- * Filter-Leiste verfügbaren Regionen/Branchen und ein paar Kennzahlen.
+ * (Name + Logo), die nach Kanton gruppierten Engagements sowie die für die
+ * Filter-Leiste verfügbaren Kantone/Branchen und ein paar Kennzahlen.
  *
  * <p>Die Filter- und Gruppierungs-Logik steckt in {@link #erstelle} und ist
- * damit ohne DB pur testbar. Region = {@code Projekt.ort}; Engagements ohne Ort
- * landen unter dem leeren Schlüssel ({@code ""}) und werden vom Template als
- * „ohne Region" beschriftet.
+ * damit ohne DB pur testbar. Der Kanton wird aus der Verein-PLZ abgeleitet
+ * ({@link EngagementView#kanton()}); Engagements ohne erkennbaren Kanton landen
+ * unter dem leeren Schlüssel ({@code ""}) → Template-Label „Übrige Schweiz".
  */
 public record SchaufensterAnsicht(
         String sponsorName,
         String sponsorSlug,
         String sponsorLogoUrl,
-        Map<String, List<EngagementView>> nachRegion,
-        List<String> verfuegbareRegionen,
+        Map<String, List<EngagementView>> nachKanton,
+        List<Kanton> verfuegbareKantone,
         List<Branche> verfuegbareBranchen,
         int anzahlVereine,
-        int anzahlRegionen,
-        String filterRegion,
+        int anzahlKantone,
+        Kanton filterKanton,
         Branche filterBranche
 ) {
 
     public boolean istLeer() {
-        return nachRegion.isEmpty();
+        return nachKanton.isEmpty();
     }
-
-    /** Regionen alphabetisch, der „ohne Region"-Eimer ({@code ""}) immer zuletzt. */
-    private static final Comparator<String> REGION_ORDNUNG =
-            Comparator.comparing((String r) -> r.isEmpty() ? 1 : 0)
-                    .thenComparing(r -> r, String.CASE_INSENSITIVE_ORDER);
 
     public static SchaufensterAnsicht erstelle(String sponsorName, String sponsorSlug,
                                                String sponsorLogoUrl,
                                                List<EngagementView> alle,
-                                               String filterRegion, Branche filterBranche) {
-        String region = (filterRegion != null && !filterRegion.isBlank()) ? filterRegion.trim() : null;
+                                               String filterKantonCode, Branche filterBranche) {
+        Kanton filterKanton = parseKanton(filterKantonCode);
 
-        List<String> verfuegbareRegionen = alle.stream()
-                .map(EngagementView::region)
-                .filter(o -> o != null && !o.isBlank())
-                .map(String::trim)
+        List<Kanton> verfuegbareKantone = alle.stream()
+                .map(EngagementView::kanton)
+                .filter(k -> k != null)
                 .distinct()
-                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .sorted(Comparator.comparing(Kanton::getAnzeige))
                 .toList();
 
         List<Branche> verfuegbareBranchen = alle.stream()
@@ -63,33 +58,48 @@ public record SchaufensterAnsicht(
                 .toList();
 
         List<EngagementView> gefiltert = alle.stream()
-                .filter(e -> region == null || region.equalsIgnoreCase(schluessel(e)))
+                .filter(e -> filterKanton == null || filterKanton == e.kanton())
                 .filter(e -> filterBranche == null || filterBranche == e.vereinBranche())
                 .toList();
 
-        Map<String, List<EngagementView>> nachRegion = gefiltert.stream()
+        Map<String, List<EngagementView>> gruppen = gefiltert.stream()
                 .collect(Collectors.groupingBy(
                         SchaufensterAnsicht::schluessel,
-                        () -> new LinkedHashMap<>(),
+                        LinkedHashMap::new,
                         Collectors.toList()));
         Map<String, List<EngagementView>> sortiert = new LinkedHashMap<>();
-        nachRegion.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey(REGION_ORDNUNG))
+        gruppen.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey(KANTON_ORDNUNG))
                 .forEach(en -> sortiert.put(en.getKey(), en.getValue()));
 
         int anzahlVereine = (int) gefiltert.stream().map(EngagementView::vereinSlug).distinct().count();
-        int anzahlRegionen = (int) gefiltert.stream()
-                .map(SchaufensterAnsicht::schluessel)
-                .filter(s -> !s.isEmpty())
+        int anzahlKantone = (int) gefiltert.stream()
+                .map(EngagementView::kanton)
+                .filter(k -> k != null)
                 .distinct().count();
 
         return new SchaufensterAnsicht(sponsorName, sponsorSlug, sponsorLogoUrl, sortiert,
-                verfuegbareRegionen, verfuegbareBranchen, anzahlVereine, anzahlRegionen,
-                region, filterBranche);
+                verfuegbareKantone, verfuegbareBranchen, anzahlVereine, anzahlKantone,
+                filterKanton, filterBranche);
     }
 
-    /** Region-Gruppierungs-Schlüssel: getrimmter Ort, {@code ""} wenn keiner. */
+    /** Gruppierungs-Schlüssel: Kanton-Code (z.B. „ZH") oder {@code ""} bei unbekanntem Kanton. */
     private static String schluessel(EngagementView e) {
-        return (e.region() == null || e.region().isBlank()) ? "" : e.region().trim();
+        return e.kanton() == null ? "" : e.kanton().name();
+    }
+
+    /** Kantone nach Anzeige-Namen sortiert, „Übrige Schweiz" ({@code ""}) zuletzt. */
+    private static final Comparator<String> KANTON_ORDNUNG =
+            Comparator.comparing((String code) -> code.isEmpty() ? 1 : 0)
+                    .thenComparing(code -> code.isEmpty() ? "" : Kanton.valueOf(code).getAnzeige(),
+                            String.CASE_INSENSITIVE_ORDER);
+
+    private static Kanton parseKanton(String code) {
+        if (code == null || code.isBlank()) return null;
+        try {
+            return Kanton.valueOf(code.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 }
