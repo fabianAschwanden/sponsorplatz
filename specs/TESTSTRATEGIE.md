@@ -918,9 +918,11 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **ENG-VIEW-04** | `SchaufensterAnsichtTest` | Kanton- + Branche-Filter wirken kombiniert; Optionen bleiben vollständig |
 | **ENG-VIEW-05** | `SchaufensterAnsichtTest` | Kennzahlen: Vereine distinct, Kantone ohne null |
 | **ENG-VIEW-06** | `SchaufensterAnsichtTest` | keine Engagements → `istLeer` |
-| **KANTON-01** | `KantonTest` | PLZ→Kanton: Hauptorte werden korrekt zugeordnet |
-| **KANTON-02** | `KantonTest` | 7xxx → Graubünden (klar abgegrenzter Kanton) |
-| **KANTON-03** | `KantonTest` | ungültige/leere PLZ → empty |
+| **PLZ-01** | `PlzVerzeichnisTest` | PLZ → korrekter Kanton (offizielle GeoNames-Daten, Querschnitt) |
+| **PLZ-02** | `PlzVerzeichnisTest` | PLZ → Ort (Adress-Auswahlhilfe) |
+| **PLZ-03** | `PlzVerzeichnisTest` | unbekannte/ungültige PLZ → empty |
+| **PLZ-CTRL-01** | `PlzControllerTest` | `GET /plz/{plz}` bekannt → 200 + Ort/Kanton/Kanton-Name |
+| **PLZ-CTRL-02** | `PlzControllerTest` | `GET /plz/{plz}` unbekannt → 404 |
 
 ### Phase 8.3 — OG-Card-Generator (OG) — Backlog
 

@@ -126,6 +126,7 @@
                         <input id="ort" type="text" th:field="*{ort}"
                                th:placeholder="#{orgForm.feld.ortPlaceholder}"
                                placeholder="Zürich">
+                        <small id="plzKantonHint" class="app-muted" aria-live="polite"></small>
                     </div>
                 </div>
 
@@ -155,6 +156,33 @@
         </section>
     </main>
 </div>
+
+<!-- Adress-Auswahlhilfe: PLZ → Ort/Kanton aus dem offiziellen PLZ-Verzeichnis -->
+<script th:inline="none">
+  (function () {
+    var plz = document.getElementById('postleitzahl');
+    var ort = document.getElementById('ort');
+    var hint = document.getElementById('plzKantonHint');
+    if (!plz || !ort) return;
+
+    function nachschlagen() {
+      var wert = (plz.value || '').trim();
+      if (!/^[0-9]{4}$/.test(wert)) { if (hint) hint.textContent = ''; return; }
+      fetch('/plz/' + wert, { headers: { 'Accept': 'application/json' } })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          if (!data) { if (hint) hint.textContent = ''; return; }
+          // Ort nur vorbefüllen, wenn das Feld leer ist — keine Eingabe überschreiben.
+          if (data.ort && !ort.value.trim()) { ort.value = data.ort; }
+          if (hint) { hint.textContent = data.kantonName ? ('Kanton ' + data.kantonName) : ''; }
+        })
+        .catch(function () { /* offline / Fehler → still */ });
+    }
+
+    plz.addEventListener('change', nachschlagen);
+    plz.addEventListener('blur', nachschlagen);
+  })();
+</script>
 
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
 </body>

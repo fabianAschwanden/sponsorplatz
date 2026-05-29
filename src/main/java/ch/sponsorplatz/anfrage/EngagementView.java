@@ -4,6 +4,7 @@ import ch.sponsorplatz.organisation.Branche;
 import ch.sponsorplatz.organisation.Kanton;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.PlzVerzeichnis;
 import ch.sponsorplatz.projekt.Projekt;
 import ch.sponsorplatz.projekt.SponsoringPaket;
 
@@ -68,7 +69,7 @@ public record EngagementView(
                 projekt != null ? projekt.getSlug() : null,
                 paket != null ? paket.getName() : null,
                 projekt != null ? projekt.getOrt() : null,
-                Kanton.vonPlz(verein.getPostleitzahl()).orElse(null),
+                PlzVerzeichnis.kantonVon(verein.getPostleitzahl()).orElse(null),
                 anfrage.getBeantwortetAm()
         );
     }
