@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{crm.import.titel} + ' — Sponsorplatz'">CRM-Import</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('crm', ${anzahlOffeneAnfragen})}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">
+                    <a th:href="@{/crm/{slug}(slug=${sponsorSlug})}" th:text="#{crm.portfolio.titel}">Portfolio</a>
+                </p>
+                <h1 th:text="#{crm.import.titel}">CSV-Import</h1>
+            </div>
+        </header>
+
+        <!-- Ergebnis-Report nach Upload -->
+        <section th:if="${ergebnis != null}" class="app-card" style="max-width:640px;">
+            <div class="app-meldung erfolg"
+                 th:text="#{crm.import.ergebnis(${ergebnis.erstellt}, ${ergebnis.aktualisiert})}">
+                2 neu angelegt, 3 aktualisiert.</div>
+            <div th:if="${ergebnis.hatFehler()}">
+                <p style="font-weight:600; margin:0.5rem 0 0.3rem;"
+                   th:text="#{crm.import.fehlerTitel}">Übersprungene Zeilen:</p>
+                <ul class="app-muted" style="margin:0; padding-left:1.2rem;">
+                    <li th:each="f : ${ergebnis.fehler}" th:text="${f}">Zeile 4: Verein nicht gefunden</li>
+                </ul>
+            </div>
+            <div style="margin-top:1rem;">
+                <a th:href="@{/crm/{slug}(slug=${sponsorSlug})}" class="app-btn"
+                   th:text="#{crm.import.zumPortfolio}">Zum Portfolio</a>
+            </div>
+        </section>
+
+        <section class="app-card" style="max-width:640px;">
+            <div th:if="${keineDatei}" class="app-meldung fehler" th:text="#{crm.import.keineDatei}">Keine Datei gewählt.</div>
+            <form th:action="@{/crm/{slug}/import(slug=${sponsorSlug})}" method="post"
+                  enctype="multipart/form-data" class="app-form">
+                <div class="app-form-group">
+                    <label for="datei" th:text="#{crm.import.datei}">CSV-Datei</label>
+                    <input type="file" id="datei" name="datei" accept=".csv,text/csv" required>
+                    <span class="hint" th:text="#{crm.import.hint}">
+                        Spalten: verein_slug;verein_name;status;tier;pipeline_stage;forecast_chf;notiz —
+                        Schlüssel ist verein_slug. Am einfachsten zuerst exportieren, in Excel bearbeiten, re-importieren.</span>
+                </div>
+                <div class="app-form-actions">
+                    <button type="submit" class="app-btn" th:text="#{crm.import.btn}">Import</button>
+                    <a th:href="@{/crm/{slug}/export.csv(slug=${sponsorSlug})}" class="app-btn app-btn-secondary"
+                       th:text="#{crm.import.vorlage}">Vorlage exportieren</a>
+                    <a th:href="@{/crm/{slug}(slug=${sponsorSlug})}" class="app-btn app-btn-secondary"
+                       th:text="#{crm.neu.abbrechen}">Abbrechen</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
+</body>
+</html>

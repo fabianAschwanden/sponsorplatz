@@ -20,8 +20,14 @@
                 <p class="app-page-rubrik" th:text="${sponsorName}">CSS</p>
                 <h1 th:text="#{crm.portfolio.titel}">Sponsoring-Portfolio</h1>
             </div>
-            <a th:href="@{/crm/{slug}/neu(slug=${sponsorSlug})}" class="app-btn"
-               th:text="#{crm.portfolio.neuBtn}">+ Verein hinzufügen</a>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <a th:href="@{/crm/{slug}/import(slug=${sponsorSlug})}" class="app-btn app-btn-secondary"
+                   th:text="#{crm.import.btn}">Import</a>
+                <a th:href="@{/crm/{slug}/export.csv(slug=${sponsorSlug})}" class="app-btn app-btn-secondary"
+                   th:text="#{crm.export.btn}">Export CSV</a>
+                <a th:href="@{/crm/{slug}/neu(slug=${sponsorSlug})}" class="app-btn"
+                   th:text="#{crm.portfolio.neuBtn}">+ Verein hinzufügen</a>
+            </div>
         </header>
 
         <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>

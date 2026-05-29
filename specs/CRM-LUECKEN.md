@@ -326,8 +326,11 @@ Damit sind Lücken #1, #2, #3 geschlossen.
 
 ### Cluster 4 — Adoption-Blocker (parallel zu Cluster 2/3 machbar)
 
-- **CSV/Excel-Import (#16)** — Adoption-Killer Nr. 1. Ohne Import kein Bestands-
-  Sponsor. Mapping-UI + Validierungs-Report + Dry-Run.
+- **CSV-Import/-Export (#16)** — ✅ **Round-Trip umgesetzt** (`CrmImportExportService`,
+  `/crm/{slug}/export.csv` + `/import`): Portfolio als CSV exportieren (Excel-kompatibel,
+  `;` + UTF-8-BOM), in Excel bearbeiten, re-importieren (Upsert je `verein_slug`) mit
+  Fehlerreport je Zeile. *Offen:* freie Spalten-Mapping-UI + Dry-Run-Vorschau +
+  Kontakte/Aktivitäten-Import (aktuell nur Account-Stammdaten).
 - **Approval-Workflow (#5)** — Vier-Augen-Prinzip auf Vertrag-Unterzeichnung,
   betragsabhängige Stufen. Compliance-Pflicht — ohne das kein realer
   Vertragsabschluss in einer Krankenkasse.

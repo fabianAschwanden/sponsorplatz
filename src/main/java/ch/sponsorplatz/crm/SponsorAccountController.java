@@ -2,6 +2,10 @@ package ch.sponsorplatz.crm;
 
 import ch.sponsorplatz.organisation.OrganisationService;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,8 +14,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.util.UUID;
 
 /**
@@ -31,17 +37,20 @@ public class SponsorAccountController {
     private final KontaktPersonService kontaktService;
     private final AktivitaetService aktivitaetService;
     private final RenewalService renewalService;
+    private final CrmImportExportService importExportService;
     private final OrganisationService organisationService;
 
     public SponsorAccountController(SponsorAccountService accountService,
                                     KontaktPersonService kontaktService,
                                     AktivitaetService aktivitaetService,
                                     RenewalService renewalService,
+                                    CrmImportExportService importExportService,
                                     OrganisationService organisationService) {
         this.accountService = accountService;
         this.kontaktService = kontaktService;
         this.aktivitaetService = aktivitaetService;
         this.renewalService = renewalService;
+        this.importExportService = importExportService;
         this.organisationService = organisationService;
     }
 
@@ -82,6 +91,43 @@ public class SponsorAccountController {
         model.addAttribute("sponsorSlug", sponsorSlug);
         model.addAttribute("vereine", organisationService.findeAktiveVereineAlsViews());
         return "crm/account-form";
+    }
+
+    /** Portfolio als CSV exportieren (Excel-kompatibel). */
+    @GetMapping("/export.csv")
+    public ResponseEntity<ByteArrayResource> exportCsv(@PathVariable String sponsorSlug, Authentication auth) {
+        UUID sponsorOrgId = organisationService.findeIdNachSlug(sponsorSlug);
+        byte[] csv = importExportService.exportiere(sponsorOrgId, auth);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"crm-" + sponsorSlug + ".csv\"")
+                .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                .body(new ByteArrayResource(csv));
+    }
+
+    /** Import-Formular (CSV-Upload). */
+    @GetMapping("/import")
+    public String importFormular(@PathVariable String sponsorSlug, Authentication auth, Model model) {
+        UUID sponsorOrgId = organisationService.findeIdNachSlug(sponsorSlug);
+        accountService.findePortfolio(sponsorOrgId, auth); // Zugriffs-Schranke
+        model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
+        model.addAttribute("sponsorSlug", sponsorSlug);
+        return "crm/import";
+    }
+
+    /** CSV importieren (Upsert je verein_slug) und Ergebnis-Report rendern. */
+    @PostMapping("/import")
+    public String importieren(@PathVariable String sponsorSlug,
+                              @RequestParam("datei") MultipartFile datei,
+                              Authentication auth, Model model) throws IOException {
+        UUID sponsorOrgId = organisationService.findeIdNachSlug(sponsorSlug);
+        model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
+        model.addAttribute("sponsorSlug", sponsorSlug);
+        if (datei == null || datei.isEmpty()) {
+            model.addAttribute("keineDatei", true);
+            return "crm/import";
+        }
+        model.addAttribute("ergebnis", importExportService.importiere(sponsorOrgId, datei.getBytes(), auth));
+        return "crm/import";
     }
 
     /** Account anlegen. */

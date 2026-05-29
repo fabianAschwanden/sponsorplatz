@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -20,8 +21,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -40,6 +43,7 @@ class SponsorAccountControllerTest {
     @MockitoBean private KontaktPersonService kontaktService;
     @MockitoBean private AktivitaetService aktivitaetService;
     @MockitoBean private RenewalService renewalService;
+    @MockitoBean private CrmImportExportService importExportService;
     @MockitoBean private OrganisationService organisationService;
     @MockitoBean private ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService userDetailsService;
 
@@ -105,6 +109,41 @@ class SponsorAccountControllerTest {
         when(organisationService.findeIdNachSlug("css")).thenReturn(sponsorOrgId);
 
         mockMvc.perform(get("/crm/css/neu"))
+                .andExpect(status().isOk());
+    }
+
+    /** CRM-CTRL-07: Export liefert CSV-Download mit Content-Disposition. */
+    @Test
+    @WithMockUser
+    void exportCsvDownload() throws Exception {
+        when(organisationService.findeIdNachSlug("css")).thenReturn(sponsorOrgId);
+        when(importExportService.exportiere(eq(sponsorOrgId), any())).thenReturn("x".getBytes());
+
+        mockMvc.perform(get("/crm/css/export.csv"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("crm-css.csv")));
+    }
+
+    /** CRM-CTRL-08: Import-Formular rendert. */
+    @Test
+    @WithMockUser
+    void importFormularRendert() throws Exception {
+        when(organisationService.findeIdNachSlug("css")).thenReturn(sponsorOrgId);
+
+        mockMvc.perform(get("/crm/css/import"))
+                .andExpect(status().isOk());
+    }
+
+    /** CRM-CTRL-09: Import-POST (multipart + CSRF) verarbeitet die Datei und rendert das Ergebnis. */
+    @Test
+    @WithMockUser
+    void importPostVerarbeitet() throws Exception {
+        when(organisationService.findeIdNachSlug("css")).thenReturn(sponsorOrgId);
+        when(importExportService.importiere(eq(sponsorOrgId), any(), any()))
+                .thenReturn(new CrmImportExportService.ImportErgebnis(1, 0, List.of()));
+        MockMultipartFile datei = new MockMultipartFile("datei", "portfolio.csv", "text/csv", "x".getBytes());
+
+        mockMvc.perform(multipart("/crm/css/import").file(datei).with(csrf()))
                 .andExpect(status().isOk());
     }
 

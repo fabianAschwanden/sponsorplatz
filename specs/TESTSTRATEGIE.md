@@ -325,6 +325,9 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **CRM-CTRL-04** | `SponsorAccountControllerTest` | Portfolio rendert mit Accounts + Renewals + gewichtetem Forecast (Thymeleaf-Smoke) |
 | **CRM-CTRL-05** | `SponsorAccountControllerTest` | Account-Detail rendert (Stammdaten-Grid + Kontakt-/Aktivitäts-Erfassung) |
 | **CRM-CTRL-06** | `SponsorAccountControllerTest` | Account-Anlege-Formular rendert (Verein-Picker) |
+| **CRM-CTRL-07** | `SponsorAccountControllerTest` | `GET /export.csv` → CSV-Download mit Content-Disposition |
+| **CRM-CTRL-08** | `SponsorAccountControllerTest` | `GET /import` rendert das Import-Formular |
+| **CRM-CTRL-09** | `SponsorAccountControllerTest` | `POST /import` (multipart + CSRF) verarbeitet die Datei |
 | **CRM-ISO-01** | `SponsorAccountIsolationIT` | Eigentümer-Sponsor sieht eigenen Account (echte DB) |
 | **CRM-ISO-02** | `SponsorAccountIsolationIT` | Konkurrierender Sponsor → `AccessDeniedException` auf fremdes Portfolio |
 | **CRM-ISO-03** | `SponsorAccountIsolationIT` | Kein Leak: fremdes Portfolio enthält den Account nicht |
@@ -377,6 +380,18 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **CRM-NAV-IT-01** | `CrmSidebarIT` | Firmen-Editor sieht `/crm/{slug}` in der Sidebar (voller Stack, /dashboard) |
 | **CRM-NAV-IT-02** | `CrmSidebarIT` | Verein-Owner sieht keinen `/crm/`-Link |
 | **MG-03** | `MitgliedschaftRepositoryTest` | `findSponsorOrgSlugs` nur UNTERNEHMEN mit Edit-Rolle, nach Name sortiert |
+
+#### CRM — CSV-Import/-Export (CRM-IO, CSV) — Cluster 4 #16
+
+| ID | Test-Klasse | Beschreibung |
+|---|---|---|
+| **CSV-01** | `CsvTest` | einfache Zeile schreiben + parsen |
+| **CSV-02** | `CsvTest` | Sonderzeichen (`;`, `"`) gequotet, Round-Trip |
+| **CSV-03** | `CsvTest` | Newlines → Space, leere Felder |
+| **CRM-IO-01** | `CrmImportExportIT` | Export enthält Header + Account-Zeile (echte DB) |
+| **CRM-IO-02** | `CrmImportExportIT` | Import = Upsert (Update + Neuanlage) + Fehlerreport für unbekannten Verein |
+| **CRM-IO-03** | `CrmImportExportIT` | Export durch fremden User → `AccessDeniedException` |
+| **CRM-IO-04** | `CrmImportExportIT` | Import durch fremden User → `AccessDeniedException` |
 
 #### Organisation-Controller (ORG)
 
