@@ -289,11 +289,20 @@ f- [x] Cover/Galerie/Pitch-Deck: Upload-Widget auf Projekt-Detail, Cover-Bild in
 
 ### 8.2 — Engagement-Schaufenster (öffentlich)
 
+> **Anforderung:** Öffentlich zugängliche Seite pro Marke, die Versicherten
+> und anderen Interessierten zeigt, welche Sport- und Gesundheits-Vereine die
+> Marke regional unterstützt. Konkretes Vertrauens-Versprechen für die
+> CSS-Versicherten: "Was tut meine Krankenkasse in meiner Region für Sport
+> und Gesundheit?" Detail-Beschreibung der Anforderung in
+> [`PROJEKT_INFO.md`](PROJEKT_INFO.md) §"Öffentliches Schaufenster".
+
 - [x] `EngagementService` — Engagements abgeleitet aus `SponsoringAnfrage` mit Status ANGENOMMEN
 - [x] `EngagementController` unter `/marken/{slug}/engagements` (permitAll)
 - [x] Template `engagement-schaufenster.html` mit Verein-Karten, Region, Branche, Projekt-Snippet
 - [x] Filter nach Region/Branche
 - [x] Auf Marken-Detailseite verlinkt — schliesst die "CSS unterstützt diese Vereine"-Brücke
+- [x] Datenschutz: keine Beträge, keine offenen Anfragen, keine Notizen sichtbar — nur angenommene Engagements
+- [x] Health-Fokus durch Verifizierungs-Workflow garantiert (kein Schaufenster-Eintrag ohne Health-Verifizierung)
 - [x] Tests: ENG-01 nur ANGENOMMEN, ENG-02 Slug-Filter, ENG-03 Region-Filter
 
 ### 8.3 — OG-Card-Generator

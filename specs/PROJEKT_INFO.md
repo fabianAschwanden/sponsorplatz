@@ -83,6 +83,43 @@ für Sponsoring"        Sport- & Health-       Deine Mitgliedsvereine"
 
 Details: [`ROLLENKONZEPT.md`](ROLLENKONZEPT.md)
 
+## Öffentliches Schaufenster
+
+Sponsorplatz stellt eine **öffentlich zugängliche Schaufenster-Seite** pro
+Marke bereit (ohne Login erreichbar). Sie macht für Versicherte und andere
+Interessierte sichtbar, **welche Sport- und Gesundheits-Vereine die Marke
+regional unterstützt**.
+
+Ziel: Sponsoring sichtbar machen statt verstecken. Eine Krankenkasse wie CSS
+kann ihren Versicherten konkret zeigen, was an ihrem Wohnort in den Bereichen
+Sport, Bewegung, Reha, Prävention oder Mental Health gefördert wird — als
+Vertrauens-Anker, nicht als Werbe-Banner.
+
+**Eckpunkte:**
+
+- Erreichbar unter `/marken/{slug}/engagements` ohne Authentifizierung (`permitAll`).
+- Datenquelle: ausschliesslich `SponsoringAnfrage` im Status `ANGENOMMEN`.
+- Filter: **Region** (Kanton/Postleitzahl) und **Branche** (Health-Enum, 11 Werte).
+- Pro Verein eine Karte mit Vereinsname, Region, Branche-Hero-Chip, Projekt-Snippet
+  und Link auf das Vereinsprofil.
+- Health-Fokus ist redaktionell gesichert durch den Verifizierungs-Workflow:
+  nur Vereine mit verifiziertem Health-Bezug erscheinen im Schaufenster.
+
+**Zielgruppen der Seite:**
+
+| Zielgruppe | Erwartung |
+|---|---|
+| CSS-Versicherte | "Was tut meine Krankenkasse in meiner Region für Sport und Gesundheit?" |
+| Andere Interessierte (z. B. lokale Medien, Vereinsmitglieder) | Belegbare, kuratierte Übersicht des CSS-Engagements |
+| Marken-Marketing (CSS Sponsoring-Team) | Teilbare URL als Beleg-Seite für Kampagnen |
+| Vereine | Sichtbarkeit über das Sponsoring-Verhältnis hinaus |
+
+**Abgrenzung:** Das Schaufenster zeigt **nur angenommene** Sponsorings —
+keine offenen Anfragen, keine internen Notizen, keine Beträge. Vertrags-
+und Rechnungs-Daten bleiben strikt im authentifizierten Bereich.
+
+Umsetzung: Phase 8.2 in [`ROADMAP.md`](ROADMAP.md).
+
 ## Differenzierung
 
 | Wettbewerber | Lücke |

@@ -1,17 +1,15 @@
 package ch.sponsorplatz.benutzer;
 
-import dev.samstevens.totp.code.CodeGenerator;
-import dev.samstevens.totp.code.HashingAlgorithm;
-import dev.samstevens.totp.exceptions.CodeGenerationException;
-import dev.samstevens.totp.time.TimeProvider;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import dev.samstevens.totp.exceptions.CodeGenerationException;
 
 /**
  * Tests für {@link TotpService} — RFC 6238 TOTP + Backup-Codes.
@@ -84,9 +82,8 @@ class TotpServiceTest {
         List<String> hashes = TotpService.parseHashedCodes(batch.hashedJson());
         assertThat(hashes).hasSize(10);
         // Jeder Klartext-Code matcht einen seiner Hashes (Reihenfolge irrelevant)
-        assertThat(batch.codes()).allSatisfy(code ->
-            assertThat(hashes.stream().anyMatch(h -> encoder.matches(code, h))).isTrue()
-        );
+        assertThat(batch.codes())
+                .allSatisfy(code -> assertThat(hashes.stream().anyMatch(h -> encoder.matches(code, h))).isTrue());
     }
 
     @Test
