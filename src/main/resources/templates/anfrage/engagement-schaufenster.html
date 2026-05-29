@@ -89,7 +89,10 @@
                          th:classappend="'branche-' + ${e.vereinBranche()}">
                     <div class="sf-karte-akzent"></div>
                     <div class="sf-karte-kopf">
-                        <span class="sf-avatar" th:text="${#strings.substring(e.vereinName(), 0, 1)}">F</span>
+                        <span class="sf-avatar" th:classappend="${e.vereinLogoUrl() != null} ? 'sf-avatar-logo'">
+                            <img th:if="${e.vereinLogoUrl() != null}" th:src="@{${e.vereinLogoUrl()}}" alt="" loading="lazy">
+                            <span th:unless="${e.vereinLogoUrl() != null}" th:text="${#strings.substring(e.vereinName(), 0, 1)}">F</span>
+                        </span>
                         <div class="sf-karte-titel">
                             <a class="sf-verein" th:href="@{/vereine/{slug}(slug=${e.vereinSlug()})}"
                                th:text="${e.vereinName()}">FC Beispiel</a>
@@ -168,9 +171,11 @@
     .sf-karte-akzent { position:absolute; top:0; left:0; right:0; height:4px; background:var(--bc); }
     .sf-karte-kopf { display:flex; align-items:center; gap:0.75rem; margin-top:0.25rem; }
     .sf-avatar {
-        flex:0 0 auto; width:44px; height:44px; border-radius:12px; background:var(--bc);
+        flex:0 0 auto; width:44px; height:44px; border-radius:12px; background:var(--bc); overflow:hidden;
         color:#fff; font-weight:800; font-size:1.2rem; display:flex; align-items:center; justify-content:center;
     }
+    .sf-avatar-logo { background:#fff; border:1px solid var(--dash-border); }
+    .sf-avatar img { width:100%; height:100%; object-fit:contain; padding:3px; }
     .sf-karte-titel { display:flex; flex-direction:column; gap:0.3rem; min-width:0; }
     .sf-verein { font-weight:700; color:var(--dash-text); text-decoration:none; font-size:1.02rem; }
     .sf-verein:hover { color:var(--bc); }

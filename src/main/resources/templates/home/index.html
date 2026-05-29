@@ -71,7 +71,10 @@
                  th:classappend="'branche-' + ${e.vereinBranche()}">
           <span class="pe-akzent"></span>
           <div class="pe-kopf">
-            <span class="pe-avatar" th:text="${#strings.substring(e.vereinName(), 0, 1)}">F</span>
+            <span class="pe-avatar" th:classappend="${e.vereinLogoUrl() != null} ? 'pe-avatar-logo'">
+              <img th:if="${e.vereinLogoUrl() != null}" th:src="@{${e.vereinLogoUrl()}}" alt="" loading="lazy">
+              <span th:unless="${e.vereinLogoUrl() != null}" th:text="${#strings.substring(e.vereinName(), 0, 1)}">F</span>
+            </span>
             <div class="pe-titel">
               <a class="pe-verein" th:href="@{/vereine/{slug}(slug=${e.vereinSlug()})}"
                  th:text="${e.vereinName()}">FC Beispiel</a>
@@ -182,9 +185,11 @@
   .pe-akzent { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--bc); }
   .pe-kopf { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.25rem; }
   .pe-avatar {
-    flex: 0 0 auto; width: 46px; height: 46px; border-radius: 13px; background: var(--bc);
+    flex: 0 0 auto; width: 46px; height: 46px; border-radius: 13px; background: var(--bc); overflow: hidden;
     color: #fff; font-weight: 800; font-size: 1.25rem; display: flex; align-items: center; justify-content: center;
   }
+  .pe-avatar-logo { background: #fff; border: 1px solid var(--dash-border); }
+  .pe-avatar img { width: 100%; height: 100%; object-fit: contain; padding: 3px; }
   .pe-titel { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
   .pe-verein { font-weight: 700; color: var(--dash-text); text-decoration: none; font-size: 1.03rem; }
   .pe-verein:hover { color: var(--bc); }

@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,7 +67,9 @@ class EngagementServiceTest {
                 sponsor.getId(), AnfrageStatus.ANGENOMMEN))
                 .thenReturn(List.of(erstelleAnfrageMitOrt(sponsor, "Zürich"),
                         erstelleAnfrageMitOrt(sponsor, "Bern")));
-        when(logoLookup.findeLogoUrl(sponsor.getId())).thenReturn(Optional.of("/medien/logo-1"));
+        // lenient: mitLogos schlägt zusätzlich die Verein-Logos nach (andere IDs) —
+        // dieser Stub gilt nur für das Marken-Logo im Hero.
+        lenient().when(logoLookup.findeLogoUrl(sponsor.getId())).thenReturn(Optional.of("/medien/logo-1"));
 
         SchaufensterAnsicht ansicht = service.findeSchaufenster("css-versicherung", null, null);
 
@@ -108,6 +111,23 @@ class EngagementServiceTest {
         assertThat(result).hasSize(2);
         assertThat(result).anyMatch(e -> e.projektName() == null);  // Kontakt-Engagement
         assertThat(result).anyMatch(e -> e.projektName() != null);  // Paket-Engagement
+    }
+
+    /** ENG-07: findeNeuesteEngagements reichert die Verein-Logo-URL an. */
+    @Test
+    @DisplayName("ENG-07: Verein-Logo wird in die Engagements gemappt")
+    void neuesteEngagementsMitVereinLogo() {
+        Organisation sponsor = erstelleOrg("css-versicherung", Branche.PRAEVENTION);
+        SponsoringAnfrage anfrage = erstelleAnfrage(sponsor);
+        UUID vereinId = anfrage.getEmpfaengerOrg().getId();
+        when(anfrageRepository.findNeuesteNachStatus(eq(AnfrageStatus.ANGENOMMEN), any()))
+                .thenReturn(List.of(anfrage));
+        when(logoLookup.findeLogoUrl(vereinId)).thenReturn(Optional.of("/medien/v"));
+
+        List<EngagementView> result = service.findeNeuesteEngagements(6);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).vereinLogoUrl()).isEqualTo("/medien/v");
     }
 
     private Organisation erstelleOrg(String slug, Branche branche) {

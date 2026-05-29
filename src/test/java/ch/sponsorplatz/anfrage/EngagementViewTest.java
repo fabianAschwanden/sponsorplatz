@@ -77,6 +77,22 @@ class EngagementViewTest {
         assertThat(v.region()).isNull();
     }
 
+    /** VIEW-ENG-03: Verein-Logo-URL wird durchgereicht; ohne Logo bleibt sie null. */
+    @Test
+    @DisplayName("VIEW-ENG-03: Verein-Logo-URL durchgereicht / null ohne Logo")
+    void vereinLogo() {
+        Organisation marke = org("CSS", "css", OrgTyp.UNTERNEHMEN, null);
+        Organisation verein = org("FC Beispiel", "fc-beispiel", OrgTyp.VEREIN, Branche.SPORT);
+        SponsoringAnfrage a = new SponsoringAnfrage();
+        a.setId(UUID.randomUUID());
+        a.setAnfragenderOrg(marke);
+        a.setEmpfaengerOrg(verein);
+        a.setStatus(AnfrageStatus.ANGENOMMEN);
+
+        assertThat(EngagementView.von(a, "/medien/logo-9").vereinLogoUrl()).isEqualTo("/medien/logo-9");
+        assertThat(EngagementView.von(a).vereinLogoUrl()).isNull();
+    }
+
     private Organisation org(String name, String slug, OrgTyp typ, Branche branche) {
         Organisation o = new Organisation();
         o.setId(UUID.randomUUID());

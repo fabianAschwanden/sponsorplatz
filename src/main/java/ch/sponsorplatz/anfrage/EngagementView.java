@@ -26,13 +26,25 @@ public record EngagementView(
         String vereinName,
         String vereinSlug,
         Branche vereinBranche,
+        String vereinLogoUrl,
         String projektName,
         String projektSlug,
         String paketName,
         String region,
         Instant angenommenAm
 ) {
+    /** Der Verein der Anfrage — über den Org-Typ aufgelöst (siehe Klassen-Doc). */
+    static Organisation vereinVon(SponsoringAnfrage anfrage) {
+        Organisation empfaenger = anfrage.getEmpfaengerOrg();
+        return empfaenger.getTyp() == OrgTyp.VEREIN ? empfaenger : anfrage.getAnfragenderOrg();
+    }
+
     public static EngagementView von(SponsoringAnfrage anfrage) {
+        return von(anfrage, null);
+    }
+
+    /** Wie {@link #von(SponsoringAnfrage)}, zusätzlich mit Verein-Logo-URL (oder {@code null}). */
+    public static EngagementView von(SponsoringAnfrage anfrage, String vereinLogoUrl) {
         Organisation empfaenger = anfrage.getEmpfaengerOrg();
         Organisation anfragender = anfrage.getAnfragenderOrg();
         boolean empfaengerIstVerein = empfaenger.getTyp() == OrgTyp.VEREIN;
@@ -49,6 +61,7 @@ public record EngagementView(
                 verein.getName(),
                 verein.getSlug(),
                 verein.getBranche(),
+                vereinLogoUrl,
                 projekt != null ? projekt.getName() : null,
                 projekt != null ? projekt.getSlug() : null,
                 paket != null ? paket.getName() : null,

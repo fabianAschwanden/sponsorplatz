@@ -71,7 +71,7 @@ class EngagementControllerTest {
 
     private SchaufensterAnsicht ansicht(String region, Branche branche) {
         EngagementView ev = new EngagementView(UUID.randomUUID(), "CSS Versicherung", "css-versicherung",
-                "FC Beispiel", "fc-beispiel", Branche.SPORT, "Sommerfest", "sommerfest", "Gold",
+                "FC Beispiel", "fc-beispiel", Branche.SPORT, null, "Sommerfest", "sommerfest", "Gold",
                 "Zürich", Instant.now());
         return SchaufensterAnsicht.erstelle("CSS Versicherung", "css-versicherung", null,
                 List.of(ev), region, branche);

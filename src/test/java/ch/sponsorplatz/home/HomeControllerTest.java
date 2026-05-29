@@ -46,7 +46,7 @@ class HomeControllerTest {
     @Test
     void engagementTeaserRendert() throws Exception {
         EngagementView ev = new EngagementView(UUID.randomUUID(), "CSS Versicherung", "css-versicherung",
-                "FC Beispiel", "fc-beispiel", Branche.SPORT, "Sommerfest", "sommerfest", "Gold",
+                "FC Beispiel", "fc-beispiel", Branche.SPORT, null, "Sommerfest", "sommerfest", "Gold",
                 "Zürich", Instant.now());
         when(engagementService.findeNeuesteEngagements(anyInt())).thenReturn(List.of(ev));
 

@@ -102,6 +102,6 @@ class SchaufensterAnsichtTest {
 
     private EngagementView ev(String verein, String slug, Branche branche, String region) {
         return new EngagementView(UUID.randomUUID(), "CSS Versicherung", "css-versicherung",
-                verein, slug, branche, "Projekt " + slug, "p-" + slug, "Gold", region, Instant.now());
+                verein, slug, branche, null, "Projekt " + slug, "p-" + slug, "Gold", region, Instant.now());
     }
 }
