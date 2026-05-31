@@ -910,7 +910,7 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **SEED-01b** | `DemoSeedRunnerTest` | Idempotent — überspringt wenn Org-Slug bereits existiert |
 | **SEED-02** | `DemoModusAdviceTest` | Demo-Disclaimer rendert bei `sponsorplatz.demo-modus=true` |
 
-### Phase 8.2 — Engagement-Schaufenster (ENG)
+### Phase 8.2 — Engagement-Schaufenster (ENG) · Paket `ch.sponsorplatz.engagement`
 
 | ID | Test-Klasse | Beschreibung |
 |---|---|---|

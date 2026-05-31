@@ -1,8 +1,8 @@
 package ch.sponsorplatz.home;
 
-import ch.sponsorplatz.anfrage.EngagementService;
-import ch.sponsorplatz.anfrage.EngagementView;
-import ch.sponsorplatz.anfrage.StartseitenTeaser;
+import ch.sponsorplatz.engagement.EngagementService;
+import ch.sponsorplatz.engagement.EngagementView;
+import ch.sponsorplatz.engagement.StartseitenTeaser;
 import ch.sponsorplatz.organisation.Branche;
 import ch.sponsorplatz.organisation.Kanton;
 import ch.sponsorplatz.shared.config.SecurityConfig;

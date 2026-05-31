@@ -1,4 +1,4 @@
-package ch.sponsorplatz.anfrage;
+package ch.sponsorplatz.engagement;
 
 import ch.sponsorplatz.organisation.Branche;
 import ch.sponsorplatz.shared.config.SecurityConfig;
@@ -39,7 +39,7 @@ class EngagementControllerTest {
 
         mockMvc.perform(get("/marken/css-versicherung/engagements"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("anfrage/engagement-schaufenster"))
+                .andExpect(view().name("engagement/schaufenster"))
                 .andExpect(model().attributeExists("ansicht", "sponsorSlug"))
                 // Visuelle Struktur ist gerendert: Hero, Karten-Raster, Branche-Farbklasse.
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("sf-hero")))

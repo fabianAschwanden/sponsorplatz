@@ -221,6 +221,9 @@ src/main/java/ch/sponsorplatz/
 │                          # Dashboard, Sitemap
 ├── anfrage/               # SponsoringAnfrage + Vertrag + Rechnung +
 │                          # QR-Bill + Nachrichten + Mail-Benachrichtigung
+├── engagement/            # Öffentliches Schaufenster (Marken-Engagements,
+│                          # Kantons-/Branche-Filter, Startseiten-Teaser);
+│                          # liest anfrage (ANGENOMMEN), einseitige Kante
 ├── einladung/             # Einladung + Mail-Listener + Cleanup-Job
 ├── benachrichtigung/      # In-App-Glocke (NotificationService + Bell-UI)
 ├── audit/                 # AuditLog + DSG-Datenexport

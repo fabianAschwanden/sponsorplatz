@@ -1,4 +1,4 @@
-package ch.sponsorplatz.anfrage;
+package ch.sponsorplatz.engagement;
 
 import ch.sponsorplatz.organisation.Branche;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
@@ -32,6 +32,6 @@ public class EngagementController {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "marktplatz");
         model.addAttribute("ansicht", engagementService.findeSchaufenster(slug, kanton, branche));
         model.addAttribute("sponsorSlug", slug);
-        return "anfrage/engagement-schaufenster";
+        return "engagement/schaufenster";
     }
 }

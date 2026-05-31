@@ -1,7 +1,7 @@
 package ch.sponsorplatz.home;
 
-import ch.sponsorplatz.anfrage.EngagementService;
-import ch.sponsorplatz.anfrage.StartseitenTeaser;
+import ch.sponsorplatz.engagement.EngagementService;
+import ch.sponsorplatz.engagement.StartseitenTeaser;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

@@ -1,4 +1,4 @@
-package ch.sponsorplatz.anfrage;
+package ch.sponsorplatz.engagement;
 
 import ch.sponsorplatz.organisation.Branche;
 import ch.sponsorplatz.organisation.Kanton;

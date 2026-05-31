@@ -1,5 +1,7 @@
-package ch.sponsorplatz.anfrage;
+package ch.sponsorplatz.engagement;
 
+import ch.sponsorplatz.anfrage.AnfrageStatus;
+import ch.sponsorplatz.anfrage.SponsoringAnfrage;
 import ch.sponsorplatz.organisation.Branche;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;

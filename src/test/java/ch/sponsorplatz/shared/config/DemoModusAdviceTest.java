@@ -1,7 +1,7 @@
 package ch.sponsorplatz.shared.config;
 
-import ch.sponsorplatz.anfrage.EngagementService;
-import ch.sponsorplatz.anfrage.StartseitenTeaser;
+import ch.sponsorplatz.engagement.EngagementService;
+import ch.sponsorplatz.engagement.StartseitenTeaser;
 import ch.sponsorplatz.home.HomeController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
