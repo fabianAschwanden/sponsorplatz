@@ -9,7 +9,6 @@ import ch.sponsorplatz.projekt.Projekt;
 import ch.sponsorplatz.projekt.SponsoringPaket;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -42,11 +41,11 @@ public record EngagementView(
         return empfaenger.getTyp() == OrgTyp.VEREIN ? empfaenger : anfrage.getAnfragenderOrg();
     }
 
-    public static EngagementView von(SponsoringAnfrage anfrage) {
-        return von(anfrage, null);
-    }
-
-    /** Wie {@link #von(SponsoringAnfrage)}, zusätzlich mit Verein-Logo-URL (oder {@code null}). */
+    /**
+     * Mappt eine Anfrage auf einen Engagement-View. {@code vereinLogoUrl} ist
+     * optional ({@code null}) — wird typischerweise vom Service über
+     * {@code OrganisationLogoLookup} bestimmt.
+     */
     public static EngagementView von(SponsoringAnfrage anfrage, String vereinLogoUrl) {
         Organisation empfaenger = anfrage.getEmpfaengerOrg();
         Organisation anfragender = anfrage.getAnfragenderOrg();
@@ -79,10 +78,6 @@ public record EngagementView(
                 kanton,
                 anfrage.getBeantwortetAm()
         );
-    }
-
-    public static List<EngagementView> von(List<SponsoringAnfrage> anfragen) {
-        return anfragen.stream().map(EngagementView::von).toList();
     }
 }
 

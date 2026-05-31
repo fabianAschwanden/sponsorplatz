@@ -36,10 +36,14 @@ logs/
 
 # Lokale Datenbank
 data/
+data.bak.*/
 *.mv.db
 *.h2.db
 *.lock.db
 *.trace.db
+
+# Lokales Storage (LokalerStorageService, Default-Basispfad)
+uploads/
 
 # Maven Wrapper
 .mvn/wrapper/maven-wrapper.jar

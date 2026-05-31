@@ -42,7 +42,7 @@ class EngagementViewTest {
         a.setStatus(AnfrageStatus.ANGENOMMEN);
         a.setBeantwortetAm(Instant.now());
 
-        EngagementView v = EngagementView.von(a);
+        EngagementView v = EngagementView.von(a, null);
 
         assertThat(v.sponsorName()).isEqualTo("CSS");
         assertThat(v.vereinName()).isEqualTo("FC Beispiel");
@@ -66,7 +66,7 @@ class EngagementViewTest {
         a.setStatus(AnfrageStatus.ANGENOMMEN);
         // kein Paket
 
-        EngagementView v = EngagementView.von(a);
+        EngagementView v = EngagementView.von(a, null);
 
         assertThat(v.sponsorName()).isEqualTo("CSS");        // per Org-Typ aufgelöst
         assertThat(v.vereinName()).isEqualTo("MindBalance");
@@ -90,7 +90,7 @@ class EngagementViewTest {
         a.setStatus(AnfrageStatus.ANGENOMMEN);
 
         assertThat(EngagementView.von(a, "/medien/logo-9").vereinLogoUrl()).isEqualTo("/medien/logo-9");
-        assertThat(EngagementView.von(a).vereinLogoUrl()).isNull();
+        assertThat(EngagementView.von(a, null).vereinLogoUrl()).isNull();
     }
 
     /** VIEW-ENG-04: Kanton wird aus der Verein-PLZ abgeleitet (null ohne/ungültige PLZ). */
@@ -106,10 +106,10 @@ class EngagementViewTest {
         a.setEmpfaengerOrg(verein);
         a.setStatus(AnfrageStatus.ANGENOMMEN);
 
-        assertThat(EngagementView.von(a).kanton()).isEqualTo(ch.sponsorplatz.organisation.Kanton.ZH);
+        assertThat(EngagementView.von(a, null).kanton()).isEqualTo(ch.sponsorplatz.organisation.Kanton.ZH);
 
         verein.setPostleitzahl(null);
-        assertThat(EngagementView.von(a).kanton()).isNull();
+        assertThat(EngagementView.von(a, null).kanton()).isNull();
     }
 
     /** VIEW-ENG-05: ohne Verein-PLZ wird der Kanton aus dem Projekt-Ort abgeleitet. */
@@ -135,7 +135,7 @@ class EngagementViewTest {
         a.setPaket(paket);
         a.setStatus(AnfrageStatus.ANGENOMMEN);
 
-        assertThat(EngagementView.von(a).kanton()).isEqualTo(ch.sponsorplatz.organisation.Kanton.BE);
+        assertThat(EngagementView.von(a, null).kanton()).isEqualTo(ch.sponsorplatz.organisation.Kanton.BE);
     }
 
     private Organisation org(String name, String slug, OrgTyp typ, Branche branche) {

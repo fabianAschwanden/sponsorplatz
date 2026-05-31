@@ -6,7 +6,6 @@ import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.organisation.OrganisationRepository;
 import ch.sponsorplatz.projekt.Projekt;
 import ch.sponsorplatz.projekt.SponsoringPaket;
-import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.shared.medien.OrganisationLogoLookup;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
@@ -34,29 +32,6 @@ class EngagementServiceTest {
     @Mock private OrganisationRepository orgRepository;
     @Mock private OrganisationLogoLookup logoLookup;
     @InjectMocks private EngagementService service;
-
-    @Test
-    @DisplayName("ENG-01: findeNachSponsorSlug liefert nur ANGENOMMEN-Anfragen")
-    void nurAngenommeneAnfragen() {
-        Organisation sponsor = erstelleOrg("css-versicherung", Branche.PRAEVENTION);
-        when(orgRepository.findBySlug("css-versicherung")).thenReturn(Optional.of(sponsor));
-
-        SponsoringAnfrage anfrage = erstelleAnfrage(sponsor);
-        when(anfrageRepository.findByAnfragenderOrgIdAndStatusOrderByCreatedAtDesc(
-                sponsor.getId(), AnfrageStatus.ANGENOMMEN))
-                .thenReturn(List.of(anfrage));
-
-        List<SponsoringAnfrage> result = service.findeNachSponsorSlug("css-versicherung");
-        assertThat(result).hasSize(1);
-    }
-
-    @Test
-    @DisplayName("ENG-02: findeNachSponsorSlug mit unbekanntem Slug wirft NotFoundException")
-    void unbekannterSlugWirft() {
-        when(orgRepository.findBySlug("nix")).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.findeNachSponsorSlug("nix"))
-                .isInstanceOf(NotFoundException.class);
-    }
 
     @Test
     @DisplayName("ENG-04: findeSchaufenster baut Marken-Kopf + Logo + Kanton-Gruppen")

@@ -914,8 +914,6 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 
 | ID | Test-Klasse | Beschreibung |
 |---|---|---|
-| **ENG-01** | `EngagementServiceTest` | `findeNachSponsorSlug` liefert nur ANGENOMMEN-Anfragen |
-| **ENG-02** | `EngagementServiceTest` | `findeNachSponsorSlug` mit unbekanntem Slug → NotFoundException |
 | **ENG-04** | `EngagementServiceTest` | `findeSchaufenster` baut Marken-Kopf + Logo + Kanton-Gruppen |
 | **ENG-05** | `EngagementServiceTest` | `findeStartseitenEngagements` mappt ANGENOMMEN-Anfragen + liefert verfügbare Kantone |
 | **ENG-08** | `EngagementServiceTest` | `findeStartseitenEngagements` filtert nach Kanton; Kanton-Optionen bleiben vollständig |

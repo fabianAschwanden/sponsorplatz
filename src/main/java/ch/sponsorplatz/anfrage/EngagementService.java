@@ -37,16 +37,6 @@ public class EngagementService {
         this.logoLookup = logoLookup;
     }
 
-    /**
-     * Alle Engagements einer Sponsor-Organisation (öffentlich, für Schaufenster).
-     */
-    public List<SponsoringAnfrage> findeNachSponsorSlug(String slug) {
-        Organisation org = orgRepository.findBySlug(slug)
-                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
-        return anfrageRepository.findByAnfragenderOrgIdAndStatusOrderByCreatedAtDesc(
-                org.getId(), AnfrageStatus.ANGENOMMEN);
-    }
-
     /** Obergrenze der Kandidaten für den Startseiten-Teaser (genug Kanton-Vielfalt vor dem Limit). */
     private static final int TEASER_KANDIDATEN = 200;
 
