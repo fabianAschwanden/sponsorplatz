@@ -1,5 +1,4 @@
 package ch.sponsorplatz.shared.storage;
-import ch.sponsorplatz.projekt.MedienAssetService;
 
 import com.oracle.bmc.model.BmcException;
 import com.oracle.bmc.objectstorage.ObjectStorage;
@@ -22,9 +21,11 @@ import java.io.IOException;
  * <p>Aktiv, wenn {@code sponsorplatz.storage.provider=oci}. Auth + Client-Wiring
  * liegt in {@link OciStorageConfig}.
  *
- * <p>Object-Keys entsprechen 1:1 dem {@code zielpfad}, den {@link MedienAssetService}
- * vergibt — die Hierarchie ({@code organisation/{id}/{uuid}-{name}.png}) wird in
- * Object-Storage als String-Präfix gespeichert (Buckets sind flach).
+ * <p>Object-Keys entsprechen 1:1 dem {@code zielpfad}, den {@code MedienAssetService}
+ * (im {@code projekt}-Feature) vergibt — die Hierarchie
+ * ({@code organisation/{id}/{uuid}-{name}.png}) wird in Object-Storage als
+ * String-Präfix gespeichert (Buckets sind flach). Bewusst {@code @code} statt
+ * {@code @link}: shared/ darf Feature-Pakete nicht importieren (ARCH-07).
  */
 @Service
 @ConditionalOnProperty(name = "sponsorplatz.storage.provider", havingValue = "oci")

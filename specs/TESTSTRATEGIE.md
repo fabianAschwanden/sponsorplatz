@@ -1141,7 +1141,7 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **ARCH-10** | `@Entity`-Klassen sind public | Hibernate-Proxy-Anforderung |
 | **ARCH-11** | Records haben keine `@Autowired`-Felder | Records sind Datenträger, keine Spring-Beans |
 | **ARCH-12** | `@Controller`/`@RestController`-Klassen tragen Suffix `Controller` | Naming-Konvention |
-| **ARCH-13** | *(informativ)* Tests liegen im gleichen Paket wie SUT | Durch PR-Template/Code-Review durchgesetzt, nicht durch ArchUnit |
+| **ARCH-13** | `ArchitekturRegelnTest` | Test-Klassen spiegeln ein Produktionspaket (eigener Importer inkl. Tests); Allowlist: `architektur`, `e2e` |
 | **ARCH-14** | Templates liegen in einem Feature-Folder, der einem Java-Paket entspricht (`TemplateStrukturTest`) | Verhindert dass die nach Bounded-Context strukturierten Templates wieder im Top-Level landen |
 | **ARCH-15** | HTML-Attribute (placeholder/title/alt/aria-label) mit deutschem Text haben `th:`-Pendant in der Nähe (`I18nLintTest`) | Verhindert Lokalisierungslücken in user-facing Form-Hints — Allowlist für `admin/` und Legal-Pages |
 

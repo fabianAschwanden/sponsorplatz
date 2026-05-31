@@ -252,18 +252,54 @@ class ArchitekturRegelnTest {
             .because("ARCH-12: @Controller-Klassen müssen den Suffix 'Controller' tragen");
 
     // =========================================================================
-    // ARCH-13 — Test-Konvention: Test-Klassen liegen im gleichen Paket wie SUT
+    // ARCH-13 — Test-Klassen spiegeln ein Produktions-Feature-Paket
     //
-    // Spiegelung Source ↔ Test pro Feature-Folder erleichtert Navigation
-    // und sichert ab, dass package-private-Methoden testbar bleiben.
+    // Jede Test-Klasse muss in einem Paket liegen, das auch Produktionscode
+    // enthält (Spiegelung Source ↔ Test pro Feature-Folder) — ODER in einem
+    // bewusst erlaubten Querschnitts-Testpaket. Fängt „verwaiste" Testpakete,
+    // die in eine Struktur ohne zugehörigen Produktionscode driften.
     //
-    // Hinweis: Diese Regel ist *informativ* — wir erlauben Ausnahmen für
-    // Test-Helpers in eigenen Sub-Paketen (z. B. test/architektur/, test/support/).
-    // Daher hier nur ein No-Op-Test als Doku-Anker.
+    // Eigener Importer, weil der @AnalyzeClasses-Importer oben Tests ausschliesst
+    // (DoNotIncludeTests); ARCH-13 braucht aber genau die Testklassen.
     // =========================================================================
+
+    /** Querschnitts-Testpakete ohne gespiegelten Produktionscode (bewusste Ausnahmen). */
+    private static final Set<String> ARCH_13_ERLAUBTE_TEST_PAKETE = Set.of(
+            "ch.sponsorplatz.architektur",   // ArchUnit-Regeln selbst
+            "ch.sponsorplatz.e2e");          // End-to-End-/Cross-Feature-Tests
+
     @Test
-    void ARCH_13_dokumentiert_package_spiegelung() {
-        // Diese Regel wird durch Code-Review und PR-Template durchgesetzt,
-        // nicht durch ArchUnit. Bewusste Schwach-Regel — siehe ADR-zukünftig.
+    void ARCH_13_testklassen_spiegeln_produktionspaket() {
+        Set<String> produktionsPakete = new ClassFileImporter()
+                .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+                .importPackages("ch.sponsorplatz")
+                .stream()
+                .map(c -> c.getPackageName())
+                .collect(java.util.stream.Collectors.toSet());
+
+        var testklassen = new ClassFileImporter()
+                .withImportOption(ImportOption.Predefined.ONLY_INCLUDE_TESTS)
+                .importPackages("ch.sponsorplatz")
+                .stream()
+                .filter(c -> c.getSimpleName().endsWith("Test") || c.getSimpleName().endsWith("IT"))
+                .toList();
+
+        // Sanity: die Regel darf nicht hohl grün sein, wenn der Importer nichts findet.
+        assertThat(testklassen)
+                .as("ARCH-13: Importer muss Testklassen finden (sonst prüft die Regel nichts)")
+                .isNotEmpty();
+
+        var verstoesse = testklassen.stream()
+                .map(c -> c.getPackageName())
+                .distinct()
+                .filter(p -> !produktionsPakete.contains(p))
+                .filter(p -> !ARCH_13_ERLAUBTE_TEST_PAKETE.contains(p))
+                .sorted()
+                .toList();
+
+        assertThat(verstoesse)
+                .as("ARCH-13: Test-Pakete ohne gespiegelten Produktionscode (Allowlist: %s)",
+                        ARCH_13_ERLAUBTE_TEST_PAKETE)
+                .isEmpty();
     }
 }
