@@ -265,9 +265,9 @@ mvn test -Dtest=OrganisationServiceTest          # einzeln
 mvn clean package
 mvn clean verify                                 # inkl. JaCoCo-Coverage
 
-# Docker
-docker compose up -d postgres mailhog            # nur Backing-Services
-docker compose --profile app up --build          # alles inkl. App
+# Docker (Compose liegt in docker/, Build-Kontext bleibt Repo-Root)
+docker compose -f docker/docker-compose.yml up -d postgres mailhog   # nur Backing-Services
+docker compose -f docker/docker-compose.yml --profile app up --build # alles inkl. App
 
 # H2-DB-Reset bei Migration-Konflikten in dev
 rm -rf data/

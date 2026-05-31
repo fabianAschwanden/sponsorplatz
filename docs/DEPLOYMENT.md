@@ -39,7 +39,7 @@ HTTP-only auf Port 8080 — Loopback im Compose-Network.
 3. **Security-List / NSG:** Ingress nur `:80` + `:443` vom Public Internet
    auf den LB; VM nur vom LB-Subnetz aus erreichbar (kein direktes :8080).
 4. **HSTS:** wird vom Spring `SecurityConfig` als Header gesetzt (siehe
-   [`SecurityConfig.java`](src/main/java/ch/sponsorplatz/shared/config/SecurityConfig.java)
+   [`SecurityConfig.java`](../src/main/java/ch/sponsorplatz/shared/config/SecurityConfig.java)
    — `prod`-Filter-Chain mit `max-age=31536000; includeSubDomains; preload`).
    Nach 30 Tagen erfolgreicher TLS-Uptime: HSTS-Preload-Liste eintragen.
 
@@ -127,7 +127,7 @@ Testmail an `check-auth@verifier.port25.com` — Antwort zeigt SPF/DKIM/DMARC-Pa
 ## 5. Backups in OCI Object Storage spiegeln
 
 Lokal werden Postgres-Dumps + Medien-Bucket-Inhalte bereits via
-[`BackupService`](src/main/java/ch/sponsorplatz/backup/BackupService.java)
+[`BackupService`](../src/main/java/ch/sponsorplatz/backup/BackupService.java)
 periodisch gesichert. Für Disaster-Recovery soll eine Kopie in einen
 versionierten OCI-Object-Storage-Bucket fliessen.
 
@@ -145,7 +145,7 @@ versionierten OCI-Object-Storage-Bucket fliessen.
    - In Staging-VM extrahieren
    - `psql -f dump.sql` + Bucket-rsync
    - Manuelle Smoke-Test-Runde (siehe `SmokeIT`-Routen)
-   - Ergebnis in [`docs/incidents/`](docs/incidents/) (anlegen) protokollieren
+   - Ergebnis in [`docs/incidents/`](incidents/) (anlegen) protokollieren
 
 ---
 
@@ -207,7 +207,7 @@ mvn verify -P e2e -Dit.test=SmokeIT
 5 SMOKE-Checks: Home, Login, Kontakt, Marktplatz-Auth-Gate, Actuator-Health.
 Wenn ein Check rot ist → Deploy zurückrollen.
 
-**Manuelle Pilot-Tests:** [`specs/BETA_TESTPLAN.md`](specs/BETA_TESTPLAN.md)
+**Manuelle Pilot-Tests:** [`specs/BETA_TESTPLAN.md`](../specs/BETA_TESTPLAN.md)
 enthält die Akzeptanz-Test-Checkliste für Verein, Sponsor und Admin.
 
 ---

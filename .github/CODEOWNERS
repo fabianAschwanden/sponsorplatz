@@ -39,6 +39,5 @@ docs/architektur/                                                       @fabiana
 
 # --- Dependencies & Build ---
 pom.xml                                                                 @fabianaschwanden
-Dockerfile                                                              @fabianaschwanden
-docker-compose.yml                                                      @fabianaschwanden
+docker/                                                                 @fabianaschwanden
 .github/                                                                @fabianaschwanden

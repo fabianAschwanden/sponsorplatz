@@ -56,7 +56,7 @@ mvn spring-boot:run                              # http://localhost:8080
 - **H2-Konsole:** http://localhost:8080/h2-console (User `sa`, Passwort leer)
 - **Demo-Modus** mit Beispieldaten: `mvn spring-boot:run -Dspring-boot.run.profiles=demo`
 - **Tests:** `mvn test` · einzeln: `-Dtest=OrganisationServiceTest`
-- **Postgres + MailHog lokal:** `docker compose up -d postgres mailhog`
+- **Postgres + MailHog lokal:** `docker compose -f docker/docker-compose.yml up -d postgres mailhog`
 - **DB-Reset bei Migrations-Konflikten:** `rm -rf data/`
 
 VS Code wird empfohlen — `.vscode/`-Konfiguration mit allen nötigen Extension-Recommendations
@@ -121,7 +121,7 @@ Stand 26.05.2026. Detaillierte Plan-/Slice-Sicht in [`specs/ROADMAP.md`](specs/R
 | [`docs/adr/`](docs/adr/) | Architecture Decision Records |
 | [`infra/staging-free/README.md`](infra/staging-free/README.md) | OCI-Setup, OIDC-Aktivierung, Rollback-Pfad |
 | [`infra/envs/azure-staging/README.md`](infra/envs/azure-staging/README.md) | Azure-Setup + Cloud-spezifische Unterschiede |
-| [`DEPLOYMENT.md`](DEPLOYMENT.md) | Pilot-Launch-Runbook |
+| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Pilot-Launch-Runbook |
 
 ## Mitmachen
 

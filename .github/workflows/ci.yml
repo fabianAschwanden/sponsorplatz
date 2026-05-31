@@ -113,6 +113,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: docker/Dockerfile
           push: false
           load: true
           tags: sponsorplatz:ci-${{ github.sha }}

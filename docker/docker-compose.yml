@@ -1,6 +1,7 @@
 # =============================================================================
 # Sponsorplatz — Lokales Dev-Stack
-# Verwendung:  docker compose up -d
+# Verwendung (aus Repo-Root):  docker compose -f docker/docker-compose.yml up -d
+# Build-Kontext ist das Repo-Root (..), Dockerfile liegt in docker/.
 # =============================================================================
 
 services:
@@ -30,7 +31,9 @@ services:
 
   app:
     profiles: ["app"]    # nur mit `--profile app` starten
-    build: .
+    build:
+      context: ..               # Repo-Root als Build-Kontext (pom.xml, src/)
+      dockerfile: docker/Dockerfile
     container_name: sponsorplatz-app
     depends_on:
       postgres:
