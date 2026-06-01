@@ -26,7 +26,9 @@
         <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
         <!-- Filter-Leiste (GET-Form, bookmarkable URLs) -->
-        <form method="get" th:action="@{/organisationen}" class="app-filter">
+        <form method="get" th:action="@{/organisationen}" class="app-filter liste-toolbar">
+            <input type="hidden" name="sort" th:value="${liste.sort}">
+            <input type="hidden" name="dir" th:value="${liste.absteigend} ? 'desc' : 'asc'">
             <div class="app-filter-felder">
                 <label>
                     <span th:text="#{orgListe.filter.typ}">Typ</span>
@@ -89,33 +91,31 @@
                 <a th:if="${filterAktiv}" th:href="@{/organisationen}"
                    class="app-btn app-btn-secondary"
                    th:text="#{orgListe.filter.zuruecksetzen}">Zurücksetzen</a>
+                <span class="liste-anzahl"
+                      th:text="${filterAktiv}
+                               ? #{orgListe.anzahlGefiltert(${anzahlGezeigt}, ${anzahlGesamt})}
+                               : #{orgListe.anzahl(${anzahlGesamt})}">12 Organisationen</span>
             </div>
         </form>
 
-        <p th:if="${filterAktiv}" class="app-muted" style="margin: 0.5rem 0 1rem;">
-            <span th:text="|#{orgListe.filter.treffer} ${#lists.size(organisationen)} / ${anzahlGesamt}|">
-                Treffer: 3 / 12
-            </span>
-        </p>
-
-        <div th:if="${#lists.isEmpty(organisationen) and !filterAktiv}" class="app-empty">
+        <div th:if="${anzahlGesamt == 0 and !filterAktiv}" class="app-empty">
             <strong th:text="#{orgListe.empty.titel}">Noch keine Organisationen erfasst.</strong>
             <span th:text="#{orgListe.empty.text}">Lege die erste an — Verein, Unternehmen oder Stiftung.</span>
         </div>
 
-        <div th:if="${#lists.isEmpty(organisationen) and filterAktiv}" class="app-empty">
+        <div th:if="${anzahlGezeigt == 0 and filterAktiv}" class="app-empty">
             <strong th:text="#{orgListe.filter.empty.titel}">Keine Treffer für diese Filter.</strong>
             <span th:text="#{orgListe.filter.empty.text}">Lockere die Filter-Kriterien oder setze sie zurück.</span>
         </div>
 
-        <table th:if="${not #lists.isEmpty(organisationen)}" class="app-table">
+        <table th:if="${anzahlGezeigt > 0}" class="app-table">
             <thead>
             <tr>
-                <th th:text="#{orgListe.feld.name}">Name</th>
-                <th th:text="#{orgListe.feld.typ}">Typ</th>
-                <th th:text="#{orgListe.feld.branche}">Branche</th>
-                <th th:text="#{orgListe.feld.status}">Status</th>
-                <th th:text="#{orgListe.feld.registriert}">Registriert</th>
+                <th th:replace="~{organisation/organisationen :: sortKopf('name', #{orgListe.feld.name})}">Name</th>
+                <th th:replace="~{organisation/organisationen :: sortKopf('typ', #{orgListe.feld.typ})}">Typ</th>
+                <th th:replace="~{organisation/organisationen :: sortKopf('branche', #{orgListe.feld.branche})}">Branche</th>
+                <th th:replace="~{organisation/organisationen :: sortKopf('status', #{orgListe.feld.status})}">Status</th>
+                <th th:replace="~{organisation/organisationen :: sortKopf('registriert', #{orgListe.feld.registriert})}">Registriert</th>
             </tr>
             </thead>
             <tbody>
@@ -134,8 +134,50 @@
             </tr>
             </tbody>
         </table>
+
+        <!-- Paginierung: bewahrt Filter + Sortierung -->
+        <nav class="liste-pager" th:if="${liste.hatMehrereSeiten() or liste.gesamt > 25}" aria-label="Seitennavigation">
+            <form method="get" th:action="@{/organisationen}" class="liste-pager-groesse">
+                <input type="hidden" name="typ" th:value="${filterTyp}">
+                <input type="hidden" name="status" th:value="${filterStatus}">
+                <input type="hidden" name="branche" th:value="${filterBranche}">
+                <input type="hidden" name="q" th:value="${filterSuche}">
+                <input type="hidden" name="sort" th:value="${liste.sort}">
+                <input type="hidden" name="dir" th:value="${liste.absteigend} ? 'desc' : 'asc'">
+                <label>
+                    <select name="groesse" onchange="this.form.submit()" th:aria-label="#{crm.pager.proSeite}">
+                        <option th:each="g : ${seitenGroessen}" th:value="${g}"
+                                th:selected="${liste.seitenGroesse == g}" th:text="${g}">25</option>
+                    </select>
+                    <span th:text="#{crm.pager.proSeite}">pro Seite</span>
+                </label>
+            </form>
+            <span class="liste-pager-info"
+                  th:text="#{crm.pager.seiteVon(${liste.seite}, ${liste.anzahlSeiten})}">Seite 1 von 5</span>
+            <span class="liste-pager-nav">
+                <a th:if="${liste.seite > 1}"
+                   th:href="@{/organisationen(typ=${filterTyp}, status=${filterStatus}, branche=${filterBranche},
+                             q=${filterSuche}, sort=${liste.sort}, dir=${liste.absteigend} ? 'desc' : 'asc',
+                             groesse=${liste.seitenGroesse}, seite=${liste.seite - 1})}"
+                   th:text="'‹ ' + #{crm.pager.zurueck}">‹ Zurück</a>
+                <a th:if="${liste.seite < liste.anzahlSeiten}"
+                   th:href="@{/organisationen(typ=${filterTyp}, status=${filterStatus}, branche=${filterBranche},
+                             q=${filterSuche}, sort=${liste.sort}, dir=${liste.absteigend} ? 'desc' : 'asc',
+                             groesse=${liste.seitenGroesse}, seite=${liste.seite + 1})}"
+                   th:text="#{crm.pager.weiter} + ' ›'">Weiter ›</a>
+            </span>
+        </nav>
     </main>
 </div>
+
+<!-- Sortier-Spaltenkopf: toggelt asc/desc, bewahrt aktive Filter, zeigt ▲/▼/⇅ -->
+<th th:fragment="sortKopf(spalte, label)" class="liste-sort">
+    <a th:href="@{/organisationen(typ=${filterTyp}, status=${filterStatus}, branche=${filterBranche}, q=${filterSuche},
+                 sort=${spalte}, dir=${liste.sort == spalte and !liste.absteigend ? 'desc' : 'asc'})}">
+        <span th:text="${label}">Spalte</span>
+        <span class="liste-sort-ind" th:text="${liste.sort != spalte ? '⇅' : (liste.absteigend ? '▼' : '▲')}">⇅</span>
+    </a>
+</th>
 
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
 </body>

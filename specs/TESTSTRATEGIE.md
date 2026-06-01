@@ -78,7 +78,9 @@ regulären `mvn test`/`verify`-Gate (und in CI). Nur die echten E2E-`*IT` unter
 | **ORG-05** | `OrganisationServiceTest` | Speichern mit Auto-Slug aus Name |
 | **ORG-06** | `OrganisationServiceTest` | Speichern wirft bei Slug-Konflikt |
 | **ORG-07** | `OrganisationServiceTest` | Validierung: name zu kurz → IllegalArgumentException |
-| **ORG-08** | `OrganisationControllerTest` | GET /organisationen → 200 + Liste |
+| **ORG-08** | `OrganisationControllerTest` | GET /organisationen → 200 + Liste + Listen-UX (Zähler/Sort) |
+| **ORG-08b** | `OrganisationControllerTest` | Sortierung nach Name absteigend wird server-seitig angewandt |
+| **LISTE-01..04** | `ListenSeiteTest` | generische Paginierung: Slice, Seitenzahl, Klemmung, Leer |
 | **ORG-09** | `OrganisationControllerTest` | POST /organisationen/speichern → Redirect 302 |
 | **ORG-10** | `OrganisationControllerTest` | GET /organisationen/{slug} → 200 + Detail |
 

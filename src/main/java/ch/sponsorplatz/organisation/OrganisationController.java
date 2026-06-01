@@ -4,6 +4,7 @@ import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.shared.medien.OrganisationLogoLookup;
+import ch.sponsorplatz.shared.util.ListenSeite;
 import jakarta.validation.Valid;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -66,16 +67,25 @@ public class OrganisationController {
                         @RequestParam(required = false) OrgStatus status,
                         @RequestParam(required = false) String branche,
                         @RequestParam(required = false) String q,
+                        @RequestParam(required = false) String sort,
+                        @RequestParam(required = false, defaultValue = "asc") String dir,
+                        @RequestParam(required = false, defaultValue = "1") int seite,
+                        @RequestParam(required = false, defaultValue = "25") int groesse,
                         Model model) {
         OrganisationFilter filter = new OrganisationFilter(typ, status, branche, q);
         List<OrganisationView> sichtbar = ladeListeViews(auth);
         List<OrganisationView> gefiltert = filter.istLeer()
                 ? sichtbar
                 : sichtbar.stream().filter(filter::matcht).toList();
+        boolean absteigend = "desc".equalsIgnoreCase(dir);
+        List<OrganisationView> sortiert = sortiere(gefiltert, sort, absteigend);
+        var liste = ListenSeite.von(sortiert, seite, groesse, sort, absteigend);
 
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
-        model.addAttribute("organisationen", gefiltert);
+        model.addAttribute("organisationen", liste.inhalt());   // aktuelle Seite (ORG-08-kompatibel)
+        model.addAttribute("liste", liste);                     // Pager + Sort-Zustand
         model.addAttribute("anzahlGesamt", sichtbar.size());
+        model.addAttribute("anzahlGezeigt", gefiltert.size());
         model.addAttribute("filterAktiv", !filter.istLeer());
         model.addAttribute("filterTyp", typ);
         model.addAttribute("filterStatus", status);
@@ -85,7 +95,38 @@ public class OrganisationController {
         model.addAttribute("statusWerte", OrgStatus.values());
         model.addAttribute("branchen", Branche.values());
         model.addAttribute("sponsorBranchen", SponsorBranche.values());
+        model.addAttribute("seitenGroessen", ListenSeite.SEITENGROESSEN);
         return "organisation/organisationen";
+    }
+
+    /** Sortiert die Org-Liste server-seitig; {@code sort == null} bewahrt die Eingangsreihenfolge. */
+    private static List<OrganisationView> sortiere(List<OrganisationView> liste, String sort, boolean absteigend) {
+        if (sort == null) {
+            return liste;
+        }
+        java.util.Comparator<OrganisationView> c = switch (sort) {
+            case "name" -> java.util.Comparator.comparing(OrganisationView::name,
+                    java.util.Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            case "typ" -> java.util.Comparator.comparing(o -> o.typ() != null ? o.typ().name() : "",
+                    java.util.Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            case "branche" -> java.util.Comparator.comparing(OrganisationController::brancheLabel,
+                    java.util.Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            case "status" -> java.util.Comparator.comparing(o -> o.status() != null ? o.status().name() : "",
+                    java.util.Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            case "registriert" -> java.util.Comparator.comparing(OrganisationView::registriertAm,
+                    java.util.Comparator.nullsFirst(java.util.Comparator.naturalOrder()));
+            default -> null;
+        };
+        if (c == null) {
+            return liste;
+        }
+        return liste.stream().sorted(absteigend ? c.reversed() : c).toList();
+    }
+
+    private static String brancheLabel(OrganisationView o) {
+        if (o.branche() != null) return o.branche().getAnzeige();
+        if (o.sponsorBranche() != null) return o.sponsorBranche().getAnzeige();
+        return "";
     }
 
     private List<OrganisationView> ladeListeViews(Authentication auth) {

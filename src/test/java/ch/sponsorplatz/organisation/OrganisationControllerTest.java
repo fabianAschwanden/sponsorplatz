@@ -54,7 +54,7 @@ class OrganisationControllerTest {
     @MockitoBean
     private ch.sponsorplatz.shared.medien.OrganisationLogoLookup logoLookup;
 
-    /** ORG-08: GET /organisationen → 200 + Liste. */
+    /** ORG-08: GET /organisationen → 200 + Liste + Listen-UX (Toolbar/Zähler/Sort/Pager). */
     @Test
     @WithMockUser
     void listeWirdAngezeigt() throws Exception {
@@ -63,7 +63,25 @@ class OrganisationControllerTest {
         mockMvc.perform(get("/organisationen"))
             .andExpect(status().isOk())
             .andExpect(view().name("organisation/organisationen"))
-            .andExpect(model().attributeExists("organisationen"));
+            .andExpect(model().attributeExists("organisationen", "liste"))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("liste-anzahl")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("liste-sort")));
+    }
+
+    /** ORG-08b: Sortierung nach Name absteigend wird angewandt (server-seitig). Admin sieht alleViews(). */
+    @Test
+    @WithMockUser(roles = "PLATFORM_ADMIN")
+    void listeSortierungName() throws Exception {
+        var a = OrganisationView.von(orgMitName("Alpha", "alpha"));
+        var z = OrganisationView.von(orgMitName("Zeta", "zeta"));
+        when(service.alleViews()).thenReturn(List.of(a, z));
+
+        var ergebnis = mockMvc.perform(get("/organisationen").param("sort", "name").param("dir", "desc"))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+        // Zeta erscheint im HTML vor Alpha (absteigend sortiert).
+        org.assertj.core.api.Assertions.assertThat(ergebnis.indexOf("Zeta"))
+                .isLessThan(ergebnis.indexOf("Alpha"));
     }
 
     /** ORG-17: POST /organisationen (Create) → Redirect auf Detail + automatische ORG_OWNER-Mitgliedschaft. */
@@ -318,10 +336,14 @@ class OrganisationControllerTest {
     }
 
     private Organisation testOrg() {
+        return orgMitName("Test-Verein", "fc-test");
+    }
+
+    private Organisation orgMitName(String name, String slug) {
         Organisation org = new Organisation();
         org.setId(UUID.randomUUID());
-        org.setName("Test-Verein");
-        org.setSlug("fc-test");
+        org.setName(name);
+        org.setSlug(slug);
         org.setTyp(OrgTyp.VEREIN);
         org.setBranche(Branche.SPORT);
         org.setStatus(OrgStatus.PENDING);
