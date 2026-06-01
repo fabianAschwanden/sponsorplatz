@@ -76,7 +76,7 @@
 
         <!-- CRM-Toolbar: Zähler + Filter (Status/Pipeline) + Freitext-Suche (server-seitig) -->
         <th:block th:if="${ansicht.anzahlGesamt > 0}">
-        <form method="get" th:action="@{/crm/{slug}(slug=${sponsorSlug})}" class="app-filter crm-toolbar">
+        <form method="get" th:action="@{/crm/{slug}(slug=${sponsorSlug})}" class="app-filter liste-toolbar">
             <input type="hidden" name="sort" th:value="${ansicht.sort}">
             <input type="hidden" name="dir" th:value="${ansicht.absteigend} ? 'desc' : 'asc'">
             <div class="app-filter-felder">
@@ -96,7 +96,7 @@
                                 th:selected="${ansicht.filterPipeline == p}" th:text="#{'crm.pipelineStage.' + ${p}}">Lead</option>
                     </select>
                 </label>
-                <label class="crm-suche">
+                <label class="liste-suche">
                     <span th:text="#{crm.filter.suche}">Suche</span>
                     <input type="search" name="suche" th:value="${ansicht.suche}"
                            th:placeholder="#{crm.filter.suche.placeholder}" placeholder="Vereinsname, Notiz">
@@ -105,8 +105,8 @@
             <div class="app-filter-aktionen">
                 <button type="submit" class="app-btn app-btn-sm" th:text="#{crm.filter.anwenden}">Anwenden</button>
                 <a th:if="${ansicht.istGefiltert()}" th:href="@{/crm/{slug}(slug=${sponsorSlug})}"
-                   class="crm-reset" th:text="#{crm.filter.zuruecksetzen}">Zurücksetzen</a>
-                <span class="crm-anzahl"
+                   class="liste-reset" th:text="#{crm.filter.zuruecksetzen}">Zurücksetzen</a>
+                <span class="liste-anzahl"
                       th:text="${ansicht.istGefiltert()}
                                ? #{crm.portfolio.anzahlGefiltert(${ansicht.anzahlGezeigt}, ${ansicht.anzahlGesamt})}
                                : #{crm.portfolio.anzahl(${ansicht.anzahlGesamt})}">12 Vereine</span>
@@ -124,13 +124,13 @@
             <input type="hidden" name="status" th:value="${ansicht.filterStatus}">
             <input type="hidden" name="pipeline" th:value="${ansicht.filterPipeline}">
             <!-- Bulk-Aktionsleiste — JS blendet sie ein, sobald ≥1 Zeile markiert ist -->
-            <div class="crm-bulkbar" id="bulkBar" hidden>
-                <span class="crm-bulkbar-anzahl"><span id="bulkAnzahl">0</span>
+            <div class="liste-bulkbar" id="bulkBar" hidden>
+                <span class="liste-bulkbar-anzahl"><span id="bulkAnzahl">0</span>
                     <span th:text="#{crm.bulk.markiert}">markiert</span></span>
                 <!-- „Alle N Treffer auswählen" — nur wenn Treffer über die aktuelle Seite hinausgehen -->
-                <a href="#" id="bulkAlleLink" class="crm-bulk-alle" hidden
+                <a href="#" id="bulkAlleLink" class="liste-bulk-alle" hidden
                    th:text="#{crm.bulk.alleTreffer(${ansicht.anzahlGezeigt})}">Alle 120 Treffer auswählen</a>
-                <a href="#" id="bulkSeiteLink" class="crm-bulk-alle" hidden
+                <a href="#" id="bulkSeiteLink" class="liste-bulk-alle" hidden
                    th:text="#{crm.bulk.nurSeite}">Auswahl auf Seite beschränken</a>
                 <label>
                     <select name="bulkAktion" id="bulkAktion">
@@ -158,7 +158,7 @@
             <table class="app-table crm-portfolio-table">
                 <thead>
                 <tr>
-                    <th class="crm-check"><input type="checkbox" id="bulkAlle" th:aria-label="#{crm.bulk.alle}"></th>
+                    <th class="liste-check"><input type="checkbox" id="bulkAlle" th:aria-label="#{crm.bulk.alle}"></th>
                     <th th:replace="~{crm/portfolio :: sortKopf('verein', #{crm.feld.verein})}">Verein</th>
                     <th th:replace="~{crm/portfolio :: sortKopf('status', #{crm.feld.status})}">Status</th>
                     <th th:replace="~{crm/portfolio :: sortKopf('pipeline', #{crm.feld.pipelineStage})}">Pipeline-Stufe</th>
@@ -170,7 +170,7 @@
                 <tbody>
                 <!-- Master-Detail: Verein-Name verlinkt auf die Account-Detail. -->
                 <tr th:each="a : ${ansicht.accounts}">
-                    <td class="crm-check">
+                    <td class="liste-check">
                         <input type="checkbox" class="crm-row-check" name="ids" th:value="${a.id}"
                                th:aria-label="${a.vereinName}">
                     </td>
@@ -200,9 +200,9 @@
         </form>
 
         <!-- Paginierung: Seitengrösse + Vor/Zurück, bewahren Filter + Sortierung -->
-        <nav class="crm-pager" th:if="${ansicht.hatMehrereSeiten() or ansicht.anzahlGezeigt > 25}"
+        <nav class="liste-pager" th:if="${ansicht.hatMehrereSeiten() or ansicht.anzahlGezeigt > 25}"
              aria-label="Seitennavigation">
-            <form method="get" th:action="@{/crm/{slug}(slug=${sponsorSlug})}" class="crm-pager-groesse">
+            <form method="get" th:action="@{/crm/{slug}(slug=${sponsorSlug})}" class="liste-pager-groesse">
                 <input type="hidden" name="suche" th:value="${ansicht.suche}">
                 <input type="hidden" name="status" th:value="${ansicht.filterStatus}">
                 <input type="hidden" name="pipeline" th:value="${ansicht.filterPipeline}">
@@ -216,9 +216,9 @@
                     <span th:text="#{crm.pager.proSeite}">pro Seite</span>
                 </label>
             </form>
-            <span class="crm-pager-info"
+            <span class="liste-pager-info"
                   th:text="#{crm.pager.seiteVon(${ansicht.seite}, ${ansicht.anzahlSeiten})}">Seite 1 von 5</span>
-            <span class="crm-pager-nav">
+            <span class="liste-pager-nav">
                 <a th:if="${ansicht.seite > 1}"
                    th:href="@{/crm/{slug}(slug=${sponsorSlug}, suche=${ansicht.suche}, status=${ansicht.filterStatus},
                              pipeline=${ansicht.filterPipeline}, sort=${ansicht.sort},
@@ -236,16 +236,17 @@
 </div>
 
 <!-- Wiederverwendbarer Sortier-Spaltenkopf: toggelt asc/desc, bewahrt aktive Filter, zeigt ▲/▼/⇅ -->
-<th th:fragment="sortKopf(spalte, label)" class="crm-sort">
+<th th:fragment="sortKopf(spalte, label)" class="liste-sort">
     <a th:href="@{/crm/{slug}(slug=${sponsorSlug},
                  suche=${ansicht.suche}, status=${ansicht.filterStatus}, pipeline=${ansicht.filterPipeline},
                  sort=${spalte}, dir=${ansicht.sort == spalte and !ansicht.absteigend ? 'desc' : 'asc'})}">
         <span th:text="${label}">Spalte</span>
-        <span class="crm-sort-ind" th:text="${ansicht.sort != spalte ? '⇅' : (ansicht.absteigend ? '▼' : '▲')}">⇅</span>
+        <span class="liste-sort-ind" th:text="${ansicht.sort != spalte ? '⇅' : (ansicht.absteigend ? '▼' : '▲')}">⇅</span>
     </a>
 </th>
 
 <style>
+    /* Portfolio-spezifisch — die generische Listen-UX (.liste-*) lebt in dashboard.css. */
     .app-table { width:100%; border-collapse:collapse; }
     .app-table th, .app-table td { padding:0.6rem 0.5rem; text-align:left; border-bottom:1px solid var(--dash-border, #e5e7eb); vertical-align:middle; }
     .app-btn-sm { font-size:0.8rem; padding:0.3rem 0.7rem; }
@@ -254,36 +255,6 @@
     .crm-renewal .app-table { margin-top:0.8rem; }
     .crm-renewal-faellig td { background:#fef2f2; }
     .crm-chip-faellig { background:#fecaca; color:#991b1b; }
-
-    /* CRM-Toolbar (Filter + Suche + Zähler) */
-    .crm-toolbar { align-items:flex-end; }
-    .crm-toolbar .crm-suche { flex:1 1 220px; }
-    .crm-toolbar .crm-suche input { width:100%; }
-    .crm-anzahl { font-size:0.8rem; color:var(--dash-muted, #64748b); font-weight:600;
-        background:var(--dash-bg, #f3f4f6); border-radius:999px; padding:0.2rem 0.7rem; margin-left:auto; }
-    .crm-reset { font-size:0.85rem; color:var(--dash-violet-dark, #5b21b6); align-self:center; }
-
-    /* Sortierbare Spaltenköpfe */
-    .crm-sort a { display:inline-flex; align-items:center; gap:0.3rem; color:inherit; text-decoration:none; }
-    .crm-sort a:hover { color:var(--dash-violet-dark, #5b21b6); }
-    .crm-sort-ind { font-size:0.7rem; color:var(--dash-muted, #94a3b8); }
-    .crm-portfolio-table tbody tr:hover { background:var(--dash-violet-light, #f5f3ff); }
-
-    /* Bulk: Checkbox-Spalte + Aktionsleiste */
-    .crm-check { width:2.2rem; text-align:center; }
-    .crm-bulkbar { display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;
-        background:var(--dash-violet-light, #f5f3ff); border:1px solid var(--dash-violet, #c4b5fd);
-        border-radius:8px; padding:0.5rem 0.9rem; margin-bottom:0.75rem; }
-    .crm-bulkbar-anzahl { font-weight:600; font-size:0.85rem; color:var(--dash-violet-dark, #5b21b6); }
-    .crm-bulkbar select { padding:0.35rem 0.6rem; border:1px solid var(--dash-border, #e5e7eb); border-radius:6px; }
-    .crm-bulk-alle { font-size:0.82rem; color:var(--dash-violet-dark, #5b21b6); text-decoration:underline; cursor:pointer; }
-
-    /* Paginierung */
-    .crm-pager { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; margin-top:1rem;
-        font-size:0.85rem; color:var(--dash-muted, #64748b); }
-    .crm-pager-groesse select { padding:0.25rem 0.5rem; border:1px solid var(--dash-border, #e5e7eb); border-radius:6px; }
-    .crm-pager-info { margin-left:auto; }
-    .crm-pager-nav a { color:var(--dash-violet-dark, #5b21b6); font-weight:600; text-decoration:none; padding:0 0.4rem; }
 </style>
 
 <!-- Bulk-Auswahl: Select-all, Zähler, „Alle N Treffer", Leiste ein-/ausblenden, Lösch-Bestätigung.

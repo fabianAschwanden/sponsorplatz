@@ -81,9 +81,9 @@ class SponsorAccountControllerTest {
         mockMvc.perform(get("/crm/css"))
                 .andExpect(status().isOk())
                 // CRM-Toolbar gerendert: Filter-Leiste, Zähler, sortierbare Spalten.
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("crm-toolbar")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("crm-anzahl")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("crm-sort")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("liste-toolbar")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("liste-anzahl")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("liste-sort")));
     }
 
     /** CRM-CTRL-10: Status-Filter wirkt server-seitig durch den Controller (nur Treffer gerendert). */
