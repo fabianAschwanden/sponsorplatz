@@ -347,6 +347,8 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **PORTFOLIO-06** | `PortfolioAnsichtTest` | Forecast-Summe über gefilterte Menge; ohne Sort Reihenfolge bewahrt |
 | **PORTFOLIO-07** | `PortfolioAnsichtTest` | Paginierung: Seiten-Slice + Seitenzahl + vollständige gefilterteIds, Seite geklemmt |
 | **CRM-CTRL-11** | `SponsorAccountControllerTest` | Bulk-Status (`status:AKTIV`) → `bulkSetzeStatus` delegiert + Redirect |
+| **CRM-CTRL-12** | `SponsorAccountControllerTest` | Verein inline anlegen (Name+Branche) → Org als VEREIN erstellt + sofort als Account aufgenommen, Redirect |
+| **CRM-CTRL-13** | `SponsorAccountControllerTest` | Verein-Anlage mit Service-Fehler (fehlende Branche) → Formular erneut (kein 500), KEIN Account angelegt |
 | **CRM-CTRL-12** | `SponsorAccountControllerTest` | Bulk-Entfernen → `bulkLoesche` delegiert |
 | **CRM-CTRL-13** | `SponsorAccountControllerTest` | Bulk-POST ohne CSRF → 403 |
 | **CRM-CTRL-14** | `SponsorAccountControllerTest` | `alleGefiltert=true` leitet Bulk-IDs server-seitig aus dem gefilterten Set ab |

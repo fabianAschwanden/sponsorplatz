@@ -1,7 +1,12 @@
 package ch.sponsorplatz.crm;
 
+import ch.sponsorplatz.organisation.Branche;
+import ch.sponsorplatz.organisation.OrgTyp;
+import ch.sponsorplatz.organisation.OrganisationFormDto;
 import ch.sponsorplatz.organisation.OrganisationService;
+import ch.sponsorplatz.organisation.OrganisationView;
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
+import jakarta.validation.Valid;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -9,7 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -85,15 +92,24 @@ public class SponsorAccountController {
         return "crm/portfolio";
     }
 
-    /** Formular: neuen Account anlegen (Verein-Picker). */
+    /** Formular: neuen Account anlegen (Verein-Picker) bzw. Verein neu anlegen. */
     @GetMapping("/neu")
     public String neuesFormular(@PathVariable String sponsorSlug, Authentication auth, Model model) {
         UUID sponsorOrgId = organisationService.findeIdNachSlug(sponsorSlug);
         // Zugriffs-Schranke früh ziehen — findePortfolio wirft AccessDenied falls fremd.
         accountService.findePortfolio(sponsorOrgId, auth);
+        return zeigeNeuFormular(sponsorSlug, model);
+    }
+
+    /** Füllt das gemeinsame Model für die /neu-Seite (Picker + Inline-Anlage). */
+    private String zeigeNeuFormular(String sponsorSlug, Model model) {
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("sponsorSlug", sponsorSlug);
         model.addAttribute("vereine", organisationService.findeAktiveVereineAlsViews());
+        if (!model.containsAttribute("vereinForm")) {
+            model.addAttribute("vereinForm", new OrganisationFormDto());
+        }
+        model.addAttribute("branchen", Branche.values());
         return "crm/account-form";
     }
 
@@ -181,7 +197,7 @@ public class SponsorAccountController {
         return "crm/import";
     }
 
-    /** Account anlegen. */
+    /** Account anlegen (bestehender Verein aus dem Picker). */
     @PostMapping
     public String erstelle(@PathVariable String sponsorSlug,
                            @RequestParam UUID vereinOrgId,
@@ -190,6 +206,45 @@ public class SponsorAccountController {
         UUID sponsorOrgId = organisationService.findeIdNachSlug(sponsorSlug);
         accountService.erstelle(sponsorOrgId, vereinOrgId, auth);
         redirectAttributes.addFlashAttribute("erfolgsMeldung", "Account angelegt");
+        return "redirect:/crm/" + sponsorSlug;
+    }
+
+    /**
+     * Verein inline neu anlegen und sofort als Account aufnehmen. Deckt den Fall
+     * ab, dass der Zielverein noch gar nicht auf der Plattform ist — statt ihn
+     * erst separat über {@code /organisationen/neu} zu registrieren, legt der
+     * Sponsor ihn hier mit den Pflichtfeldern (Name + Branche) direkt an.
+     *
+     * <p>Der Typ wird serverseitig auf {@link OrgTyp#VEREIN} fixiert (das Formular
+     * trägt kein Typ-Feld) — Mass-Assignment-Schutz, und die XOR-Branche-Validierung
+     * im {@code OrganisationService} verlangt dann zwingend eine Verein-Branche.
+     * Die neue Org bekommt KEINEN Eigentümer: sie gehört nicht dem Sponsor, der
+     * Sponsor verknüpft sie nur in seinem privaten CRM.
+     */
+    @PostMapping("/verein-anlegen")
+    public String vereinAnlegen(@PathVariable String sponsorSlug,
+                                @Valid @ModelAttribute("vereinForm") OrganisationFormDto vereinForm,
+                                BindingResult br,
+                                Authentication auth,
+                                Model model,
+                                RedirectAttributes redirectAttributes) {
+        UUID sponsorOrgId = organisationService.findeIdNachSlug(sponsorSlug);
+        vereinForm.setTyp(OrgTyp.VEREIN);
+        if (br.hasErrors()) {
+            return zeigeNeuFormular(sponsorSlug, model);
+        }
+        try {
+            OrganisationView neuerVerein = organisationService.erstelleAlsView(vereinForm);
+            accountService.erstelle(sponsorOrgId, neuerVerein.id(), auth);
+        } catch (IllegalArgumentException ex) {
+            // Service-Fehler (z.B. fehlende Branche, Slug-Konflikt): Formular mit
+            // den Eingaben erneut zeigen statt 500 — kein Account angelegt.
+            model.addAttribute(ModelAttributeNames.FEHLERMELDUNG, ex.getMessage());
+            return zeigeNeuFormular(sponsorSlug, model);
+        }
+        // Erfolg → Post/Redirect/Get aufs Portfolio, wo der neue Account nun sichtbar ist.
+        redirectAttributes.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
+                "Verein \"" + vereinForm.getName() + "\" angelegt und ins Portfolio aufgenommen.");
         return "redirect:/crm/" + sponsorSlug;
     }
 

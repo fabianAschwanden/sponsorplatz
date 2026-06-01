@@ -20,7 +20,12 @@
             </div>
         </header>
 
+        <div th:if="${erfolgsMeldung}" class="app-flash app-flash-success" th:text="${erfolgsMeldung}">OK</div>
+        <div th:if="${fehlermeldung}" class="app-flash app-flash-error" th:text="${fehlermeldung}">Fehler</div>
+
         <section class="app-card" style="max-width:560px;">
+            <h2 style="font-family:var(--dash-font-head); font-size:1.1rem; margin:0 0 1rem;"
+                th:text="#{crm.neu.bestehend.titel}">Bestehenden Verein wählen</h2>
             <form th:action="@{/crm/{slug}(slug=${sponsorSlug})}" method="post" class="app-form">
                 <div class="app-form-group">
                     <label for="verein" th:text="#{crm.neu.verein}">Verein</label>
@@ -34,6 +39,50 @@
                     <button type="submit" class="app-btn" th:text="#{crm.neu.anlegen}">Anlegen</button>
                     <a th:href="@{/crm/{slug}(slug=${sponsorSlug})}" class="app-btn app-btn-secondary"
                        th:text="#{crm.neu.abbrechen}">Abbrechen</a>
+                </div>
+            </form>
+        </section>
+
+        <!-- Verein noch nicht auf der Plattform? Hier direkt als VEREIN anlegen
+             und sofort ins Portfolio aufnehmen. Pflicht: Name + Branche. -->
+        <section class="app-card" style="max-width:560px; margin-top:1.5rem;">
+            <h2 style="font-family:var(--dash-font-head); font-size:1.1rem; margin:0 0 0.25rem;"
+                th:text="#{crm.neu.anlegen.titel}">Neuen Verein anlegen</h2>
+            <p class="app-muted" style="margin:0 0 1rem;" th:text="#{crm.neu.anlegen.hinweis}">
+                Verein ist noch nicht auf Sponsorplatz? Lege ihn hier an — er wird sofort
+                ins Portfolio aufgenommen.
+            </p>
+            <form th:action="@{/crm/{slug}/verein-anlegen(slug=${sponsorSlug})}" method="post"
+                  th:object="${vereinForm}" class="app-form">
+                <!-- Typ ist fix VEREIN (Schaufenster-Nische) — kein Auswahlfeld nötig. -->
+                <input type="hidden" th:field="*{typ}" value="VEREIN">
+                <div class="app-form-group">
+                    <label for="name" th:text="#{crm.neu.anlegen.name}">Vereinsname</label>
+                    <input type="text" id="name" th:field="*{name}" required minlength="2" maxlength="255"
+                           th:placeholder="#{crm.neu.anlegen.name.platzhalter}" placeholder="z.B. FC Musterhausen">
+                    <span class="app-form-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Fehler</span>
+                </div>
+                <div class="app-form-group">
+                    <label for="branche" th:text="#{crm.neu.anlegen.branche}">Branche</label>
+                    <select id="branche" th:field="*{branche}" required>
+                        <option value="" th:text="#{crm.neu.anlegen.branche.platzhalter}">— Branche wählen —</option>
+                        <option th:each="b : ${branchen}" th:value="${b}" th:text="${b.anzeige}">Sport</option>
+                    </select>
+                    <span class="hint" th:text="#{crm.neu.anlegen.branche.hinweis}">Sponsorplatz ist auf Sport und Gesundheit fokussiert.</span>
+                </div>
+                <div class="crm-form-grid" style="display:grid; grid-template-columns:1fr 2fr; gap:0.75rem;">
+                    <div class="app-form-group">
+                        <label for="plz" th:text="#{crm.neu.anlegen.plz}">PLZ</label>
+                        <input type="text" id="plz" th:field="*{postleitzahl}" maxlength="16" placeholder="8000">
+                    </div>
+                    <div class="app-form-group">
+                        <label for="ort" th:text="#{crm.neu.anlegen.ort}">Ort</label>
+                        <input type="text" id="ort" th:field="*{ort}" maxlength="70"
+                               th:placeholder="#{crm.neu.anlegen.ort.platzhalter}" placeholder="Zürich">
+                    </div>
+                </div>
+                <div class="app-form-actions">
+                    <button type="submit" class="app-btn" th:text="#{crm.neu.anlegen.absenden}">Verein anlegen &amp; aufnehmen</button>
                 </div>
             </form>
         </section>

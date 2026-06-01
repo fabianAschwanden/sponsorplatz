@@ -170,6 +170,59 @@ class SponsorAccountControllerTest {
                 .andExpect(status().isOk());
     }
 
+    /**
+     * CRM-CTRL-12: Verein inline neu anlegen (Name + Branche Pflicht) → Org wird
+     * als VEREIN erstellt und sofort als Account ins Portfolio aufgenommen.
+     */
+    @Test
+    @WithMockUser
+    void vereinAnlegenErstelltOrgUndAccount() throws Exception {
+        when(organisationService.findeIdNachSlug("css")).thenReturn(sponsorOrgId);
+        UUID neueVereinId = UUID.randomUUID();
+        when(organisationService.erstelleAlsView(any())).thenReturn(
+                new ch.sponsorplatz.organisation.OrganisationView(
+                        neueVereinId, "FC Neu", "fc-neu", ch.sponsorplatz.organisation.OrgTyp.VEREIN,
+                        null, null, null, null, null, null, null, null, null, null, null, null));
+
+        mockMvc.perform(post("/crm/css/verein-anlegen").with(csrf())
+                        .param("typ", "VEREIN")
+                        .param("name", "FC Neu")
+                        .param("branche", "SPORT"))
+                .andExpect(status().is3xxRedirection());
+
+        // Org als VEREIN erstellt …
+        org.mockito.ArgumentCaptor<ch.sponsorplatz.organisation.OrganisationFormDto> dto =
+                org.mockito.ArgumentCaptor.forClass(ch.sponsorplatz.organisation.OrganisationFormDto.class);
+        org.mockito.Mockito.verify(organisationService).erstelleAlsView(dto.capture());
+        org.assertj.core.api.Assertions.assertThat(dto.getValue().getTyp())
+                .isEqualTo(ch.sponsorplatz.organisation.OrgTyp.VEREIN);
+        org.assertj.core.api.Assertions.assertThat(dto.getValue().getName()).isEqualTo("FC Neu");
+        // … und sofort als Account verknüpft.
+        org.mockito.Mockito.verify(accountService).erstelle(eq(sponsorOrgId), eq(neueVereinId), any());
+    }
+
+    /**
+     * CRM-CTRL-13: Fehlt die Pflicht-Branche, schlägt der Service mit
+     * IllegalArgumentException fehl → Controller zeigt das Formular erneut (kein 500),
+     * KEIN Account wird angelegt.
+     */
+    @Test
+    @WithMockUser
+    void vereinAnlegenOhneBrancheZeigtFormularErneut() throws Exception {
+        when(organisationService.findeIdNachSlug("css")).thenReturn(sponsorOrgId);
+        when(organisationService.erstelleAlsView(any()))
+                .thenThrow(new IllegalArgumentException("Branche ist Pflicht für Vereine"));
+
+        mockMvc.perform(post("/crm/css/verein-anlegen").with(csrf())
+                        .param("typ", "VEREIN")
+                        .param("name", "FC Ohne Branche"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Branche ist Pflicht")));
+
+        org.mockito.Mockito.verify(accountService, org.mockito.Mockito.never())
+                .erstelle(any(), any(), any());
+    }
+
     /** CRM-CTRL-11: Bulk-Status (kodiert status:AKTIV) → an Service delegiert + Redirect. */
     @Test
     @WithMockUser
