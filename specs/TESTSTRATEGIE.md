@@ -1186,6 +1186,7 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **ARCH-13** | `ArchitekturRegelnTest` | Test-Klassen spiegeln ein Produktionspaket (eigener Importer inkl. Tests); Allowlist: `architektur`, `e2e` |
 | **ARCH-14** | Templates liegen in einem Feature-Folder, der einem Java-Paket entspricht (`TemplateStrukturTest`) | Verhindert dass die nach Bounded-Context strukturierten Templates wieder im Top-Level landen |
 | **ARCH-15** | HTML-Attribute (placeholder/title/alt/aria-label) mit deutschem Text haben `th:`-Pendant in der Nähe (`I18nLintTest`) | Verhindert Lokalisierungslücken in user-facing Form-Hints — Allowlist für `admin/` und Legal-Pages |
+| **ARCH-17** | `ArchitekturRegelnTest` | Kein generisches `catch (Exception\|Throwable)` im Produktionscode (Quell-Scan, nicht Bytecode — der Bytecode-Modus flaggt fälschlich jeden try-with-resources). Erwartete Typen explizit fangen; Allowlist `Datei.java:Zeile` mit Begründung (`AuditService` best-effort SecurityContext, `PlzVerzeichnis` Boot-Fail-Fast) |
 
 **Spätere Regel-Kandidaten:**
 

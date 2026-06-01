@@ -84,7 +84,10 @@ public class AdminAuditController {
             Path pfad = backupService.erstelleBackup();
             redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                     "Backup erstellt: " + pfad.getFileName());
-        } catch (Exception e) {
+        } catch (IOException | RuntimeException e) {
+            // erstelleBackup() wirft IOException (Dateisystem) ODER RuntimeException
+            // (H2-/pg_dump-Fehler, in BackupService gewrappt). Beide Familien explizit
+            // fangen — eine Backup-Aktion soll als Flash-Meldung enden, nicht als 500.
             redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
                     "Backup fehlgeschlagen: " + e.getMessage());
         }
@@ -108,7 +111,7 @@ public class AdminAuditController {
             backupService.loescheBackup(dateiname);
             redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                     "Backup gelöscht: " + dateiname);
-        } catch (Exception e) {
+        } catch (IOException | RuntimeException e) {
             redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
                     "Löschen fehlgeschlagen: " + e.getMessage());
         }
@@ -143,7 +146,7 @@ public class AdminAuditController {
                     "Restore erfolgreich — " + datei.getOriginalFilename()
                             + " (" + datei.getSize() / 1024 + " KB) wurde eingespielt. "
                             + "Bitte ausloggen und erneut anmelden.");
-        } catch (Exception e) {
+        } catch (IOException | RuntimeException e) {
             redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
                     "Restore fehlgeschlagen: " + e.getMessage());
         }
@@ -174,7 +177,7 @@ public class AdminAuditController {
             Path pfad = dateiBackupService.erstelleDateiBackup();
             redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                     "Datei-Backup erstellt: " + pfad.getFileName());
-        } catch (Exception e) {
+        } catch (IOException | RuntimeException e) {
             redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
                     "Datei-Backup fehlgeschlagen: " + e.getMessage());
         }
@@ -198,7 +201,7 @@ public class AdminAuditController {
             dateiBackupService.loescheDateiBackup(dateiname);
             redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                     "Datei-Backup gelöscht: " + dateiname);
-        } catch (Exception e) {
+        } catch (IOException | RuntimeException e) {
             redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
                     "Löschen fehlgeschlagen: " + e.getMessage());
         }
@@ -231,7 +234,7 @@ public class AdminAuditController {
             redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                     "Datei-Restore erfolgreich — " + report.restored() + " Dateien wiederhergestellt"
                             + (report.skipped() > 0 ? ", " + report.skipped() + " skipped" : "") + ".");
-        } catch (Exception e) {
+        } catch (IOException | RuntimeException e) {
             redirect.addFlashAttribute(ModelAttributeNames.FEHLERMELDUNG,
                     "Datei-Restore fehlgeschlagen: " + e.getMessage());
         }

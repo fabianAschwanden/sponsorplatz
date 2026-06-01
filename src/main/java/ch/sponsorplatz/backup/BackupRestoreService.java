@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
@@ -86,7 +87,7 @@ public class BackupRestoreService {
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement()) {
             stmt.execute("RUNSCRIPT FROM '" + sqlDatei.toAbsolutePath() + "'");
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException("H2-Restore fehlgeschlagen: " + e.getMessage(), e);
         }
     }

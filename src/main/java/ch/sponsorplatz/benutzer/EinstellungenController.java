@@ -84,7 +84,9 @@ public class EinstellungenController {
             UUID assetId = profilbildSpeicherung.speichereProfilbild(datei, userId);
             appUserService.setzeProfilbild(userId, assetId);
             redirect.addFlashAttribute("erfolgsMeldung", "Profilbild aktualisiert");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
+            // speichereProfilbild wirft IllegalArgumentException (Validierung) bzw.
+            // gewrappte IO-Fehler als RuntimeException — beide sind RuntimeException.
             redirect.addFlashAttribute("fehlermeldung", "Upload fehlgeschlagen: " + e.getMessage());
         }
         return "redirect:/einstellungen";

@@ -67,7 +67,7 @@ public class PaymentWebhookController {
         Map<String, String> payload;
         try {
             payload = objectMapper.readValue(rawBody, new TypeReference<>() {});
-        } catch (Exception e) {
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("status", "error", "message", "Ungültiger JSON-Body"));
         }

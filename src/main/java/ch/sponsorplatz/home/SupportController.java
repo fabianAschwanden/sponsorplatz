@@ -77,11 +77,13 @@ public class SupportController {
             redirect.addFlashAttribute(ModelAttributeNames.ERFOLGS_MELDUNG,
                     "Ihre Support-Anfrage wurde gesendet. Wir melden uns so schnell wie möglich.");
             return "redirect:/support";
-        } catch (Exception e) {
+        } catch (org.springframework.mail.MailException e) {
             // Mail-Versand fehlgeschlagen — User darf nicht im Glauben gelassen
             // werden, dass die Anfrage angekommen ist (sie ist nicht persistiert).
             // Form bleibt offen, User sieht ehrliche Fehler-Meldung mit
-            // direkter Mail-Adresse als Fallback.
+            // direkter Mail-Adresse als Fallback. Nur MailException fangen — andere
+            // Fehler (z.B. Programmierfehler) sollen NICHT als „Mail nicht möglich"
+            // maskiert werden, sondern als 500 zum GlobalExceptionHandler.
             log.error("Support-Mail-Versand fehlgeschlagen — User muss manuell kontaktieren. Empfänger={}, Fehler={}",
                     empfaenger, e.getMessage());
             model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "support");

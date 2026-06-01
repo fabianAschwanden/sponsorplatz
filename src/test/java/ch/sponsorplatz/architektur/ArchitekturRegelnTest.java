@@ -304,4 +304,67 @@ class ArchitekturRegelnTest {
                         ARCH_13_ERLAUBTE_TEST_PAKETE)
                 .isEmpty();
     }
+
+    // =========================================================================
+    // ARCH-17 — Kein generisches catch (Exception | Throwable)
+    // =========================================================================
+    // Generisches Fangen verschluckt Programmierfehler (NPE, IllegalState …) und
+    // maskiert sie als fachliche Fehlermeldung — der GlobalExceptionHandler soll
+    // unerwartete Fehler als 500 sehen. Stattdessen die erwarteten Typen explizit
+    // fangen (z.B. MailException, IOException | RuntimeException).
+    //
+    // Bewusste Ausnahmen leben in der Allowlist (Klasse#methode) MIT Begründung.
+
+    // Quell-Scan (nicht Bytecode): der ArchUnit-Bytecode-Modus flaggt fälschlich
+    // jeden try-with-resources (synthetischer catch(Throwable) für addSuppressed).
+    // Ein Source-Scan sieht nur echte, im Code geschriebene generische Catches.
+    private static final java.nio.file.Path ARCH_17_QUELL_ROOT =
+            java.nio.file.Paths.get("src/main/java/ch/sponsorplatz");
+
+    private static final java.util.regex.Pattern ARCH_17_GENERISCH =
+            java.util.regex.Pattern.compile("catch\\s*\\(\\s*(Exception|Throwable)\\b");
+
+    /**
+     * Allowlist {@code Dateiname.java:Zeile} für bewusst breites Fangen — jede
+     * Stelle MIT Begründung. Alle anderen Fundstellen wurden auf spezifische
+     * Typen verengt (MailException, IOException|RuntimeException, SQLException,
+     * JsonProcessingException). Hier bleiben nur Stellen, an denen „jeder Fehler"
+     * fachlich korrekt ist.
+     */
+    private static final Set<String> ARCH_17_ERLAUBTE_STELLEN = Set.of(
+            // Best-effort-Anreicherung: SecurityContext evtl. nicht verfügbar →
+            // Audit-Eintrag bleibt ohne User-Email, niemals Fehler eskalieren.
+            "AuditService.java:114",
+            // Boot-Zeit-Laden des PLZ-Verzeichnisses: jeder Fehler (IOException,
+            // fehlende Ressource → NPE) muss als IllegalStateException fail-fast
+            // hochkommen, sonst startet die App mit halbem Verzeichnis.
+            "PlzVerzeichnis.java:100");
+
+    @Test
+    void ARCH_17_kein_generisches_catch_exception() throws java.io.IOException {
+        java.util.List<String> verstoesse = new java.util.ArrayList<>();
+        try (var pfade = java.nio.file.Files.walk(ARCH_17_QUELL_ROOT)) {
+            for (java.nio.file.Path datei : pfade.filter(p -> p.toString().endsWith(".java")).toList()) {
+                java.util.List<String> zeilen = java.nio.file.Files.readAllLines(datei);
+                for (int i = 0; i < zeilen.size(); i++) {
+                    String zeile = zeilen.get(i);
+                    if (zeile.stripLeading().startsWith("//")) {
+                        continue; // auskommentierte Zeilen ignorieren
+                    }
+                    if (ARCH_17_GENERISCH.matcher(zeile).find()) {
+                        String stelle = datei.getFileName() + ":" + (i + 1);
+                        if (!ARCH_17_ERLAUBTE_STELLEN.contains(stelle)) {
+                            verstoesse.add(stelle + "  " + zeile.strip());
+                        }
+                    }
+                }
+            }
+        }
+
+        assertThat(verstoesse)
+                .as("ARCH-17: generisches catch (Exception|Throwable) verboten — "
+                        + "erwartete Typen explizit fangen (Allowlist mit Begründung: %s)",
+                        ARCH_17_ERLAUBTE_STELLEN)
+                .isEmpty();
+    }
 }

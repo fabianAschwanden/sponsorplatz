@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -116,7 +117,9 @@ public class BackupService {
     public void geplanterBackup() {
         try {
             erstelleBackup();
-        } catch (Exception e) {
+        } catch (IOException | RuntimeException e) {
+            // Scheduled-Job: jeden erwarteten Fehler (Dateisystem + gewrappte
+            // H2-/pg_dump-Fehler) loggen statt eskalieren — kein Aufrufer da.
             log.error("Geplanter Backup fehlgeschlagen: {}", e.getMessage(), e);
         }
     }
@@ -184,7 +187,7 @@ public class BackupService {
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement()) {
             stmt.execute("SCRIPT TO '" + backupPfad.toAbsolutePath() + "'");
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException("H2-Backup fehlgeschlagen: " + e.getMessage(), e);
         }
     }

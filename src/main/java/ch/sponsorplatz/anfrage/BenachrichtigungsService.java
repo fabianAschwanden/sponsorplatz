@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import org.springframework.mail.MailException;
+
 import ch.sponsorplatz.shared.mail.MailService;
 
 /**
@@ -43,7 +45,7 @@ public class BenachrichtigungsService {
         try {
             mailService.sendePlain(empfaengerEmail, "Neue Sponsoring-Anfrage auf Sponsorplatz", body);
             log.info("Benachrichtigung gesendet an {}", empfaengerEmail);
-        } catch (Exception ex) {
+        } catch (MailException ex) {
             log.error("Fehler beim Senden der Benachrichtigung an {}: {}", empfaengerEmail, ex.getMessage());
         }
     }
@@ -63,7 +65,7 @@ public class BenachrichtigungsService {
 
         try {
             mailService.sendePlain(empfaengerEmail, "Antwort auf Ihre Sponsoring-Anfrage — Sponsorplatz", body);
-        } catch (Exception ex) {
+        } catch (MailException ex) {
             log.error("Fehler beim Senden der Antwort-Benachrichtigung: {}", ex.getMessage());
         }
     }
