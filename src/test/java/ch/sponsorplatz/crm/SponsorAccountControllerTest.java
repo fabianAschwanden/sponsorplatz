@@ -79,7 +79,30 @@ class SponsorAccountControllerTest {
                         java.time.LocalDate.now().plusDays(30), 30, false)));
 
         mockMvc.perform(get("/crm/css"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                // CRM-Toolbar gerendert: Filter-Leiste, Zähler, sortierbare Spalten.
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("crm-toolbar")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("crm-anzahl")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("crm-sort")));
+    }
+
+    /** CRM-CTRL-10: Status-Filter wirkt server-seitig durch den Controller (nur Treffer gerendert). */
+    @Test
+    @WithMockUser
+    void portfolioStatusFilter() throws Exception {
+        when(organisationService.findeIdNachSlug("css")).thenReturn(sponsorOrgId);
+        when(organisationService.findeKopfNachSlug("css"))
+                .thenReturn(new OrganisationService.OrgKopf(sponsorOrgId, "CSS"));
+        when(accountService.findePortfolio(eq(sponsorOrgId), any())).thenReturn(List.of(
+                new SponsorAccountView(UUID.randomUUID(), UUID.randomUUID(), "FC Aktiv", "fc-aktiv",
+                        null, AccountStatus.AKTIV, null, PipelineStage.LEAD, null, null, null, java.time.Instant.now(), null),
+                new SponsorAccountView(UUID.randomUUID(), UUID.randomUUID(), "FC Lead", "fc-lead",
+                        null, AccountStatus.LEAD, null, PipelineStage.LEAD, null, null, null, java.time.Instant.now(), null)));
+
+        mockMvc.perform(get("/crm/css").param("status", "AKTIV"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("FC Aktiv")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("FC Lead"))));
     }
 
     /** CRM-CTRL-05: Account-Detail rendert (Stammdaten-Form + Kontakt-/Aktivitäts-Erfassung, Thymeleaf-Smoke). */

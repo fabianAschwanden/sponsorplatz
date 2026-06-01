@@ -328,6 +328,13 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **CRM-CTRL-07** | `SponsorAccountControllerTest` | `GET /export.csv` → CSV-Download mit Content-Disposition |
 | **CRM-CTRL-08** | `SponsorAccountControllerTest` | `GET /import` rendert das Import-Formular |
 | **CRM-CTRL-09** | `SponsorAccountControllerTest` | `POST /import` (multipart + CSRF) verarbeitet die Datei |
+| **CRM-CTRL-10** | `SponsorAccountControllerTest` | Portfolio-Status-Filter wirkt server-seitig (nur Treffer gerendert) |
+| **PORTFOLIO-01** | `PortfolioAnsichtTest` | Status-Filter + Anzahl gesamt/gezeigt getrennt |
+| **PORTFOLIO-02** | `PortfolioAnsichtTest` | Suche über Vereinsname + Notiz, case-insensitiv |
+| **PORTFOLIO-03** | `PortfolioAnsichtTest` | Status + Pipeline + Suche kombiniert |
+| **PORTFOLIO-04** | `PortfolioAnsichtTest` | Sortierung nach Verein auf-/absteigend |
+| **PORTFOLIO-05** | `PortfolioAnsichtTest` | Sortierung nach Forecast, null-Werte zuerst |
+| **PORTFOLIO-06** | `PortfolioAnsichtTest` | Forecast-Summe über gefilterte Menge; ohne Sort Reihenfolge bewahrt |
 | **CRM-ISO-01** | `SponsorAccountIsolationIT` | Eigentümer-Sponsor sieht eigenen Account (echte DB) |
 | **CRM-ISO-02** | `SponsorAccountIsolationIT` | Konkurrierender Sponsor → `AccessDeniedException` auf fremdes Portfolio |
 | **CRM-ISO-03** | `SponsorAccountIsolationIT` | Kein Leak: fremdes Portfolio enthält den Account nicht |

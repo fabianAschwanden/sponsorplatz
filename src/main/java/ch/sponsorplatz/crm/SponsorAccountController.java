@@ -56,29 +56,29 @@ public class SponsorAccountController {
 
     /** Portfolio-Liste der gesponserten Vereine. */
     @GetMapping
-    public String portfolio(@PathVariable String sponsorSlug, Authentication auth, Model model) {
+    public String portfolio(@PathVariable String sponsorSlug,
+                            @RequestParam(required = false) String suche,
+                            @RequestParam(required = false) AccountStatus status,
+                            @RequestParam(required = false) PipelineStage pipeline,
+                            @RequestParam(required = false) String sort,
+                            @RequestParam(required = false, defaultValue = "asc") String dir,
+                            Authentication auth, Model model) {
         UUID sponsorOrgId = organisationService.findeIdNachSlug(sponsorSlug);
         // Zugriffs-Schranke ZUERST — wirft AccessDenied bevor irgendwelche
         // Org-Daten (z.B. der Name) geladen werden.
         var accounts = accountService.findePortfolio(sponsorOrgId, auth);
+        boolean absteigend = "desc".equalsIgnoreCase(dir);
+        PortfolioAnsicht ansicht = PortfolioAnsicht.erstelle(accounts, suche, status, pipeline, sort, absteigend);
+
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("sponsorSlug", sponsorSlug);
         model.addAttribute("sponsorName", organisationService.findeKopfNachSlug(sponsorSlug).name());
-        model.addAttribute("accounts", accounts);
+        model.addAttribute("ansicht", ansicht);
         model.addAttribute("renewals", renewalService.findeAuslaufende(sponsorOrgId, auth));
-        model.addAttribute("pipelineForecastChf", summiereGewichtetenForecast(accounts));
         model.addAttribute("statusWerte", AccountStatus.values());
         model.addAttribute("tierWerte", AccountTier.values());
+        model.addAttribute("pipelineStageWerte", PipelineStage.values());
         return "crm/portfolio";
-    }
-
-    /** Summe der gewichteten Forecasts über das Portfolio — Pipeline-Gesamtwert. */
-    private static java.math.BigDecimal summiereGewichtetenForecast(
-            java.util.List<SponsorAccountView> accounts) {
-        return accounts.stream()
-                .map(SponsorAccountView::gewichteterForecastChf)
-                .filter(java.util.Objects::nonNull)
-                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
     }
 
     /** Formular: neuen Account anlegen (Verein-Picker). */
