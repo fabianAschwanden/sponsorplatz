@@ -20,7 +20,7 @@
 
         <div th:replace="~{fragments/a11y :: flash-meldungen}"></div>
 
-        <div th:if="${#lists.isEmpty(aufgaben)}" class="app-empty"
+        <div th:if="${anzahlGesamt == 0}" class="app-empty"
              style="text-align:center; padding:3rem 1rem; background:#f9fafb; border-radius:0.5rem;">
             <strong th:text="#{aufgaben.empty.titel}">Keine offenen Aufgaben</strong>
             <p style="margin:0.5rem 0 0;" th:text="#{aufgaben.empty.text}">
@@ -28,13 +28,40 @@
             </p>
         </div>
 
-        <div th:unless="${#lists.isEmpty(aufgaben)}" class="app-card" style="padding:0;">
+        <th:block th:if="${anzahlGesamt > 0}">
+        <!-- Such-Leiste + Zähler -->
+        <form method="get" th:action="@{/aufgaben}" class="app-filter liste-toolbar">
+            <input type="hidden" name="sort" th:value="${liste.sort}">
+            <input type="hidden" name="dir" th:value="${liste.absteigend} ? 'desc' : 'asc'">
+            <div class="app-filter-felder">
+                <label class="liste-suche">
+                    <span th:text="#{crm.filter.suche}">Suche</span>
+                    <input type="search" name="suche" th:value="${filterSuche}"
+                           th:placeholder="#{aufgaben.suche.placeholder}" placeholder="Aufgabe, Org">
+                </label>
+            </div>
+            <div class="app-filter-aktionen">
+                <button type="submit" class="app-btn app-btn-sm" th:text="#{crm.filter.anwenden}">Anwenden</button>
+                <a th:if="${filterAktiv}" th:href="@{/aufgaben}" class="liste-reset"
+                   th:text="#{crm.filter.zuruecksetzen}">Zurücksetzen</a>
+                <span class="liste-anzahl"
+                      th:text="${filterAktiv}
+                               ? #{aufgaben.anzahlGefiltert(${anzahlGezeigt}, ${anzahlGesamt})}
+                               : #{aufgaben.anzahl(${anzahlGesamt})}">5 Aufgaben</span>
+            </div>
+        </form>
+
+        <div th:if="${anzahlGezeigt == 0}" class="app-empty" style="text-align:center; padding:2rem 1rem;">
+            <strong th:text="#{aufgaben.filter.empty}">Keine Aufgaben passen zur Suche.</strong>
+        </div>
+
+        <div th:if="${anzahlGezeigt > 0}" class="app-card" style="padding:0;">
             <table class="app-table" style="width:100%; border-collapse:collapse;">
                 <thead>
                     <tr style="background:#f3f4f6;">
-                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{aufgaben.spalte.titel}">Aufgabe</th>
-                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{aufgaben.spalte.zugewiesen}">Zugewiesen an</th>
-                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{aufgaben.spalte.erstellt}">Erstellt</th>
+                        <th th:replace="~{aufgabe/aufgaben :: sortKopf('titel', #{aufgaben.spalte.titel})}">Aufgabe</th>
+                        <th th:replace="~{aufgabe/aufgaben :: sortKopf('zugewiesen', #{aufgaben.spalte.zugewiesen})}">Zugewiesen an</th>
+                        <th th:replace="~{aufgabe/aufgaben :: sortKopf('erstellt', #{aufgaben.spalte.erstellt})}">Erstellt</th>
                         <th style="text-align:right; padding:0.75rem 1rem;" th:text="#{aufgaben.spalte.aktion}">Aktion</th>
                     </tr>
                 </thead>
@@ -62,8 +89,47 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Paginierung -->
+        <nav class="liste-pager" th:if="${liste.hatMehrereSeiten() or liste.gesamt > 25}" aria-label="Seitennavigation">
+            <form method="get" th:action="@{/aufgaben}" class="liste-pager-groesse">
+                <input type="hidden" name="suche" th:value="${filterSuche}">
+                <input type="hidden" name="sort" th:value="${liste.sort}">
+                <input type="hidden" name="dir" th:value="${liste.absteigend} ? 'desc' : 'asc'">
+                <label>
+                    <select name="groesse" onchange="this.form.submit()" th:aria-label="#{crm.pager.proSeite}">
+                        <option th:each="g : ${seitenGroessen}" th:value="${g}"
+                                th:selected="${liste.seitenGroesse == g}" th:text="${g}">25</option>
+                    </select>
+                    <span th:text="#{crm.pager.proSeite}">pro Seite</span>
+                </label>
+            </form>
+            <span class="liste-pager-info"
+                  th:text="#{crm.pager.seiteVon(${liste.seite}, ${liste.anzahlSeiten})}">Seite 1 von 5</span>
+            <span class="liste-pager-nav">
+                <a th:if="${liste.seite > 1}"
+                   th:href="@{/aufgaben(suche=${filterSuche}, sort=${liste.sort},
+                             dir=${liste.absteigend} ? 'desc' : 'asc', groesse=${liste.seitenGroesse},
+                             seite=${liste.seite - 1})}" th:text="'‹ ' + #{crm.pager.zurueck}">‹ Zurück</a>
+                <a th:if="${liste.seite < liste.anzahlSeiten}"
+                   th:href="@{/aufgaben(suche=${filterSuche}, sort=${liste.sort},
+                             dir=${liste.absteigend} ? 'desc' : 'asc', groesse=${liste.seitenGroesse},
+                             seite=${liste.seite + 1})}" th:text="#{crm.pager.weiter} + ' ›'">Weiter ›</a>
+            </span>
+        </nav>
+        </th:block>
     </main>
 </div>
+
+<!-- Sortier-Spaltenkopf (behält die Inline-Padding-Optik der Aufgaben-Tabelle) -->
+<th th:fragment="sortKopf(spalte, label)" class="liste-sort" style="text-align:left; padding:0.75rem 1rem;">
+    <a th:href="@{/aufgaben(suche=${filterSuche},
+                 sort=${spalte}, dir=${liste.sort == spalte and !liste.absteigend ? 'desc' : 'asc'})}">
+        <span th:text="${label}">Spalte</span>
+        <span class="liste-sort-ind" th:text="${liste.sort != spalte ? '⇅' : (liste.absteigend ? '▼' : '▲')}">⇅</span>
+    </a>
+</th>
+
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
 </body>
 </html>

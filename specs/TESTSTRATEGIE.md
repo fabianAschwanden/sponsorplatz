@@ -480,6 +480,8 @@ Customizing via `aufgaben_definition` ist im Admin-UI editierbar.
 
 | ID | Test-Klasse | Beschreibung |
 |---|---|---|
+| **AUFG-CTRL-01** | `AufgabenControllerTest` | „Meine Aufgaben"-Liste rendert mit Listen-UX (Zähler/Suche/Sort) |
+| **AUFG-CTRL-02** | `AufgabenControllerTest` | Sortierung nach Titel absteigend server-seitig |
 | **AUFG-ENG-01** | `AufgabenEngineTest` | Neue PENDING-Org + aktive PLATFORM_ADMIN-Definition → Aufgabe mit `nurPlatformAdmin=true`, kein Assignee-Org |
 | **AUFG-ENG-02** | `AufgabenEngineTest` | Org wechselt auf `ziel_status` der Definition → offene Aufgabe wird ERLEDIGT + erledigtAm gesetzt |
 | **AUFG-ENG-03** | `AufgabenEngineTest` | Anfrage wechselt auf alternativen Status (z.B. ABGELEHNT statt ANGENOMMEN) → Aufgabe wird ENTFALLEN |
