@@ -1275,9 +1275,33 @@ body.app-body {
    nutzt dieselben .liste-* Klassen; die Server-Logik (Filter/Sort/Page) liegt
    im jeweiligen Controller + ListenSeite. */
 
-/* Toolbar = Filter-/Suchleiste (baut auf .app-filter auf) + Zähler rechts */
-.liste-toolbar { align-items: flex-end; }
-.liste-suche { flex: 1 1 220px; }
+/* Toolbar = Filter-/Suchleiste (baut auf .app-filter auf) + Zähler rechts.
+   Bricht die Spalten-Stapelung von .app-filter auf: Felder + Aktionen liegen
+   in EINER horizontalen, umbrechenden Zeile, statt platzraubend übereinander. */
+.liste-toolbar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    column-gap: 1rem;
+}
+/* Feld-Block wächst und reiht seine Felder horizontal: Selects sizen auf ihren
+   Inhalt, das Suchfeld (.liste-suche, flex:1) füllt den Rest. Bei Platzmangel
+   bricht die Zeile um statt die Felder vertikal zu stapeln. */
+.liste-toolbar .app-filter-felder {
+    display: flex;
+    flex-wrap: wrap;
+    flex: 1 1 auto;
+    align-items: flex-end;
+    gap: 0.75rem;
+}
+.liste-toolbar .app-filter-felder > label { flex: 0 0 auto; }
+.liste-toolbar .app-filter-felder > .liste-suche { flex: 1 1 220px; }
+/* Aktionen (Anwenden/Reset/Zähler) hängen am Ende der Zeile. */
+.liste-toolbar .app-filter-aktionen {
+    flex-wrap: wrap;
+    margin-left: auto;
+}
+.liste-suche { flex: 1 1 220px; min-width: 180px; }
 .liste-suche input { width: 100%; }
 .liste-anzahl {
     font-size: 0.8rem; color: var(--dash-muted); font-weight: 600;
