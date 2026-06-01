@@ -93,6 +93,37 @@ public class SponsorAccountController {
         return "crm/account-form";
     }
 
+    /**
+     * Bulk-Aktion auf markierte Accounts. {@code bulkAktion} ist kodiert als
+     * {@code aktion:wert} (z.B. {@code status:AKTIV}, {@code pipeline:GEWONNEN},
+     * {@code tier:CORE}) bzw. {@code entfernen}. So genügt ein Select ohne
+     * abhängiges JS. Mandanten-Bindung an die Seiten-Org liegt im Service.
+     */
+    @PostMapping("/bulk")
+    public String bulk(@PathVariable String sponsorSlug,
+                       @RequestParam("bulkAktion") String bulkAktion,
+                       @RequestParam(value = "ids", required = false) java.util.List<UUID> ids,
+                       Authentication auth, RedirectAttributes redirectAttributes) {
+        UUID sponsorOrgId = organisationService.findeIdNachSlug(sponsorSlug);
+        if (ids == null || ids.isEmpty() || bulkAktion == null || bulkAktion.isBlank()) {
+            redirectAttributes.addFlashAttribute("fehlerMeldung", "Keine Auswahl oder Aktion.");
+            return "redirect:/crm/" + sponsorSlug;
+        }
+        String[] teile = bulkAktion.split(":", 2);
+        String aktion = teile[0];
+        String wert = teile.length > 1 ? teile[1] : null;
+
+        int n = switch (aktion) {
+            case "status" -> accountService.bulkSetzeStatus(sponsorOrgId, ids, AccountStatus.valueOf(wert), auth);
+            case "pipeline" -> accountService.bulkSetzePipeline(sponsorOrgId, ids, PipelineStage.valueOf(wert), auth);
+            case "tier" -> accountService.bulkSetzeTier(sponsorOrgId, ids, AccountTier.valueOf(wert), auth);
+            case "entfernen" -> accountService.bulkLoesche(sponsorOrgId, ids, auth);
+            default -> throw new IllegalArgumentException("Unbekannte Bulk-Aktion: " + aktion);
+        };
+        redirectAttributes.addFlashAttribute("erfolgsMeldung", n + " Vereine aktualisiert.");
+        return "redirect:/crm/" + sponsorSlug;
+    }
+
     /** Portfolio als CSV exportieren (Excel-kompatibel). */
     @GetMapping("/export.csv")
     public ResponseEntity<ByteArrayResource> exportCsv(@PathVariable String sponsorSlug, Authentication auth) {

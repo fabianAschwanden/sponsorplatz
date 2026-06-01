@@ -335,6 +335,12 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **PORTFOLIO-04** | `PortfolioAnsichtTest` | Sortierung nach Verein auf-/absteigend |
 | **PORTFOLIO-05** | `PortfolioAnsichtTest` | Sortierung nach Forecast, null-Werte zuerst |
 | **PORTFOLIO-06** | `PortfolioAnsichtTest` | Forecast-Summe über gefilterte Menge; ohne Sort Reihenfolge bewahrt |
+| **CRM-CTRL-11** | `SponsorAccountControllerTest` | Bulk-Status (`status:AKTIV`) → `bulkSetzeStatus` delegiert + Redirect |
+| **CRM-CTRL-12** | `SponsorAccountControllerTest` | Bulk-Entfernen → `bulkLoesche` delegiert |
+| **CRM-CTRL-13** | `SponsorAccountControllerTest` | Bulk-POST ohne CSRF → 403 |
+| **CRM-BULK-01** | `SponsorAccountIsolationIT` | Bulk Status/Pipeline/Tier durch Eigentümer wirkt (echte DB) |
+| **CRM-BULK-02** | `SponsorAccountIsolationIT` | Bulk über fremde Account-ID → `AccessDeniedException` (Cross-Org-Abwehr) |
+| **CRM-BULK-03** | `SponsorAccountIsolationIT` | Bulk-Löschen entfernt Accounts (FK-Cascade) → leeres Portfolio |
 | **CRM-ISO-01** | `SponsorAccountIsolationIT` | Eigentümer-Sponsor sieht eigenen Account (echte DB) |
 | **CRM-ISO-02** | `SponsorAccountIsolationIT` | Konkurrierender Sponsor → `AccessDeniedException` auf fremdes Portfolio |
 | **CRM-ISO-03** | `SponsorAccountIsolationIT` | Kein Leak: fremdes Portfolio enthält den Account nicht |

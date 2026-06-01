@@ -91,6 +91,67 @@ public class SponsorAccountService {
         return SponsorAccountView.von(repository.save(account));
     }
 
+    // ----------------------------- Bulk-Aktionen -----------------------------
+    // Alle Bulk-Methoden sind an sponsorOrgId der aufrufenden Seite gebunden:
+    // pruefeZugriff(sponsorOrgId) ZUERST, danach laedeUndBindeAccounts(...), das
+    // jeden Account auf besitzer == sponsorOrgId prüft — eine fremde Account-ID
+    // im Batch lässt die ganze Operation mit AccessDenied scheitern (atomar via
+    // @Transactional). So kann kein User über die ID-Liste fremde Accounts ändern.
+
+    /** Setzt den Status mehrerer Accounts. @return Anzahl geänderter Accounts. */
+    public int bulkSetzeStatus(UUID sponsorOrgId, List<UUID> accountIds, AccountStatus status, Authentication auth) {
+        List<SponsorAccount> accounts = laedeUndBindeAccounts(sponsorOrgId, accountIds, auth);
+        accounts.forEach(a -> a.setStatus(status));
+        repository.saveAll(accounts);
+        return accounts.size();
+    }
+
+    /** Setzt die Pipeline-Stufe mehrerer Accounts. */
+    public int bulkSetzePipeline(UUID sponsorOrgId, List<UUID> accountIds, PipelineStage stage, Authentication auth) {
+        List<SponsorAccount> accounts = laedeUndBindeAccounts(sponsorOrgId, accountIds, auth);
+        accounts.forEach(a -> a.setPipelineStage(stage));
+        repository.saveAll(accounts);
+        return accounts.size();
+    }
+
+    /** Setzt das Tier mehrerer Accounts. */
+    public int bulkSetzeTier(UUID sponsorOrgId, List<UUID> accountIds, AccountTier tier, Authentication auth) {
+        List<SponsorAccount> accounts = laedeUndBindeAccounts(sponsorOrgId, accountIds, auth);
+        accounts.forEach(a -> a.setTier(tier));
+        repository.saveAll(accounts);
+        return accounts.size();
+    }
+
+    /**
+     * Entfernt mehrere Accounts aus dem Portfolio (nur die CRM-Beziehung; der
+     * Verein selbst bleibt). DB-Level-Bulk-Delete → FK-Cascade räumt Kontakte +
+     * Aktivitäten mit weg.
+     */
+    public int bulkLoesche(UUID sponsorOrgId, List<UUID> accountIds, Authentication auth) {
+        List<SponsorAccount> accounts = laedeUndBindeAccounts(sponsorOrgId, accountIds, auth);
+        repository.deleteByIdIn(accounts.stream().map(SponsorAccount::getId).toList());
+        return accounts.size();
+    }
+
+    /**
+     * Lädt die Accounts und stellt sicher, dass jeder zum übergebenen Sponsor
+     * gehört. Leere/teilweise-fremde Auswahl → {@link AccessDeniedException}
+     * (kein stilles Überspringen — Defense in depth).
+     */
+    private List<SponsorAccount> laedeUndBindeAccounts(UUID sponsorOrgId, List<UUID> accountIds, Authentication auth) {
+        pruefeZugriff(sponsorOrgId, auth);
+        if (accountIds == null || accountIds.isEmpty()) {
+            throw new IllegalArgumentException("Keine Accounts ausgewählt");
+        }
+        List<SponsorAccount> accounts = repository.findAllById(accountIds);
+        boolean alleEigen = accounts.size() == accountIds.stream().distinct().count()
+                && accounts.stream().allMatch(a -> sponsorOrgId.equals(a.getBesitzerSponsorOrgId()));
+        if (!alleEigen) {
+            throw new AccessDeniedException("Auswahl enthält Accounts ausserhalb dieser Sponsor-Organisation");
+        }
+        return accounts;
+    }
+
     private void pruefeZugriff(UUID sponsorOrgId, Authentication auth) {
         if (!accessControl.kannSponsorDatenSehen(sponsorOrgId, auth)) {
             throw new AccessDeniedException(

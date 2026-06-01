@@ -31,6 +31,7 @@
         </header>
 
         <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${fehlerMeldung}" class="app-meldung fehler" th:text="${fehlerMeldung}"></div>
 
         <p class="app-muted" style="margin-bottom:1rem;"
            th:text="#{crm.portfolio.hinweis}">Privates CRM — nur für dein Sponsor-Team sichtbar.</p>
@@ -112,44 +113,79 @@
             </div>
         </form>
 
-        <!-- Sortierbare Header: jeder Link toggelt asc/desc und bewahrt die aktiven Filter -->
-        <table class="app-table crm-portfolio-table">
-            <thead>
-            <tr>
-                <th th:replace="~{crm/portfolio :: sortKopf('verein', #{crm.feld.verein})}">Verein</th>
-                <th th:replace="~{crm/portfolio :: sortKopf('status', #{crm.feld.status})}">Status</th>
-                <th th:replace="~{crm/portfolio :: sortKopf('pipeline', #{crm.feld.pipelineStage})}">Pipeline-Stufe</th>
-                <th th:replace="~{crm/portfolio :: sortKopf('tier', #{crm.feld.tier})}">Tier</th>
-                <th th:replace="~{crm/portfolio :: sortKopf('forecast', #{crm.feld.forecastBetrag})}">Forecast</th>
-                <th th:text="#{crm.feld.notiz}">Notiz</th>
-            </tr>
-            </thead>
-            <tbody>
-            <!-- Master-Detail: Verein-Name verlinkt auf die Account-Detail. -->
-            <tr th:each="a : ${ansicht.accounts}">
-                <td>
-                    <a th:href="@{/crm/{slug}/{id}(slug=${sponsorSlug}, id=${a.id})}" th:text="${a.vereinName}">FC Beispiel</a>
-                </td>
-                <td><span class="app-chip" th:text="#{'crm.status.' + ${a.status}}">Lead</span></td>
-                <td><span class="app-chip" th:text="#{'crm.pipelineStage.' + ${a.pipelineStage}}">Lead</span></td>
-                <td th:text="${a.tier != null ? #messages.msg('crm.tier.' + a.tier) : '—'}">Kern</td>
-                <td th:text="${a.gewichteterForecastChf != null ? 'CHF ' + #numbers.formatDecimal(a.gewichteterForecastChf, 1, 'NONE', 2, 'POINT') : '—'}">CHF 6000.00</td>
-                <td class="app-muted" th:text="${a.notiz}"></td>
-            </tr>
-            <tr th:if="${ansicht.anzahlGezeigt == 0}">
-                <td colspan="6" class="app-muted" style="text-align:center; padding:1.5rem;"
-                    th:text="#{crm.portfolio.keineTreffer}">Keine Vereine passen zu Filter/Suche.</td>
-            </tr>
-            </tbody>
-            <tfoot th:if="${ansicht.forecastSummeChf != null and ansicht.forecastSummeChf.signum() > 0}">
-            <tr>
-                <td colspan="4" style="text-align:right; font-weight:600;"
-                    th:text="#{crm.pipeline.forecastSumme}">Gewichteter Pipeline-Forecast</td>
-                <td colspan="2" style="font-weight:600;"
-                    th:text="'CHF ' + ${#numbers.formatDecimal(ansicht.forecastSummeChf, 1, 'NONE', 2, 'POINT')}">CHF 12000.00</td>
-            </tr>
-            </tfoot>
-        </table>
+        <!-- Bulk-Form umschliesst die Tabelle: Zeilen-Checkboxen + kodierte Bulk-Aktion -->
+        <form method="post" th:action="@{/crm/{slug}/bulk(slug=${sponsorSlug})}" id="bulkForm"
+              onsubmit="return crmBulkBestaetigen(this);">
+            <!-- Bulk-Aktionsleiste — JS blendet sie ein, sobald ≥1 Zeile markiert ist -->
+            <div class="crm-bulkbar" id="bulkBar" hidden>
+                <span class="crm-bulkbar-anzahl"><span id="bulkAnzahl">0</span>
+                    <span th:text="#{crm.bulk.markiert}">markiert</span></span>
+                <label>
+                    <select name="bulkAktion" id="bulkAktion">
+                        <option value="" th:text="#{crm.bulk.aktionWaehlen}">Aktion wählen …</option>
+                        <optgroup th:label="#{crm.bulk.gruppe.status}">
+                            <option th:each="s : ${statusWerte}" th:value="'status:' + ${s}"
+                                    th:text="#{'crm.status.' + ${s}}">Aktiv</option>
+                        </optgroup>
+                        <optgroup th:label="#{crm.bulk.gruppe.pipeline}">
+                            <option th:each="p : ${pipelineStageWerte}" th:value="'pipeline:' + ${p}"
+                                    th:text="#{'crm.pipelineStage.' + ${p}}">Angebot</option>
+                        </optgroup>
+                        <optgroup th:label="#{crm.bulk.gruppe.tier}">
+                            <option th:each="t : ${tierWerte}" th:value="'tier:' + ${t}"
+                                    th:text="#{'crm.tier.' + ${t}}">Kern</option>
+                        </optgroup>
+                        <option value="entfernen" th:text="#{crm.bulk.entfernen}">Aus Portfolio entfernen</option>
+                    </select>
+                </label>
+                <button type="submit" class="app-btn app-btn-sm" th:text="#{crm.bulk.anwenden}">Anwenden</button>
+                <span class="confirm-msg" hidden th:text="#{crm.bulk.entfernen.bestaetigung}"></span>
+            </div>
+
+            <!-- Sortierbare Header: jeder Link toggelt asc/desc und bewahrt die aktiven Filter -->
+            <table class="app-table crm-portfolio-table">
+                <thead>
+                <tr>
+                    <th class="crm-check"><input type="checkbox" id="bulkAlle" th:aria-label="#{crm.bulk.alle}"></th>
+                    <th th:replace="~{crm/portfolio :: sortKopf('verein', #{crm.feld.verein})}">Verein</th>
+                    <th th:replace="~{crm/portfolio :: sortKopf('status', #{crm.feld.status})}">Status</th>
+                    <th th:replace="~{crm/portfolio :: sortKopf('pipeline', #{crm.feld.pipelineStage})}">Pipeline-Stufe</th>
+                    <th th:replace="~{crm/portfolio :: sortKopf('tier', #{crm.feld.tier})}">Tier</th>
+                    <th th:replace="~{crm/portfolio :: sortKopf('forecast', #{crm.feld.forecastBetrag})}">Forecast</th>
+                    <th th:text="#{crm.feld.notiz}">Notiz</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Master-Detail: Verein-Name verlinkt auf die Account-Detail. -->
+                <tr th:each="a : ${ansicht.accounts}">
+                    <td class="crm-check">
+                        <input type="checkbox" class="crm-row-check" name="ids" th:value="${a.id}"
+                               th:aria-label="${a.vereinName}">
+                    </td>
+                    <td>
+                        <a th:href="@{/crm/{slug}/{id}(slug=${sponsorSlug}, id=${a.id})}" th:text="${a.vereinName}">FC Beispiel</a>
+                    </td>
+                    <td><span class="app-chip" th:text="#{'crm.status.' + ${a.status}}">Lead</span></td>
+                    <td><span class="app-chip" th:text="#{'crm.pipelineStage.' + ${a.pipelineStage}}">Lead</span></td>
+                    <td th:text="${a.tier != null ? #messages.msg('crm.tier.' + a.tier) : '—'}">Kern</td>
+                    <td th:text="${a.gewichteterForecastChf != null ? 'CHF ' + #numbers.formatDecimal(a.gewichteterForecastChf, 1, 'NONE', 2, 'POINT') : '—'}">CHF 6000.00</td>
+                    <td class="app-muted" th:text="${a.notiz}"></td>
+                </tr>
+                <tr th:if="${ansicht.anzahlGezeigt == 0}">
+                    <td colspan="7" class="app-muted" style="text-align:center; padding:1.5rem;"
+                        th:text="#{crm.portfolio.keineTreffer}">Keine Vereine passen zu Filter/Suche.</td>
+                </tr>
+                </tbody>
+                <tfoot th:if="${ansicht.forecastSummeChf != null and ansicht.forecastSummeChf.signum() > 0}">
+                <tr>
+                    <td colspan="5" style="text-align:right; font-weight:600;"
+                        th:text="#{crm.pipeline.forecastSumme}">Gewichteter Pipeline-Forecast</td>
+                    <td colspan="2" style="font-weight:600;"
+                        th:text="'CHF ' + ${#numbers.formatDecimal(ansicht.forecastSummeChf, 1, 'NONE', 2, 'POINT')}">CHF 12000.00</td>
+                </tr>
+                </tfoot>
+            </table>
+        </form>
         </th:block>
     </main>
 </div>
@@ -187,7 +223,55 @@
     .crm-sort a:hover { color:var(--dash-violet-dark, #5b21b6); }
     .crm-sort-ind { font-size:0.7rem; color:var(--dash-muted, #94a3b8); }
     .crm-portfolio-table tbody tr:hover { background:var(--dash-violet-light, #f5f3ff); }
+
+    /* Bulk: Checkbox-Spalte + Aktionsleiste */
+    .crm-check { width:2.2rem; text-align:center; }
+    .crm-bulkbar { display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;
+        background:var(--dash-violet-light, #f5f3ff); border:1px solid var(--dash-violet, #c4b5fd);
+        border-radius:8px; padding:0.5rem 0.9rem; margin-bottom:0.75rem; }
+    .crm-bulkbar-anzahl { font-weight:600; font-size:0.85rem; color:var(--dash-violet-dark, #5b21b6); }
+    .crm-bulkbar select { padding:0.35rem 0.6rem; border:1px solid var(--dash-border, #e5e7eb); border-radius:6px; }
 </style>
+
+<!-- Bulk-Auswahl: Select-all, Zähler, Leiste ein-/ausblenden, Lösch-Bestätigung. Progressiv (ohne JS sendet die Form trotzdem). -->
+<script th:inline="none">
+  (function () {
+    var alle = document.getElementById('bulkAlle');
+    var bar = document.getElementById('bulkBar');
+    var anzahl = document.getElementById('bulkAnzahl');
+    if (!bar) return;
+    var rows = function () { return Array.prototype.slice.call(document.querySelectorAll('.crm-row-check')); };
+
+    function aktualisiere() {
+      var n = rows().filter(function (c) { return c.checked; }).length;
+      if (anzahl) anzahl.textContent = n;
+      bar.hidden = (n === 0);
+      if (alle) {
+        var total = rows().length;
+        alle.checked = (n > 0 && n === total);
+        alle.indeterminate = (n > 0 && n < total);
+      }
+    }
+    if (alle) alle.addEventListener('change', function () {
+      rows().forEach(function (c) { c.checked = alle.checked; });
+      aktualisiere();
+    });
+    rows().forEach(function (c) { c.addEventListener('change', aktualisiere); });
+    aktualisiere();
+  })();
+
+  function crmBulkBestaetigen(form) {
+    var checked = form.querySelectorAll('.crm-row-check:checked').length;
+    var aktion = form.querySelector('#bulkAktion');
+    if (checked === 0) { return false; }
+    if (!aktion || !aktion.value) { return false; }
+    if (aktion.value === 'entfernen') {
+      var msg = form.querySelector('.confirm-msg');
+      return confirm(msg ? msg.textContent : 'Markierte Vereine entfernen?');
+    }
+    return true;
+  }
+</script>
 
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
 </body>

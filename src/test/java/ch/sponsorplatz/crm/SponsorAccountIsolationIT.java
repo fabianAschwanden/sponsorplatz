@@ -138,6 +138,41 @@ class SponsorAccountIsolationIT {
                 .isInstanceOf(AccessDeniedException.class);
     }
 
+    /** CRM-BULK-01: Eigentümer setzt per Bulk Status + Pipeline + Tier seiner Accounts. */
+    @Test
+    @DisplayName("CRM-BULK-01: Bulk-Update durch Eigentümer wirkt")
+    void bulkUpdateDurchEigentuemer() {
+        int n = service.bulkSetzeStatus(sponsorAId, List.of(accountAId), AccountStatus.IN_RENEWAL, authUA);
+        assertThat(n).isEqualTo(1);
+        service.bulkSetzePipeline(sponsorAId, List.of(accountAId), PipelineStage.GEWONNEN, authUA);
+        service.bulkSetzeTier(sponsorAId, List.of(accountAId), AccountTier.STRATEGIC, authUA);
+
+        SponsorAccountView v = service.findeAccount(accountAId, authUA);
+        assertThat(v.status()).isEqualTo(AccountStatus.IN_RENEWAL);
+        assertThat(v.pipelineStage()).isEqualTo(PipelineStage.GEWONNEN);
+        assertThat(v.tier()).isEqualTo(AccountTier.STRATEGIC);
+    }
+
+    /** CRM-BULK-02: Konkurrent B darf A's Account NICHT per Bulk ändern (Cross-Org-Abwehr). */
+    @Test
+    @DisplayName("CRM-BULK-02: Bulk-Update über fremde Account-ID → AccessDenied")
+    void bulkFremdeIdAbgewehrt() {
+        // B ruft mit seinem EIGENEN Sponsor, schmuggelt aber A's Account-ID ein.
+        assertThatThrownBy(() -> service.bulkSetzeStatus(sponsorBId, List.of(accountAId), AccountStatus.VERLOREN, authUB))
+                .isInstanceOf(AccessDeniedException.class);
+        // A's Account bleibt unverändert (Default LEAD aus erstelle()).
+        assertThat(service.findeAccount(accountAId, authUA).status()).isEqualTo(AccountStatus.LEAD);
+    }
+
+    /** CRM-BULK-03: Bulk-Löschen entfernt nur die CRM-Beziehung; danach leeres Portfolio. */
+    @Test
+    @DisplayName("CRM-BULK-03: Bulk-Löschen entfernt Accounts aus dem Portfolio")
+    void bulkLoeschen() {
+        int n = service.bulkLoesche(sponsorAId, List.of(accountAId), authUA);
+        assertThat(n).isEqualTo(1);
+        assertThat(service.findePortfolio(sponsorAId, authUA)).isEmpty();
+    }
+
     // --- Fixtures ---
 
     private Organisation sponsorOrg(String name, String slug) {

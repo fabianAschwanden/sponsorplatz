@@ -170,6 +170,47 @@ class SponsorAccountControllerTest {
                 .andExpect(status().isOk());
     }
 
+    /** CRM-CTRL-11: Bulk-Status (kodiert status:AKTIV) → an Service delegiert + Redirect. */
+    @Test
+    @WithMockUser
+    void bulkStatusDelegiert() throws Exception {
+        when(organisationService.findeIdNachSlug("css")).thenReturn(sponsorOrgId);
+        UUID id1 = UUID.randomUUID();
+        UUID id2 = UUID.randomUUID();
+
+        mockMvc.perform(post("/crm/css/bulk").with(csrf())
+                        .param("bulkAktion", "status:AKTIV")
+                        .param("ids", id1.toString(), id2.toString()))
+                .andExpect(status().is3xxRedirection());
+
+        org.mockito.Mockito.verify(accountService)
+                .bulkSetzeStatus(eq(sponsorOrgId), eq(List.of(id1, id2)), eq(AccountStatus.AKTIV), any());
+    }
+
+    /** CRM-CTRL-12: Bulk-Entfernen (entfernen) → bulkLoesche delegiert. */
+    @Test
+    @WithMockUser
+    void bulkEntfernenDelegiert() throws Exception {
+        when(organisationService.findeIdNachSlug("css")).thenReturn(sponsorOrgId);
+        UUID id1 = UUID.randomUUID();
+
+        mockMvc.perform(post("/crm/css/bulk").with(csrf())
+                        .param("bulkAktion", "entfernen")
+                        .param("ids", id1.toString()))
+                .andExpect(status().is3xxRedirection());
+
+        org.mockito.Mockito.verify(accountService).bulkLoesche(eq(sponsorOrgId), eq(List.of(id1)), any());
+    }
+
+    /** CRM-CTRL-13: Bulk-POST ohne CSRF → 403. */
+    @Test
+    @WithMockUser
+    void bulkOhneCsrf403() throws Exception {
+        mockMvc.perform(post("/crm/css/bulk").param("bulkAktion", "status:AKTIV")
+                        .param("ids", UUID.randomUUID().toString()))
+                .andExpect(status().isForbidden());
+    }
+
     /** CRM-CTRL-02: erstelle ohne CSRF-Token → 403 (CSRF-Schutz greift). */
     @Test
     @WithMockUser
