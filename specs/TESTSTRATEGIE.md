@@ -25,6 +25,14 @@ mvn verify -P e2e -De2e.browser=firefox  # alternative Browser-Engine
 Surefire excludet das Package `src/test/java/ch/sponsorplatz/e2e/**` im
 Default-Lauf, damit `mvn test` schnell + Docker-frei bleibt.
 
+**Surefire-Includes (wichtig):** Surefire ist explizit auf `**/*Test.java`,
+`**/*Tests.java` **und `**/*IT.java`** konfiguriert — die nicht-e2e-
+Integrationstests (`*IT`, reine `@SpringBootTest`+H2 ohne Browser, z.B.
+`SponsorAccountIsolationIT`, `CrmImportExportIT`, `CrmSidebarIT`) laufen damit im
+regulären `mvn test`/`verify`-Gate (und in CI). Nur die echten E2E-`*IT` unter
+`e2e/**` bleiben über den Exclude draussen (Exclude > Include) und laufen via
+`-P e2e`. Ohne diese Include-Konfiguration fängt der Surefire-Default `*IT` NICHT.
+
 **Konventionen für E2E-Tests:**
 
 - Feature-Dateien (`.feature`) unter `src/test/resources/features/`, Sprache `de`
@@ -335,9 +343,11 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **PORTFOLIO-04** | `PortfolioAnsichtTest` | Sortierung nach Verein auf-/absteigend |
 | **PORTFOLIO-05** | `PortfolioAnsichtTest` | Sortierung nach Forecast, null-Werte zuerst |
 | **PORTFOLIO-06** | `PortfolioAnsichtTest` | Forecast-Summe über gefilterte Menge; ohne Sort Reihenfolge bewahrt |
+| **PORTFOLIO-07** | `PortfolioAnsichtTest` | Paginierung: Seiten-Slice + Seitenzahl + vollständige gefilterteIds, Seite geklemmt |
 | **CRM-CTRL-11** | `SponsorAccountControllerTest` | Bulk-Status (`status:AKTIV`) → `bulkSetzeStatus` delegiert + Redirect |
 | **CRM-CTRL-12** | `SponsorAccountControllerTest` | Bulk-Entfernen → `bulkLoesche` delegiert |
 | **CRM-CTRL-13** | `SponsorAccountControllerTest` | Bulk-POST ohne CSRF → 403 |
+| **CRM-CTRL-14** | `SponsorAccountControllerTest` | `alleGefiltert=true` leitet Bulk-IDs server-seitig aus dem gefilterten Set ab |
 | **CRM-BULK-01** | `SponsorAccountIsolationIT` | Bulk Status/Pipeline/Tier durch Eigentümer wirkt (echte DB) |
 | **CRM-BULK-02** | `SponsorAccountIsolationIT` | Bulk über fremde Account-ID → `AccessDeniedException` (Cross-Org-Abwehr) |
 | **CRM-BULK-03** | `SponsorAccountIsolationIT` | Bulk-Löschen entfernt Accounts (FK-Cascade) → leeres Portfolio |

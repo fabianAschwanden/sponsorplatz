@@ -23,7 +23,7 @@ class PortfolioAnsichtTest {
         var ansicht = PortfolioAnsicht.erstelle(List.of(
                 account("FC Aktiv", AccountStatus.AKTIV, PipelineStage.LEAD, null, null),
                 account("FC Lead", AccountStatus.LEAD, PipelineStage.LEAD, null, null)),
-                null, AccountStatus.AKTIV, null, null, false);
+                null, AccountStatus.AKTIV, null, null, false, 1, 100);
 
         assertThat(ansicht.anzahlGesamt()).isEqualTo(2);
         assertThat(ansicht.anzahlGezeigt()).isEqualTo(1);
@@ -38,13 +38,13 @@ class PortfolioAnsichtTest {
         var ansicht = PortfolioAnsicht.erstelle(List.of(
                 account("FC Zürich", AccountStatus.AKTIV, PipelineStage.LEAD, null, "Hauptsponsor"),
                 account("EHC Bern", AccountStatus.AKTIV, PipelineStage.LEAD, null, "Wichtig")),
-                "zürich", null, null, null, false);
+                "zürich", null, null, null, false, 1, 100);
         assertThat(ansicht.accounts()).extracting(SponsorAccountView::vereinName).containsExactly("FC Zürich");
 
         var ueberNotiz = PortfolioAnsicht.erstelle(List.of(
                 account("FC Zürich", AccountStatus.AKTIV, PipelineStage.LEAD, null, "Hauptsponsor"),
                 account("EHC Bern", AccountStatus.AKTIV, PipelineStage.LEAD, null, "Wichtig")),
-                "WICHT", null, null, null, false);
+                "WICHT", null, null, null, false, 1, 100);
         assertThat(ueberNotiz.accounts()).extracting(SponsorAccountView::vereinName).containsExactly("EHC Bern");
     }
 
@@ -56,7 +56,7 @@ class PortfolioAnsichtTest {
                 account("FC Match", AccountStatus.AKTIV, PipelineStage.ANGEBOT, null, null),
                 account("FC Match", AccountStatus.AKTIV, PipelineStage.LEAD, null, null),     // falsche Pipeline
                 account("FC Other", AccountStatus.AKTIV, PipelineStage.ANGEBOT, null, null)), // falsche Suche
-                "match", AccountStatus.AKTIV, PipelineStage.ANGEBOT, null, false);
+                "match", AccountStatus.AKTIV, PipelineStage.ANGEBOT, null, false, 1, 100);
         assertThat(ansicht.anzahlGezeigt()).isEqualTo(1);
         assertThat(ansicht.accounts().get(0).pipelineStage()).isEqualTo(PipelineStage.ANGEBOT);
     }
@@ -69,9 +69,9 @@ class PortfolioAnsichtTest {
                 account("Zeta", AccountStatus.AKTIV, PipelineStage.LEAD, null, null),
                 account("Alpha", AccountStatus.AKTIV, PipelineStage.LEAD, null, null));
 
-        assertThat(PortfolioAnsicht.erstelle(alle, null, null, null, "verein", false).accounts())
+        assertThat(PortfolioAnsicht.erstelle(alle, null, null, null, "verein", false, 1, 100).accounts())
                 .extracting(SponsorAccountView::vereinName).containsExactly("Alpha", "Zeta");
-        assertThat(PortfolioAnsicht.erstelle(alle, null, null, null, "verein", true).accounts())
+        assertThat(PortfolioAnsicht.erstelle(alle, null, null, null, "verein", true, 1, 100).accounts())
                 .extracting(SponsorAccountView::vereinName).containsExactly("Zeta", "Alpha");
     }
 
@@ -83,7 +83,7 @@ class PortfolioAnsichtTest {
                 account("Hoch", AccountStatus.AKTIV, PipelineStage.LEAD, new BigDecimal("9000"), null),
                 account("Ohne", AccountStatus.AKTIV, PipelineStage.LEAD, null, null),
                 account("Tief", AccountStatus.AKTIV, PipelineStage.LEAD, new BigDecimal("1000"), null));
-        assertThat(PortfolioAnsicht.erstelle(alle, null, null, null, "forecast", false).accounts())
+        assertThat(PortfolioAnsicht.erstelle(alle, null, null, null, "forecast", false, 1, 100).accounts())
                 .extracting(SponsorAccountView::vereinName).containsExactly("Ohne", "Tief", "Hoch");
     }
 
@@ -94,12 +94,34 @@ class PortfolioAnsichtTest {
         var ansicht = PortfolioAnsicht.erstelle(List.of(
                 account("B", AccountStatus.AKTIV, PipelineStage.LEAD, new BigDecimal("2000"), null),
                 account("A", AccountStatus.LEAD, PipelineStage.LEAD, new BigDecimal("5000"), null)),
-                null, AccountStatus.AKTIV, null, null, false);
+                null, AccountStatus.AKTIV, null, null, false, 1, 100);
 
         // nur der AKTIVE zählt zur Summe (gewichtet = forecast hier identisch, weil Stufe LEAD=10%? siehe von())
         assertThat(ansicht.anzahlGezeigt()).isEqualTo(1);
         // Reihenfolge bewahrt (kein Sort) — hier trivial (1 Element)
         assertThat(ansicht.sort()).isNull();
+    }
+
+    /** PORTFOLIO-07: Paginierung — Seiten-Slice, Seitenzahl, vollständige gefilterteIds, Seite geklemmt. */
+    @Test
+    @DisplayName("PORTFOLIO-07: Paginierung — Slice + Seitenzahl + gefilterteIds")
+    void paginierung() {
+        var alle = new java.util.ArrayList<SponsorAccountView>();
+        for (int i = 0; i < 5; i++) {
+            alle.add(account("FC " + (char) ('A' + i), AccountStatus.AKTIV, PipelineStage.LEAD, null, null));
+        }
+        // Seitengrösse 2 → 3 Seiten (5 Einträge); Seite 2 zeigt C+D.
+        var seite2 = PortfolioAnsicht.erstelle(alle, null, null, null, "verein", false, 2, 2);
+        assertThat(seite2.anzahlSeiten()).isEqualTo(3);
+        assertThat(seite2.anzahlGezeigt()).isEqualTo(5);          // gefilterte Gesamtzahl
+        assertThat(seite2.accounts()).extracting(SponsorAccountView::vereinName).containsExactly("FC C", "FC D");
+        assertThat(seite2.gefilterteIds()).hasSize(5);            // ALLE Treffer-IDs, nicht nur die Seite
+        assertThat(seite2.hatMehrereSeiten()).isTrue();
+
+        // Übergrosse Seite wird auf die letzte geklemmt.
+        var zuHoch = PortfolioAnsicht.erstelle(alle, null, null, null, "verein", false, 99, 2);
+        assertThat(zuHoch.seite()).isEqualTo(3);
+        assertThat(zuHoch.accounts()).extracting(SponsorAccountView::vereinName).containsExactly("FC E");
     }
 
     // --- Fixture ---

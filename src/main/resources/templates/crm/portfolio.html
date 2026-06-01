@@ -113,13 +113,25 @@
             </div>
         </form>
 
-        <!-- Bulk-Form umschliesst die Tabelle: Zeilen-Checkboxen + kodierte Bulk-Aktion -->
+        <!-- Bulk-Form umschliesst die Tabelle: Zeilen-Checkboxen + kodierte Bulk-Aktion.
+             data-* tragen die gefilterte Gesamtzahl + Seitengrösse für die „Alle N"-Auswahl. -->
         <form method="post" th:action="@{/crm/{slug}/bulk(slug=${sponsorSlug})}" id="bulkForm"
+              th:attr="data-gefiltert=${ansicht.anzahlGezeigt}, data-seite=${#lists.size(ansicht.accounts)}"
               onsubmit="return crmBulkBestaetigen(this);">
+            <!-- Aktuelle Filter mitgeben: ermöglicht „Alle Treffer" server-seitig (über Seitengrenzen). -->
+            <input type="hidden" name="alleGefiltert" id="bulkAlleGefiltert" value="false">
+            <input type="hidden" name="suche" th:value="${ansicht.suche}">
+            <input type="hidden" name="status" th:value="${ansicht.filterStatus}">
+            <input type="hidden" name="pipeline" th:value="${ansicht.filterPipeline}">
             <!-- Bulk-Aktionsleiste — JS blendet sie ein, sobald ≥1 Zeile markiert ist -->
             <div class="crm-bulkbar" id="bulkBar" hidden>
                 <span class="crm-bulkbar-anzahl"><span id="bulkAnzahl">0</span>
                     <span th:text="#{crm.bulk.markiert}">markiert</span></span>
+                <!-- „Alle N Treffer auswählen" — nur wenn Treffer über die aktuelle Seite hinausgehen -->
+                <a href="#" id="bulkAlleLink" class="crm-bulk-alle" hidden
+                   th:text="#{crm.bulk.alleTreffer(${ansicht.anzahlGezeigt})}">Alle 120 Treffer auswählen</a>
+                <a href="#" id="bulkSeiteLink" class="crm-bulk-alle" hidden
+                   th:text="#{crm.bulk.nurSeite}">Auswahl auf Seite beschränken</a>
                 <label>
                     <select name="bulkAktion" id="bulkAktion">
                         <option value="" th:text="#{crm.bulk.aktionWaehlen}">Aktion wählen …</option>
@@ -186,6 +198,39 @@
                 </tfoot>
             </table>
         </form>
+
+        <!-- Paginierung: Seitengrösse + Vor/Zurück, bewahren Filter + Sortierung -->
+        <nav class="crm-pager" th:if="${ansicht.hatMehrereSeiten() or ansicht.anzahlGezeigt > 25}"
+             aria-label="Seitennavigation">
+            <form method="get" th:action="@{/crm/{slug}(slug=${sponsorSlug})}" class="crm-pager-groesse">
+                <input type="hidden" name="suche" th:value="${ansicht.suche}">
+                <input type="hidden" name="status" th:value="${ansicht.filterStatus}">
+                <input type="hidden" name="pipeline" th:value="${ansicht.filterPipeline}">
+                <input type="hidden" name="sort" th:value="${ansicht.sort}">
+                <input type="hidden" name="dir" th:value="${ansicht.absteigend} ? 'desc' : 'asc'">
+                <label>
+                    <select name="groesse" onchange="this.form.submit()" th:aria-label="#{crm.pager.proSeite}">
+                        <option th:each="g : ${seitenGroessen}" th:value="${g}"
+                                th:selected="${ansicht.seitenGroesse == g}" th:text="${g}">25</option>
+                    </select>
+                    <span th:text="#{crm.pager.proSeite}">pro Seite</span>
+                </label>
+            </form>
+            <span class="crm-pager-info"
+                  th:text="#{crm.pager.seiteVon(${ansicht.seite}, ${ansicht.anzahlSeiten})}">Seite 1 von 5</span>
+            <span class="crm-pager-nav">
+                <a th:if="${ansicht.seite > 1}"
+                   th:href="@{/crm/{slug}(slug=${sponsorSlug}, suche=${ansicht.suche}, status=${ansicht.filterStatus},
+                             pipeline=${ansicht.filterPipeline}, sort=${ansicht.sort},
+                             dir=${ansicht.absteigend} ? 'desc' : 'asc', groesse=${ansicht.seitenGroesse},
+                             seite=${ansicht.seite - 1})}" th:text="'‹ ' + #{crm.pager.zurueck}">‹ Zurück</a>
+                <a th:if="${ansicht.seite < ansicht.anzahlSeiten}"
+                   th:href="@{/crm/{slug}(slug=${sponsorSlug}, suche=${ansicht.suche}, status=${ansicht.filterStatus},
+                             pipeline=${ansicht.filterPipeline}, sort=${ansicht.sort},
+                             dir=${ansicht.absteigend} ? 'desc' : 'asc', groesse=${ansicht.seitenGroesse},
+                             seite=${ansicht.seite + 1})}" th:text="#{crm.pager.weiter} + ' ›'">Weiter ›</a>
+            </span>
+        </nav>
         </th:block>
     </main>
 </div>
@@ -231,39 +276,74 @@
         border-radius:8px; padding:0.5rem 0.9rem; margin-bottom:0.75rem; }
     .crm-bulkbar-anzahl { font-weight:600; font-size:0.85rem; color:var(--dash-violet-dark, #5b21b6); }
     .crm-bulkbar select { padding:0.35rem 0.6rem; border:1px solid var(--dash-border, #e5e7eb); border-radius:6px; }
+    .crm-bulk-alle { font-size:0.82rem; color:var(--dash-violet-dark, #5b21b6); text-decoration:underline; cursor:pointer; }
+
+    /* Paginierung */
+    .crm-pager { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; margin-top:1rem;
+        font-size:0.85rem; color:var(--dash-muted, #64748b); }
+    .crm-pager-groesse select { padding:0.25rem 0.5rem; border:1px solid var(--dash-border, #e5e7eb); border-radius:6px; }
+    .crm-pager-info { margin-left:auto; }
+    .crm-pager-nav a { color:var(--dash-violet-dark, #5b21b6); font-weight:600; text-decoration:none; padding:0 0.4rem; }
 </style>
 
-<!-- Bulk-Auswahl: Select-all, Zähler, Leiste ein-/ausblenden, Lösch-Bestätigung. Progressiv (ohne JS sendet die Form trotzdem). -->
+<!-- Bulk-Auswahl: Select-all, Zähler, „Alle N Treffer", Leiste ein-/ausblenden, Lösch-Bestätigung.
+     Progressiv: ohne JS sendet die Form die sichtbaren Zeilen-Checkboxen trotzdem. -->
 <script th:inline="none">
   (function () {
     var alle = document.getElementById('bulkAlle');
     var bar = document.getElementById('bulkBar');
     var anzahl = document.getElementById('bulkAnzahl');
-    if (!bar) return;
+    var form = document.getElementById('bulkForm');
+    if (!bar || !form) return;
+    var anzahlEl = document.getElementById('bulkAnzahl');
+    var alleGefiltert = document.getElementById('bulkAlleGefiltert');
+    var alleLink = document.getElementById('bulkAlleLink');
+    var seiteLink = document.getElementById('bulkSeiteLink');
+    var gefiltertTotal = parseInt(form.getAttribute('data-gefiltert') || '0', 10);
+    var seitenAnzahl = parseInt(form.getAttribute('data-seite') || '0', 10);
     var rows = function () { return Array.prototype.slice.call(document.querySelectorAll('.crm-row-check')); };
+
+    function setzeAlleModus(an) {
+      alleGefiltert.value = an ? 'true' : 'false';
+      if (alleLink) alleLink.hidden = an || !alleVerfuegbar();
+      if (seiteLink) seiteLink.hidden = !an;
+      if (anzahlEl) anzahlEl.textContent = an ? gefiltertTotal : rows().filter(function (c) { return c.checked; }).length;
+    }
+    function alleVerfuegbar() {
+      // „Alle N" nur anbieten, wenn alle sichtbaren markiert sind UND es mehr Treffer als die Seite gibt.
+      var n = rows().filter(function (c) { return c.checked; }).length;
+      return n === seitenAnzahl && gefiltertTotal > seitenAnzahl;
+    }
 
     function aktualisiere() {
       var n = rows().filter(function (c) { return c.checked; }).length;
       if (anzahl) anzahl.textContent = n;
       bar.hidden = (n === 0);
       if (alle) {
-        var total = rows().length;
-        alle.checked = (n > 0 && n === total);
-        alle.indeterminate = (n > 0 && n < total);
+        alle.checked = (n > 0 && n === seitenAnzahl);
+        alle.indeterminate = (n > 0 && n < seitenAnzahl);
       }
+      // Jede manuelle Änderung verlässt den „Alle Treffer"-Modus.
+      if (alleGefiltert.value === 'true') setzeAlleModus(false);
+      if (alleLink) alleLink.hidden = !alleVerfuegbar();
+      if (seiteLink) seiteLink.hidden = true;
     }
     if (alle) alle.addEventListener('change', function () {
       rows().forEach(function (c) { c.checked = alle.checked; });
       aktualisiere();
     });
     rows().forEach(function (c) { c.addEventListener('change', aktualisiere); });
+    if (alleLink) alleLink.addEventListener('click', function (e) { e.preventDefault(); setzeAlleModus(true); });
+    if (seiteLink) seiteLink.addEventListener('click', function (e) { e.preventDefault(); setzeAlleModus(false); aktualisiere(); });
     aktualisiere();
   })();
 
   function crmBulkBestaetigen(form) {
+    var alleAn = form.querySelector('#bulkAlleGefiltert');
     var checked = form.querySelectorAll('.crm-row-check:checked').length;
     var aktion = form.querySelector('#bulkAktion');
-    if (checked === 0) { return false; }
+    var alleModus = alleAn && alleAn.value === 'true';
+    if (checked === 0 && !alleModus) { return false; }
     if (!aktion || !aktion.value) { return false; }
     if (aktion.value === 'entfernen') {
       var msg = form.querySelector('.confirm-msg');

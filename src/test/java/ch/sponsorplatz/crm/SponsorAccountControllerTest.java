@@ -202,6 +202,29 @@ class SponsorAccountControllerTest {
         org.mockito.Mockito.verify(accountService).bulkLoesche(eq(sponsorOrgId), eq(List.of(id1)), any());
     }
 
+    /** CRM-CTRL-14: alleGefiltert=true leitet IDs server-seitig aus dem gefilterten Set ab. */
+    @Test
+    @WithMockUser
+    void bulkAlleGefiltert() throws Exception {
+        when(organisationService.findeIdNachSlug("css")).thenReturn(sponsorOrgId);
+        UUID aktivId = UUID.randomUUID();
+        when(accountService.findePortfolio(eq(sponsorOrgId), any())).thenReturn(List.of(
+                new SponsorAccountView(aktivId, UUID.randomUUID(), "FC Aktiv", "fc-aktiv",
+                        null, AccountStatus.AKTIV, null, PipelineStage.LEAD, null, null, null, java.time.Instant.now(), null),
+                new SponsorAccountView(UUID.randomUUID(), UUID.randomUUID(), "FC Lead", "fc-lead",
+                        null, AccountStatus.LEAD, null, PipelineStage.LEAD, null, null, null, java.time.Instant.now(), null)));
+
+        // Filter status=AKTIV → nur der eine Account; ids NICHT mitgeschickt (kommt aus Filter-Set).
+        mockMvc.perform(post("/crm/css/bulk").with(csrf())
+                        .param("bulkAktion", "tier:CORE")
+                        .param("alleGefiltert", "true")
+                        .param("status", "AKTIV"))
+                .andExpect(status().is3xxRedirection());
+
+        org.mockito.Mockito.verify(accountService)
+                .bulkSetzeTier(eq(sponsorOrgId), eq(List.of(aktivId)), eq(AccountTier.CORE), any());
+    }
+
     /** CRM-CTRL-13: Bulk-POST ohne CSRF → 403. */
     @Test
     @WithMockUser

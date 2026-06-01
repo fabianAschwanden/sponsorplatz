@@ -377,6 +377,18 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <!-- *IT explizit einschliessen: die nicht-e2e-Integrationstests
+                         (z.B. CRM-Mandanten-Isolation, CSV-Roundtrip) sind reine
+                         @SpringBootTest+H2-Tests ohne Browser und gehören ins
+                         test-phase-Gate. Surefire-Default fängt *IT nicht. Die
+                         echten E2E-Tests (Playwright/Cucumber) bleiben über den
+                         e2e-Exclude draussen und laufen nur via `-P e2e` (Failsafe).
+                         Excludes haben in Surefire Vorrang vor Includes. -->
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                        <include>**/*IT.java</include>
+                    </includes>
                     <excludes>
                         <exclude>**/e2e/**/*.java</exclude>
                     </excludes>

@@ -62,13 +62,16 @@ public class SponsorAccountController {
                             @RequestParam(required = false) PipelineStage pipeline,
                             @RequestParam(required = false) String sort,
                             @RequestParam(required = false, defaultValue = "asc") String dir,
+                            @RequestParam(required = false, defaultValue = "1") int seite,
+                            @RequestParam(required = false, defaultValue = "25") int groesse,
                             Authentication auth, Model model) {
         UUID sponsorOrgId = organisationService.findeIdNachSlug(sponsorSlug);
         // Zugriffs-Schranke ZUERST — wirft AccessDenied bevor irgendwelche
         // Org-Daten (z.B. der Name) geladen werden.
         var accounts = accountService.findePortfolio(sponsorOrgId, auth);
         boolean absteigend = "desc".equalsIgnoreCase(dir);
-        PortfolioAnsicht ansicht = PortfolioAnsicht.erstelle(accounts, suche, status, pipeline, sort, absteigend);
+        PortfolioAnsicht ansicht = PortfolioAnsicht.erstelle(
+                accounts, suche, status, pipeline, sort, absteigend, seite, groesse);
 
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("sponsorSlug", sponsorSlug);
@@ -78,6 +81,7 @@ public class SponsorAccountController {
         model.addAttribute("statusWerte", AccountStatus.values());
         model.addAttribute("tierWerte", AccountTier.values());
         model.addAttribute("pipelineStageWerte", PipelineStage.values());
+        model.addAttribute("seitenGroessen", PortfolioAnsicht.SEITENGROESSEN);
         return "crm/portfolio";
     }
 
@@ -98,13 +102,29 @@ public class SponsorAccountController {
      * {@code aktion:wert} (z.B. {@code status:AKTIV}, {@code pipeline:GEWONNEN},
      * {@code tier:CORE}) bzw. {@code entfernen}. So genügt ein Select ohne
      * abhängiges JS. Mandanten-Bindung an die Seiten-Org liegt im Service.
+     *
+     * <p>{@code alleGefiltert=true} wendet die Aktion auf ALLE Treffer der
+     * aktuellen Filter/Suche an (über Seitengrenzen hinweg) — die IDs werden
+     * server-seitig aus dem zugriffsgeprüften, neu gefilterten Set abgeleitet,
+     * nicht aus dem Request. Das ist robuster + sicherer als hunderte Hidden-IDs.
      */
     @PostMapping("/bulk")
     public String bulk(@PathVariable String sponsorSlug,
                        @RequestParam("bulkAktion") String bulkAktion,
                        @RequestParam(value = "ids", required = false) java.util.List<UUID> ids,
+                       @RequestParam(value = "alleGefiltert", required = false, defaultValue = "false") boolean alleGefiltert,
+                       @RequestParam(required = false) String suche,
+                       @RequestParam(required = false) AccountStatus status,
+                       @RequestParam(required = false) PipelineStage pipeline,
                        Authentication auth, RedirectAttributes redirectAttributes) {
         UUID sponsorOrgId = organisationService.findeIdNachSlug(sponsorSlug);
+
+        // „Alle Treffer" → IDs aus dem gefilterten Set ableiten (zugriffsgeprüft via findePortfolio).
+        if (alleGefiltert) {
+            var alle = accountService.findePortfolio(sponsorOrgId, auth);
+            ids = PortfolioAnsicht.erstelle(alle, suche, status, pipeline, null, false, 1, Integer.MAX_VALUE)
+                    .gefilterteIds();
+        }
         if (ids == null || ids.isEmpty() || bulkAktion == null || bulkAktion.isBlank()) {
             redirectAttributes.addFlashAttribute("fehlerMeldung", "Keine Auswahl oder Aktion.");
             return "redirect:/crm/" + sponsorSlug;

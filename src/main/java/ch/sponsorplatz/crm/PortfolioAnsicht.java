@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Aufbereitete Sicht der CRM-Portfolio-Liste einer Marke: gefilterte + sortierte
@@ -15,26 +16,42 @@ import java.util.Objects;
  * Mirror des {@code SchaufensterAnsicht}-Musters.
  */
 public record PortfolioAnsicht(
-        List<SponsorAccountView> accounts,
+        List<SponsorAccountView> accounts,      // nur die aktuelle Seite
+        List<UUID> gefilterteIds,               // ALLE gefilterten IDs (für „Alle N auswählen")
         int anzahlGesamt,
-        int anzahlGezeigt,
-        BigDecimal forecastSummeChf,
+        int anzahlGezeigt,                       // gefilterte Gesamtzahl (über alle Seiten)
+        BigDecimal forecastSummeChf,            // Summe über die gefilterte Menge (nicht nur Seite)
         String suche,
         AccountStatus filterStatus,
         PipelineStage filterPipeline,
         String sort,
-        boolean absteigend
+        boolean absteigend,
+        int seite,                               // 1-basiert
+        int seitenGroesse,
+        int anzahlSeiten
 ) {
+
+    /** Zulässige Seitengrössen für die Auswahl im UI. */
+    public static final List<Integer> SEITENGROESSEN = List.of(25, 50, 100);
+    private static final int STANDARD_GROESSE = 25;
 
     /** True, wenn irgendein Filter/Such-Kriterium aktiv ist (steuert „zurücksetzen"/Leer-Hinweis). */
     public boolean istGefiltert() {
         return (suche != null && !suche.isBlank()) || filterStatus != null || filterPipeline != null;
     }
 
+    /** True, wenn mehr Treffer als eine Seite — steuert die Sichtbarkeit der Paginierung. */
+    public boolean hatMehrereSeiten() {
+        return anzahlSeiten > 1;
+    }
+
     public static PortfolioAnsicht erstelle(List<SponsorAccountView> alle,
                                             String suche, AccountStatus status, PipelineStage pipeline,
-                                            String sort, boolean absteigend) {
+                                            String sort, boolean absteigend,
+                                            int seite, int seitenGroesse) {
         String suchBegriff = (suche != null && !suche.isBlank()) ? suche.trim() : null;
+        // Allowlist SEITENGROESSEN steuert nur das UI-Dropdown; serverseitig genügt > 0.
+        int groesse = seitenGroesse > 0 ? seitenGroesse : STANDARD_GROESSE;
 
         List<SponsorAccountView> gefiltert = alle.stream()
                 .filter(a -> status == null || a.status() == status)
@@ -49,8 +66,17 @@ public record PortfolioAnsicht(
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return new PortfolioAnsicht(sortiert, alle.size(), sortiert.size(), forecastSumme,
-                suchBegriff, status, pipeline, sort, absteigend);
+        List<UUID> gefilterteIds = sortiert.stream().map(SponsorAccountView::id).toList();
+
+        // Paginierung: Seite auf gültigen Bereich klemmen.
+        int anzahlSeiten = Math.max(1, (int) Math.ceil((double) sortiert.size() / groesse));
+        int aktuelleSeite = Math.min(Math.max(1, seite), anzahlSeiten);
+        int von = (aktuelleSeite - 1) * groesse;
+        int bis = Math.min(von + groesse, sortiert.size());
+        List<SponsorAccountView> seitenSlice = von >= sortiert.size() ? List.of() : sortiert.subList(von, bis);
+
+        return new PortfolioAnsicht(seitenSlice, gefilterteIds, alle.size(), sortiert.size(), forecastSumme,
+                suchBegriff, status, pipeline, sort, absteigend, aktuelleSeite, groesse, anzahlSeiten);
     }
 
     private static boolean passtZurSuche(SponsorAccountView a, String begriff) {
