@@ -60,24 +60,17 @@ public class SecurityConfig {
     // Definition steht in BenutzerSecurityConfig; SecurityConfig kennt nur den
     // Spring-Interface-Typ AuthenticationSuccessHandler (ARCH-07).
     //
-    // Fallback unten greift in WebMvcTests, die nur SecurityConfig importieren —
+    // Fallback greift in WebMvcTests, die nur SecurityConfig importieren —
     // sie sehen BenutzerSecurityConfig nicht und brauchen einen Default-Handler,
     // damit die FilterChain initialisierbar bleibt.
     @Bean
-    @ConditionalOnMissingBean(name = "loginSuccessHandler")
+    @ConditionalOnMissingBean(AuthenticationSuccessHandler.class)
     public AuthenticationSuccessHandler loginSuccessHandler() {
         SavedRequestAwareAuthenticationSuccessHandler h = new SavedRequestAwareAuthenticationSuccessHandler();
         h.setDefaultTargetUrl("/dashboard");
         return h;
     }
 
-    @Bean
-    @ConditionalOnMissingBean(AuthenticationSuccessHandler.class)
-    public AuthenticationSuccessHandler defaultLoginSuccessHandler() {
-        SavedRequestAwareAuthenticationSuccessHandler handler = new SavedRequestAwareAuthenticationSuccessHandler();
-        handler.setDefaultTargetUrl("/dashboard");
-        return handler;
-    }
 
     @Bean
     public RateLimitFilter rateLimitFilter(

@@ -1,13 +1,15 @@
 package ch.sponsorplatz.anfrage;
 
-import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.organisation.Branche;
-import ch.sponsorplatz.organisation.Mitgliedschaft;
-import ch.sponsorplatz.organisation.MitgliedschaftRepository;
-import ch.sponsorplatz.organisation.OrgTyp;
-import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.shared.exception.NotFoundException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,16 +19,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import ch.sponsorplatz.benutzer.AppUser;
+import ch.sponsorplatz.benutzer.AppUserService;
+import ch.sponsorplatz.organisation.Branche;
+import ch.sponsorplatz.organisation.Mitgliedschaft;
+import ch.sponsorplatz.organisation.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.OrgTyp;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.shared.exception.NotFoundException;
 
 /**
  * Tests für {@link SponsorStatistikService}.
@@ -36,11 +36,16 @@ import static org.mockito.Mockito.when;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SponsorStatistikServiceTest {
 
-    @Mock private AppUserRepository appUserRepository;
-    @Mock private MitgliedschaftRepository mitgliedschaftRepository;
-    @Mock private VertragRepository vertragRepository;
-    @Mock private SponsoringAnfrageRepository anfrageRepository;
-    @Mock private RechnungRepository rechnungRepository;
+    @Mock
+    private AppUserService appUserService;
+    @Mock
+    private MitgliedschaftRepository mitgliedschaftRepository;
+    @Mock
+    private VertragRepository vertragRepository;
+    @Mock
+    private SponsoringAnfrageRepository anfrageRepository;
+    @Mock
+    private RechnungRepository rechnungRepository;
 
     private SponsorStatistikService service;
 
@@ -49,7 +54,7 @@ class SponsorStatistikServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new SponsorStatistikService(appUserRepository, mitgliedschaftRepository,
+        service = new SponsorStatistikService(appUserService, mitgliedschaftRepository,
                 vertragRepository, anfrageRepository, rechnungRepository);
 
         user = new AppUser();
@@ -61,7 +66,7 @@ class SponsorStatistikServiceTest {
         sponsorOrg.setName("CSS Versicherung");
         sponsorOrg.setTyp(OrgTyp.UNTERNEHMEN);
 
-        when(appUserRepository.findByEmail("sponsor@css.test")).thenReturn(Optional.of(user));
+        when(appUserService.findeIdNachEmail("sponsor@css.test")).thenReturn(user.getId());
         when(vertragRepository.summePreisChf(any(), any())).thenReturn(BigDecimal.ZERO);
         when(vertragRepository.zaehleProBranche(any(), any())).thenReturn(List.of());
     }
@@ -136,8 +141,8 @@ class SponsorStatistikServiceTest {
                 .thenReturn(List.of(mitgliedschaft(user, sponsorOrg)));
         when(vertragRepository.zaehleProBranche(any(), eq(VertragsStatus.UNTERZEICHNET)))
                 .thenReturn(List.of(
-                        new Object[]{Branche.SPORT, 5L},
-                        new Object[]{Branche.PRAEVENTION, 2L}));
+                        new Object[] { Branche.SPORT, 5L },
+                        new Object[] { Branche.PRAEVENTION, 2L }));
 
         SponsorStatistik stat = service.fuerUser("sponsor@css.test");
 
@@ -149,7 +154,8 @@ class SponsorStatistikServiceTest {
     @Test
     @DisplayName("STAT-06: User unbekannt → NotFoundException")
     void unbekannterUser() {
-        when(appUserRepository.findByEmail("egal@test.ch")).thenReturn(Optional.empty());
+        when(appUserService.findeIdNachEmail("egal@test.ch"))
+                .thenThrow(new NotFoundException("User nicht gefunden: egal@test.ch"));
 
         assertThatThrownBy(() -> service.fuerUser("egal@test.ch"))
                 .isInstanceOf(NotFoundException.class);

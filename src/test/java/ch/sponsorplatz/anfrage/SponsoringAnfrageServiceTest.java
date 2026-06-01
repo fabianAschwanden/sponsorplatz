@@ -51,7 +51,7 @@ class SponsoringAnfrageServiceTest {
         sponsoringPaketRepository = mock(SponsoringPaketRepository.class);
         service = new SponsoringAnfrageService(repository, benachrichtigungsService,
                 notificationService, mitgliedschaftRepository, appUserRepository, aufgabenEngine,
-                organisationRepository, sponsoringPaketRepository);
+                organisationRepository, sponsoringPaketRepository, java.time.Clock.systemUTC());
         when(mitgliedschaftRepository.findByOrgId(any())).thenReturn(Collections.emptyList());
         erstellerUserId = UUID.randomUUID();
         AppUser ersteller = new AppUser();

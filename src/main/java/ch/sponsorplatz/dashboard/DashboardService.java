@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ch.sponsorplatz.anfrage.SponsoringAnfrageService;
-import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 
 /**
@@ -34,18 +34,18 @@ import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 @Transactional(readOnly = true)
 public class DashboardService {
 
-    private final AppUserRepository appUserRepository;
+    private final AppUserService appUserService;
     private final MitgliedschaftRepository mitgliedschaftRepository;
     private final ProjektService projektService;
     private final SponsoringAnfrageService anfrageService;
     private final EventService eventService;
 
-    public DashboardService(AppUserRepository appUserRepository,
+    public DashboardService(AppUserService appUserService,
             MitgliedschaftRepository mitgliedschaftRepository,
             ProjektService projektService,
             SponsoringAnfrageService anfrageService,
             EventService eventService) {
-        this.appUserRepository = appUserRepository;
+        this.appUserService = appUserService;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
         this.projektService = projektService;
         this.anfrageService = anfrageService;
@@ -58,9 +58,9 @@ public class DashboardService {
      * oder keine Mitgliedschaften hat (Short-Circuit, keine Aggregat-Queries).
      */
     public DashboardDaten ladeDashboardDaten(String email) {
-        return appUserRepository.findByEmail(email)
-                .map(user -> {
-                    List<UUID> orgIds = mitgliedschaftRepository.findOrgIdsByUserId(user.getId());
+        return appUserService.findeOptionalIdNachEmail(email)
+                .map(userId -> {
+                    List<UUID> orgIds = mitgliedschaftRepository.findOrgIdsByUserId(userId);
                     if (orgIds.isEmpty()) {
                         return DashboardDaten.leer();
                     }

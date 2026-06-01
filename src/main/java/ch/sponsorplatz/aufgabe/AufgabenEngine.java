@@ -8,6 +8,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -40,11 +41,14 @@ public class AufgabenEngine {
 
     private final AufgabenDefinitionRepository definitionRepository;
     private final AufgabeRepository aufgabeRepository;
+    private final Clock clock;
 
     public AufgabenEngine(AufgabenDefinitionRepository definitionRepository,
-                          AufgabeRepository aufgabeRepository) {
+                          AufgabeRepository aufgabeRepository,
+                          Clock clock) {
         this.definitionRepository = definitionRepository;
         this.aufgabeRepository = aufgabeRepository;
+        this.clock = clock;
     }
 
     // ── Public Trigger-API ────────────────────────────────────────────────
@@ -94,7 +98,7 @@ public class AufgabenEngine {
                                                String neuerStatus) {
         List<Aufgabe> offene = aufgabeRepository.findByEntityTypAndEntityIdAndStatus(
                 typ, entityId, AufgabenStatus.OFFEN);
-        Instant jetzt = Instant.now();
+        Instant jetzt = Instant.now(clock);
         for (Aufgabe a : offene) {
             AufgabenDefinition def = a.getDefinition();
             if (neuerStatus.equals(def.getZielStatus())) {

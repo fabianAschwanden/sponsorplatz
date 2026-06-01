@@ -28,7 +28,8 @@ class ProjektServiceTest {
         repository = mock(ProjektRepository.class);
         volltext = mock(VolltextSucheService.class);
         service = new ProjektService(repository, new SlugGenerator(), volltext,
-                mock(ch.sponsorplatz.organisation.OrganisationRepository.class));
+                mock(ch.sponsorplatz.organisation.OrganisationRepository.class),
+                java.time.Clock.systemUTC());
     }
 
     /** PRJ-01: Projekt erstellen mit gültigem Namen. */

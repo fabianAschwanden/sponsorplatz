@@ -4,7 +4,7 @@ import ch.sponsorplatz.projekt.ProjektService;
 import ch.sponsorplatz.anfrage.SponsoringAnfrageService;
 
 import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 class DashboardServiceTest {
 
     @Mock
-    private AppUserRepository appUserRepository;
+    private AppUserService appUserService;
 
     @Mock
     private MitgliedschaftRepository mitgliedschaftRepository;
@@ -61,7 +61,7 @@ class DashboardServiceTest {
     /** DASH-09: Unbekannte E-Mail → alle Zähler 0, keine weiteren Service-Calls. */
     @Test
     void ladeDashboardDatenFuerUnbekannteEmailGibtLeer() {
-        when(appUserRepository.findByEmail("unbekannt@x.ch")).thenReturn(Optional.empty());
+        when(appUserService.findeOptionalIdNachEmail("unbekannt@x.ch")).thenReturn(Optional.empty());
 
         DashboardDaten daten = dashboardService.ladeDashboardDaten("unbekannt@x.ch");
 
@@ -75,7 +75,7 @@ class DashboardServiceTest {
     /** DASH-05: User ohne Mitgliedschaften → alle Zähler 0, keine count-Aufrufe. */
     @Test
     void ladeDashboardDatenOhneMitgliedschaftenGibtLeer() {
-        when(appUserRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
+        when(appUserService.findeOptionalIdNachEmail(testUser.getEmail())).thenReturn(Optional.of(testUser.getId()));
         when(mitgliedschaftRepository.findOrgIdsByUserId(testUser.getId())).thenReturn(List.of());
 
         DashboardDaten daten = dashboardService.ladeDashboardDaten(testUser.getEmail());
@@ -88,7 +88,7 @@ class DashboardServiceTest {
     /** DASH-06: Zählt Orgs korrekt (= Anzahl Mitgliedschaften). */
     @Test
     void ladeDashboardDatenZaehltOrgsKorrekt() {
-        when(appUserRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
+        when(appUserService.findeOptionalIdNachEmail(testUser.getEmail())).thenReturn(Optional.of(testUser.getId()));
         when(mitgliedschaftRepository.findOrgIdsByUserId(testUser.getId()))
                 .thenReturn(List.of(orgId1, orgId2));
         when(projektService.zaehleOeffentlicheNachOrgIds(List.of(orgId1, orgId2))).thenReturn(0L);
@@ -103,7 +103,7 @@ class DashboardServiceTest {
     /** DASH-07: Öffentliche Projekte werden via Service-Aggregat geliefert. */
     @Test
     void ladeDashboardDatenZaehltOeffentlicheProjekte() {
-        when(appUserRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
+        when(appUserService.findeOptionalIdNachEmail(testUser.getEmail())).thenReturn(Optional.of(testUser.getId()));
         when(mitgliedschaftRepository.findOrgIdsByUserId(testUser.getId())).thenReturn(List.of(orgId1));
         when(projektService.zaehleOeffentlicheNachOrgIds(List.of(orgId1))).thenReturn(7L);
         when(anfrageService.zaehleEingehende(List.of(orgId1))).thenReturn(0L);
@@ -117,7 +117,7 @@ class DashboardServiceTest {
     /** DASH-08: Eingehende und offene Anfragen kommen aus den Aggregat-Service-Methoden. */
     @Test
     void ladeDashboardDatenZaehltAnfragenKorrekt() {
-        when(appUserRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
+        when(appUserService.findeOptionalIdNachEmail(testUser.getEmail())).thenReturn(Optional.of(testUser.getId()));
         when(mitgliedschaftRepository.findOrgIdsByUserId(testUser.getId())).thenReturn(List.of(orgId1, orgId2));
         when(projektService.zaehleOeffentlicheNachOrgIds(List.of(orgId1, orgId2))).thenReturn(0L);
         when(anfrageService.zaehleEingehende(List.of(orgId1, orgId2))).thenReturn(12L);
@@ -132,7 +132,7 @@ class DashboardServiceTest {
     /** DASH-10 (H3-Fix): Aggregat-Methoden werden genau EINMAL aufgerufen — kein N+1-Loop. */
     @Test
     void ladeDashboardDatenRuftAggregateGenauEinmalAuf() {
-        when(appUserRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
+        when(appUserService.findeOptionalIdNachEmail(testUser.getEmail())).thenReturn(Optional.of(testUser.getId()));
         when(mitgliedschaftRepository.findOrgIdsByUserId(testUser.getId()))
                 .thenReturn(List.of(orgId1, orgId2));
         when(projektService.zaehleOeffentlicheNachOrgIds(List.of(orgId1, orgId2))).thenReturn(5L);
@@ -150,7 +150,7 @@ class DashboardServiceTest {
     /** DASH-11 (M5-Fix): aktuellerMonat und aktuelleKw kommen direkt aus dem DTO — Controller muss nichts mehr berechnen. */
     @Test
     void ladeDashboardDatenSetztMonatUndKwImDto() {
-        when(appUserRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.empty());
+        when(appUserService.findeOptionalIdNachEmail(testUser.getEmail())).thenReturn(Optional.empty());
 
         DashboardDaten daten = dashboardService.ladeDashboardDaten(testUser.getEmail());
 

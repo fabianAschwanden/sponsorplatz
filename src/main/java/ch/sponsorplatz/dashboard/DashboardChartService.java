@@ -3,7 +3,7 @@ package ch.sponsorplatz.dashboard;
 import ch.sponsorplatz.anfrage.RechnungRepository;
 import ch.sponsorplatz.anfrage.RechnungsStatus;
 import ch.sponsorplatz.anfrage.VertragRepository;
-import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,16 +40,16 @@ public class DashboardChartService {
     private static final ZoneId ZONE = ZoneId.of("Europe/Zurich");
     private static final Locale DE = Locale.GERMAN;
 
-    private final AppUserRepository appUserRepository;
+    private final AppUserService appUserService;
     private final MitgliedschaftRepository mitgliedschaftRepository;
     private final VertragRepository vertragRepository;
     private final RechnungRepository rechnungRepository;
 
-    public DashboardChartService(AppUserRepository appUserRepository,
+    public DashboardChartService(AppUserService appUserService,
                                  MitgliedschaftRepository mitgliedschaftRepository,
                                  VertragRepository vertragRepository,
                                  RechnungRepository rechnungRepository) {
-        this.appUserRepository = appUserRepository;
+        this.appUserService = appUserService;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
         this.vertragRepository = vertragRepository;
         this.rechnungRepository = rechnungRepository;
@@ -60,8 +60,8 @@ public class DashboardChartService {
      * unbekannte Werte fallen auf „monat" zurück.
      */
     public DashboardChartDaten ladeCharts(String email, String zeitraum) {
-        List<UUID> orgIds = appUserRepository.findByEmail(email)
-                .map(u -> mitgliedschaftRepository.findOrgIdsByUserId(u.getId()))
+        List<UUID> orgIds = appUserService.findeOptionalIdNachEmail(email)
+                .map(mitgliedschaftRepository::findOrgIdsByUserId)
                 .orElseGet(List::of);
         if (orgIds.isEmpty()) {
             return new DashboardChartDaten(

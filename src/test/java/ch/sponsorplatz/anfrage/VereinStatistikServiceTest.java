@@ -1,14 +1,15 @@
 package ch.sponsorplatz.anfrage;
 
-import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.organisation.Mitgliedschaft;
-import ch.sponsorplatz.organisation.MitgliedschaftRepository;
-import ch.sponsorplatz.organisation.OrgTyp;
-import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.projekt.ProjektService;
-import ch.sponsorplatz.projekt.SponsoringPaketRepository;
-import ch.sponsorplatz.shared.exception.NotFoundException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,22 +19,22 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import ch.sponsorplatz.benutzer.AppUser;
+import ch.sponsorplatz.benutzer.AppUserService;
+import ch.sponsorplatz.organisation.Mitgliedschaft;
+import ch.sponsorplatz.organisation.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.OrgTyp;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.projekt.ProjektService;
+import ch.sponsorplatz.projekt.SponsoringPaketRepository;
+import ch.sponsorplatz.shared.exception.NotFoundException;
 
 /**
  * Tests für {@link VereinStatistikService}.
  * Test-IDs: STAT-VEREIN-01..07.
  *
- * <p>Spiegel zu {@link SponsorStatistikServiceTest} — gleiche Test-Topologie,
+ * <p>
+ * Spiegel zu {@link SponsorStatistikServiceTest} — gleiche Test-Topologie,
  * andere Aggregation (Verein-Sicht: eingehend/ausgehend, Pakete, Einnahmen
  * via Vertrag.org statt Vertrag.sponsorOrg).
  */
@@ -41,13 +42,20 @@ import static org.mockito.Mockito.when;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class VereinStatistikServiceTest {
 
-    @Mock private AppUserRepository appUserRepository;
-    @Mock private MitgliedschaftRepository mitgliedschaftRepository;
-    @Mock private ProjektService projektService;
-    @Mock private SponsoringPaketRepository paketRepository;
-    @Mock private VertragRepository vertragRepository;
-    @Mock private SponsoringAnfrageRepository anfrageRepository;
-    @Mock private RechnungRepository rechnungRepository;
+    @Mock
+    private AppUserService appUserService;
+    @Mock
+    private MitgliedschaftRepository mitgliedschaftRepository;
+    @Mock
+    private ProjektService projektService;
+    @Mock
+    private SponsoringPaketRepository paketRepository;
+    @Mock
+    private VertragRepository vertragRepository;
+    @Mock
+    private SponsoringAnfrageRepository anfrageRepository;
+    @Mock
+    private RechnungRepository rechnungRepository;
 
     private VereinStatistikService service;
 
@@ -56,7 +64,7 @@ class VereinStatistikServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new VereinStatistikService(appUserRepository, mitgliedschaftRepository,
+        service = new VereinStatistikService(appUserService, mitgliedschaftRepository,
                 projektService, paketRepository, vertragRepository, anfrageRepository,
                 rechnungRepository);
 
@@ -69,7 +77,7 @@ class VereinStatistikServiceTest {
         vereinOrg.setName("FC Beispiel");
         vereinOrg.setTyp(OrgTyp.VEREIN);
 
-        when(appUserRepository.findByEmail("vorstand@verein.test")).thenReturn(Optional.of(user));
+        when(appUserService.findeIdNachEmail("vorstand@verein.test")).thenReturn(user.getId());
         when(vertragRepository.summePreisChfByOrg(any(), any())).thenReturn(BigDecimal.ZERO);
     }
 
@@ -162,7 +170,8 @@ class VereinStatistikServiceTest {
     @Test
     @DisplayName("STAT-VEREIN-06: User unbekannt → NotFoundException")
     void unbekannterUser() {
-        when(appUserRepository.findByEmail("egal@test.ch")).thenReturn(Optional.empty());
+        when(appUserService.findeIdNachEmail("egal@test.ch"))
+                .thenThrow(new NotFoundException("User nicht gefunden: egal@test.ch"));
 
         assertThatThrownBy(() -> service.fuerUser("egal@test.ch"))
                 .isInstanceOf(NotFoundException.class);

@@ -11,6 +11,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -35,13 +36,16 @@ public class AufgabenService {
     private final AufgabeRepository aufgabeRepository;
     private final AppUserRepository appUserRepository;
     private final MitgliedschaftRepository mitgliedschaftRepository;
+    private final Clock clock;
 
     public AufgabenService(AufgabeRepository aufgabeRepository,
                             AppUserRepository appUserRepository,
-                            MitgliedschaftRepository mitgliedschaftRepository) {
+                            MitgliedschaftRepository mitgliedschaftRepository,
+                            Clock clock) {
         this.aufgabeRepository = aufgabeRepository;
         this.appUserRepository = appUserRepository;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
+        this.clock = clock;
     }
 
     @Transactional(readOnly = true)
@@ -88,7 +92,7 @@ public class AufgabenService {
             return AufgabeView.von(a); // Idempotent — bereits erledigt
         }
         a.setStatus(AufgabenStatus.ERLEDIGT);
-        a.setErledigtAm(Instant.now());
+        a.setErledigtAm(Instant.now(clock));
         a.setErledigtVon(user);
         return AufgabeView.von(aufgabeRepository.save(a));
     }

@@ -1,5 +1,6 @@
 package ch.sponsorplatz.anfrage;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -36,6 +37,7 @@ public class SponsoringAnfrageService {
     private final AufgabenEngine aufgabenEngine;
     private final OrganisationRepository organisationRepository;
     private final SponsoringPaketRepository sponsoringPaketRepository;
+    private final Clock clock;
 
     public SponsoringAnfrageService(SponsoringAnfrageRepository repository,
             BenachrichtigungsService benachrichtigungsService,
@@ -44,7 +46,8 @@ public class SponsoringAnfrageService {
             AppUserRepository appUserRepository,
             AufgabenEngine aufgabenEngine,
             OrganisationRepository organisationRepository,
-            SponsoringPaketRepository sponsoringPaketRepository) {
+            SponsoringPaketRepository sponsoringPaketRepository,
+            Clock clock) {
         this.repository = repository;
         this.benachrichtigungsService = benachrichtigungsService;
         this.notificationService = notificationService;
@@ -53,6 +56,7 @@ public class SponsoringAnfrageService {
         this.aufgabenEngine = aufgabenEngine;
         this.organisationRepository = organisationRepository;
         this.sponsoringPaketRepository = sponsoringPaketRepository;
+        this.clock = clock;
     }
 
     /**
@@ -332,7 +336,7 @@ public class SponsoringAnfrageService {
 
         anfrage.setStatus(AnfrageStatus.ABGELEHNT);
         anfrage.setAntwort(antwort);
-        anfrage.setBeantwortetAm(Instant.now());
+        anfrage.setBeantwortetAm(Instant.now(clock));
         SponsoringAnfrage gespeichert = repository.save(anfrage);
 
         benachrichtigungsService.benachrichtigeUeberAntwort(gespeichert, anfrage.getKontaktEmail());

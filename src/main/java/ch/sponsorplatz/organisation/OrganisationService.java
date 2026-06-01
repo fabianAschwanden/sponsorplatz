@@ -1,23 +1,26 @@
 package ch.sponsorplatz.organisation;
-import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.shared.util.SlugGenerator;
 
-import ch.sponsorplatz.shared.exception.NotFoundException;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.shared.exception.NotFoundException;
+import ch.sponsorplatz.shared.util.SlugGenerator;
 
 /**
  * Geschäftslogik für Organisations-CRUD.
  *
  * Aufgaben:
  * - Slug aus Name generieren, wenn keiner angegeben
- * - Slug-Eindeutigkeit prüfen (Service-seitig, ergänzend zur DB-Constraint für aussagekräftige Fehler)
+ * - Slug-Eindeutigkeit prüfen (Service-seitig, ergänzend zur DB-Constraint für
+ * aussagekräftige Fehler)
  * - Validierung jenseits der DTO-Constraints
  */
 @Service
@@ -29,16 +32,19 @@ public class OrganisationService {
     private final MitgliedschaftRepository mitgliedschaftRepository;
     private final AppUserRepository appUserRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final Clock clock;
 
     public OrganisationService(OrganisationRepository repository, SlugGenerator slugGenerator,
-                               MitgliedschaftRepository mitgliedschaftRepository,
-                               AppUserRepository appUserRepository,
-                               ApplicationEventPublisher eventPublisher) {
+            MitgliedschaftRepository mitgliedschaftRepository,
+            AppUserRepository appUserRepository,
+            ApplicationEventPublisher eventPublisher,
+            Clock clock) {
         this.repository = repository;
         this.slugGenerator = slugGenerator;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
         this.appUserRepository = appUserRepository;
         this.eventPublisher = eventPublisher;
+        this.clock = clock;
     }
 
     @Transactional(readOnly = true)
@@ -97,7 +103,9 @@ public class OrganisationService {
         return OrganisationView.von(findeAktiveSponsoren());
     }
 
-    /** Aktive/verifizierte Vereine als Views — für den CRM-Account-Verein-Picker. */
+    /**
+     * Aktive/verifizierte Vereine als Views — für den CRM-Account-Verein-Picker.
+     */
     @Transactional(readOnly = true)
     public List<OrganisationView> findeAktiveVereineAlsViews() {
         return OrganisationView.von(repository.findByTypAndStatusInOrderByNameAsc(
@@ -124,7 +132,10 @@ public class OrganisationService {
                 .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + id));
     }
 
-    /** Lookup ID + Name + Typ — Controller braucht alle drei für Anfrage-Flows ohne Entity (ARCH-02). */
+    /**
+     * Lookup ID + Name + Typ — Controller braucht alle drei für Anfrage-Flows ohne
+     * Entity (ARCH-02).
+     */
     @Transactional(readOnly = true)
     public OrgInfo findeInfoNachId(UUID id) {
         return repository.findById(id)
@@ -132,8 +143,12 @@ public class OrganisationService {
                 .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + id));
     }
 
-    /** Mini-Snapshot ID + Name + Slug + Typ — wird vom Controller gelesen, keine Entity-Touch. */
-    public record OrgInfo(UUID id, String name, String slug, OrgTyp typ) {}
+    /**
+     * Mini-Snapshot ID + Name + Slug + Typ — wird vom Controller gelesen, keine
+     * Entity-Touch.
+     */
+    public record OrgInfo(UUID id, String name, String slug, OrgTyp typ) {
+    }
 
     @Transactional(readOnly = true)
     public Optional<Organisation> findeNachSlug(String slug) {
@@ -165,8 +180,11 @@ public class OrganisationService {
                 .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
     }
 
-    /** Mini-Snapshot ID + Name — wird vom Controller gelesen, keine Entity-Touch. */
-    public record OrgKopf(UUID id, String name) {}
+    /**
+     * Mini-Snapshot ID + Name — wird vom Controller gelesen, keine Entity-Touch.
+     */
+    public record OrgKopf(UUID id, String name) {
+    }
 
     /** Slug einer Org anhand der ID — für Berechtigungs-Checks (ARCH-02). */
     @Transactional(readOnly = true)
@@ -175,7 +193,8 @@ public class OrganisationService {
     }
 
     /**
-     * Direkte Untergeordnete einer Org — für Detail-Anzeige + Hierarchie-Navigation.
+     * Direkte Untergeordnete einer Org — für Detail-Anzeige +
+     * Hierarchie-Navigation.
      */
     @Transactional(readOnly = true)
     public List<Organisation> findeUntergeordnete(UUID elternId) {
@@ -209,7 +228,10 @@ public class OrganisationService {
         return OrganisationView.von(aktualisiere(slug, dto));
     }
 
-    /** Form-Pre-Fill: lädt die Org und mappt auf das Form-DTO — kein Entity-Touch im Controller. */
+    /**
+     * Form-Pre-Fill: lädt die Org und mappt auf das Form-DTO — kein Entity-Touch im
+     * Controller.
+     */
     @Transactional(readOnly = true)
     public OrganisationFormDto findeFormularNachSlug(String slug) {
         Organisation org = repository.findBySlug(slug)
@@ -248,11 +270,10 @@ public class OrganisationService {
      * genutzt — so kann der Ersteller die Org sofort bearbeiten/verwalten.
      *
      * @throws IllegalArgumentException bei Slug-Konflikt
-     * @throws NotFoundException falls User nicht existiert
+     * @throws NotFoundException        falls User nicht existiert
      */
     public Organisation erstelleMitEigentuemer(OrganisationFormDto dto, UUID eigentuemerUserId) {
         Organisation org = erstelle(dto);
-
 
         Mitgliedschaft mitgliedschaft = new Mitgliedschaft();
         mitgliedschaft.setOrg(org);
@@ -275,15 +296,15 @@ public class OrganisationService {
      */
     public Organisation aktualisiere(String slug, OrganisationFormDto dto) {
         Organisation org = repository.findBySlug(slug)
-            .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
+                .orElseThrow(() -> new NotFoundException("Organisation nicht gefunden: " + slug));
         wendeFormDatenAn(org, dto);
         return repository.save(org);
     }
 
     private void wendeFormDatenAn(Organisation org, OrganisationFormDto dto) {
         String gewuenschterSlug = (dto.getSlug() == null || dto.getSlug().isBlank())
-            ? slugGenerator.fromName(dto.getName())
-            : slugGenerator.fromName(dto.getSlug());
+                ? slugGenerator.fromName(dto.getName())
+                : slugGenerator.fromName(dto.getSlug());
 
         if (slugBereitsBelegt(gewuenschterSlug, org.getId())) {
             throw new IllegalArgumentException("Slug bereits vergeben: " + gewuenschterSlug);
@@ -340,7 +361,8 @@ public class OrganisationService {
                 .orElseThrow(() -> new NotFoundException(
                         "Übergeordnete Organisation nicht gefunden: " + elternId));
 
-        // Cycle-Check: die neue Eltern-Org darf nicht selbst ein Nachfahre dieser Org sein.
+        // Cycle-Check: die neue Eltern-Org darf nicht selbst ein Nachfahre dieser Org
+        // sein.
         Organisation aktuell = eltern;
         int sicherheit = 0;
         while (aktuell != null && sicherheit < 10) {
@@ -376,12 +398,12 @@ public class OrganisationService {
         if (mitgliedschaftRepository.existsByOrgId(id)) {
             throw new IllegalStateException(
                     "Organisation kann nicht gelöscht werden — es existieren noch Mitgliedschaften. " +
-                    "Bitte zuerst alle Mitglieder entfernen.");
+                            "Bitte zuerst alle Mitglieder entfernen.");
         }
         if (repository.existsByUebergeordneteOrgId(id)) {
             throw new IllegalStateException(
                     "Organisation kann nicht gelöscht werden — es existieren noch Unterorganisationen. " +
-                    "Bitte zuerst alle Unterorganisationen entfernen.");
+                            "Bitte zuerst alle Unterorganisationen entfernen.");
         }
         repository.deleteById(id);
     }
@@ -411,8 +433,8 @@ public class OrganisationService {
 
     private boolean slugBereitsBelegt(String slug, UUID eigeneId) {
         return repository.findBySlug(slug)
-            .filter(existierende -> !existierende.getId().equals(eigeneId))
-            .isPresent();
+                .filter(existierende -> !existierende.getId().equals(eigeneId))
+                .isPresent();
     }
 
     private String leereAlsNull(String s) {
@@ -432,7 +454,7 @@ public class OrganisationService {
     /**
      * Verifiziert eine Organisation (Admin-Aktion).
      *
-     * @throws NotFoundException wenn ID nicht existiert
+     * @throws NotFoundException     wenn ID nicht existiert
      * @throws IllegalStateException wenn Status nicht PENDING
      */
     public Organisation verifiziere(UUID id) {
@@ -443,7 +465,7 @@ public class OrganisationService {
                     "Nur PENDING-Organisationen können verifiziert werden (aktuell: " + org.getStatus() + ")");
         }
         org.setStatus(OrgStatus.VERIFIED);
-        org.setVerifiziertAm(Instant.now());
+        org.setVerifiziertAm(Instant.now(clock));
         Organisation gespeichert = repository.save(org);
         eventPublisher.publishEvent(new OrgStatusGewechseltEvent(gespeichert));
         return gespeichert;

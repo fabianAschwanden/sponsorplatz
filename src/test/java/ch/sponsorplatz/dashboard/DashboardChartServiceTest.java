@@ -3,8 +3,7 @@ package ch.sponsorplatz.dashboard;
 import ch.sponsorplatz.anfrage.RechnungRepository;
 import ch.sponsorplatz.anfrage.RechnungsStatus;
 import ch.sponsorplatz.anfrage.VertragRepository;
-import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.AppUserService;
 import ch.sponsorplatz.organisation.MitgliedschaftRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,28 +34,27 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DashboardChartServiceTest {
 
-    @Mock private AppUserRepository appUserRepository;
+    @Mock private AppUserService appUserService;
     @Mock private MitgliedschaftRepository mitgliedschaftRepository;
     @Mock private VertragRepository vertragRepository;
     @Mock private RechnungRepository rechnungRepository;
 
     @InjectMocks private DashboardChartService service;
 
-    private AppUser user;
+    private static final String EMAIL = "v@example.ch";
+    private UUID userId;
     private UUID orgId;
 
     @BeforeEach
     void setUp() {
-        user = new AppUser();
-        user.setId(UUID.randomUUID());
-        user.setEmail("v@example.ch");
+        userId = UUID.randomUUID();
         orgId = UUID.randomUUID();
     }
 
     /** DASHCHART-01: Unbekannte E-Mail → leere Charts, keine Repo-Calls auf Verträge/Rechnungen. */
     @Test
     void unbekannterUserGibtLeer() {
-        when(appUserRepository.findByEmail("x@x.ch")).thenReturn(Optional.empty());
+        when(appUserService.findeOptionalIdNachEmail("x@x.ch")).thenReturn(Optional.empty());
 
         DashboardChartDaten daten = service.ladeCharts("x@x.ch", "monat");
 
@@ -68,10 +66,10 @@ class DashboardChartServiceTest {
     /** DASHCHART-02: User ohne Org → leere Charts. */
     @Test
     void userOhneOrgGibtLeer() {
-        when(appUserRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
-        when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of());
+        when(appUserService.findeOptionalIdNachEmail(EMAIL)).thenReturn(Optional.of(userId));
+        when(mitgliedschaftRepository.findOrgIdsByUserId(userId)).thenReturn(List.of());
 
-        DashboardChartDaten daten = service.ladeCharts(user.getEmail(), "monat");
+        DashboardChartDaten daten = service.ladeCharts(EMAIL, "monat");
 
         assertThat(daten.entwicklung().hatDaten()).isFalse();
         assertThat(daten.finanzierung().hatDaten()).isFalse();
@@ -87,7 +85,7 @@ class DashboardChartServiceTest {
         when(rechnungRepository.summeBetragChfByOrgUndStatus(anyCollection(), eq(RechnungsStatus.OFFEN)))
                 .thenReturn(new BigDecimal("2500"));
 
-        DashboardChartDaten.Finanzierung fin = service.ladeCharts(user.getEmail(), "monat").finanzierung();
+        DashboardChartDaten.Finanzierung fin = service.ladeCharts(EMAIL, "monat").finanzierung();
 
         assertThat(fin.hatDaten()).isTrue();
         assertThat(fin.prozentGesammelt()).isEqualTo(75);
@@ -103,7 +101,7 @@ class DashboardChartServiceTest {
         when(rechnungRepository.summeBetragChfByOrgUndStatus(anyCollection(), any()))
                 .thenReturn(BigDecimal.ZERO);
 
-        DashboardChartDaten.Finanzierung fin = service.ladeCharts(user.getEmail(), "monat").finanzierung();
+        DashboardChartDaten.Finanzierung fin = service.ladeCharts(EMAIL, "monat").finanzierung();
 
         assertThat(fin.hatDaten()).isFalse();
         assertThat(fin.prozentGesammelt()).isZero();
@@ -119,18 +117,17 @@ class DashboardChartServiceTest {
                 new Object[]{ jetzt.minus(2, ChronoUnit.DAYS), new BigDecimal("5000") }
         ));
 
-        DashboardChartDaten.Entwicklung ent = service.ladeCharts(user.getEmail(), "monat").entwicklung();
+        DashboardChartDaten.Entwicklung ent = service.ladeCharts(EMAIL, "monat").entwicklung();
 
         assertThat(ent.hatDaten()).isTrue();
         assertThat(ent.punkte()).isNotBlank().contains(",");
-        // X-Achsen-Labels für das Monats-Fenster vorhanden.
         assertThat(ent.labels()).isNotEmpty();
     }
 
     /** Verdrahtet User + Org; Rechnungs-/Vertrags-Stubs setzen die Tests selbst. */
     private void gemeinsamerSetup() {
-        when(appUserRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
-        when(mitgliedschaftRepository.findOrgIdsByUserId(user.getId())).thenReturn(List.of(orgId));
+        when(appUserService.findeOptionalIdNachEmail(EMAIL)).thenReturn(Optional.of(userId));
+        when(mitgliedschaftRepository.findOrgIdsByUserId(userId)).thenReturn(List.of(orgId));
         lenient().when(vertragRepository.findeUnterzeichnetSeit(anyCollection(), any())).thenReturn(List.of());
         lenient().when(rechnungRepository.summeBetragChfByOrgUndStatus(anyCollection(), any()))
                 .thenReturn(BigDecimal.ZERO);

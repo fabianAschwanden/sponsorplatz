@@ -6,6 +6,7 @@ import ch.sponsorplatz.organisation.Organisation;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -20,15 +21,18 @@ public class ProjektService {
     private final SlugGenerator slugGenerator;
     private final VolltextSucheService volltextSuche;
     private final ch.sponsorplatz.organisation.OrganisationRepository orgRepository;
+    private final Clock clock;
 
     public ProjektService(ProjektRepository repository,
                           SlugGenerator slugGenerator,
                           VolltextSucheService volltextSuche,
-                          ch.sponsorplatz.organisation.OrganisationRepository orgRepository) {
+                          ch.sponsorplatz.organisation.OrganisationRepository orgRepository,
+                          Clock clock) {
         this.repository = repository;
         this.slugGenerator = slugGenerator;
         this.volltextSuche = volltextSuche;
         this.orgRepository = orgRepository;
+        this.clock = clock;
     }
 
     @Transactional(readOnly = true)
@@ -232,7 +236,7 @@ public class ProjektService {
         }
 
         projekt.setSichtbarkeit(Sichtbarkeit.OEFFENTLICH);
-        projekt.setVeroeffentlichtAm(Instant.now());
+        projekt.setVeroeffentlichtAm(Instant.now(clock));
         return repository.save(projekt);
     }
 

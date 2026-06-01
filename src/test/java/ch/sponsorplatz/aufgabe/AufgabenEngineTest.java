@@ -43,7 +43,7 @@ class AufgabenEngineTest {
 
     @BeforeEach
     void setUp() {
-        engine = new AufgabenEngine(definitionRepository, aufgabeRepository);
+        engine = new AufgabenEngine(definitionRepository, aufgabeRepository, java.time.Clock.systemUTC());
         when(aufgabeRepository.save(any(Aufgabe.class))).thenAnswer(inv -> inv.getArgument(0));
     }
 

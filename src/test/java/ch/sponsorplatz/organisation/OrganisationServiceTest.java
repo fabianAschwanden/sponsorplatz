@@ -35,7 +35,7 @@ class OrganisationServiceTest {
         eventPublisher = mock(ApplicationEventPublisher.class);
         service = new OrganisationService(repository, new SlugGenerator(),
                 mitgliedschaftRepository, appUserRepository,
-                eventPublisher);
+                eventPublisher, java.time.Clock.systemUTC());
     }
 
     /** ORG-05: Erstellen mit Auto-Slug aus dem Namen. */

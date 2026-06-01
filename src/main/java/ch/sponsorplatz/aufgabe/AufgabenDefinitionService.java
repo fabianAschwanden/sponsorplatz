@@ -97,6 +97,6 @@ public class AufgabenDefinitionService {
     }
 
     private static String leereAlsNull(String s) {
-        return (s == null || s.isBlank()) ? null : s.trim();
+        return ch.sponsorplatz.shared.util.Strings.leereAlsNull(s);
     }
 }

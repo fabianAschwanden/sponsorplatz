@@ -1,17 +1,5 @@
 package ch.sponsorplatz.anfrage;
 
-import ch.sponsorplatz.benutzer.AppUser;
-import ch.sponsorplatz.benutzer.AppUserRepository;
-import ch.sponsorplatz.organisation.Branche;
-import ch.sponsorplatz.organisation.Mitgliedschaft;
-import ch.sponsorplatz.organisation.MitgliedschaftRepository;
-import ch.sponsorplatz.organisation.OrgTyp;
-import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.organisation.Rolle;
-import ch.sponsorplatz.shared.exception.NotFoundException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,15 +7,28 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import ch.sponsorplatz.benutzer.AppUserService;
+import ch.sponsorplatz.organisation.Branche;
+import ch.sponsorplatz.organisation.Mitgliedschaft;
+import ch.sponsorplatz.organisation.MitgliedschaftRepository;
+import ch.sponsorplatz.organisation.OrgTyp;
+import ch.sponsorplatz.organisation.Organisation;
+import ch.sponsorplatz.organisation.Rolle;
+
 /**
  * Aggregiert die Sponsor-zentrische Statistik für einen User (Phase 5.C).
  *
- * <p>Sicht: über <em>alle</em> UNTERNEHMEN-Orgs des Users, unabhängig von der
+ * <p>
+ * Sicht: über <em>alle</em> UNTERNEHMEN-Orgs des Users, unabhängig von der
  * Rolle (ORG_OWNER/EDITOR/VIEWER). Damit dürfen auch reine Lese-Mitglieder
  * die Geschäftszahlen sehen — das ist gewollt, weil Geschäftsleitung typisch
  * VIEWER ist und trotzdem Reporting braucht.
  *
- * <p>Performance: 4 aggregierte Repo-Queries + 1 Branche-Group-By, alle
+ * <p>
+ * Performance: 4 aggregierte Repo-Queries + 1 Branche-Group-By, alle
  * filterbar auf {@code sponsorOrgIds in (...)} statt N-Loop. Bei vielen
  * Orgs/Verträgen skaliert das linear mit den Statūs, nicht mit Vertrags-
  * Anzahl.
@@ -39,18 +40,18 @@ public class SponsorStatistikService {
     private static final Set<Rolle> ALLE_ROLLEN = Set.of(
             Rolle.ORG_OWNER, Rolle.ORG_EDITOR, Rolle.ORG_VIEWER);
 
-    private final AppUserRepository appUserRepository;
+    private final AppUserService appUserService;
     private final MitgliedschaftRepository mitgliedschaftRepository;
     private final VertragRepository vertragRepository;
     private final SponsoringAnfrageRepository anfrageRepository;
     private final RechnungRepository rechnungRepository;
 
-    public SponsorStatistikService(AppUserRepository appUserRepository,
-                                    MitgliedschaftRepository mitgliedschaftRepository,
-                                    VertragRepository vertragRepository,
-                                    SponsoringAnfrageRepository anfrageRepository,
-                                    RechnungRepository rechnungRepository) {
-        this.appUserRepository = appUserRepository;
+    public SponsorStatistikService(AppUserService appUserService,
+            MitgliedschaftRepository mitgliedschaftRepository,
+            VertragRepository vertragRepository,
+            SponsoringAnfrageRepository anfrageRepository,
+            RechnungRepository rechnungRepository) {
+        this.appUserService = appUserService;
         this.mitgliedschaftRepository = mitgliedschaftRepository;
         this.vertragRepository = vertragRepository;
         this.anfrageRepository = anfrageRepository;
@@ -64,11 +65,10 @@ public class SponsorStatistikService {
      * auf eine passende Empty-Page.
      */
     public SponsorStatistik fuerUser(String email) {
-        AppUser user = appUserRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("User nicht gefunden: " + email));
+        UUID userId = appUserService.findeIdNachEmail(email);
 
         List<Mitgliedschaft> mitgliedschaften = mitgliedschaftRepository
-                .findByUserIdAndRolleInMitOrg(user.getId(), ALLE_ROLLEN);
+                .findByUserIdAndRolleInMitOrg(userId, ALLE_ROLLEN);
         List<Organisation> sponsorOrgs = mitgliedschaften.stream()
                 .map(Mitgliedschaft::getOrg)
                 .filter(o -> o.getTyp() == OrgTyp.UNTERNEHMEN)
@@ -107,7 +107,6 @@ public class SponsorStatistikService {
                 rechnungRepository.zaehleProSponsorOrgUndStatus(sponsorOrgIds, RechnungsStatus.STORNIERT),
 
                 proBranche,
-                sponsorOrgNamen
-        );
+                sponsorOrgNamen);
     }
 }
