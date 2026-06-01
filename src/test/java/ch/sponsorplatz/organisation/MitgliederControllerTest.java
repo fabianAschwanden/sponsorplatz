@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -153,6 +154,36 @@ class MitgliederControllerTest {
         verify(einladungsService).erstelleEinladung(eq(org.getId()), eq("neu@example.com"),
                 eq(Rolle.ORG_VIEWER), eq(owner.getId()));
         verify(mitgliedschaftService, never()).fuegeHinzu(any(), any(), any(), any());
+    }
+
+    /**
+     * MGCTRL-07: GET .../mitglieder mit Edit-Recht rendert leichte Listen-UX
+     * (Zähler + sortierbarer Spaltenkopf), Sortierung nach Name absteigend
+     * server-seitig.
+     */
+    @Test
+    @WithMockUser(username = "owner@example.com")
+    void listeRendertListenUxUndSortiert() throws Exception {
+        when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
+        Organisation org = testOrg();
+        when(organisationService.findeViewNachSlug("fc-test")).thenReturn(Optional.of(OrganisationView.von(org)));
+        when(mitgliedschaftService.findeViewsNachOrg(org.getId())).thenReturn(java.util.List.of(
+                mitglied("Alpha Anna"), mitglied("Zeta Zora")));
+
+        var html = mockMvc.perform(get("/organisationen/fc-test/mitglieder")
+                        .param("sort", "name").param("dir", "desc"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(html).contains("liste-anzahl");
+        assertThat(html).contains("liste-sort");
+        assertThat(html.indexOf("Zeta Zora")).isLessThan(html.indexOf("Alpha Anna"));
+    }
+
+    private MitgliedView mitglied(String anzeigename) {
+        return new MitgliedView(UUID.randomUUID(), Rolle.ORG_EDITOR,
+                java.time.Instant.now(), anzeigename,
+                anzeigename.toLowerCase().replace(' ', '.') + "@example.com", null);
     }
 
     private Organisation testOrg() {

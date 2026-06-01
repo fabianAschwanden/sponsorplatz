@@ -26,15 +26,19 @@
         <div th:if="${erfolgsMeldung}" class="app-flash app-flash-success" th:text="${erfolgsMeldung}">OK</div>
         <div th:if="${fehlermeldung}" class="app-flash app-flash-error" th:text="${fehlermeldung}">Fehler</div>
 
+        <div style="display:flex; justify-content:flex-end; margin-bottom:0.5rem;">
+            <span class="liste-anzahl" th:text="#{aufgabenDefinitionen.anzahl(${#lists.size(definitionen)})}">7 Definitionen</span>
+        </div>
+
         <div class="app-card" style="padding:0;">
             <table class="app-table" style="width:100%; border-collapse:collapse;">
                 <thead>
                     <tr style="background:#f3f4f6;">
-                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{aufgabenDefinitionen.spalte.titel}">Titel</th>
-                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{aufgabenDefinitionen.spalte.trigger}">Trigger</th>
+                        <th th:replace="~{admin/aufgaben-definitionen :: sortKopf('titel', #{aufgabenDefinitionen.spalte.titel}, 'left')}">Titel</th>
+                        <th th:replace="~{admin/aufgaben-definitionen :: sortKopf('trigger', #{aufgabenDefinitionen.spalte.trigger}, 'left')}">Trigger</th>
                         <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{aufgabenDefinitionen.spalte.ziel}">Ziel-Status</th>
                         <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{aufgabenDefinitionen.spalte.assignee}">Sichtbar für</th>
-                        <th style="text-align:center; padding:0.75rem 1rem;" th:text="#{aufgabenDefinitionen.spalte.aktiv}">Aktiv</th>
+                        <th th:replace="~{admin/aufgaben-definitionen :: sortKopf('aktiv', #{aufgabenDefinitionen.spalte.aktiv}, 'center')}">Aktiv</th>
                         <th style="text-align:right; padding:0.75rem 1rem;" th:text="#{aufgabenDefinitionen.spalte.aktion}">Aktion</th>
                     </tr>
                 </thead>
@@ -75,6 +79,16 @@
         </div>
     </main>
 </div>
+
+<!-- Sortier-Spaltenkopf (leichte Liste; align = left/center/right für die Inline-Optik) -->
+<th th:fragment="sortKopf(spalte, label, align)" class="liste-sort"
+    th:style="'text-align:' + ${align} + '; padding:0.75rem 1rem;'">
+    <a th:href="@{/admin/aufgaben-definitionen(sort=${spalte}, dir=${sortAktiv == spalte and !absteigend ? 'desc' : 'asc'})}">
+        <span th:text="${label}">Spalte</span>
+        <span class="liste-sort-ind" th:text="${sortAktiv != spalte ? '⇅' : (absteigend ? '▼' : '▲')}">⇅</span>
+    </a>
+</th>
+
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
 </body>
 </html>

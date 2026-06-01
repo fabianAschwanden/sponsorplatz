@@ -436,6 +436,7 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **MGCTRL-03** | `MitgliederControllerTest` | POST `.../hinzufuegen` ohne Verwalten-Recht → 403 |
 | **MGCTRL-04** | `MitgliederControllerTest` | POST `.../{id}/entfernen` ohne Verwalten-Recht → 403 |
 | **MGCTRL-05** | `MitgliederControllerTest` | POST `.../hinzufuegen` mit Verwalten-Recht → 302 Redirect |
+| **MGCTRL-07** | `MitgliederControllerTest` | GET `.../mitglieder` rendert leichte Listen-UX (Zähler + Sortkopf), Sortierung nach Name absteigend server-seitig |
 
 #### Projekt-Controller (PCTRL)
 
@@ -482,6 +483,8 @@ Customizing via `aufgaben_definition` ist im Admin-UI editierbar.
 |---|---|---|
 | **AUFG-CTRL-01** | `AufgabenControllerTest` | „Meine Aufgaben"-Liste rendert mit Listen-UX (Zähler/Suche/Sort) |
 | **AUFG-CTRL-02** | `AufgabenControllerTest` | Sortierung nach Titel absteigend server-seitig |
+| **AUFGDEF-CTRL-01** | `AdminAufgabenDefinitionControllerTest` | Definitionen-Liste rendert mit leichter Listen-UX (Zähler + sortierbarer Spaltenkopf) |
+| **AUFGDEF-CTRL-02** | `AdminAufgabenDefinitionControllerTest` | Sortierung nach Titel absteigend server-seitig |
 | **AUFG-ENG-01** | `AufgabenEngineTest` | Neue PENDING-Org + aktive PLATFORM_ADMIN-Definition → Aufgabe mit `nurPlatformAdmin=true`, kein Assignee-Org |
 | **AUFG-ENG-02** | `AufgabenEngineTest` | Org wechselt auf `ziel_status` der Definition → offene Aufgabe wird ERLEDIGT + erledigtAm gesetzt |
 | **AUFG-ENG-03** | `AufgabenEngineTest` | Anfrage wechselt auf alternativen Status (z.B. ABGELEHNT statt ANGENOMMEN) → Aufgabe wird ENTFALLEN |

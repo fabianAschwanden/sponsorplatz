@@ -12,8 +12,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -36,10 +39,31 @@ public class AdminAufgabenDefinitionController {
     }
 
     @GetMapping
-    public String liste(Model model) {
+    public String liste(@RequestParam(required = false) String sort,
+                        @RequestParam(required = false, defaultValue = "asc") String dir,
+                        Model model) {
+        boolean absteigend = "desc".equalsIgnoreCase(dir);
+        List<AufgabenDefinitionView> defs = sortiere(AufgabenDefinitionView.von(service.alle()), sort, absteigend);
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "admin");
-        model.addAttribute("definitionen", AufgabenDefinitionView.von(service.alle()));
+        model.addAttribute("definitionen", defs);
+        model.addAttribute("sortAktiv", sort);
+        model.addAttribute("absteigend", absteigend);
         return "admin/aufgaben-definitionen";
+    }
+
+    private static List<AufgabenDefinitionView> sortiere(List<AufgabenDefinitionView> liste,
+                                                         String sort, boolean absteigend) {
+        if (sort == null) return liste;
+        Comparator<AufgabenDefinitionView> c = switch (sort) {
+            case "titel" -> Comparator.comparing(AufgabenDefinitionView::titel,
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            case "trigger" -> Comparator.comparing(d -> d.triggerEntityTyp() != null ? d.triggerEntityTyp().name() : "",
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            case "aktiv" -> Comparator.comparing(AufgabenDefinitionView::aktiv);
+            default -> null;
+        };
+        if (c == null) return liste;
+        return liste.stream().sorted(absteigend ? c.reversed() : c).toList();
     }
 
     @GetMapping("/neu")

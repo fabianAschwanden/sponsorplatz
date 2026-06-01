@@ -40,15 +40,40 @@ public class MitgliederController {
     }
 
     @GetMapping
-    public String liste(@PathVariable String slug, Authentication auth, Model model) {
+    public String liste(@PathVariable String slug, Authentication auth,
+                        @RequestParam(required = false) String sort,
+                        @RequestParam(required = false, defaultValue = "asc") String dir,
+                        Model model) {
         if (!accessControl.kannOrgEditierenNachSlug(slug, auth)) {
             throw new AccessDeniedException("Keine Edit-Berechtigung für Org: " + slug);
         }
         OrganisationView org = ladeOrgViewOderWirf(slug);
+        boolean absteigend = "desc".equalsIgnoreCase(dir);
+        var mitglieder = sortiere(mitgliedschaftService.findeViewsNachOrg(org.id()), sort, absteigend);
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "organisationen");
         model.addAttribute("org", org);
-        model.addAttribute("mitglieder", mitgliedschaftService.findeViewsNachOrg(org.id()));
+        model.addAttribute("mitglieder", mitglieder);
+        model.addAttribute("sortAktiv", sort);
+        model.addAttribute("absteigend", absteigend);
         return "organisation/mitglieder";
+    }
+
+    private static java.util.List<MitgliedView> sortiere(java.util.List<MitgliedView> liste,
+                                                         String sort, boolean absteigend) {
+        if (sort == null) return liste;
+        java.util.Comparator<MitgliedView> c = switch (sort) {
+            case "name" -> java.util.Comparator.comparing(MitgliedView::userAnzeigename,
+                    java.util.Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            case "email" -> java.util.Comparator.comparing(MitgliedView::userEmail,
+                    java.util.Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            case "rolle" -> java.util.Comparator.comparing(m -> m.rolle() != null ? m.rolle().name() : "",
+                    java.util.Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            case "beigetreten" -> java.util.Comparator.comparing(MitgliedView::beigetretenAm,
+                    java.util.Comparator.nullsFirst(java.util.Comparator.naturalOrder()));
+            default -> null;
+        };
+        if (c == null) return liste;
+        return liste.stream().sorted(absteigend ? c.reversed() : c).toList();
     }
 
     @PostMapping("/hinzufuegen")

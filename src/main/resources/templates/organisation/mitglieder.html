@@ -31,13 +31,17 @@
         <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
         <div th:if="${fehlermeldung}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
 
+        <div th:if="${!mitglieder.isEmpty()}" style="display:flex; justify-content:flex-end; margin-bottom:0.5rem;">
+            <span class="liste-anzahl" th:text="#{mitglieder.anzahl(${#lists.size(mitglieder)})}">3 Mitglieder</span>
+        </div>
+
         <table class="app-table" th:if="${!mitglieder.isEmpty()}">
             <thead>
             <tr>
-                <th th:text="#{mitglieder.feld.name}">Name</th>
-                <th th:text="#{mitglieder.feld.email}">E-Mail</th>
-                <th th:text="#{mitglieder.feld.rolle}">Rolle</th>
-                <th th:text="#{mitglieder.feld.beigetreten}">Beigetreten</th>
+                <th th:replace="~{organisation/mitglieder :: sortKopf('name', #{mitglieder.feld.name})}">Name</th>
+                <th th:replace="~{organisation/mitglieder :: sortKopf('email', #{mitglieder.feld.email})}">E-Mail</th>
+                <th th:replace="~{organisation/mitglieder :: sortKopf('rolle', #{mitglieder.feld.rolle})}">Rolle</th>
+                <th th:replace="~{organisation/mitglieder :: sortKopf('beigetreten', #{mitglieder.feld.beigetreten})}">Beigetreten</th>
                 <th></th>
             </tr>
             </thead>
@@ -97,6 +101,15 @@
         </section>
     </main>
 </div>
+
+<!-- Sortier-Spaltenkopf (leichte Liste: nur Sort, kein Filter/Pager) -->
+<th th:fragment="sortKopf(spalte, label)" class="liste-sort">
+    <a th:href="@{/organisationen/{slug}/mitglieder(slug=${org.slug},
+                 sort=${spalte}, dir=${sortAktiv == spalte and !absteigend ? 'desc' : 'asc'})}">
+        <span th:text="${label}">Spalte</span>
+        <span class="liste-sort-ind" th:text="${sortAktiv != spalte ? '⇅' : (absteigend ? '▼' : '▲')}">⇅</span>
+    </a>
+</th>
 
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
 </body>
