@@ -107,7 +107,12 @@ public class SponsorAccountController {
         model.addAttribute("sponsorSlug", sponsorSlug);
         model.addAttribute("vereine", organisationService.findeAktiveVereineAlsViews());
         if (!model.containsAttribute("vereinForm")) {
-            model.addAttribute("vereinForm", new OrganisationFormDto());
+            OrganisationFormDto leeresForm = new OrganisationFormDto();
+            // Typ vorbelegen, damit das per th:field gebundene Hidden-Feld
+            // tatsächlich value="VEREIN" rendert (sonst überschreibt der null-Wert
+            // des frischen DTO das statische value und @Valid scheitert an @NotNull typ).
+            leeresForm.setTyp(OrgTyp.VEREIN);
+            model.addAttribute("vereinForm", leeresForm);
         }
         model.addAttribute("branchen", Branche.values());
         return "crm/account-form";

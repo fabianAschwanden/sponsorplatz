@@ -223,6 +223,25 @@ class SponsorAccountControllerTest {
                 .erstelle(any(), any(), any());
     }
 
+    /**
+     * CRM-CTRL-14: Das /neu-Formular muss das versteckte Typ-Feld mit value="VEREIN"
+     * rendern — sonst sendet der Browser typ leer und @Valid scheitert an @NotNull,
+     * das Formular lädt kommentarlos neu ("hat nicht geklappt"). Regressionsschutz.
+     */
+    @Test
+    @WithMockUser
+    void neuFormularRendertTypVerein() throws Exception {
+        when(organisationService.findeIdNachSlug("css")).thenReturn(sponsorOrgId);
+
+        var html = mockMvc.perform(get("/crm/css/neu"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        // Das gebundene Hidden-Feld muss den Typ tragen (Reihenfolge der Attribute
+        // ist Thymeleaf-abhängig, daher beide Teilstrings prüfen).
+        org.assertj.core.api.Assertions.assertThat(html).contains("name=\"typ\"");
+        org.assertj.core.api.Assertions.assertThat(html).contains("value=\"VEREIN\"");
+    }
+
     /** CRM-CTRL-11: Bulk-Status (kodiert status:AKTIV) → an Service delegiert + Redirect. */
     @Test
     @WithMockUser
