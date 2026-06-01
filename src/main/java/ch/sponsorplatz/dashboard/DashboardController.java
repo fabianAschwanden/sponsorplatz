@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
 import ch.sponsorplatz.aufgabe.AufgabenService;
@@ -43,6 +44,7 @@ public class DashboardController {
     private static final int MAX_AUFGABEN_AUF_DASHBOARD = 6;
 
     private final DashboardService dashboardService;
+    private final DashboardChartService dashboardChartService;
     private final MatchingService matchingService;
     private final ProjektService projektService;
     private final AppUserService appUserService;
@@ -51,6 +53,7 @@ public class DashboardController {
     private final AufgabenService aufgabenService;
 
     public DashboardController(DashboardService dashboardService,
+            DashboardChartService dashboardChartService,
             MatchingService matchingService,
             ProjektService projektService,
             AppUserService appUserService,
@@ -58,6 +61,7 @@ public class DashboardController {
             EinladungsService einladungsService,
             AufgabenService aufgabenService) {
         this.dashboardService = dashboardService;
+        this.dashboardChartService = dashboardChartService;
         this.matchingService = matchingService;
         this.projektService = projektService;
         this.appUserService = appUserService;
@@ -68,7 +72,8 @@ public class DashboardController {
 
     @GetMapping("/dashboard")
     @PreAuthorize("isAuthenticated()")
-    public String dashboard(Authentication auth, Model model) {
+    public String dashboard(@RequestParam(name = "zeitraum", required = false, defaultValue = "monat") String zeitraum,
+                            Authentication auth, Model model) {
         // Onboarding-Redirect nur einmal direkt nach der Registrierung:
         // - Plattform-Admins werden nie umgeleitet.
         // - User, die das Onboarding bereits gesehen haben, ebenfalls nicht
@@ -94,6 +99,12 @@ public class DashboardController {
         model.addAttribute("anzahlAnfragen", daten.anzahlAnfragen());
         model.addAttribute("anzahlOffeneAnfragen", daten.anzahlOffeneAnfragen());
         model.addAttribute("naechsteEvents", daten.naechsteEvents());
+
+        // Charts: Sponsoring-Entwicklung (Zeitfenster aus Dropdown) + Finanzierungs-Status.
+        DashboardChartDaten charts = dashboardChartService.ladeCharts(auth.getName(), zeitraum);
+        model.addAttribute("entwicklung", charts.entwicklung());
+        model.addAttribute("finanzierung", charts.finanzierung());
+        model.addAttribute("zeitraum", zeitraum);
 
         // Aktive Projekte der eigenen Orgs — Top-N fürs Dashboard-Grid.
         // Für Org-lose User bleibt die Liste leer (Template versteckt die Sektion).

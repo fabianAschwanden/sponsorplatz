@@ -71,6 +71,26 @@ public interface VertragRepository extends JpaRepository<Vertrag, UUID> {
                               @Param("status") VertragsStatus status);
 
     /**
+     * Unterzeichnete Verträge der Vereine seit einem Zeitpunkt — Tupel
+     * {@code (unterzeichnetAm, preisChf)} aufsteigend nach Datum, für die
+     * Sponsoring-Entwicklungskurve auf dem Dashboard. Nur Verträge mit gesetztem
+     * {@code unterzeichnetAm} und Preis fliessen ein; die Bucketierung in
+     * Zeitfenster macht der Service (H2/PG-portabel, keine DB-Datumsfunktionen).
+     */
+    @Query("""
+            select v.unterzeichnetAm, v.preisChf
+              from Vertrag v
+             where v.org.id in :orgIds
+               and v.status = ch.sponsorplatz.anfrage.VertragsStatus.UNTERZEICHNET
+               and v.unterzeichnetAm is not null
+               and v.unterzeichnetAm >= :ab
+               and v.preisChf is not null
+             order by v.unterzeichnetAm asc
+            """)
+    List<Object[]> findeUnterzeichnetSeit(@Param("orgIds") Collection<UUID> orgIds,
+                                          @Param("ab") java.time.Instant ab);
+
+    /**
      * Branchen-Verteilung: pro Branche des unterstützten Vereins die Anzahl
      * Verträge eines Sponsors. Liefert Tupel (Branche, count). Iteriert auf
      * der DB-Seite per `group by`, nicht im Service — bei vielen Verträgen

@@ -182,62 +182,72 @@
                 <div class="dash-card">
                     <header class="dash-card-head">
                         <h2 class="dash-section-title" th:text="#{dashboard.entwicklung.titel}">Sponsoring-Entwicklung</h2>
-                        <select class="dash-pill-select"
-                                th:aria-label="#{dashboard.entwicklung.zeitraum.aria}"
-                                aria-label="Zeitraum für Sponsoring-Entwicklung wählen">
-                            <option th:text="#{dashboard.zeitraum.woche}">Woche</option>
-                            <option th:text="#{dashboard.zeitraum.monat}">Monat</option>
-                            <option th:text="#{dashboard.zeitraum.jahr}">Jahr</option>
-                        </select>
+                        <!-- Zeitraum-Wahl: GET-Reload mit ?zeitraum=… (kein JS nötig, graceful no-JS). -->
+                        <form method="get" th:action="@{/dashboard}" style="margin:0;">
+                            <select name="zeitraum" class="dash-pill-select" onchange="this.form.submit()"
+                                    th:aria-label="#{dashboard.entwicklung.zeitraum.aria}"
+                                    aria-label="Zeitraum für Sponsoring-Entwicklung wählen">
+                                <option value="woche" th:text="#{dashboard.zeitraum.woche}"
+                                        th:selected="${zeitraum == 'woche'}">Woche</option>
+                                <option value="monat" th:text="#{dashboard.zeitraum.monat}"
+                                        th:selected="${zeitraum == 'monat'}">Monat</option>
+                                <option value="jahr" th:text="#{dashboard.zeitraum.jahr}"
+                                        th:selected="${zeitraum == 'jahr'}">Jahr</option>
+                            </select>
+                        </form>
                     </header>
 
                     <div class="dash-chart">
-                        <!-- SVG Linien-Chart mit Tooltip — Placeholder-Daten -->
-                        <svg class="dash-line-chart" viewBox="0 0 480 180" preserveAspectRatio="none">
-                            <path d="M 20 140 C 60 120, 90 110, 130 90 S 200 60, 240 80 S 320 120, 360 90 S 440 50, 470 30"
-                                  fill="none" stroke="var(--dash-violet)" stroke-width="3" stroke-linecap="round"/>
-                            <circle cx="240" cy="80" r="5" fill="var(--dash-violet)" stroke="#fff" stroke-width="2"/>
+                        <!-- Echtes Linien-Chart aus unterzeichneten Vertragsvolumen pro Zeit-Bucket. -->
+                        <svg th:if="${entwicklung.hatDaten}" class="dash-line-chart" viewBox="0 0 480 180" preserveAspectRatio="none">
+                            <polyline th:attr="points=${entwicklung.punkte}"
+                                      fill="none" stroke="var(--dash-violet)" stroke-width="3"
+                                      stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle th:attr="cx=${entwicklung.letzterPunktX}, cy=${entwicklung.letzterPunktY}"
+                                    r="5" fill="var(--dash-violet)" stroke="#fff" stroke-width="2"/>
                         </svg>
-                        <div class="dash-chart-tooltip">
-                            <span class="dash-chart-tooltip-val">12'400 CHF</span>
-                            <span class="dash-chart-tooltip-date">Mi 27.05.</span>
+                        <div th:if="${entwicklung.hatDaten}" class="dash-chart-tooltip">
+                            <span class="dash-chart-tooltip-val" th:text="${entwicklung.aktuellerWert}">12'400 CHF</span>
+                            <span class="dash-chart-tooltip-date" th:text="${entwicklung.aktuellesLabel}">KW 22</span>
                         </div>
+                        <p th:unless="${entwicklung.hatDaten}" class="dash-chart-empty"
+                           th:text="#{dashboard.entwicklung.leer}">Noch keine unterzeichneten Sponsorings im Zeitraum.</p>
                     </div>
 
-                    <div class="dash-chart-axis">
-                        <span>Mo</span><span>Di</span><span class="aktiv">Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span>
+                    <div class="dash-chart-axis" th:if="${entwicklung.hatDaten}">
+                        <span th:each="l : ${entwicklung.labels}" th:text="${l}">Mo</span>
                     </div>
                 </div>
 
                 <div class="dash-card">
                     <header class="dash-card-head">
                         <h2 class="dash-section-title" th:text="#{dashboard.finanzierung.titel}">Finanzierungs-Status</h2>
-                        <select class="dash-pill-select"
-                                th:aria-label="#{dashboard.finanzierung.zeitraum.aria}"
-                                aria-label="Zeitraum für Finanzierungs-Status wählen">
-                            <option th:text="#{dashboard.zeitraum.aktuell}">Aktuell</option>
-                            <option th:text="#{dashboard.zeitraum.vorjahr}">Vorjahr</option>
-                        </select>
                     </header>
 
-                    <div class="dash-donut-wrap">
+                    <div th:if="${finanzierung.hatDaten}" class="dash-donut-wrap">
                         <svg class="dash-donut" viewBox="0 0 120 120">
                             <circle cx="60" cy="60" r="48" fill="none" stroke="var(--dash-violet-light)" stroke-width="14"/>
                             <circle cx="60" cy="60" r="48" fill="none"
                                     stroke="var(--dash-violet)"
                                     stroke-width="14"
-                                    stroke-dasharray="204 102"
+                                    th:attr="stroke-dasharray=${finanzierung.dashArray}"
                                     stroke-dashoffset="0"
                                     stroke-linecap="round"
                                     transform="rotate(-90 60 60)"/>
-                            <text x="60" y="68" text-anchor="middle" class="dash-donut-text">68 %</text>
+                            <text x="60" y="68" text-anchor="middle" class="dash-donut-text"
+                                  th:text="${finanzierung.prozentGesammelt} + ' %'">68 %</text>
                         </svg>
                     </div>
 
-                    <div class="dash-legend">
-                        <span><span class="leg-dot leg-dot-violet"></span>68 % gesammelt</span>
-                        <span><span class="leg-dot leg-dot-coral"></span>32 % offen</span>
+                    <div th:if="${finanzierung.hatDaten}" class="dash-legend">
+                        <span><span class="leg-dot leg-dot-violet"></span>
+                            <span th:text="#{dashboard.finanzierung.gesammelt(${finanzierung.prozentGesammelt}, ${finanzierung.gesammeltChf})}">68 % gesammelt</span></span>
+                        <span><span class="leg-dot leg-dot-coral"></span>
+                            <span th:text="#{dashboard.finanzierung.offen(${finanzierung.prozentOffen}, ${finanzierung.offenChf})}">32 % offen</span></span>
                     </div>
+
+                    <p th:unless="${finanzierung.hatDaten}" class="dash-chart-empty"
+                       th:text="#{dashboard.finanzierung.leer}">Noch keine Rechnungen erfasst.</p>
                 </div>
             </section>
 

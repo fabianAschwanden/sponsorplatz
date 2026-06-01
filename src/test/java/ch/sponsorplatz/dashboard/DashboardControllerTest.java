@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -52,6 +53,9 @@ class DashboardControllerTest {
     private DashboardService dashboardService;
 
     @MockitoBean
+    private DashboardChartService dashboardChartService;
+
+    @MockitoBean
     private MatchingService matchingService;
 
     @MockitoBean
@@ -68,6 +72,16 @@ class DashboardControllerTest {
 
     @MockitoBean
     private AufgabenService aufgabenService;
+
+    /** Charts immer mit leeren (aber nicht-null) Daten füllen, damit das Template rendert. */
+    @BeforeEach
+    void chartsStubben() {
+        org.mockito.Mockito.lenient().when(dashboardChartService.ladeCharts(anyString(), anyString()))
+                .thenReturn(new DashboardChartDaten(
+                        DashboardChartDaten.entwicklungAus(List.of(), List.of()),
+                        DashboardChartDaten.finanzierungAus(
+                                java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO)));
+    }
 
     /**
      * Simuliert einen User mit mindestens einer Org — damit kein

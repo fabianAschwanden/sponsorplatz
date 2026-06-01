@@ -566,6 +566,19 @@ body.dashboard-body {
     height: 100%;
 }
 
+/* Empty-State, wenn (noch) keine Chart-Daten vorliegen. */
+.dash-chart-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    margin: 0;
+    padding: 0 1rem;
+    text-align: center;
+    color: var(--dash-muted);
+    font-size: 0.85rem;
+}
+
 .dash-chart-tooltip {
     position: absolute;
     top: 24px;

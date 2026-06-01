@@ -268,6 +268,14 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 | **EINL-15** | `EinladungsServiceTest` | `nimmAn` ist idempotent — zweiter Aufruf desselben Tokens → kein doppelter `fuegeHinzu` (M4-Fix via `angenommen_am`-Marker statt `delete`) |
 | **EINL-16** | `EinladungsControllerTest` | POST `/einladung/annehmen` bei „nicht registriert"-Fehler → Redirect zu `/registrieren?email=…` (M3-Fix: bessere UX statt 409) |
 | **DASH-11** | `DashboardServiceTest` | `ladeDashboardDaten` setzt `aktuellerMonat` und `aktuelleKw` direkt im DTO (M5-Fix: View-Logik nicht im Controller) |
+| **DASHCHART-01** | `DashboardChartServiceTest` | Unbekannte E-Mail → leere Charts, keine Vertrags-/Rechnungs-Queries |
+| **DASHCHART-02** | `DashboardChartServiceTest` | User ohne Org → leere Charts |
+| **DASHCHART-03** | `DashboardChartServiceTest` | Finanzierungs-Donut: Prozent gesammelt/offen aus BEZAHLT-/OFFEN-Rechnungssummen |
+| **DASHCHART-04** | `DashboardChartServiceTest` | Keine Rechnungen → Donut leer (`hatDaten=false`) |
+| **DASHCHART-05** | `DashboardChartServiceTest` | Unterzeichnete Verträge → Entwicklungs-Polyline mit Punkten + Labels |
+| **DASHCHART-06** | `DashboardChartDatenTest` | Polyline skaliert aufs Maximum (höchster Wert = kleinstes y im SVG) |
+| **DASHCHART-07** | `DashboardChartDatenTest` | Leere Bucket-Summen → `hatDaten=false`, keine Punkte |
+| **DASHCHART-08** | `DashboardChartDatenTest` | Donut-Dasharray summiert auf Kreisumfang, Prozent rundet korrekt |
 
 ### M1-Fix: Token-Generierung extrahiert
 

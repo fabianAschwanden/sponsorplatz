@@ -56,4 +56,18 @@ public interface RechnungRepository extends JpaRepository<Rechnung, UUID> {
      * kein Join nötig.
      */
     long countByOrgIdInAndStatus(Collection<UUID> orgIds, RechnungsStatus status);
+
+    /**
+     * Summe der Rechnungs-Beträge (CHF) der Vereine in einem Status — für den
+     * Finanzierungs-Status-Donut auf dem Dashboard (BEZAHLT = gesammelt,
+     * OFFEN = offen). Liefert {@code 0}, wenn keine Rechnungen existieren.
+     */
+    @Query("""
+            select coalesce(sum(r.betragChf), 0)
+              from Rechnung r
+             where r.org.id in :orgIds
+               and r.status = :status
+            """)
+    java.math.BigDecimal summeBetragChfByOrgUndStatus(@Param("orgIds") Collection<UUID> orgIds,
+                                                       @Param("status") RechnungsStatus status);
 }
