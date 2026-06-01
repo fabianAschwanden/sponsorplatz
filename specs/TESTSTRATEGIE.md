@@ -441,6 +441,7 @@ UI-Skelett für angemeldete Benutzer unter `/dashboard`. Service-Aufrufe über `
 
 | ID | Test-Klasse | Beschreibung |
 |---|---|---|
+| **PCTRL-LIST-01** | `ProjektControllerTest` | Projektliste-UX: Toolbar/Zähler/Sort gerendert + Sortierung nach Name absteigend |
 | **PCTRL-06** | `ProjektControllerTest` | POST `/organisationen/{orgSlug}/projekte/speichern` ohne Edit-Recht → 403 |
 | **PCTRL-07** | `ProjektControllerTest` | POST `.../{projektSlug}/veroeffentlichen` ohne Edit-Recht → 403 |
 | **PCTRL-08** | `ProjektControllerTest` | POST `.../{projektSlug}/pakete/speichern` ohne Edit-Recht → 403 |

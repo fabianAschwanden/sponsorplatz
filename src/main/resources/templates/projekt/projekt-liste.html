@@ -30,13 +30,54 @@
 
         <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
-        <table th:if="${!projekte.isEmpty()}" class="app-table">
+        <!-- Komplett leer (kein Filter) -->
+        <div th:if="${anzahlGesamt == 0 and !filterAktiv}" class="app-empty">
+            <strong th:text="#{projektListe.empty.titel}">Noch keine Projekte.</strong>
+            <span th:text="#{projektListe.empty.text}">Lege das erste Sponsoring-Projekt für diese Organisation an.</span>
+        </div>
+
+        <th:block th:if="${anzahlGesamt > 0}">
+        <!-- Filter-/Such-Leiste + Zähler -->
+        <form method="get" th:action="@{/organisationen/{slug}/projekte(slug=${org.slug})}" class="app-filter liste-toolbar">
+            <input type="hidden" name="sort" th:value="${liste.sort}">
+            <input type="hidden" name="dir" th:value="${liste.absteigend} ? 'desc' : 'asc'">
+            <div class="app-filter-felder">
+                <label>
+                    <span th:text="#{projektListe.feld.sichtbarkeit}">Sichtbarkeit</span>
+                    <select name="sichtbarkeit" onchange="this.form.submit()" th:aria-label="#{projektListe.feld.sichtbarkeit}">
+                        <option value="" th:text="#{crm.filter.alle}">Alle</option>
+                        <option th:each="s : ${sichtbarkeitWerte}" th:value="${s}"
+                                th:selected="${filterSichtbarkeit == s}" th:text="${s}">ENTWURF</option>
+                    </select>
+                </label>
+                <label class="liste-suche">
+                    <span th:text="#{crm.filter.suche}">Suche</span>
+                    <input type="search" name="suche" th:value="${filterSuche}"
+                           th:placeholder="#{projektListe.suche.placeholder}" placeholder="Name, Kategorie, Ort">
+                </label>
+            </div>
+            <div class="app-filter-aktionen">
+                <button type="submit" class="app-btn app-btn-sm" th:text="#{crm.filter.anwenden}">Anwenden</button>
+                <a th:if="${filterAktiv}" th:href="@{/organisationen/{slug}/projekte(slug=${org.slug})}"
+                   class="liste-reset" th:text="#{crm.filter.zuruecksetzen}">Zurücksetzen</a>
+                <span class="liste-anzahl"
+                      th:text="${filterAktiv}
+                               ? #{projektListe.anzahlGefiltert(${anzahlGezeigt}, ${anzahlGesamt})}
+                               : #{projektListe.anzahl(${anzahlGesamt})}">12 Projekte</span>
+            </div>
+        </form>
+
+        <div th:if="${anzahlGezeigt == 0}" class="app-empty">
+            <strong th:text="#{projektListe.filter.empty}">Keine Projekte passen zu Filter/Suche.</strong>
+        </div>
+
+        <table th:if="${anzahlGezeigt > 0}" class="app-table">
             <thead>
             <tr>
-                <th th:text="#{projektListe.feld.name}">Name</th>
-                <th th:text="#{projektListe.feld.sichtbarkeit}">Sichtbarkeit</th>
-                <th th:text="#{projektListe.feld.kategorie}">Kategorie</th>
-                <th th:text="#{projektListe.feld.ort}">Ort</th>
+                <th th:replace="~{projekt/projekt-liste :: sortKopf('name', #{projektListe.feld.name})}">Name</th>
+                <th th:replace="~{projekt/projekt-liste :: sortKopf('sichtbarkeit', #{projektListe.feld.sichtbarkeit})}">Sichtbarkeit</th>
+                <th th:replace="~{projekt/projekt-liste :: sortKopf('kategorie', #{projektListe.feld.kategorie})}">Kategorie</th>
+                <th th:replace="~{projekt/projekt-liste :: sortKopf('ort', #{projektListe.feld.ort})}">Ort</th>
             </tr>
             </thead>
             <tbody>
@@ -51,12 +92,47 @@
             </tbody>
         </table>
 
-        <div th:if="${projekte.isEmpty()}" class="app-empty">
-            <strong th:text="#{projektListe.empty.titel}">Noch keine Projekte.</strong>
-            <span th:text="#{projektListe.empty.text}">Lege das erste Sponsoring-Projekt für diese Organisation an.</span>
-        </div>
+        <!-- Paginierung -->
+        <nav class="liste-pager" th:if="${liste.hatMehrereSeiten() or liste.gesamt > 25}" aria-label="Seitennavigation">
+            <form method="get" th:action="@{/organisationen/{slug}/projekte(slug=${org.slug})}" class="liste-pager-groesse">
+                <input type="hidden" name="suche" th:value="${filterSuche}">
+                <input type="hidden" name="sichtbarkeit" th:value="${filterSichtbarkeit}">
+                <input type="hidden" name="sort" th:value="${liste.sort}">
+                <input type="hidden" name="dir" th:value="${liste.absteigend} ? 'desc' : 'asc'">
+                <label>
+                    <select name="groesse" onchange="this.form.submit()" th:aria-label="#{crm.pager.proSeite}">
+                        <option th:each="g : ${seitenGroessen}" th:value="${g}"
+                                th:selected="${liste.seitenGroesse == g}" th:text="${g}">25</option>
+                    </select>
+                    <span th:text="#{crm.pager.proSeite}">pro Seite</span>
+                </label>
+            </form>
+            <span class="liste-pager-info"
+                  th:text="#{crm.pager.seiteVon(${liste.seite}, ${liste.anzahlSeiten})}">Seite 1 von 5</span>
+            <span class="liste-pager-nav">
+                <a th:if="${liste.seite > 1}"
+                   th:href="@{/organisationen/{slug}/projekte(slug=${org.slug}, suche=${filterSuche},
+                             sichtbarkeit=${filterSichtbarkeit}, sort=${liste.sort},
+                             dir=${liste.absteigend} ? 'desc' : 'asc', groesse=${liste.seitenGroesse},
+                             seite=${liste.seite - 1})}" th:text="'‹ ' + #{crm.pager.zurueck}">‹ Zurück</a>
+                <a th:if="${liste.seite < liste.anzahlSeiten}"
+                   th:href="@{/organisationen/{slug}/projekte(slug=${org.slug}, suche=${filterSuche},
+                             sichtbarkeit=${filterSichtbarkeit}, sort=${liste.sort},
+                             dir=${liste.absteigend} ? 'desc' : 'asc', groesse=${liste.seitenGroesse},
+                             seite=${liste.seite + 1})}" th:text="#{crm.pager.weiter} + ' ›'">Weiter ›</a>
+            </span>
+        </nav>
+        </th:block>
     </main>
 </div>
+
+<th th:fragment="sortKopf(spalte, label)" class="liste-sort">
+    <a th:href="@{/organisationen/{slug}/projekte(slug=${org.slug}, suche=${filterSuche}, sichtbarkeit=${filterSichtbarkeit},
+                 sort=${spalte}, dir=${liste.sort == spalte and !liste.absteigend ? 'desc' : 'asc'})}">
+        <span th:text="${label}">Spalte</span>
+        <span class="liste-sort-ind" th:text="${liste.sort != spalte ? '⇅' : (liste.absteigend ? '▼' : '▲')}">⇅</span>
+    </a>
+</th>
 
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
 </body>

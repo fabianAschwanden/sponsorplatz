@@ -87,6 +87,37 @@ class ProjektControllerTest {
                 .andExpect(model().attributeExists("projekte"));
     }
 
+    /** PROJ-LIST-01: Listen-UX (Toolbar/Zähler/Sort) + Sortierung nach Name absteigend. */
+    @Test
+    @WithMockUser
+    void listeListenUxUndSort() throws Exception {
+        Organisation meineOrg = testOrg();
+        when(accessControl.kannOrgEditierenNachSlug(eq("fc-test"), any())).thenReturn(true);
+        when(orgService.findeViewNachSlug("fc-test")).thenReturn(Optional.of(ch.sponsorplatz.organisation.OrganisationView.von(meineOrg)));
+        when(projektService.findeViewsNachOrg(meineOrg.getId())).thenReturn(List.of(
+                projektView("Alpha", "alpha"), projektView("Zeta", "zeta")));
+
+        var html = mockMvc.perform(get("/organisationen/fc-test/projekte")
+                        .param("sort", "name").param("dir", "desc"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("liste-anzahl")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("liste-sort")))
+                .andReturn().getResponse().getContentAsString();
+        org.assertj.core.api.Assertions.assertThat(html.indexOf("Zeta")).isLessThan(html.indexOf("Alpha"));
+    }
+
+    private ProjektView projektView(String name, String slug) {
+        ch.sponsorplatz.projekt.Projekt p = new ch.sponsorplatz.projekt.Projekt();
+        p.setId(UUID.randomUUID());
+        p.setName(name);
+        p.setSlug(slug);
+        p.setSichtbarkeit(ch.sponsorplatz.projekt.Sichtbarkeit.OEFFENTLICH);
+        p.setKategorie("Sport");
+        p.setOrt("Zürich");
+        p.setOrg(testOrg());
+        return ProjektView.von(p, null);
+    }
+
     /** PCTRL-02: Neues-Formular wird angezeigt. */
     @Test
     @WithMockUser
