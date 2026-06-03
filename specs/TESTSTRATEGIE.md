@@ -1105,6 +1105,11 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **SUP-04** | `SupportControllerTest` | `POST /support` mit leerem Betreff → Validierungs-Fehler, Form bleibt offen |
 | **HILFE-01** | `HilfeControllerTest` | `/hilfe` ohne Auth → Redirect auf Login (`anyRequest().authenticated()`) |
 | **HILFE-02** | `HilfeControllerTest` | `/hilfe` mit Auth → 200, View `home/hilfe`, rendert Feature-Karten-Grid |
+| **HILFE-03** | `HilfeControllerTest` | `/hilfe/dashboard` → 200, View `home/hilfe-detail`, rendert Schritt-Liste |
+| **HILFE-04** | `HilfeControllerTest` | `/hilfe/{unbekannt}` → 404 (NotFoundException via GlobalExceptionHandler) |
+| **HILFE-05** | `HilfeControllerTest` | `/hilfe/2fa` → 200 (Slug `2fa` ≠ i18n-Key `zweifa`) |
+| **HILFE-06** | `HilfeThemaTest` | `HilfeThema.nachSlug` case-insensitive, `2fa`→ZWEIFA mit i18n-Key `zweifa` |
+| **HILFE-07** | `HilfeThemaTest` | unbekannter/null-Slug → leeres Optional; jedes Thema hat Schritte + Slug + i18n-Key |
 
 ### Datei-Anhänge — MedienAssetView (Phase 11.3)
 

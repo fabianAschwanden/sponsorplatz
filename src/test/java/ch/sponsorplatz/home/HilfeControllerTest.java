@@ -1,6 +1,7 @@
 package ch.sponsorplatz.home;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
+import ch.sponsorplatz.shared.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Test-IDs: HILFE-01..02 in {@code specs/TESTSTRATEGIE.md}.
  */
 @WebMvcTest(HilfeController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, GlobalExceptionHandler.class})
 @ActiveProfiles("dev")
 class HilfeControllerTest {
 
@@ -49,5 +50,35 @@ class HilfeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("home/hilfe"))
                 .andExpect(content().string(containsString("hilfe-grid")));
+    }
+
+    /** HILFE-03: Detailseite eines bekannten Themas → 200 + Schritt-Liste. */
+    @Test
+    @WithMockUser("user@test.ch")
+    @DisplayName("HILFE-03: /hilfe/dashboard → 200 + Detail-Schritte")
+    void detailBekanntesThema() throws Exception {
+        mockMvc.perform(get("/hilfe/dashboard"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("home/hilfe-detail"))
+                .andExpect(content().string(containsString("hilfe-detail-schritte")));
+    }
+
+    /** HILFE-04: Unbekanntes Thema → 404 (NotFoundException via GlobalExceptionHandler). */
+    @Test
+    @WithMockUser("user@test.ch")
+    @DisplayName("HILFE-04: /hilfe/gibtsnicht → 404")
+    void detailUnbekanntesThema() throws Exception {
+        mockMvc.perform(get("/hilfe/gibtsnicht"))
+                .andExpect(status().isNotFound());
+    }
+
+    /** HILFE-05: Slug `2fa` mappt auf das Thema mit i18n-Key `zweifa`. */
+    @Test
+    @WithMockUser("user@test.ch")
+    @DisplayName("HILFE-05: /hilfe/2fa → 200 (Slug ≠ i18n-Key)")
+    void detailZweifaSlug() throws Exception {
+        mockMvc.perform(get("/hilfe/2fa"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("home/hilfe-detail"));
     }
 }

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{'hilfe.' + ${themaKey} + '.titel'} + ' — ' + #{hilfe.titel} + ' — Sponsorplatz'">Hilfe — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="dashboard-body">
+<div class="dashboard-layout">
+
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('hilfe', null)}"></aside>
+
+    <main class="dash-main" style="max-width:760px;">
+        <header class="dash-topbar">
+            <p class="hilfe-breadcrumb">
+                <a th:href="@{/hilfe}" th:text="#{hilfe.titel}">Hilfe &amp; Anleitungen</a>
+                <span aria-hidden="true">›</span>
+                <span th:text="#{'hilfe.' + ${themaKey} + '.titel'}">Thema</span>
+            </p>
+            <h1 style="font-size:1.3rem; margin:0;" th:text="#{'hilfe.' + ${themaKey} + '.titel'}">Thema</h1>
+        </header>
+
+        <p class="hilfe-intro" th:text="#{'hilfe.' + ${themaKey} + '.detailIntro'}">
+            Schritt-für-Schritt-Anleitung.
+        </p>
+
+        <!-- Nummerierte Schritte aus i18n: hilfe.{key}.schritt.{i}.titel/.text -->
+        <ol class="hilfe-detail-schritte">
+            <li th:each="i : ${schritte}" class="hilfe-schritt">
+                <span class="hilfe-schritt-nr" th:text="${i}">1</span>
+                <div class="hilfe-schritt-body">
+                    <h2 th:text="#{'hilfe.' + ${themaKey} + '.schritt.' + ${i} + '.titel'}">Schritt</h2>
+                    <p th:text="#{'hilfe.' + ${themaKey} + '.schritt.' + ${i} + '.text'}">Beschreibung.</p>
+                </div>
+            </li>
+        </ol>
+
+        <div class="hilfe-detail-zurueck">
+            <a th:href="@{/hilfe}" class="app-btn app-btn-secondary" th:text="#{hilfe.detail.zurueck}">← Zurück zur Übersicht</a>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>
