@@ -69,7 +69,7 @@ Eine `Organisation` ist die Wurzel-Entität für Vereine und Sponsor-Unternehmen
 | `name` | VARCHAR(255) | – | Anzeigename |
 | `slug` | VARCHAR(120) | – | URL-freundlich, UNIQUE |
 | `rechtsform` | VARCHAR(50) | ✓ | z.B. „Verein", „AG", „GmbH", „e.V." |
-| `branche` | VARCHAR(50) | – | **Health-Fokus, NOT NULL ab V12, CHECK-Constraint:** `SPORT`, `BEWEGUNG`, `REHA`, `BEHINDERTENSPORT`, `SENIORENSPORT`, `PRAEVENTION`, `MENTAL_HEALTH`, `ERNAEHRUNG`, `WELLNESS`, `SELBSTHILFE`, `PATIENTENORGANISATION` |
+| `branche` | VARCHAR(50) | ✓ | **Health-Fokus, Pflicht für VEREIN (NOT NULL ab V12), nullable für UNTERNEHMEN (V25 führte `sponsor_branche` ein). CHECK-Constraint `chk_branche_pro_typ` erzwingt XOR:** `SPORT`, `BEWEGUNG`, `REHA`, `BEHINDERTENSPORT`, `SENIORENSPORT`, `PRAEVENTION`, `MENTAL_HEALTH`, `ERNAEHRUNG`, `WELLNESS`, `SELBSTHILFE`, `PATIENTENORGANISATION` |
 | `beschreibung` | TEXT | ✓ | öffentliche Beschreibung |
 | `website_url` | VARCHAR(500) | ✓ | |
 | `status` | VARCHAR(20) | – | ENUM (`PENDING`, `VERIFIED`, `ACTIVE`, `SUSPENDED`); Default `PENDING` |
@@ -109,10 +109,15 @@ Eine `Organisation` ist die Wurzel-Entität für Vereine und Sponsor-Unternehmen
 
 `OrganisationService` bietet:
 - `alle()` → `List<Organisation>` sortiert nach `name`
+- `alleViews()` → `List<OrganisationView>` (View-Pflicht, ARCH-02)
 - `findeNachId(UUID id)` → `Optional<Organisation>`
 - `findeNachSlug(String slug)` → `Optional<Organisation>`
-- `speichere(OrganisationFormDto dto)` → erzeugt oder aktualisiert; Slug aus Name generiert wenn leer; wirft `IllegalArgumentException` bei Slug-Konflikt
-- `loesche(UUID id)` → wirft `IllegalStateException` falls Org nicht gelöscht werden darf (Phase 0.2: wenn Mitgliedschaften vorhanden)
+- `erstelle(OrganisationFormDto dto)` → erzeugt Org; Slug aus Name generiert wenn leer; wirft `IllegalArgumentException` bei Slug-Konflikt
+- `erstelleMitEigentuemer(dto, userId)` → erstellt Org + ORG_OWNER-Mitgliedschaft für den Ersteller
+- `aktualisiere(String slug, OrganisationFormDto dto)` → aktualisiert via URL-Slug (Mass-Assignment-Defense)
+- `loesche(UUID id)` → wirft `IllegalStateException` falls Mitgliedschaften oder Unterorganisationen vorhanden
+- `verifiziere(UUID id)` → Admin-Aktion: Status PENDING → VERIFIED
+- `suspendiere(UUID id)` → Admin-Aktion: Status → SUSPENDED
 
 ### Spätere Phasen
 

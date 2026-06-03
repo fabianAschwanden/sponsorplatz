@@ -74,9 +74,9 @@ public String bearbeiten(@PathVariable String slug, Authentication auth) {
 
 | Aktion | anonym | eingeloggt | ORG_VIEWER | ORG_EDITOR | ORG_OWNER | PLATFORM_ADMIN |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
-| Public-Projekt ansehen | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Marktplatz / Verein-Profil ansehen | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `/organisationen`-Liste sehen | ✓ alle | ✓ nur eigene | ✓ nur eigene | ✓ nur eigene | ✓ nur eigene | ✓ alle |
+| Startseite / Kontakt / Impressum | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Marktplatz / Verein-Profil / Marken-Landing | – | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `/organisationen`-Liste sehen | – | ✓ nur eigene | ✓ nur eigene | ✓ nur eigene | ✓ nur eigene | ✓ alle |
 | Sponsor-Anfrage stellen (Paket-Bezug) | – | – | – | ✓\* | ✓\* | ✓ |
 | Kontakt-Anfrage Verein → Sponsor | – | – | – | ✓\*(V) | ✓\*(V) | – |
 | Eingehende Anfragen ansehen | – | ✓ | ✓\* | ✓\* | ✓\* | ✓ |
@@ -137,16 +137,17 @@ Zwei Schutz-Stile parallel im Einsatz:
 
 | HTTP | Pfad | Schutz | Begründung |
 |---|---|---|---|
-| GET | `/`, `/kontakt`, `/impressum`, `/datenschutz`, `/agb`, `/fuer-marken`, `/fuer-vereine` | public | Marketing-/Legal-Seiten |
+| GET | `/`, `/kontakt`, `/impressum`, `/datenschutz`, `/agb` | public | Marketing-/Legal-Seiten + anonymer Anfrage-Funnel |
 | GET | `/sitemap.xml` | public | SEO — gerendert aus published Projekten + Orgs |
-| GET | `/marktplatz/**` | public | Public-Liste + Detail-Seiten (Projekt-Slug, Org-Slug); SEO-optimiert mit Schema.org + OG-Tags |
+| GET | `/marktplatz/**`, `/vereine/**`, `/fuer-marken` | `authenticated` | Seit Phase 11 hinter Login — `/kontakt` ist der einzige anonyme Anfrage-Funnel. Entscheid: Sponsor/Verein-Matching nur für registrierte Nutzer, SEO über Startseite + Sitemap |
+| GET | `/organisationen`, `/organisationen/{slug}` | `authenticated` | Org-Listen/Detail erfordern Login; ergebnis-gefiltert auf Mitgliedschaften (Plattform-Admin sieht alle) |
 | GET, POST | `/login` | public | Form-Login |
 | GET, POST | `/login/2fa` | public, **State-gebunden** | TOTP/Backup-Code-Eingabe NACH Erst-Login mit Passwort; HTTP-Session-Stash hält den teil-authentifizierten User zwischen Schritt 1 und 2 |
 | GET | `/oauth2/authorization/{registrationId}` | public | Spring-Security-Initiation für OIDC-Provider (entra/google/swissid/edu) |
 | GET | `/login/oauth2/code/{registrationId}` | public | OIDC-Callback; `SponsorplatzOidcUserService.loadUser` macht Subject-Lookup → Email-Match → JIT-Provisioning |
 | POST | `/logout` | `isAuthenticated()` | RP-initiated wenn `ClientRegistrationRepository` vorhanden, sonst lokales Session-Kill mit Redirect `/` |
 | GET, POST | `/registrieren`, `/verifizieren` | public | Form-Login-Self-Reg + Mail-Verifizierung |
-| GET, POST | `/sponsor/registrieren` | public | Self-Reg für Sponsor-Org + auto ORG_OWNER-Mitgliedschaft |
+| GET, POST | `/sponsor/registrieren` | `authenticated` | Self-Reg für Sponsor-Org + auto ORG_OWNER-Mitgliedschaft (erfordert Login seit Funnel-Umbau) |
 | GET, POST | `/passwort-vergessen`, `/passwort-reset` | public | Token-basierter Reset (Token 1h gültig) |
 | GET, POST | `/einladung/annehmen` | public (Token in URL) | Mail-Link ist GET; POST = Annahme. K3-Fix verhindert CSRF-Replay |
 | GET, POST | `/onboarding/**` | `isAuthenticated()` | Verein-Quick-Create + Einladungs-Token-Eingabe; `DashboardController` leitet User ohne Mitgliedschaft hierhin |
@@ -165,8 +166,8 @@ Zwei Schutz-Stile parallel im Einsatz:
 
 | HTTP | Pfad | Schutz | Begründung |
 |---|---|---|---|
-| GET | `/organisationen` | public, **ergebnis-gefiltert** | Anonyme: alle Orgs; Eingeloggte (nicht-Admin): nur Orgs mit eigener Mitgliedschaft (jede Rolle); Plattform-Admins: alle Orgs. Implementierung in `OrganisationController.liste(Authentication)`. Filter via `?typ=…&status=…&branche=…&q=…` |
-| GET | `/organisationen/{slug}` | public | Profil lesbar |
+| GET | `/organisationen` | `authenticated`, **ergebnis-gefiltert** | Eingeloggte (nicht-Admin): nur Orgs mit eigener Mitgliedschaft (jede Rolle); Plattform-Admins: alle Orgs. Filter via `?typ=…&status=…&branche=…&q=…` |
+| GET | `/organisationen/{slug}` | `authenticated` | Org-Detail nur für eingeloggte User |
 | GET | `/organisationen/neu` | `isAuthenticated()` | nur eingeloggt anlegen |
 | POST | `/organisationen` (Create) | `isAuthenticated()` | Anlegender wird automatisch ORG_OWNER (Owner-on-Create-Pfad in `OrganisationService.erstelleMitEigentuemer`) |
 | POST | `/organisationen/{slug}` (Update) | `kannOrgEditierenNachSlug(#slug)` | Edit-Recht; Slug aus URL, kein `id` im Body (K3-Fix) |

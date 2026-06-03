@@ -20,7 +20,7 @@ Ernährung, Wellness, Selbsthilfe, Patientenorganisationen — siehe `Branche`-E
 | Schicht | Wahl |
 |---|---|
 | Sprache | Java 21 LTS |
-| Framework | Spring Boot 3.4.x |
+| Framework | Spring Boot 3.5.x |
 | Frontend | Thymeleaf + light CSS (kein SPA) |
 | DB dev | H2 (file: `./data/sponsorplatz`) |
 | DB prod | PostgreSQL 17 |
@@ -224,13 +224,22 @@ src/main/java/ch/sponsorplatz/
 ├── engagement/            # Öffentliches Schaufenster (Marken-Engagements,
 │                          # Kantons-/Branche-Filter, Startseiten-Teaser);
 │                          # liest anfrage (ANGENOMMEN), einseitige Kante
+├── crm/                   # Private Sponsor-CRM-Layer (ADR-0011):
+│                          # SponsorAccount, KontaktPerson, Aktivitaet,
+│                          # Pipeline, Renewal, Import/Export
 ├── einladung/             # Einladung + Mail-Listener + Cleanup-Job
 ├── benachrichtigung/      # In-App-Glocke (NotificationService + Bell-UI)
+├── aufgabe/               # Customizable Task-Engine (AufgabenEngine,
+│                          # AufgabenDefinition, Aufgabe, Badge-Advice)
+├── dashboard/             # DashboardService + DashboardChartService
+│                          # (aggregiert Kennzahlen + SVG-Charts)
+├── kontakt/               # /kontakt (anonymer Anfrage-Funnel)
 ├── audit/                 # AuditLog + DSG-Datenexport
 ├── backup/                # BackupService + Restore + Cloud-Upload
 ├── ops/                   # Ops-Dashboard, Alerts, RecentErrors,
 │                          # DB/Bucket-Stats, SystemSnapshot
 ├── admin/                 # Admin-UI: Backlog, Mail-Settings, Verifizierung
+├── seed/                  # DemoSeedRunner (Demo-Profil-Daten)
 └── home/                  # HomeController, InfoController (Impressum/DSG)
 
 src/main/resources/

@@ -13,7 +13,7 @@
 | Schicht | Technologie | Version |
 |---|---|---|
 | Sprache | Java | 21 (LTS) |
-| Framework | Spring Boot | 3.4.x |
+| Framework | Spring Boot | 3.5.x |
 | Frontend | Thymeleaf 3 + light CSS | — |
 | DB (dev) | H2 (file) | aktuell |
 | DB (prod) | PostgreSQL | 17 |
@@ -29,7 +29,7 @@
 - H2 file-based unter `./data/sponsorplatz`
 - **Flyway aktiv** (gleiche Migrationen wie prod)
 - Hibernate `ddl-auto=validate` — Schema kommt aus Migrationen
-- Security: `permitAll()` — kein Login
+- Security: Form-Login aktiv (gleiche Regeln wie prod, plus H2-Console + Actuator permitAll)
 - H2-Konsole aktiv
 
 ### `prod` (Produktion)
@@ -177,22 +177,25 @@ Parallel zum DB-Backup: alle in `MedienAsset` referenzierten Storage-Objekte wer
 | GET, POST | `/passwort-reset` | public | Token-Validation + Passwort setzen |
 | GET | `/verifizieren` | public | E-Mail-Verifizierung via Token |
 
-#### Zugriffs-Regeln (gesamt — Stand Phase 11)
+#### Zugriffs-Regeln (gesamt — Stand Phase 13)
 
 | Pfad-Pattern | Zugriff |
 |---|---|
 | `/`, `/login`, `/registrieren`, `/passwort-vergessen`, `/passwort-reset`, `/verifizieren` | `permitAll` |
-| `/css/**`, `/images/**`, `/favicon.ico`, `/sitemap.xml` | `permitAll` |
+| `/css/**`, `/fonts/**`, `/images/**`, `/favicon.ico`, `/sitemap.xml` | `permitAll` |
 | `/actuator/health`, `/actuator/info` | `permitAll` |
 | `/h2-console/**` (nur dev) | `permitAll` |
-| `/impressum`, `/datenschutz` | `permitAll` |
+| `/impressum`, `/datenschutz`, `/agb` | `permitAll` |
+| `/kontakt` | `permitAll` (einziger anonymer Anfrage-Funnel) |
+| `/login/2fa` | `permitAll` (State-gebunden via Session) |
 | `/oauth2/**`, `/login/oauth2/**` | `permitAll` (OIDC-Flow) |
-| `/sponsor/**` | `permitAll` (Sponsor-Self-Reg) |
 | `/einladung/**` | `permitAll` (Token-Auth via URL) |
-| `/marktplatz/**`, `/medien/**`, `/vereine/**`, `/og/**`, `/fuer-marken`, `/marken/*/engagements` | `permitAll` |
+| `/plz/**` | `permitAll` (PLZ-Autocomplete) |
+| `/medien/**`, `/og/**` | `permitAll` (OpenGraph-Crawler, Mail-Bilder) |
 | `/payment/webhook/**` | `permitAll` + CSRF-Ausnahme |
-| `/organisationen` (GET) | `permitAll`, ergebnis-gefiltert auf Mitgliedschaften (Plattform-Admin sieht alle) |
-| `/organisationen/{slug}` (GET) | `permitAll` |
+| `/api/**` | `permitAll` auf HTTP-Ebene, `ApiKeyFilter` prüft `X-API-Key` |
+| `/error` | `permitAll` (Spring-Boot-Error-Dispatch) |
+| `/marktplatz/**`, `/vereine/**`, `/fuer-marken`, `/sponsor/**`, `/organisationen` | `authenticated` (**nicht** mehr public — Login-Funnel-Entscheid, Phase 11) |
 | `/organisationen/neu`, `POST /organisationen` | `authenticated` |
 | `/organisationen/{slug}/bearbeiten`, `/organisationen/{slug}/loeschen` | `accessControl.kannOrgEditierenNachSlug(slug)` (programmatisch) |
 | `/organisationen/{slug}/mitglieder/**` | `accessControl.kannOrgVerwaltenNachSlug(slug)` |
@@ -269,39 +272,49 @@ src/main/java/ch/sponsorplatz/
 ├── shared/                # Querschnitts-Infrastruktur, kein Domänen-State
 │   ├── config/            # SecurityConfig, LocaleConfig, RateLimitFilter, ModelAttributeNames
 │   ├── exception/         # NotFoundException, GlobalExceptionHandler
-│   ├── util/              # SlugGenerator, TokenGenerator
+│   ├── util/              # SlugGenerator, TokenGenerator, Strings
 │   ├── pdf/               # PdfGeneratorService
-│   ├── storage/           # StorageService + Lokal/OCI-Implementierung
+│   ├── storage/           # StorageService + Lokal/OCI/Azure-Implementierung
 │   ├── mail/              # MailService (zentrale SMTP-Abstraktion)
 │   └── einstellungen/     # PlattformEinstellungen (DB-Settings)
 │
 ├── benutzer/              # AppUser, OnboardingController, SupportController, Auth, Profil,
 │                          # Verifizierung, PasswortReset, Einstellungen, OIDC-Mapping (FederierteIdentitaet),
-│                          # SeedRunner (Dev/Demo/Prod-Admin)
+│                          # TwoFaService, SeedRunner (Dev/Prod-Admin)
 ├── organisation/          # Organisation, Mitgliedschaft, AccessControl,
 │                          # Branche, SponsorBranche, OrgHierarchieService, Zefix,
 │                          # Sponsor-Self-Service-Reg
 ├── projekt/               # Projekt, SponsoringPaket, Watchlist, MedienAsset (inkl. ANHANG-Typ),
-│                          # Marktplatz, Suche, Matching, Dashboard, Sitemap, Event
+│                          # Marktplatz, Suche, Matching, Sitemap, Event
 ├── anfrage/               # SponsoringAnfrage (Paket + Kontakt-Anfrage ab V30),
 │                          # Vertrag, Rechnung, Nachricht, BenachrichtigungsService,
-│                          # PaymentProvider (Webhook + StubProvider)
+│                          # PaymentProvider (Webhook + StubProvider),
+│                          # SponsorStatistik, VereinStatistik
+├── crm/                   # Private Sponsor-CRM-Layer (ADR-0011):
+│                          # SponsorAccount, KontaktPerson, Aktivitaet,
+│                          # Pipeline, Renewal, Import/Export
+├── dashboard/             # DashboardService + DashboardChartService
+│                          # (aggregiert Kennzahlen + SVG-Charts)
+├── kontakt/               # /kontakt (anonymer Anfrage-Funnel)
 ├── einladung/             # Einladung + Mail-Listener + Cleanup-Job
 ├── benachrichtigung/      # In-App-Glocke (NotificationService + Bell-UI)
 ├── aufgabe/               # Customizable Task-Engine: Aufgabe + AufgabenDefinition,
 │                          # AufgabenEngine (Status-Wechsel-Listener), AssigneeKontext,
 │                          # AufgabenController (/aufgaben),
 │                          # AdminAufgabenDefinitionController (/admin/aufgaben-definitionen)
+├── engagement/            # Öffentliches Schaufenster (Marken-Engagements,
+│                          # Kantons-/Branche-Filter, Startseiten-Teaser)
 ├── audit/                 # AuditLog + DSG-Datenexport
 ├── backup/                # BackupService + Restore + Cloud-Upload
 ├── ops/                   # Ops-Dashboard, Alerts, RecentErrors, DB/Bucket-Stats
 ├── admin/                 # Admin-UI: Backlog, Mail-Settings, Verifizierung,
 │                          # AdminBenachrichtigungService (Push an PLATFORM_ADMINs bei neuer Org-Reg)
+├── seed/                  # DemoSeedRunner (Demo-Profil-Testdaten)
 └── home/                  # HomeController, InfoController (Impressum/DSG)
 
 src/main/resources/
-├── application*.properties               # default + dev + prod + cloud-free + cloud-azure
-├── db/migration/V*.sql                   # Flyway (V1..V42)
+├── application*.properties               # default + dev + prod + cloud-free + cloud-azure + demo
+├── db/migration/V*.sql                   # Flyway (V1..V50)
 ├── templates/                            # ~50 Thymeleaf-Templates (DE/FR/IT/EN i18n)
 ├── static/                               # CSS, Bilder
 └── messages_{de_CH,fr_CH,it_CH,en}.properties   # i18n-Bundles, ~600 Keys
