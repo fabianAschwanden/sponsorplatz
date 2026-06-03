@@ -1103,6 +1103,8 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **SUP-02** | `SupportControllerTest` | `/support` mit Auth → 200 + Form |
 | **SUP-03** | `SupportControllerTest` | `POST /support` ruft `MailService.sendePlain` und redirected mit Erfolgs-Meldung |
 | **SUP-04** | `SupportControllerTest` | `POST /support` mit leerem Betreff → Validierungs-Fehler, Form bleibt offen |
+| **HILFE-01** | `HilfeControllerTest` | `/hilfe` ohne Auth → Redirect auf Login (`anyRequest().authenticated()`) |
+| **HILFE-02** | `HilfeControllerTest` | `/hilfe` mit Auth → 200, View `home/hilfe`, rendert Feature-Karten-Grid |
 
 ### Datei-Anhänge — MedienAssetView (Phase 11.3)
 

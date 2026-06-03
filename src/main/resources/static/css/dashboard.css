@@ -1881,3 +1881,64 @@ body.public-body {
     outline-offset: 1px;
     border-color: var(--dash-violet);
 }
+
+/* =============================== Hilfe-Seite ===============================
+   Feature-Karten-Grid auf /hilfe. Nutzt das Dashboard-Designsystem (--dash-*),
+   damit die Karten farblich nicht aus dem Rahmen fallen. */
+.hilfe-intro {
+    color: var(--dash-muted);
+    margin: 1rem 0 1.5rem;
+}
+.hilfe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+}
+.hilfe-karte {
+    background: var(--dash-card);
+    border: 1px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    padding: 1.25rem;
+    transition: box-shadow 0.15s, border-color 0.15s;
+}
+.hilfe-karte:hover {
+    border-color: var(--dash-violet);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--dash-violet-dark) 18%, transparent);
+}
+.hilfe-karte-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--dash-violet-light);
+    color: var(--dash-violet-dark);
+    border-radius: var(--dash-radius-sm);
+    margin-bottom: 0.75rem;
+}
+.hilfe-karte h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+}
+.hilfe-karte p {
+    font-size: 0.875rem;
+    color: var(--dash-muted);
+    margin: 0;
+    line-height: 1.5;
+}
+.hilfe-kontakt {
+    background: var(--dash-card);
+    border: 1px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    padding: 1.5rem;
+    margin-top: 2rem;
+    text-align: center;
+}
+.hilfe-kontakt p {
+    margin: 0;
+    color: var(--dash-muted);
+}
+.hilfe-kontakt a {
+    color: var(--dash-violet-dark);
+}

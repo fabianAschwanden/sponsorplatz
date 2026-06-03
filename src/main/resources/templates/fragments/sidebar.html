@@ -100,6 +100,15 @@
                   th:if="${badgeAufgaben != null and badgeAufgaben > 0}"
                   th:text="${badgeAufgaben}">3</span>
         </a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/hilfe}" class="dash-nav-item"
+           th:classappend="${aktiv == 'hilfe'} ? 'aktiv'">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span th:text="#{sidebar.hilfe}">Hilfe</span>
+        </a>
 
         <!-- Admin-Bereich (nur für PLATFORM_ADMIN) -->
         <div sec:authorize="hasRole('PLATFORM_ADMIN')" style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1);">
