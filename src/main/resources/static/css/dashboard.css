@@ -168,6 +168,12 @@ body.dashboard-body {
     color: #fff;
 }
 
+/* Hilfe sitzt am unteren Ende der Navigation (über der Benutzer-Box):
+   margin-top:auto schiebt es im flex-column-Nav ganz nach unten. */
+.dash-nav-hilfe {
+    margin-top: auto;
+}
+
 .dash-nav-dot {
     width: 8px;
     height: 8px;
