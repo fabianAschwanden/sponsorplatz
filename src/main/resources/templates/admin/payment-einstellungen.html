@@ -10,7 +10,7 @@
 <body class="app-body">
 
 <div class="app-layout">
-    <aside th:replace="~{fragments/sidebar :: app-sidebar('admin', null)}"></aside>
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('admin-payment', null)}"></aside>
 
     <main class="app-main">
         <header class="app-page-head">
@@ -62,11 +62,13 @@
                                 <strong>Online-Zahlung (Datatrans)</strong>
                                 <span style="display:inline-block; background:#f59e0b; color:white; font-size:0.7rem; padding:0.1rem 0.4rem; border-radius:4px; margin-left:0.5rem;">Gebühren</span>
                                 <p class="app-muted" style="margin:0.25rem 0 0;">
-                                    Sponsoren können direkt online bezahlen: TWINT, Kreditkarte (Visa/Mastercard),
-                                    PostFinance. Zusätzlich wird weiterhin die QR-Rechnung per E-Mail versendet.
+                                    Sponsoren bezahlen direkt online: TWINT, Kreditkarte (Visa/Mastercard),
+                                    PostFinance. In diesem Modus wird <strong>keine</strong> QR-Rechnung per
+                                    E-Mail versendet — die Kanäle sind exklusiv.
                                     <br/>
-                                    <strong>Voraussetzung:</strong> Datatrans-Credentials müssen als ENV-Variablen
-                                    konfiguriert sein (DATATRANS_MERCHANT_ID, DATATRANS_PASSWORD, DATATRANS_HMAC_HEX_KEY).
+                                    <strong>Voraussetzung:</strong> Datatrans muss aktiviert sein
+                                    (<code>DATATRANS_ENABLED=true</code>) und die Credentials als ENV-Variablen
+                                    konfiguriert (DATATRANS_MERCHANT_ID, DATATRANS_PASSWORD, DATATRANS_HMAC_HEX_KEY).
                                 </p>
                             </div>
                         </div>
@@ -81,10 +83,13 @@
         <!-- Info-Box -->
         <section class="app-card" style="max-width:600px; margin-top:1.5rem; border-left:4px solid #6d28d9;">
             <h3 style="margin-top:0;">Hinweis</h3>
-            <p>Unabhängig vom gewählten Modus wird bei jeder Rechnungserstellung
-               automatisch eine E-Mail mit dem QR-Bill-PDF an den Sponsor gesendet.
-               Im Modus «Datatrans» erscheint auf der Rechnungs-Detailseite zusätzlich
-               ein «Online bezahlen»-Button.</p>
+            <p>Die beiden Modi sind <strong>exklusiv</strong>:</p>
+            <ul style="margin:0.5rem 0 0; padding-left:1.2rem;">
+                <li>Im Modus «QR-Rechnung» wird bei jeder Rechnungserstellung automatisch
+                    eine E-Mail mit dem QR-Bill-PDF an den Sponsor gesendet.</li>
+                <li>Im Modus «Datatrans» entfällt diese E-Mail; stattdessen erscheint auf
+                    der Rechnungs-Detailseite ein «Online bezahlen»-Button.</li>
+            </ul>
         </section>
     </main>
 </div>

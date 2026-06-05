@@ -149,6 +149,14 @@
                 </svg>
                 <span th:text="#{sidebar.adminStyle}">Plattform-Style</span>
             </a>
+            <a th:href="@{/admin/payment-einstellungen}" class="dash-nav-item"
+               th:classappend="${aktiv == 'admin-payment'} ? 'aktiv'">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="5" width="20" height="14" rx="2"/>
+                    <line x1="2" y1="10" x2="22" y2="10"/>
+                </svg>
+                <span th:text="#{sidebar.adminPayment}">Payment</span>
+            </a>
         </div>
 
         <!-- Hilfe — unten in der Navigation, direkt oberhalb der Benutzer-Box. -->
