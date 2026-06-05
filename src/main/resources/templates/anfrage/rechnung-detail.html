@@ -32,6 +32,9 @@
             <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                 <a th:href="@{'/organisationen/' + ${rechnung.orgSlug} + '/rechnungen/' + ${rechnung.id} + '/pdf'}"
                    class="app-btn app-btn-ghost" th:text="#{rechnungDetail.pdfDownload}">PDF mit QR-Bill herunterladen</a>
+                <a th:if="${rechnung.status.name() == 'OFFEN' and onlineZahlungAktiv}"
+                   th:href="@{'/organisationen/' + ${rechnung.orgSlug} + '/rechnungen/' + ${rechnung.id} + '/checkout'}"
+                   class="app-btn" style="background:#6d28d9;">Online bezahlen (TWINT / Karte)</a>
                 <form th:if="${rechnung.status.name() == 'OFFEN'}"
                       th:action="@{'/organisationen/' + ${rechnung.orgSlug} + '/rechnungen/' + ${rechnung.id} + '/bezahlt'}"
                       method="post"

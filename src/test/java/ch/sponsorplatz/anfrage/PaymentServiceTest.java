@@ -19,6 +19,8 @@ import static org.mockito.Mockito.verify;
 class PaymentServiceTest {
 
     @Mock private LokalerStubProvider stubProvider;
+    @Mock private PaymentTransactionService transactionService;
+    @Mock private RechnungRepository rechnungRepository;
 
     @Test
     @DisplayName("PAY-06: erstelleZahlung delegiert korrekt an aktiven Provider")
@@ -27,7 +29,7 @@ class PaymentServiceTest {
         org.mockito.Mockito.when(stubProvider.erstelleZahlung(any(), any(), any()))
                 .thenReturn(new PaymentProvider.ZahlungsErgebnis("TX-1", PaymentProvider.ZahlungsStatus.BEZAHLT, "ok"));
 
-        PaymentService service = new PaymentService(List.of(stubProvider));
+        PaymentService service = new PaymentService(List.of(stubProvider), transactionService, rechnungRepository);
         PaymentProvider.ZahlungsErgebnis ergebnis = service.erstelleZahlung(
                 UUID.randomUUID(), new BigDecimal("250.00"), "Paket Gold");
 

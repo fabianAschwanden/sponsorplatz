@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin — Payment-Einstellungen — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('admin', null)}"></aside>
+
+    <main class="app-main">
+        <header class="app-page-head">
+            <div>
+                <p class="app-page-rubrik">Plattform-Admin</p>
+                <h1>Payment-Einstellungen</h1>
+                <p class="app-muted">Steuert, wie Sponsoren ihre Rechnungen bezahlen können.</p>
+            </div>
+        </header>
+
+        <!-- Flash-Messages -->
+        <div th:if="${erfolgsMeldung}" class="app-alert app-alert-success" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${fehlermeldung}" class="app-alert app-alert-error" th:text="${fehlermeldung}"></div>
+
+        <section class="app-card" style="max-width:600px;">
+            <h2>Aktiver Zahlungsmodus</h2>
+
+            <form th:action="@{/admin/payment-einstellungen}" method="post">
+
+                <div style="display:flex; flex-direction:column; gap:1rem; margin:1.5rem 0;">
+
+                    <!-- Option: QR-Rechnung -->
+                    <label class="app-card" style="cursor:pointer; padding:1rem; border:2px solid"
+                           th:style="${aktiverModus.name() == 'QR_RECHNUNG'} ? 'border-color:#6d28d9; background:#f5f3ff;' : 'border-color:#e5e7eb;'">
+                        <div style="display:flex; align-items:flex-start; gap:0.75rem;">
+                            <input type="radio" name="paymentModus" value="QR_RECHNUNG"
+                                   th:checked="${aktiverModus.name() == 'QR_RECHNUNG'}"
+                                   style="margin-top:0.25rem;">
+                            <div>
+                                <strong>QR-Rechnung per E-Mail</strong>
+                                <span style="display:inline-block; background:#16a34a; color:white; font-size:0.7rem; padding:0.1rem 0.4rem; border-radius:4px; margin-left:0.5rem;">Kostenlos</span>
+                                <p class="app-muted" style="margin:0.25rem 0 0;">
+                                    Die Rechnung wird als PDF mit Swiss QR-Code an die Sponsor-E-Mail gesendet.
+                                    Der Sponsor scannt den QR-Code mit seiner Banking-App und überweist direkt
+                                    auf den Vereins-IBAN. Keine Transaktionsgebühren.
+                                </p>
+                            </div>
+                        </div>
+                    </label>
+
+                    <!-- Option: Datatrans -->
+                    <label class="app-card" style="cursor:pointer; padding:1rem; border:2px solid"
+                           th:style="${aktiverModus.name() == 'DATATRANS'} ? 'border-color:#6d28d9; background:#f5f3ff;' : 'border-color:#e5e7eb;'">
+                        <div style="display:flex; align-items:flex-start; gap:0.75rem;">
+                            <input type="radio" name="paymentModus" value="DATATRANS"
+                                   th:checked="${aktiverModus.name() == 'DATATRANS'}"
+                                   style="margin-top:0.25rem;">
+                            <div>
+                                <strong>Online-Zahlung (Datatrans)</strong>
+                                <span style="display:inline-block; background:#f59e0b; color:white; font-size:0.7rem; padding:0.1rem 0.4rem; border-radius:4px; margin-left:0.5rem;">Gebühren</span>
+                                <p class="app-muted" style="margin:0.25rem 0 0;">
+                                    Sponsoren können direkt online bezahlen: TWINT, Kreditkarte (Visa/Mastercard),
+                                    PostFinance. Zusätzlich wird weiterhin die QR-Rechnung per E-Mail versendet.
+                                    <br/>
+                                    <strong>Voraussetzung:</strong> Datatrans-Credentials müssen als ENV-Variablen
+                                    konfiguriert sein (DATATRANS_MERCHANT_ID, DATATRANS_PASSWORD, DATATRANS_HMAC_HEX_KEY).
+                                </p>
+                            </div>
+                        </div>
+                    </label>
+
+                </div>
+
+                <button type="submit" class="app-btn">Speichern</button>
+            </form>
+        </section>
+
+        <!-- Info-Box -->
+        <section class="app-card" style="max-width:600px; margin-top:1.5rem; border-left:4px solid #6d28d9;">
+            <h3 style="margin-top:0;">Hinweis</h3>
+            <p>Unabhängig vom gewählten Modus wird bei jeder Rechnungserstellung
+               automatisch eine E-Mail mit dem QR-Bill-PDF an den Sponsor gesendet.
+               Im Modus «Datatrans» erscheint auf der Rechnungs-Detailseite zusätzlich
+               ein «Online bezahlen»-Button.</p>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>
+

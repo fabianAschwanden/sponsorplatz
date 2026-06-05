@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
@@ -26,10 +27,12 @@ import ch.sponsorplatz.shared.exception.NotFoundException;
 
 /**
  * Controller-Tests für {@link PaymentWebhookController}.
- * Test-IDs: PAY-WH-01..07
+ * Test-IDs: PAY-WH-01..08
  *
- * <p>
- * Kein CSRF nötig: Route ist in SecurityConfig CSRF-ausgenommen.
+ * <p>Die zu bezahlende Rechnung wird über die gespeicherte
+ * {@link PaymentTransaction} aufgelöst (nicht aus dem Body) — Confused-Deputy-Schutz.
+ *
+ * <p>Kein CSRF nötig: Route ist in SecurityConfig CSRF-ausgenommen.
  */
 @WebMvcTest(controllers = PaymentWebhookController.class)
 @Import(SecurityConfig.class)
@@ -46,10 +49,14 @@ class PaymentWebhookControllerTest {
     private RechnungService rechnungService;
 
     @MockitoBean
+    private PaymentTransactionService transactionService;
+
+    @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
 
+    // Body trägt nur die Provider-Transaktions-Referenz; die Rechnung kommt aus dem Store.
     private static final String VALID_BODY = """
-            {"transaktionsId":"TX-123","rechnungId":"%s"}""";
+            {"transaktionsId":"TX-123","status":"settled"}""";
 
     @Test
     @DisplayName("PAY-WH-01: Unbekannter Provider → 404")
@@ -58,7 +65,7 @@ class PaymentWebhookControllerTest {
 
         mockMvc.perform(post("/payment/webhook/unknown")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"transaktionsId\":\"x\",\"rechnungId\":\"y\"}"))
+                .content("{\"transaktionsId\":\"x\"}"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value("error"));
     }
@@ -71,7 +78,7 @@ class PaymentWebhookControllerTest {
 
         mockMvc.perform(post("/payment/webhook/stub")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"transaktionsId\":\"x\",\"rechnungId\":\"y\"}"))
+                .content("{\"transaktionsId\":\"x\"}"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value("error"));
     }
@@ -89,8 +96,8 @@ class PaymentWebhookControllerTest {
     }
 
     @Test
-    @DisplayName("PAY-WH-04: Fehlende Pflichtfelder → 400")
-    void fehlendePflichtfelder() throws Exception {
+    @DisplayName("PAY-WH-04: Fehlende Transaktions-Referenz → 400")
+    void fehlendeReferenz() throws Exception {
         PaymentProvider stubProvider = stubProvider(true);
         when(paymentService.findeProviderOrNull("stub")).thenReturn(stubProvider);
 
@@ -98,46 +105,66 @@ class PaymentWebhookControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"foo\":\"bar\"}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("transaktionsId und rechnungId erforderlich"));
+                .andExpect(jsonPath("$.message").value("Transaktions-Referenz fehlt"));
     }
 
     @Test
-    @DisplayName("PAY-WH-05: Erfolgreicher Webhook markiert Rechnung als bezahlt")
+    @DisplayName("PAY-WH-08: Unbekannte Transaktion (kein Store-Eintrag) → 404")
+    void unbekannteTransaktion() throws Exception {
+        PaymentProvider stubProvider = stubProvider(true);
+        when(paymentService.findeProviderOrNull("stub")).thenReturn(stubProvider);
+        when(transactionService.findeRechnungIdNachReferenz("stub", "TX-123"))
+                .thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/payment/webhook/stub")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(VALID_BODY))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Transaktion nicht gefunden"));
+    }
+
+    @Test
+    @DisplayName("PAY-WH-05: Erfolgreicher Webhook markiert die GEBUNDENE Rechnung als bezahlt")
     void erfolgreicheZahlung() throws Exception {
         PaymentProvider stubProvider = stubProvider(true);
         when(paymentService.findeProviderOrNull("stub")).thenReturn(stubProvider);
 
-        String rechnungId = UUID.randomUUID().toString();
+        UUID rechnungId = UUID.randomUUID();
+        when(transactionService.findeRechnungIdNachReferenz("stub", "TX-123"))
+                .thenReturn(Optional.of(rechnungId));
         var ergebnis = new PaymentProvider.ZahlungsErgebnis(
                 "TX-123", PaymentProvider.ZahlungsStatus.BEZAHLT, null);
         when(paymentService.bestaetigeViaWebhook("stub", "TX-123")).thenReturn(ergebnis);
 
         mockMvc.perform(post("/payment/webhook/stub")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(String.format(VALID_BODY, rechnungId)))
+                .content(VALID_BODY))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("ok"))
                 .andExpect(jsonPath("$.zahlungsStatus").value("BEZAHLT"));
 
-        verify(rechnungService).markiereAlsBezahltViaWebhook(rechnungId);
+        // Markiert die aus dem Store aufgelöste Rechnung — nicht eine Body-ID.
+        verify(rechnungService).markiereAlsBezahltViaWebhook(rechnungId.toString());
     }
 
     @Test
-    @DisplayName("PAY-WH-06: Rechnung nicht gefunden → 404")
+    @DisplayName("PAY-WH-06: Rechnung nicht gefunden beim Markieren → 404")
     void rechnungNichtGefunden() throws Exception {
         PaymentProvider stubProvider = stubProvider(true);
         when(paymentService.findeProviderOrNull("stub")).thenReturn(stubProvider);
 
-        String rechnungId = UUID.randomUUID().toString();
+        UUID rechnungId = UUID.randomUUID();
+        when(transactionService.findeRechnungIdNachReferenz("stub", "TX-123"))
+                .thenReturn(Optional.of(rechnungId));
         var ergebnis = new PaymentProvider.ZahlungsErgebnis(
                 "TX-123", PaymentProvider.ZahlungsStatus.BEZAHLT, null);
         when(paymentService.bestaetigeViaWebhook("stub", "TX-123")).thenReturn(ergebnis);
         doThrow(new NotFoundException("Nicht gefunden"))
-                .when(rechnungService).markiereAlsBezahltViaWebhook(rechnungId);
+                .when(rechnungService).markiereAlsBezahltViaWebhook(rechnungId.toString());
 
         mockMvc.perform(post("/payment/webhook/stub")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(String.format(VALID_BODY, rechnungId)))
+                .content(VALID_BODY))
                 .andExpect(status().isNotFound());
     }
 
@@ -145,11 +172,6 @@ class PaymentWebhookControllerTest {
      * PAY-WH-07: Webhook für eine bereits bezahlte Rechnung muss idempotent
      * mit 200 antworten — sonst stuft der Payment-Provider die Lieferung als
      * "failed" ein und retried im Worst Case in einer Endlos-Schleife.
-     *
-     * <p>Der RechnungService wirft {@link IllegalStateException} bei einer
-     * doppelten Bezahlung; der Controller fängt diesen Pfad explizit ab und
-     * liefert trotzdem 200 mit dem aktuellen Zahlungsstatus zurück. Siehe
-     * {@link PaymentWebhookController}-doppelte-Lieferung-Block.
      */
     @Test
     @DisplayName("PAY-WH-07: Bereits bezahlte Rechnung → idempotent ok")
@@ -157,21 +179,23 @@ class PaymentWebhookControllerTest {
         PaymentProvider stubProvider = stubProvider(true);
         when(paymentService.findeProviderOrNull("stub")).thenReturn(stubProvider);
 
-        String rechnungId = UUID.randomUUID().toString();
+        UUID rechnungId = UUID.randomUUID();
+        when(transactionService.findeRechnungIdNachReferenz("stub", "TX-123"))
+                .thenReturn(Optional.of(rechnungId));
         var ergebnis = new PaymentProvider.ZahlungsErgebnis(
                 "TX-123", PaymentProvider.ZahlungsStatus.BEZAHLT, null);
         when(paymentService.bestaetigeViaWebhook("stub", "TX-123")).thenReturn(ergebnis);
         doThrow(new IllegalStateException("Bereits bezahlt"))
-                .when(rechnungService).markiereAlsBezahltViaWebhook(rechnungId);
+                .when(rechnungService).markiereAlsBezahltViaWebhook(rechnungId.toString());
 
         mockMvc.perform(post("/payment/webhook/stub")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(String.format(VALID_BODY, rechnungId)))
+                .content(VALID_BODY))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.zahlungsStatus").value("BEZAHLT"));
     }
 
-    /** Stub-Provider für Tests — simuliert Signatur-Prüfung. */
+    /** Stub-Provider für Tests — simuliert Signatur-Prüfung + Referenz-Extraktion. */
     private PaymentProvider stubProvider(boolean signaturGueltig) {
         return new PaymentProvider() {
             @Override
@@ -198,6 +222,12 @@ class PaymentWebhookControllerTest {
             @Override
             public boolean verifiziereSignatur(Map<String, String> headers, String rawBody) {
                 return signaturGueltig;
+            }
+
+            @Override
+            public String extrahiereTransaktionsReferenz(Map<String, Object> payload) {
+                Object txId = payload.get("transaktionsId");
+                return txId != null ? txId.toString() : null;
             }
         };
     }

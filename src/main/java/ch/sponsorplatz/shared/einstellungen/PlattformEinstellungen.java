@@ -55,6 +55,10 @@ public class PlattformEinstellungen {
     @Column(name = "aktiver_style", nullable = false)
     private String aktiverStyle = "default";
 
+    @Column(name = "payment_modus", nullable = false, length = 20)
+    @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
+    private PaymentModus paymentModus = PaymentModus.QR_RECHNUNG;
+
     @Column(name = "aktualisiert_am", nullable = false)
     private Instant aktualisiertAm = Instant.now();
 
@@ -145,6 +149,14 @@ public class PlattformEinstellungen {
 
     public void setAktiverStyle(String aktiverStyle) {
         this.aktiverStyle = aktiverStyle;
+    }
+
+    public PaymentModus getPaymentModus() {
+        return paymentModus;
+    }
+
+    public void setPaymentModus(PaymentModus paymentModus) {
+        this.paymentModus = paymentModus;
     }
 
     public Instant getAktualisiertAm() {

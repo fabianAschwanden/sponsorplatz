@@ -39,17 +39,23 @@ public class RechnungService {
     private final RechnungsnummerGenerator rechnungsnummerGenerator;
     private final AuditService auditService;
     private final ch.sponsorplatz.aufgabe.AufgabenEngine aufgabenEngine;
+    private final RechnungsMailService rechnungsMailService;
+    private final ch.sponsorplatz.shared.einstellungen.PlattformEinstellungenService einstellungenService;
 
     public RechnungService(RechnungRepository repository,
                            VertragService vertragService,
                            RechnungsnummerGenerator rechnungsnummerGenerator,
                            AuditService auditService,
-                           ch.sponsorplatz.aufgabe.AufgabenEngine aufgabenEngine) {
+                           ch.sponsorplatz.aufgabe.AufgabenEngine aufgabenEngine,
+                           RechnungsMailService rechnungsMailService,
+                           ch.sponsorplatz.shared.einstellungen.PlattformEinstellungenService einstellungenService) {
         this.repository = repository;
         this.vertragService = vertragService;
         this.rechnungsnummerGenerator = rechnungsnummerGenerator;
         this.auditService = auditService;
         this.aufgabenEngine = aufgabenEngine;
+        this.rechnungsMailService = rechnungsMailService;
+        this.einstellungenService = einstellungenService;
     }
 
     /**
@@ -119,6 +125,16 @@ public class RechnungService {
                         + ", erstellt_von=" + erstelltVon);
 
         aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.RECHNUNG, gespeichert.getId(), gespeichert.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausRechnungOrg(gespeichert.getOrg()));
+
+        // QR-Bill-PDF per E-Mail an den Sponsor — nur wenn QR-Rechnung der aktive
+        // Zahlungsmodus ist. Bei DATATRANS zahlt der Sponsor online (Checkout-Button),
+        // dann würde eine parallele QR-Mail einen zweiten, widersprüchlichen Kanal
+        // öffnen. Async + per-ID, damit der Request nicht blockiert und der Async-
+        // Thread die Rechnung in eigener Transaktion lädt (kein LazyInit).
+        if (!einstellungenService.istOnlineZahlungAktiv()) {
+            rechnungsMailService.sendeRechnungPerEmail(gespeichert.getId());
+        }
+
         return gespeichert;
     }
 

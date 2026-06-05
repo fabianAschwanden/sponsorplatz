@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Zahlung erfolgreich — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body" style="display:flex; align-items:center; justify-content:center; min-height:100vh;">
+<main style="max-width:500px; text-align:center; padding:2rem;">
+    <div style="font-size:3rem; margin-bottom:1rem;">✅</div>
+    <h1>Zahlung erfolgreich</h1>
+    <p>Vielen Dank! Ihre Zahlung wurde entgegengenommen und wird verarbeitet.</p>
+    <p class="app-muted">Die Rechnung wird automatisch als bezahlt markiert, sobald die Zahlung bestätigt ist.</p>
+    <a th:href="@{/}" class="app-btn" style="margin-top:1.5rem;">Zur Startseite</a>
+</main>
+</body>
+</html>
+

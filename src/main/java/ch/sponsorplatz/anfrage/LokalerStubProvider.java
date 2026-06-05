@@ -26,19 +26,21 @@ public class LokalerStubProvider implements PaymentProvider {
         String txId = "STUB-" + UUID.randomUUID();
         transaktionen.put(txId, ZahlungsStatus.BEZAHLT);
         log.info("STUB: Zahlung erstellt und sofort bezahlt — txId={}, betrag={} CHF", txId, betragChf);
-        return new ZahlungsErgebnis(txId, ZahlungsStatus.BEZAHLT, "Stub: sofort bezahlt");
+        // Checkout-URL führt direkt auf die Erfolgs-Redirect-Seite (kein echter HPP-Schritt).
+        String checkoutUrl = "/payment/erfolg?ref=" + rechnungId;
+        return new ZahlungsErgebnis(txId, ZahlungsStatus.BEZAHLT, checkoutUrl);
     }
 
     @Override
     public ZahlungsErgebnis bestaetigeZahlung(String transaktionsId) {
         ZahlungsStatus status = transaktionen.getOrDefault(transaktionsId, ZahlungsStatus.BEZAHLT);
-        return new ZahlungsErgebnis(transaktionsId, status, "Stub: bestaetigt");
+        return new ZahlungsErgebnis(transaktionsId, status, null);
     }
 
     @Override
     public ZahlungsErgebnis widerrufe(String transaktionsId) {
         transaktionen.put(transaktionsId, ZahlungsStatus.STORNIERT);
-        return new ZahlungsErgebnis(transaktionsId, ZahlungsStatus.STORNIERT, "Stub: storniert");
+        return new ZahlungsErgebnis(transaktionsId, ZahlungsStatus.STORNIERT, null);
     }
 
     @Override
@@ -55,6 +57,12 @@ public class LokalerStubProvider implements PaymentProvider {
     public boolean verifiziereSignatur(Map<String, String> headers, String rawBody) {
         log.debug("STUB: Signatur ohne Prüfung akzeptiert (dev/test/demo only)");
         return true;
+    }
+
+    @Override
+    public String extrahiereTransaktionsReferenz(Map<String, Object> payload) {
+        Object txId = payload.get("transaktionsId");
+        return txId != null ? txId.toString() : null;
     }
 }
 

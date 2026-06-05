@@ -83,6 +83,32 @@ public class PlattformEinstellungenService {
     }
 
     /**
+     * Prüft ob Online-Zahlung (Datatrans) als Zahlungsmodus aktiviert ist.
+     * Controller nutzen dieses Boolean statt direkt auf die Entity zuzugreifen (ARCH-02).
+     */
+    @Transactional(readOnly = true)
+    public boolean istOnlineZahlungAktiv() {
+        return lade().getPaymentModus() == PaymentModus.DATATRANS;
+    }
+
+    /**
+     * Liefert den aktiven Payment-Modus (für Admin-UI).
+     */
+    @Transactional(readOnly = true)
+    public PaymentModus ladePaymentModus() {
+        return lade().getPaymentModus();
+    }
+
+    /**
+     * Setzt den Payment-Modus.
+     */
+    public void setzePaymentModus(PaymentModus modus, String aktualisiertVon) {
+        PlattformEinstellungen e = lade();
+        e.setPaymentModus(modus);
+        speichere(e, aktualisiertVon);
+    }
+
+    /**
      * Schaltet den Plattform-Style um. Nur Werte aus {@link #GUELTIGE_STYLES}
      * werden akzeptiert; sonst {@link IllegalArgumentException}.
      */

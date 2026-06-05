@@ -44,7 +44,29 @@ public interface PaymentProvider {
      */
     boolean verifiziereSignatur(Map<String, String> headers, String rawBody);
 
-    record ZahlungsErgebnis(String transaktionsId, ZahlungsStatus status, String meldung) {}
+    /**
+     * Extrahiert die Provider-Transaktions-Referenz aus dem (verifizierten)
+     * Webhook-Body. Jeder Provider hat sein eigenes Feld (Datatrans:
+     * {@code transactionId}, Stub: {@code transaktionsId}).
+     *
+     * <p>Der Controller nutzt diese Referenz, um die zugehörige
+     * {@link PaymentTransaction} – und damit die <em>verbindliche</em> Rechnung –
+     * lokal nachzuschlagen, statt der Rechnungs-ID aus dem Body zu vertrauen
+     * (Confused-Deputy-Schutz).
+     *
+     * @return Transaktions-Referenz oder {@code null}, wenn nicht vorhanden.
+     */
+    String extrahiereTransaktionsReferenz(Map<String, Object> payload);
+
+    /**
+     * Ergebnis einer Provider-Operation.
+     *
+     * @param transaktionsId Provider-Transaktions-ID
+     * @param status         Zahlungsstatus
+     * @param checkoutUrl    Hosted-Payment-Page-URL — nur bei {@code erstelleZahlung}
+     *                       gesetzt, sonst {@code null}
+     */
+    record ZahlungsErgebnis(String transaktionsId, ZahlungsStatus status, String checkoutUrl) {}
 
     enum ZahlungsStatus {
         ERSTELLT, BEZAHLT, FEHLGESCHLAGEN, STORNIERT

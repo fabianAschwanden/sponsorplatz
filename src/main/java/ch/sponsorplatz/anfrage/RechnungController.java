@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import ch.sponsorplatz.organisation.AccessControl;
+import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungenService;
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import ch.sponsorplatz.shared.pdf.PdfGeneratorService;
 
@@ -47,15 +48,21 @@ public class RechnungController {
     private final QrBillService qrBillService;
     private final PdfGeneratorService pdfGenerator;
     private final AccessControl accessControl;
+    private final PaymentService paymentService;
+    private final PlattformEinstellungenService einstellungenService;
 
     public RechnungController(RechnungService rechnungService,
             QrBillService qrBillService,
             PdfGeneratorService pdfGenerator,
-            AccessControl accessControl) {
+            AccessControl accessControl,
+            PaymentService paymentService,
+            PlattformEinstellungenService einstellungenService) {
         this.rechnungService = rechnungService;
         this.qrBillService = qrBillService;
         this.pdfGenerator = pdfGenerator;
         this.accessControl = accessControl;
+        this.paymentService = paymentService;
+        this.einstellungenService = einstellungenService;
     }
 
     @PostMapping("/vertraege/{vertragId}/rechnung/erstellen")
@@ -88,6 +95,7 @@ public class RechnungController {
 
         model.addAttribute("rechnung", v);
         model.addAttribute("qrBildDataUrl", qrBillService.erzeugeAlsDataUrlFuerId(id));
+        model.addAttribute("onlineZahlungAktiv", einstellungenService.istOnlineZahlungAktiv());
         return "anfrage/rechnung-detail";
     }
 
@@ -142,6 +150,27 @@ public class RechnungController {
                         "attachment; filename=\"" + dateiname + "\"")
                 .contentLength(pdf.length)
                 .body(new ByteArrayResource(pdf));
+    }
+
+    /**
+     * Leitet den Sponsor zur Datatrans Hosted Payment Page weiter.
+     * Erstellt (oder wiederverwendet) eine Checkout-Session beim Provider.
+     */
+    @GetMapping("/rechnungen/{id}/checkout")
+    public String checkout(@PathVariable String slug,
+            @PathVariable UUID id,
+            Authentication auth,
+            RedirectAttributes redirect) {
+        RechnungView v = rechnungService.findeViewNachId(id);
+        pruefeAccess(slug, v, auth);
+
+        try {
+            String checkoutUrl = paymentService.erstelleCheckoutSession(id);
+            return "redirect:" + checkoutUrl;
+        } catch (IllegalStateException e) {
+            redirect.addFlashAttribute("fehlermeldung", e.getMessage());
+            return "redirect:/organisationen/" + slug + "/rechnungen/" + id;
+        }
     }
 
     private void pruefeAccess(String slug, RechnungView v, Authentication auth) {

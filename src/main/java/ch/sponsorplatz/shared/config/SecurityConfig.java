@@ -105,10 +105,13 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         // /medien/** + /og/** bleiben öffentlich aus technischen Gründen
-                        // (OpenGraph-Crawler, Mail-Bilder), /payment/webhook/** für Stripe.
+                        // (OpenGraph-Crawler, Mail-Bilder). Beim Payment ist nur der
+                        // Provider-Webhook + die drei Post-HPP-Redirect-Seiten öffentlich;
+                        // der Checkout-Start liegt authentifiziert unter /organisationen/**.
                         .requestMatchers("/medien/**").permitAll()
                         .requestMatchers("/og/**").permitAll()
                         .requestMatchers("/payment/webhook/**").permitAll()
+                        .requestMatchers("/payment/erfolg", "/payment/abgebrochen", "/payment/fehler").permitAll()
                         // REST-API: permitAll auf HTTP-Ebene, ApiKeyFilter prüft X-API-Key
                         .requestMatchers("/api/**").permitAll()
                         // Spring-Boot-Error-Dispatch: ein nicht-2xx-Response auf irgendeiner
@@ -203,10 +206,13 @@ public class SecurityConfig {
                                 "/actuator/health/readiness",
                                 "/actuator/info").permitAll()
                         // /medien/** + /og/** bleiben öffentlich aus technischen Gründen
-                        // (OpenGraph-Crawler, Mail-Bilder), /payment/webhook/** für Stripe.
+                        // (OpenGraph-Crawler, Mail-Bilder). Beim Payment ist nur der
+                        // Provider-Webhook + die drei Post-HPP-Redirect-Seiten öffentlich;
+                        // der Checkout-Start liegt authentifiziert unter /organisationen/**.
                         .requestMatchers("/medien/**").permitAll()
                         .requestMatchers("/og/**").permitAll()
                         .requestMatchers("/payment/webhook/**").permitAll()
+                        .requestMatchers("/payment/erfolg", "/payment/abgebrochen", "/payment/fehler").permitAll()
                         // REST-API: permitAll auf HTTP-Ebene, ApiKeyFilter prüft X-API-Key
                         .requestMatchers("/api/**").permitAll()
                         // Spring-Boot-Error-Dispatch — siehe dev-Chain für die Begründung.

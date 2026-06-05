@@ -54,6 +54,12 @@ class RechnungControllerTest {
     private AccessControl accessControl;
 
     @MockitoBean
+    private PaymentService paymentService;
+
+    @MockitoBean
+    private ch.sponsorplatz.shared.einstellungen.PlattformEinstellungenService einstellungenService;
+
+    @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
 
     private static final String SLUG = "fc-test";
@@ -106,6 +112,7 @@ class RechnungControllerTest {
         when(accessControl.kannOrgEditierenNachSlug(eq(SLUG), any())).thenReturn(true);
         when(rechnungService.findeViewNachId(RECHNUNG_ID)).thenReturn(testView());
         when(qrBillService.erzeugeAlsDataUrlFuerId(RECHNUNG_ID)).thenReturn("data:image/png;base64,...");
+        when(einstellungenService.istOnlineZahlungAktiv()).thenReturn(false);
 
         mockMvc.perform(get("/organisationen/{slug}/rechnungen/{id}", SLUG, RECHNUNG_ID))
                 .andExpect(status().isOk())

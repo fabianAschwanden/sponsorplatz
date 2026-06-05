@@ -1251,10 +1251,16 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **PAY-WH-01** | Unbekannter Provider → 404 |
 | **PAY-WH-02** | Ungültige Signatur → 401 |
 | **PAY-WH-03** | Ungültiger JSON-Body → 400 |
-| **PAY-WH-04** | Fehlende Pflichtfelder (`transaktionsId`, `rechnungId`) → 400 |
-| **PAY-WH-05** | Erfolgreicher Webhook ruft `markiereAlsBezahltViaWebhook` |
-| **PAY-WH-06** | Rechnung nicht gefunden → 404 |
+| **PAY-WH-04** | Fehlende Transaktions-Referenz im Body → 400 |
+| **PAY-WH-05** | Erfolgreicher Webhook markiert die **aus dem Store aufgelöste** Rechnung (nicht Body-ID) |
+| **PAY-WH-06** | Rechnung nicht gefunden beim Markieren → 404 |
 | **PAY-WH-07** | Bereits bezahlte Rechnung → 200 (idempotent — verhindert Provider-Endlos-Retry) |
+| **PAY-WH-08** | Unbekannte Transaktion (kein Store-Eintrag) → 404 (Confused-Deputy-Schutz: rechnungId kommt aus PaymentTransaction, nicht Body) |
+| **PAY-DT-06** | `extrahiereTransaktionsReferenz` liest `transactionId` aus Datatrans-Payload |
+| **PAY-DT-03c** | Signatur-Header ohne `t=…,s0=…`-Struktur (altes Format) → abgelehnt |
+| **RMAIL-04** | Unbekannte Rechnungs-ID → kein Versand, kein Crash (per-ID-Laden) |
+| **RECH-17** | QR-Modus aktiv → QR-Bill-Mail async ausgelöst (mit Rechnungs-ID) |
+| **RECH-18** | Datatrans-Modus aktiv → KEINE QR-Bill-Mail (exklusiver Kanal) |
 | **VIEW-14** | `VertragView.von()` mappt alle Felder |
 | **VIEW-15** | `VertragView.von()` toleriert Null-Referenzen (anfrage, org, sponsorOrg) |
 | **VIEW-16** | `RechnungView.von()` mappt alle Felder |

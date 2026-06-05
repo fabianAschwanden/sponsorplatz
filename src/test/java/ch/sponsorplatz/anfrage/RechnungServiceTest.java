@@ -39,6 +39,8 @@ class RechnungServiceTest {
     @Mock private RechnungsnummerGenerator rechnungsnummerGenerator;
     @Mock private AuditService auditService;
     @Mock private AufgabenEngine aufgabenEngine;
+    @Mock private RechnungsMailService rechnungsMailService;
+    @Mock private ch.sponsorplatz.shared.einstellungen.PlattformEinstellungenService einstellungenService;
 
     private RechnungService service;
 
@@ -48,7 +50,8 @@ class RechnungServiceTest {
     @BeforeEach
     void setUp() {
         service = new RechnungService(repository, vertragService,
-                rechnungsnummerGenerator, auditService, aufgabenEngine);
+                rechnungsnummerGenerator, auditService, aufgabenEngine, rechnungsMailService,
+                einstellungenService);
         when(rechnungsnummerGenerator.naechste(any())).thenReturn("R-2026-00001");
 
         Organisation verein = neueOrg("FC Beispiel", "fc-beispiel", "CH4431999123000889012");
@@ -83,6 +86,28 @@ class RechnungServiceTest {
         assertThat(r.getZahlungszweck()).contains("Gold");
         assertThat(r.getRechnungsnummer()).isEqualTo("R-2026-00001");
         assertThat(r.getFaelligAm()).isAfter(java.time.LocalDate.now());
+    }
+
+    @Test
+    @DisplayName("RECH-17: QR-Modus aktiv → QR-Bill-Mail wird async ausgelöst (mit Rechnungs-ID)")
+    void qrModusSendetMail() {
+        when(repository.findByVertragId(vertragId)).thenReturn(Optional.empty());
+        when(einstellungenService.istOnlineZahlungAktiv()).thenReturn(false);
+
+        Rechnung r = service.erstelle(vertragId, "fabian@example.ch");
+
+        verify(rechnungsMailService).sendeRechnungPerEmail(r.getId());
+    }
+
+    @Test
+    @DisplayName("RECH-18: Datatrans-Modus aktiv → KEINE QR-Bill-Mail (exklusiver Kanal)")
+    void datatransModusKeineMail() {
+        when(repository.findByVertragId(vertragId)).thenReturn(Optional.empty());
+        when(einstellungenService.istOnlineZahlungAktiv()).thenReturn(true);
+
+        service.erstelle(vertragId, "fabian@example.ch");
+
+        verify(rechnungsMailService, org.mockito.Mockito.never()).sendeRechnungPerEmail(any());
     }
 
     @Test

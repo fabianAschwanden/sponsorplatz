@@ -12,15 +12,23 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Empfaengt Webhook-Callbacks von Payment-Providern.
  * Route: POST /payment/webhook/{provider}
  *
- * <p>Sicherheits-Pfad: ROH-Body wird gelesen → an
- * {@link PaymentProvider#verifiziereSignatur(Map, String)} delegiert →
- * 401 bei Mismatch → erst dann JSON-Parsing und Side-Effect. Echte Provider
- * (Datatrans/Stripe) prüfen HMAC-SHA256 über die exakten Roh-Bytes.
+ * <p>Sicherheits-Pfad:
+ * <ol>
+ *   <li>ROH-Body lesen → {@link PaymentProvider#verifiziereSignatur} → 401 bei Mismatch.</li>
+ *   <li>Body parsen → Provider extrahiert seine Transaktions-Referenz.</li>
+ *   <li>Die zugehörige Rechnung wird <strong>lokal</strong> über die gespeicherte
+ *       {@link PaymentTransaction} aufgelöst — NICHT aus dem Request-Body
+ *       (Confused-Deputy-Schutz: ein Angreifer könnte sonst eine fremde
+ *       Rechnungs-ID unterschieben).</li>
+ *   <li>Status beim Provider bestätigen → bei BEZAHLT die gebundene Rechnung markieren.</li>
+ * </ol>
  */
 @RestController
 @RequestMapping("/payment/webhook")
@@ -29,11 +37,15 @@ public class PaymentWebhookController {
     private static final Logger log = LoggerFactory.getLogger(PaymentWebhookController.class);
     private final PaymentService paymentService;
     private final RechnungService rechnungService;
+    private final PaymentTransactionService transactionService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public PaymentWebhookController(PaymentService paymentService, RechnungService rechnungService) {
+    public PaymentWebhookController(PaymentService paymentService,
+                                    RechnungService rechnungService,
+                                    PaymentTransactionService transactionService) {
         this.paymentService = paymentService;
         this.rechnungService = rechnungService;
+        this.transactionService = transactionService;
     }
 
     @PostMapping("/{provider}")
@@ -64,7 +76,7 @@ public class PaymentWebhookController {
         }
 
         // 3. Erst nach erfolgreicher Verifikation: Body parsen.
-        Map<String, String> payload;
+        Map<String, Object> payload;
         try {
             payload = objectMapper.readValue(rawBody, new TypeReference<>() {});
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
@@ -72,28 +84,36 @@ public class PaymentWebhookController {
                     .body(Map.of("status", "error", "message", "Ungültiger JSON-Body"));
         }
 
-        String transaktionsId = payload.get("transaktionsId");
-        String rechnungIdStr = payload.get("rechnungId");
-
-        if (transaktionsId == null || rechnungIdStr == null) {
+        // 4. Provider-spezifische Transaktions-Referenz extrahieren.
+        String transaktionsId = providerImpl.extrahiereTransaktionsReferenz(payload);
+        if (transaktionsId == null || transaktionsId.isBlank()) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("status", "error", "message", "transaktionsId und rechnungId erforderlich"));
+                    .body(Map.of("status", "error", "message", "Transaktions-Referenz fehlt"));
+        }
+
+        // 5. Verbindliche Rechnung aus dem lokalen Transaktions-Store ableiten
+        //    (NICHT aus dem Body — Confused-Deputy-Schutz).
+        Optional<UUID> rechnungId = transactionService.findeRechnungIdNachReferenz(provider, transaktionsId);
+        if (rechnungId.isEmpty()) {
+            log.warn("Webhook für unbekannte Transaktion: provider={}, txId={}", provider, transaktionsId);
+            return ResponseEntity.status(404)
+                    .body(Map.of("status", "error", "message", "Transaktion nicht gefunden"));
         }
 
         log.info("Webhook empfangen: provider={}, txId={}, rechnungId={}",
-                provider, transaktionsId, rechnungIdStr);
+                provider, transaktionsId, rechnungId.get());
 
         PaymentProvider.ZahlungsErgebnis ergebnis = paymentService.bestaetigeViaWebhook(provider, transaktionsId);
 
         if (ergebnis.status() == PaymentProvider.ZahlungsStatus.BEZAHLT) {
             try {
-                rechnungService.markiereAlsBezahltViaWebhook(rechnungIdStr);
+                rechnungService.markiereAlsBezahltViaWebhook(rechnungId.get().toString());
             } catch (NotFoundException e) {
                 return ResponseEntity.status(404)
                         .body(Map.of("status", "error", "message", "Rechnung nicht gefunden"));
             } catch (IllegalStateException e) {
                 // Idempotenz: bereits bezahlt
-                log.info("Rechnung {} bereits bezahlt (idempotent)", rechnungIdStr);
+                log.info("Rechnung {} bereits bezahlt (idempotent)", rechnungId.get());
             }
         }
 

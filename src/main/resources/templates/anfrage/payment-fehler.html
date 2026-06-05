@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Zahlungsfehler — Sponsorplatz</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body" style="display:flex; align-items:center; justify-content:center; min-height:100vh;">
+<main style="max-width:500px; text-align:center; padding:2rem;">
+    <div style="font-size:3rem; margin-bottom:1rem;">❌</div>
+    <h1>Zahlungsfehler</h1>
+    <p>Bei der Verarbeitung Ihrer Zahlung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder nutzen Sie den QR-Code auf der Rechnung für eine Banküberweisung.</p>
+    <p class="app-muted">Falls das Problem bestehen bleibt, kontaktieren Sie uns unter
+        <a th:href="@{/kontakt}">sponsorplatz.ch/kontakt</a>.</p>
+    <a th:href="@{/}" class="app-btn app-btn-ghost" style="margin-top:1.5rem;">Zur Startseite</a>
+</main>
+</body>
+</html>
+
