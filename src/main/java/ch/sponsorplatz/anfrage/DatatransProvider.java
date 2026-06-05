@@ -2,6 +2,7 @@ package ch.sponsorplatz.anfrage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
@@ -33,7 +34,7 @@ import java.util.UUID;
  */
 @Component
 @Profile("prod")
-@ConditionalOnProperty(name = "sponsorplatz.payment.datatrans.merchant-id")
+@ConditionalOnProperty(name = "sponsorplatz.payment.datatrans.enabled", havingValue = "true")
 public class DatatransProvider implements PaymentProvider {
 
     private static final Logger log = LoggerFactory.getLogger(DatatransProvider.class);
@@ -47,6 +48,7 @@ public class DatatransProvider implements PaymentProvider {
     private final String errorUrl;
     private final RestClient restClient;
 
+    @Autowired
     public DatatransProvider(
             @Value("${sponsorplatz.payment.datatrans.merchant-id}") String merchantId,
             @Value("${sponsorplatz.payment.datatrans.password}") String password,
