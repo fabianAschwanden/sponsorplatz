@@ -1,9 +1,8 @@
 package ch.sponsorplatz.benutzer;
 import ch.sponsorplatz.shared.config.LoginBruteForceSchutz;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 import ch.sponsorplatz.shared.util.TokenGenerator;
 
-import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,13 +29,13 @@ public class PasswortResetService {
     private static final long TOKEN_GUELTIG_STUNDEN = 1;
 
     private final AppUserRepository repository;
-    private final MailService mailService;
+    private final MailVersand mailService;
     private final PasswordEncoder passwordEncoder;
     private final LoginBruteForceSchutz bruteForceSchutz;
     private final String basisUrl;
 
     public PasswortResetService(AppUserRepository repository,
-                                 MailService mailService,
+                                 MailVersand mailService,
                                  PasswordEncoder passwordEncoder,
                                  LoginBruteForceSchutz bruteForceSchutz,
                                  @Value("${sponsorplatz.basis-url:http://localhost:8080}") String basisUrl) {
@@ -107,22 +106,14 @@ public class PasswortResetService {
     }
 
     private void sendeMailIntern(String empfaenger, String name, String link) {
-        mailService.sendeHtml(empfaenger, "Sponsorplatz — Passwort zurücksetzen", helper -> {
-            try {
-                helper.setText(
-                        "<h2>Passwort zurücksetzen</h2>" +
-                                "<p>Hallo " + name + ",</p>" +
-                                "<p>Sie haben ein neues Passwort angefordert. Klicken Sie auf den folgenden Link:</p>" +
-                                "<p><a href=\"" + link + "\">Neues Passwort setzen</a></p>" +
-                                "<p>Der Link ist <strong>1 Stunde</strong> gültig.</p>" +
-                                "<p>Falls Sie kein neues Passwort angefordert haben, ignorieren Sie diese Mail.</p>" +
-                                "<p>Freundliche Grüsse<br>Sponsorplatz</p>",
-                        true
-                );
-            } catch (MessagingException e) {
-                throw new RuntimeException("Reset-Mail konnte nicht aufgebaut werden", e);
-            }
-        });
+        String html = "<h2>Passwort zurücksetzen</h2>" +
+                "<p>Hallo " + name + ",</p>" +
+                "<p>Sie haben ein neues Passwort angefordert. Klicken Sie auf den folgenden Link:</p>" +
+                "<p><a href=\"" + link + "\">Neues Passwort setzen</a></p>" +
+                "<p>Der Link ist <strong>1 Stunde</strong> gültig.</p>" +
+                "<p>Falls Sie kein neues Passwort angefordert haben, ignorieren Sie diese Mail.</p>" +
+                "<p>Freundliche Grüsse<br>Sponsorplatz</p>";
+        mailService.sendeHtml(empfaenger, "Sponsorplatz — Passwort zurücksetzen", html);
     }
 }
 

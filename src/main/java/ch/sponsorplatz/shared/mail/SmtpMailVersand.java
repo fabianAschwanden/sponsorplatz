@@ -4,6 +4,7 @@ import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungenService;
 import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungen;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.util.ByteArrayDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +22,9 @@ import java.util.Properties;
 import java.util.function.Consumer;
 
 /**
- * Zentraler Mail-Versand für die Plattform.
+ * SMTP-Adapter des {@link MailVersand}-Ports (Ports-&-Adapter). Kapselt die
+ * Spring-/Jakarta-Mail-Details (JavaMailSender, MimeMessageHelper) — Aufrufer
+ * kennen nur den Port.
  *
  * <h2>Effektive Konfiguration</h2>
  * Priorität pro Setting: <strong>DB ({@link PlattformEinstellungen}) &gt;
@@ -43,9 +46,9 @@ import java.util.function.Consumer;
  * damit ein versehentlicher Klick nie zu echten Mails führen kann.
  */
 @Service
-public class MailService {
+public class SmtpMailVersand implements MailVersand {
 
-    private static final Logger log = LoggerFactory.getLogger(MailService.class);
+    private static final Logger log = LoggerFactory.getLogger(SmtpMailVersand.class);
 
     private final JavaMailSender fallbackSender;
     private final PlattformEinstellungenService einstellungenService;
@@ -60,7 +63,7 @@ public class MailService {
     private final String envTestEmpfaenger;
     private final boolean liveMode;
 
-    public MailService(JavaMailSender fallbackSender,
+    public SmtpMailVersand(JavaMailSender fallbackSender,
                        PlattformEinstellungenService einstellungenService,
                        @Value("${spring.mail.host:}") String envHost,
                        @Value("${spring.mail.port:587}") int envPort,
@@ -91,24 +94,29 @@ public class MailService {
     }
 
     /** True, wenn ein SMTP-Host effektiv konfiguriert ist (DB oder ENV). */
+    @Override
     public boolean istKonfiguriert() {
         return !effektiverHost().isBlank();
     }
 
+    @Override
     public boolean istLiveMode() {
         return liveMode;
     }
 
+    @Override
     public String effektiverHost() {
         String dbVal = nvl(einstellungen().getSmtpHost()).trim();
         return !dbVal.isBlank() ? dbVal : envHost;
     }
 
+    @Override
     public String effektiverTestEmpfaenger() {
         String dbVal = nvl(einstellungen().getMailTestEmpfaenger()).trim();
         return !dbVal.isBlank() ? dbVal : envTestEmpfaenger;
     }
 
+    @Override
     public String effektiverAbsender() {
         String dbVal = nvl(einstellungen().getMailAbsender()).trim();
         return !dbVal.isBlank() ? dbVal : envAbsender;
@@ -117,6 +125,7 @@ public class MailService {
     /**
      * Sendet eine einfache Plain-Text-Mail.
      */
+    @Override
     public void sendePlain(String to, String subject, String body) {
         Routing routing = wendeLiveModusAn(to, subject);
         if (routing.skip()) return;
@@ -129,13 +138,38 @@ public class MailService {
         sender().send(msg);
     }
 
+    /** Sendet eine HTML-Mail ohne Anhang. */
+    @Override
+    public void sendeHtml(String to, String subject, String htmlBody) {
+        sendeHtmlIntern(to, subject, helper -> {
+            try {
+                helper.setText(htmlBody, true);
+            } catch (MessagingException e) {
+                throw new MailSendException("HTML-Body konnte nicht gesetzt werden", e);
+            }
+        });
+    }
+
+    /** Sendet eine HTML-Mail mit genau einem Anhang. */
+    @Override
+    public void sendeHtmlMitAnhang(String to, String subject, String htmlBody, MailAnhang anhang) {
+        sendeHtmlIntern(to, subject, helper -> {
+            try {
+                helper.setText(htmlBody, true);
+                helper.addAttachment(anhang.dateiname(),
+                        new ByteArrayDataSource(anhang.inhalt(), anhang.contentTyp()));
+            } catch (MessagingException e) {
+                throw new MailSendException("HTML-Mail mit Anhang konnte nicht aufgebaut werden", e);
+            }
+        });
+    }
+
     /**
-     * Sendet eine HTML-Mail. Der {@code helperConfigurer} bekommt einen
-     * fertig konfigurierten {@link MimeMessageHelper} mit gesetztem
-     * {@code to}, {@code from} und {@code subject} — Body und ggf.
-     * weitere Attribute werden vom Aufrufer ergänzt.
+     * Baut + sendet die MimeMessage. Der {@code helperConfigurer} ergänzt Body
+     * (und ggf. Anhänge) auf einem Helper mit bereits gesetztem to/from/subject.
+     * Adapter-intern — der {@link MimeMessageHelper} verlässt diese Klasse nie.
      */
-    public void sendeHtml(String to, String subject, Consumer<MimeMessageHelper> helperConfigurer) {
+    private void sendeHtmlIntern(String to, String subject, Consumer<MimeMessageHelper> helperConfigurer) {
         Routing routing = wendeLiveModusAn(to, subject);
         if (routing.skip()) return;
 
@@ -160,6 +194,7 @@ public class MailService {
      *
      * @throws IllegalStateException wenn kein Test-Empfänger konfiguriert ist
      */
+    @Override
     public void sendeTestMail() {
         String empfaenger = effektiverTestEmpfaenger();
         if (empfaenger.isBlank()) {

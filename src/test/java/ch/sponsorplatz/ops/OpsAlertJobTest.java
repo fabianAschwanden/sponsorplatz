@@ -1,5 +1,5 @@
 package ch.sponsorplatz.ops;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 
 import ch.sponsorplatz.ops.SystemSnapshotView.Cpu;
 import ch.sponsorplatz.ops.SystemSnapshotView.DbPool;
@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
 class OpsAlertJobTest {
 
     @Mock private SystemSnapshotService snapshotService;
-    @Mock private MailService mailService;
+    @Mock private MailVersand mailService;
 
     private OpsAlertJob job;
 

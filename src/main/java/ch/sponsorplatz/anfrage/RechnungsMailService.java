@@ -1,9 +1,8 @@
 package ch.sponsorplatz.anfrage;
 
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailAnhang;
+import ch.sponsorplatz.shared.mail.MailVersand;
 import ch.sponsorplatz.shared.pdf.PdfGeneratorService;
-import jakarta.mail.MessagingException;
-import jakarta.mail.util.ByteArrayDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -35,12 +34,12 @@ public class RechnungsMailService {
 
     private static final Logger log = LoggerFactory.getLogger(RechnungsMailService.class);
 
-    private final MailService mailService;
+    private final MailVersand mailService;
     private final PdfGeneratorService pdfGenerator;
     private final QrBillService qrBillService;
     private final RechnungRepository rechnungRepository;
 
-    public RechnungsMailService(MailService mailService,
+    public RechnungsMailService(MailVersand mailService,
                                 PdfGeneratorService pdfGenerator,
                                 QrBillService qrBillService,
                                 RechnungRepository rechnungRepository) {
@@ -78,15 +77,8 @@ public class RechnungsMailService {
             String betreff = "Rechnung " + rechnung.getRechnungsnummer()
                     + " — " + rechnung.getOrg().getName();
 
-            mailService.sendeHtml(empfaenger, betreff, helper -> {
-                try {
-                    helper.setText(mailBody(rechnung), true);
-                    helper.addAttachment(dateiname,
-                            new ByteArrayDataSource(pdf, "application/pdf"));
-                } catch (MessagingException e) {
-                    throw new RuntimeException("Rechnungs-Mail konnte nicht aufgebaut werden", e);
-                }
-            });
+            mailService.sendeHtmlMitAnhang(empfaenger, betreff, mailBody(rechnung),
+                    new MailAnhang(dateiname, pdf, "application/pdf"));
 
             log.info("Rechnung {} per E-Mail an {} gesendet",
                     rechnung.getRechnungsnummer(), empfaenger);

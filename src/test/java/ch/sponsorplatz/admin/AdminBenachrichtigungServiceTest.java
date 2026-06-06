@@ -7,7 +7,7 @@ import ch.sponsorplatz.benutzer.AppUserRepository;
 import ch.sponsorplatz.benutzer.PlatformRolle;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ class AdminBenachrichtigungServiceTest {
 
     @Mock private AppUserRepository appUserRepository;
     @Mock private NotificationService notificationService;
-    @Mock private MailService mailService;
+    @Mock private MailVersand mailService;
 
     private AdminBenachrichtigungService service;
 

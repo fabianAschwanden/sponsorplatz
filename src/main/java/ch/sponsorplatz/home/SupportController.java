@@ -1,7 +1,7 @@
 package ch.sponsorplatz.home;
 
 import ch.sponsorplatz.shared.config.ModelAttributeNames;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -31,10 +31,10 @@ public class SupportController {
 
     private static final Logger log = LoggerFactory.getLogger(SupportController.class);
 
-    private final MailService mailService;
+    private final MailVersand mailService;
     private final String supportEmpfaenger;
 
-    public SupportController(MailService mailService,
+    public SupportController(MailVersand mailService,
                              @Value("${sponsorplatz.support.empfaenger:#{null}}") String supportEmpfaenger) {
         this.mailService = mailService;
         this.supportEmpfaenger = supportEmpfaenger;

@@ -1,5 +1,5 @@
 package ch.sponsorplatz.einladung;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 
 import ch.sponsorplatz.organisation.Rolle;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.verify;
 class EinladungsMailListenerTest {
 
     @Mock
-    private MailService mailService;
+    private MailVersand mailService;
 
     private EinladungsMailListener listener;
 

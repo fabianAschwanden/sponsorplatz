@@ -1,6 +1,6 @@
 package ch.sponsorplatz.benutzer;
 import ch.sponsorplatz.shared.config.LoginBruteForceSchutz;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -30,7 +30,7 @@ class PasswortResetServiceTest {
     @Mock
     private AppUserRepository repository;
     @Mock
-    private MailService mailService;
+    private MailVersand mailService;
     @Mock
     private PasswordEncoder passwordEncoder;
 

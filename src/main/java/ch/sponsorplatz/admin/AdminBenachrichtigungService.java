@@ -8,7 +8,7 @@ import ch.sponsorplatz.benutzer.PlatformRolle;
 import ch.sponsorplatz.organisation.NeueOrgRegistrierungEvent;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Pusht Admin-relevante Events an alle {@link PlatformRolle#PLATFORM_ADMIN}-User
  * — gleichzeitig als In-App-Glocke (NotificationService) und als E-Mail
- * (MailService). Aktuell ein Event-Typ: neue Org-Registrierungen, damit die
+ * (MailVersand). Aktuell ein Event-Typ: neue Org-Registrierungen, damit die
  * Verifizierungs-Queue nicht aktiv überwacht werden muss.
  *
  * <p>Mail-Versand schlägt einzeln still fehl (WARN-Log), damit ein SMTP-Ausfall
@@ -35,11 +35,11 @@ public class AdminBenachrichtigungService {
 
     private final AppUserRepository appUserRepository;
     private final NotificationService notificationService;
-    private final MailService mailService;
+    private final MailVersand mailService;
 
     public AdminBenachrichtigungService(AppUserRepository appUserRepository,
                                          NotificationService notificationService,
-                                         MailService mailService) {
+                                         MailVersand mailService) {
         this.appUserRepository = appUserRepository;
         this.notificationService = notificationService;
         this.mailService = mailService;

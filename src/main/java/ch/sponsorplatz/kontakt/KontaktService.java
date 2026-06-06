@@ -1,7 +1,7 @@
 package ch.sponsorplatz.kontakt;
 
 import ch.sponsorplatz.benutzer.AppUserService;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -25,11 +25,11 @@ public class KontaktService {
     private static final Logger log = LoggerFactory.getLogger(KontaktService.class);
 
     private final AppUserService appUserService;
-    private final MailService mailService;
+    private final MailVersand mailService;
     private final MessageSource messageSource;
 
     public KontaktService(AppUserService appUserService,
-                          MailService mailService,
+                          MailVersand mailService,
                           MessageSource messageSource) {
         this.appUserService = appUserService;
         this.mailService = mailService;

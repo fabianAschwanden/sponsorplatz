@@ -1,5 +1,5 @@
 package ch.sponsorplatz.benutzer;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,13 +19,13 @@ import static org.mockito.Mockito.when;
 class VerifikationsServiceTest {
 
     private AppUserRepository repository;
-    private MailService mailService;
+    private MailVersand mailService;
     private VerifikationsService service;
 
     @BeforeEach
     void setUp() {
         repository = mock(AppUserRepository.class);
-        mailService = mock(MailService.class);
+        mailService = mock(MailVersand.class);
         service = new VerifikationsService(repository, mailService, "http://localhost:8080");
     }
 

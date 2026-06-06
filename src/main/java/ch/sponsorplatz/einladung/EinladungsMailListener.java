@@ -1,7 +1,6 @@
 package ch.sponsorplatz.einladung;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 
-import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,10 +22,10 @@ public class EinladungsMailListener {
 
     private static final Logger log = LoggerFactory.getLogger(EinladungsMailListener.class);
 
-    private final MailService mailService;
+    private final MailVersand mailService;
     private final String basisUrl;
 
-    public EinladungsMailListener(MailService mailService,
+    public EinladungsMailListener(MailVersand mailService,
                                   @Value("${sponsorplatz.basis-url:http://localhost:8080}") String basisUrl) {
         this.mailService = mailService;
         this.basisUrl = basisUrl;
@@ -44,21 +43,12 @@ public class EinladungsMailListener {
 
     private void sendeMail(EinladungErstelltEvent event) {
         String link = basisUrl + "/einladung/annehmen?token=" + event.token();
+        String html = "<h2>Sie wurden eingeladen!</h2>" +
+                "<p>" + event.eingeladenVonName() + " hat Sie eingeladen, Mitglied von <strong>"
+                + event.orgName() + "</strong> zu werden.</p>" +
+                "<p><a href=\"" + link + "\">Einladung annehmen</a></p>" +
+                "<p>Der Link ist 7 Tage gültig.</p>";
         mailService.sendeHtml(event.empfaengerEmail(),
-                "Sponsorplatz — Einladung zu " + event.orgName(),
-                helper -> {
-                    try {
-                        helper.setText(
-                                "<h2>Sie wurden eingeladen!</h2>" +
-                                        "<p>" + event.eingeladenVonName() + " hat Sie eingeladen, Mitglied von <strong>"
-                                        + event.orgName() + "</strong> zu werden.</p>" +
-                                        "<p><a href=\"" + link + "\">Einladung annehmen</a></p>" +
-                                        "<p>Der Link ist 7 Tage gültig.</p>",
-                                true
-                        );
-                    } catch (MessagingException e) {
-                        throw new RuntimeException("Einladungs-Mail konnte nicht aufgebaut werden", e);
-                    }
-                });
+                "Sponsorplatz — Einladung zu " + event.orgName(), html);
     }
 }

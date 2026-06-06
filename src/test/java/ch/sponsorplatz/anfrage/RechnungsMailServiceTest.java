@@ -1,7 +1,7 @@
 package ch.sponsorplatz.anfrage;
 
 import ch.sponsorplatz.organisation.Organisation;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 import ch.sponsorplatz.shared.pdf.PdfGeneratorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class RechnungsMailServiceTest {
 
-    @Mock private MailService mailService;
+    @Mock private MailVersand mailService;
     @Mock private PdfGeneratorService pdfGenerator;
     @Mock private QrBillService qrBillService;
     @Mock private RechnungRepository rechnungRepository;
@@ -72,9 +72,10 @@ class RechnungsMailServiceTest {
 
         service.sendeRechnungPerEmail(r.getId());
 
-        verify(mailService).sendeHtml(
+        verify(mailService).sendeHtmlMitAnhang(
                 eq("finance@acme.ch"),
                 contains("R-2026-00001"),
+                any(),
                 any());
     }
 
@@ -86,7 +87,7 @@ class RechnungsMailServiceTest {
 
         service.sendeRechnungPerEmail(r.getId());
 
-        verify(mailService, never()).sendeHtml(any(), any(), any());
+        verify(mailService, never()).sendeHtmlMitAnhang(any(), any(), any(), any());
     }
 
     @Test
@@ -97,7 +98,7 @@ class RechnungsMailServiceTest {
 
         service.sendeRechnungPerEmail(r.getId());
 
-        verify(mailService, never()).sendeHtml(any(), any(), any());
+        verify(mailService, never()).sendeHtmlMitAnhang(any(), any(), any(), any());
     }
 
     @Test
@@ -108,6 +109,6 @@ class RechnungsMailServiceTest {
 
         service.sendeRechnungPerEmail(id);
 
-        verify(mailService, never()).sendeHtml(any(), any(), any());
+        verify(mailService, never()).sendeHtmlMitAnhang(any(), any(), any(), any());
     }
 }

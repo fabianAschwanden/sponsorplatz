@@ -1,5 +1,5 @@
 package ch.sponsorplatz.anfrage;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,12 +12,12 @@ import static org.mockito.Mockito.verify;
 
 class BenachrichtigungsServiceTest {
 
-    private MailService mailService;
+    private MailVersand mailService;
     private BenachrichtigungsService service;
 
     @BeforeEach
     void setUp() {
-        mailService = mock(MailService.class);
+        mailService = mock(MailVersand.class);
         service = new BenachrichtigungsService(mailService);
     }
 

@@ -1,8 +1,7 @@
 package ch.sponsorplatz.benutzer;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 import ch.sponsorplatz.shared.util.TokenGenerator;
 
-import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,11 +19,11 @@ public class VerifikationsService {
     private static final long TOKEN_GUELTIG_STUNDEN = 24;
 
     private final AppUserRepository repository;
-    private final MailService mailService;
+    private final MailVersand mailService;
     private final String basisUrl;
 
     public VerifikationsService(AppUserRepository repository,
-                                MailService mailService,
+                                MailVersand mailService,
                                 @Value("${sponsorplatz.basis-url:http://localhost:8080}") String basisUrl) {
         this.repository = repository;
         this.mailService = mailService;
@@ -65,20 +64,12 @@ public class VerifikationsService {
     }
 
     private void sendeMail(String empfaenger, String name, String link) {
-        mailService.sendeHtml(empfaenger, "Sponsorplatz — E-Mail bestätigen", helper -> {
-            try {
-                helper.setText(
-                        "<h2>Willkommen bei Sponsorplatz, " + name + "!</h2>" +
-                                "<p>Bitte bestätigen Sie Ihre E-Mail-Adresse:</p>" +
-                                "<p><a href=\"" + link + "\">E-Mail bestätigen</a></p>" +
-                                "<p>Der Link ist 24 Stunden gültig.</p>" +
-                                "<p>Falls Sie sich nicht registriert haben, ignorieren Sie diese Mail.</p>",
-                        true
-                );
-            } catch (MessagingException e) {
-                throw new RuntimeException("Verifikations-Mail konnte nicht aufgebaut werden", e);
-            }
-        });
+        String html = "<h2>Willkommen bei Sponsorplatz, " + name + "!</h2>" +
+                "<p>Bitte bestätigen Sie Ihre E-Mail-Adresse:</p>" +
+                "<p><a href=\"" + link + "\">E-Mail bestätigen</a></p>" +
+                "<p>Der Link ist 24 Stunden gültig.</p>" +
+                "<p>Falls Sie sich nicht registriert haben, ignorieren Sie diese Mail.</p>";
+        mailService.sendeHtml(empfaenger, "Sponsorplatz — E-Mail bestätigen", html);
     }
 }
 

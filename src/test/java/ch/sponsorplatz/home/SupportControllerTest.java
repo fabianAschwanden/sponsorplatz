@@ -1,7 +1,7 @@
 package ch.sponsorplatz.home;
 
 import ch.sponsorplatz.shared.config.SecurityConfig;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ class SupportControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private MailService mailService;
+    private MailVersand mailService;
 
     @MockitoBean
     private ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService userDetailsService;

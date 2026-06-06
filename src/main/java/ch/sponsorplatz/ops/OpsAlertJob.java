@@ -1,5 +1,5 @@
 package ch.sponsorplatz.ops;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +16,7 @@ import java.util.Map;
  * Geplanter Schwellen-Check + Mail-Alert für Plattform-Admin.
  *
  * <p>Cron: alle 15 Minuten. Prüft Heap-Auslastung, CPU, neue Errors seit
- * letztem Tick und alarmiert per {@link MailService#sendePlain} an den
+ * letztem Tick und alarmiert per {@link MailVersand#sendePlain} an den
  * konfigurierten Test-Empfänger (DB &gt; ENV).
  *
  * <p>Throttling: Pro Schwellen-Typ wird höchstens alle 60 Minuten gemailt
@@ -36,7 +36,7 @@ public class OpsAlertJob {
     private static final Logger log = LoggerFactory.getLogger(OpsAlertJob.class);
 
     private final SystemSnapshotService snapshotService;
-    private final MailService mailService;
+    private final MailVersand mailService;
 
     private final double heapGrenze;
     private final double cpuGrenze;
@@ -47,7 +47,7 @@ public class OpsAlertJob {
     private int errorAnzahlBeimLetztenTick = 0;
 
     public OpsAlertJob(SystemSnapshotService snapshotService,
-                       MailService mailService,
+                       MailVersand mailService,
                        @Value("${sponsorplatz.alerts.heap-prozent:85}") double heapGrenze,
                        @Value("${sponsorplatz.alerts.cpu-prozent:85}") double cpuGrenze,
                        @Value("${sponsorplatz.alerts.error-grenze:5}") int errorGrenze,

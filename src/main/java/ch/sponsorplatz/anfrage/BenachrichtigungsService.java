@@ -7,13 +7,13 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.mail.MailException;
 
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 
 /**
  * E-Mail-Benachrichtigungen für Sponsoring-Anfragen.
  *
  * <p>
- * Sendet via {@link MailService} — die Live-/Test-Modus-Logik und
+ * Sendet via {@link MailVersand} — die Live-/Test-Modus-Logik und
  * SMTP-Settings (DB &gt; ENV) liegen dort zentral.
  */
 @Service
@@ -21,9 +21,9 @@ public class BenachrichtigungsService {
 
     private static final Logger log = LoggerFactory.getLogger(BenachrichtigungsService.class);
 
-    private final MailService mailService;
+    private final MailVersand mailService;
 
-    public BenachrichtigungsService(MailService mailService) {
+    public BenachrichtigungsService(MailVersand mailService) {
         this.mailService = mailService;
     }
 

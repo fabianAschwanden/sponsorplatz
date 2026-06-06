@@ -2,7 +2,7 @@ package ch.sponsorplatz.admin;
 
 import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungenService;
 import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungenService.MailKonfigurationsSnapshot;
-import ch.sponsorplatz.shared.mail.MailService;
+import ch.sponsorplatz.shared.mail.MailVersand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,7 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  * Admin-UI für SMTP-Einstellungen.
  *
  * <p>Persistente Werte überschreiben ENV-Defaults zur Laufzeit (siehe
- * {@link MailService}). Test-Mail-Button sendet sofort eine Mail an die
+ * {@link MailVersand}). Test-Mail-Button sendet sofort eine Mail an die
  * konfigurierte Test-Empfänger-Adresse.
  *
  * <p>Live-Modus ({@code MAIL_LIVE}) ist <strong>nicht</strong> editierbar
@@ -33,10 +33,10 @@ public class AdminMailEinstellungenController {
     private static final Logger log = LoggerFactory.getLogger(AdminMailEinstellungenController.class);
 
     private final PlattformEinstellungenService einstellungenService;
-    private final MailService mailService;
+    private final MailVersand mailService;
 
     public AdminMailEinstellungenController(PlattformEinstellungenService einstellungenService,
-                                            MailService mailService) {
+                                            MailVersand mailService) {
         this.einstellungenService = einstellungenService;
         this.mailService = mailService;
     }
