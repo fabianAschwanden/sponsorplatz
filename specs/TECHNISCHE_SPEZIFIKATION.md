@@ -97,7 +97,7 @@ Spring wählt den Adapter via Component-Scan bzw. `@Profile`/`@ConditionalOnProp
 |---|---|---|---|
 | Mail | `MailVersand` (+ `MailAnhang`) | `shared.mail.smtp` → `SmtpMailVersand` | **ARCH-20** |
 | Payment | `PaymentProvider` | `anfrage.payment.datatrans` → `DatatransProvider`, `…​.stub` → `LokalerStubProvider` | **ARCH-21** |
-| Storage | `StorageService` | `shared.storage` → Lokal/OCI/Azure | (geplant) |
+| Storage | `StorageService` | `shared.storage.lokal` / `.oci` / `.azure` | **ARCH-22** (nur Azure-SDK; OCI-SDK cross-genutzt) |
 | Backup-Cloud | `BackupCloudUploader` | `backup` → OCI/Azure | (geplant) |
 | OIDC/IdP | (offen) | `benutzer` | (geplant) |
 

@@ -290,6 +290,26 @@ class ArchitekturRegelnTest {
                     + "Aufrufer nutzen den PaymentProvider-Port");
 
     // =========================================================================
+    // ARCH-22 — Storage-Port: Azure-Blob-SDK bleibt im Azure-Adapter-Package
+    //
+    // Der StorageService-Port (shared.storage) ist SDK-frei; die Azure-Blob-
+    // Anbindung (com.azure-SDK) lebt ausschliesslich im Adapter shared.storage
+    // .azure. com.azure wird app-weit NUR dort genutzt — die Regel sperrt es ein.
+    //
+    // Bewusst KEINE analoge OCI-Regel: das OCI-SDK (com.oracle.bmc) wird
+    // legitim von drei getrennten Integrationen genutzt (storage.oci,
+    // backup.OciBackupCloudUploader, ops.BucketStatsService) — ein Package-Guard
+    // wäre dort ein False-Positive.
+    // =========================================================================
+    @ArchTest
+    static final ArchRule ARCH_22_azure_sdk_nur_im_storage_adapter = noClasses()
+            .that().resideOutsideOfPackage("ch.sponsorplatz.shared.storage.azure..")
+            .should().dependOnClassesThat().resideInAnyPackage("com.azure..")
+            .because("ARCH-22: Azure-Blob-SDK (com.azure) gehört in den Azure-Storage-Adapter "
+                    + "(shared.storage.azure); Aufrufer nutzen den StorageService-Port bzw. "
+                    + "das SDK-freie AzureBlobOperations-Seam");
+
+    // =========================================================================
     // ARCH-13 — Test-Klassen spiegeln ein Produktions-Feature-Paket
     //
     // Jede Test-Klasse muss in einem Paket liegen, das auch Produktionscode

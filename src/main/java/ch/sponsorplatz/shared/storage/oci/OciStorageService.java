@@ -1,4 +1,7 @@
-package ch.sponsorplatz.shared.storage;
+package ch.sponsorplatz.shared.storage.oci;
+
+import ch.sponsorplatz.shared.storage.StorageObjectNotFoundException;
+import ch.sponsorplatz.shared.storage.StorageService;
 
 import com.oracle.bmc.model.BmcException;
 import com.oracle.bmc.objectstorage.ObjectStorage;

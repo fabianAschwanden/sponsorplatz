@@ -1,4 +1,10 @@
-package ch.sponsorplatz.shared.storage;
+package ch.sponsorplatz.shared.storage.azure;
+
+import ch.sponsorplatz.shared.storage.AzureBlobNotFoundException;
+import ch.sponsorplatz.shared.storage.AzureBlobOperationException;
+import ch.sponsorplatz.shared.storage.AzureBlobOperations;
+import ch.sponsorplatz.shared.storage.StorageObjectNotFoundException;
+import ch.sponsorplatz.shared.storage.StorageService;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

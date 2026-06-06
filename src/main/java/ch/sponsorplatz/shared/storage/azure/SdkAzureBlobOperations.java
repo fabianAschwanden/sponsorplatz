@@ -1,4 +1,8 @@
-package ch.sponsorplatz.shared.storage;
+package ch.sponsorplatz.shared.storage.azure;
+
+import ch.sponsorplatz.shared.storage.AzureBlobNotFoundException;
+import ch.sponsorplatz.shared.storage.AzureBlobOperationException;
+import ch.sponsorplatz.shared.storage.AzureBlobOperations;
 
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlobErrorCode;

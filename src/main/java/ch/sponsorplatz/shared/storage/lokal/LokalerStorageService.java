@@ -1,4 +1,7 @@
-package ch.sponsorplatz.shared.storage;
+package ch.sponsorplatz.shared.storage.lokal;
+
+import ch.sponsorplatz.shared.storage.StorageObjectNotFoundException;
+import ch.sponsorplatz.shared.storage.StorageService;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

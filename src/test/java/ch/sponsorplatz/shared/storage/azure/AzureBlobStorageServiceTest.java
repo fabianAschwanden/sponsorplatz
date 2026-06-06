@@ -1,4 +1,9 @@
-package ch.sponsorplatz.shared.storage;
+package ch.sponsorplatz.shared.storage.azure;
+
+import ch.sponsorplatz.shared.storage.AzureBlobNotFoundException;
+import ch.sponsorplatz.shared.storage.AzureBlobOperationException;
+import ch.sponsorplatz.shared.storage.AzureBlobOperations;
+import ch.sponsorplatz.shared.storage.StorageObjectNotFoundException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

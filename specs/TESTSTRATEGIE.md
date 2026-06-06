@@ -1196,6 +1196,7 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **ARCH-17** | `ArchitekturRegelnTest` | Kein generisches `catch (Exception\|Throwable)` im Produktionscode (Quell-Scan, nicht Bytecode — der Bytecode-Modus flaggt fälschlich jeden try-with-resources). Erwartete Typen explizit fangen; Allowlist `Datei.java:Zeile` mit Begründung (`AuditService` best-effort SecurityContext, `PlzVerzeichnis` Boot-Fail-Fast) |
 | **ARCH-20** | `ArchitekturRegelnTest` | Mail-Port (Ports-&-Adapter): nur `shared.mail.smtp` darf `org.springframework.mail.javamail..` (JavaMailSender/MimeMessageHelper) kennen — Port `shared.mail` + Aufrufer nutzen den `MailVersand`-Port |
 | **ARCH-21** | `ArchitekturRegelnTest` | Payment-Port (Ports-&-Adapter): nur `anfrage.payment.datatrans` darf `org.springframework.web.client..` (RestClient) + `javax.crypto..` (HMAC) kennen — Aufrufer nutzen den `PaymentProvider`-Port |
+| **ARCH-22** | `ArchitekturRegelnTest` | Storage-Port (Ports-&-Adapter): nur `shared.storage.azure` darf `com.azure..` (Azure-Blob-SDK) kennen. Bewusst keine OCI-Analogie — `com.oracle.bmc` wird legitim von 3 Integrationen genutzt (storage.oci, backup, ops) |
 
 **Spätere Regel-Kandidaten:**
 

@@ -1,4 +1,6 @@
-package ch.sponsorplatz.shared.storage;
+package ch.sponsorplatz.shared.storage.azure;
+
+import ch.sponsorplatz.shared.storage.AzureBlobOperations;
 
 import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.azure.storage.blob.BlobContainerClient;
