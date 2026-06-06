@@ -307,6 +307,25 @@ Jedes Szenario folgt dem Format:
 - QR-Code in mehreren Banking-Apps testen (UBS, ZKB, Raiffeisen, PostFinance, Neon)
 - PDF im Print-Preview prüfen: Perforations-Marker korrekt?
 
+#### BETA-V09b — Zahlungskanal abhängig vom Payment-Modus
+
+- **Persona:** Lea (ORG_OWNER); Anna stellt den Modus (BETA-A06)
+- **Vorbedingung:** UNTERZEICHNETER Vertrag vorhanden; Admin kann zwischen
+  `QR_RECHNUNG` und `DATATRANS` umschalten
+
+**Schritte:**
+
+1. Anna setzt Modus `QR_RECHNUNG`; Lea erstellt eine Rechnung
+2. Rechnungs-Detail prüfen — **kein** „Online bezahlen"-Button
+3. Sponsor erhält QR-Bill-Mail (Bestätigung durch Tester)
+4. Anna setzt Modus `DATATRANS`; Lea erstellt eine zweite Rechnung
+5. Rechnungs-Detail prüfen — „Online bezahlen"-Button **ist** sichtbar
+6. Für diese Rechnung wird **keine** QR-Mail versendet
+
+**Erwartet:**
+- Die Kanäle sind exklusiv: QR-Mail XOR Online-Button, nie beides
+- Modus-Wechsel wirkt auf neu erstellte Rechnungen; bestehende behalten ihren Kanal
+
 #### BETA-V10 — Rechnung als bezahlt markieren
 
 - **Persona:** Lea (ORG_OWNER), Sandra (Sponsor, extern)
@@ -431,6 +450,30 @@ Jedes Szenario folgt dem Format:
 - Inbox-Thread ist chronologisch
 - Antwort wird in beide Richtungen sichtbar
 
+#### BETA-S06 — Rechnung online bezahlen (Datatrans-Checkout)
+
+- **Persona:** Sandra (Sponsor)
+- **Vorbedingung:** Payment-Modus `DATATRANS` (BETA-A06); offene Rechnung
+  vorhanden; Datatrans im **Sandbox**-Modus (Testkarten, kein echtes Geld)
+
+**Schritte:**
+
+1. Rechnungs-Detail öffnen → „Online bezahlen"
+2. Auf der Datatrans-Sandbox-HPP mit Testdaten bezahlen (Erfolg)
+3. Rückleitung auf `/payment/erfolg` prüfen; Rechnung wird (via Webhook) `BEZAHLT`
+4. Zweite Rechnung: Checkout starten und abbrechen → `/payment/abgebrochen`,
+   Rechnung bleibt `OFFEN`
+5. Optional: fehlschlagende Testkarte → `/payment/fehler`, Rechnung bleibt `OFFEN`
+
+**Erwartet:**
+- Betrag/Währung (CHF) auf der HPP stimmen mit der Rechnung überein
+- Erfolg → Rechnung `BEZAHLT`, idempotent (kein Doppel-Verbuchen bei Reload)
+- Abbruch/Fehler → Rechnung bleibt `OFFEN`
+- Nur Sandbox-Testdaten, keine echten Zahlungsdaten
+
+**Beobachten:**
+- Webhook-Latenz: wie lange bis Status `BEZAHLT` nach erfolgreicher Zahlung?
+
 ### 5.3 Admin-Szenarien (BETA-A)
 
 #### BETA-A01 — Login als PLATFORM_ADMIN
@@ -517,6 +560,25 @@ Jedes Szenario folgt dem Format:
 - Backup wird innerhalb 60 s erstellt
 - Datei ist non-empty, herunterladbar
 - Cleanup-Logik entfernt Backups > 30 Tage automatisch
+
+#### BETA-A06 — Payment-Modus umschalten (QR-Rechnung ↔ Datatrans)
+
+- **Persona:** Anna (PLATFORM_ADMIN)
+- **Vorbedingung:** keine
+
+**Schritte:**
+
+1. Sidebar (Admin) → „Payment" → `/admin/payment-einstellungen`
+2. Aktiven Modus prüfen; Exklusivitäts-Hinweis lesen
+3. Auf `DATATRANS` umstellen, speichern, Seite neu laden (Persistenz prüfen)
+4. Zurück auf `QR_RECHNUNG` stellen (oder den von BETA-S06/V09b benötigten Modus)
+
+**Erwartet:**
+- „Payment"-Eintrag in der Admin-Sidebar vorhanden; nur für Admins sichtbar
+- Zwei Radio-Optionen mit Badges „Kostenlos" / „Gebühren"
+- Hinweis-Box: Modi sind exklusiv (Datatrans → keine QR-Mail)
+- Datatrans nennt Voraussetzung `DATATRANS_ENABLED=true` + Credentials
+- Gewählter Modus bleibt nach Reload aktiv (Erfolgs-Flash)
 
 ### 5.4 Public-/Übergreifende Szenarien (BETA-O)
 
@@ -627,7 +689,6 @@ Jeder Test wird pro Tester:in dokumentiert mit:
 
 Diese Bereiche sind bewusst noch im Backlog und sollen in der β-closed nicht getestet werden:
 
-- **Online-Zahlung (Datatrans)** — Phase 9.2, nur Stub-Provider aktiv
 - **Single Sign-On via Entra ID** — Phase 1.4 Backlog, siehe AUTH_SSO_OIDC.md
 - **MwSt-Aufschlüsselung auf Rechnungen** — Phase 12
 - **Vertrags-Mahnwesen** — Phase 12, manuelles Inkasso heute
@@ -637,6 +698,13 @@ Diese Bereiche sind bewusst noch im Backlog und sollen in der β-closed nicht ge
 
 Findet ein Tester Probleme in diesen Bereichen, freuen wir uns über Hinweise, werden sie aber priorisiert behandeln.
 
+> **Neu seit Phase 15.1:** Die **Online-Zahlung (Datatrans)** ist nicht mehr nur
+> Stub — sie ist als Admin-Toggle (`/admin/payment-einstellungen`) live und im
+> **Sandbox**-Modus testbar (BETA-A06, BETA-V09b, BETA-S06). Voraussetzung für
+> BETA-S06 ist ein konfigurierter Datatrans-Sandbox-Account
+> (`DATATRANS_ENABLED=true` + Sandbox-Credentials). Ist der nicht eingerichtet,
+> bleibt der Default-Modus `QR_RECHNUNG` aktiv und BETA-S06 wird `◐ blocked`.
+
 ## 9. Erfolgs-Kriterien für die β-closed
 
 Wir betrachten die β-closed als **erfolgreich**, wenn:
@@ -645,6 +713,8 @@ Wir betrachten die β-closed als **erfolgreich**, wenn:
 - [ ] **Keine kritischen Bugs** (Datenverlust, Sicherheits-Leak, Production-Ausfall) entdeckt
 - [ ] **5+ Verein-Anfragen** real durchlaufen und mindestens 2 in Status `VERTRAG` oder `BEZAHLT`
 - [ ] **mind. 1 Swiss-QR-Bill** in einer echten Banking-App erfolgreich gescannt + überwiesen
+- [ ] **Payment-Modi geprüft** (BETA-A06 + BETA-V09b): QR-Mail XOR Online-Button, exklusiv
+- [ ] **Online-Zahlung** (BETA-S06) im Sandbox: Erfolg → `BEZAHLT`, Abbruch/Fehler → `OFFEN` *(sofern Datatrans-Sandbox eingerichtet, sonst `◐ blocked`)*
 - [ ] **Performance** Marktplatz-Liste < 3 s p95 auf mobiler Verbindung
 - [ ] **DSG-Datenexport** funktioniert für alle Personas
 - [ ] **Tester-NPS** ≥ 7 (Wie wahrscheinlich empfiehlst du Sponsorplatz weiter?)

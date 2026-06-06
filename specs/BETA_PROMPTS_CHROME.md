@@ -158,7 +158,7 @@ REPORTING — gib am Ende exakt diese Struktur aus:
 
 ---
 
-## 1. Verein-Pfad — BETA-V01 bis BETA-V11
+## 1. Verein-Pfad — BETA-V01 bis BETA-V11 (inkl. V09b)
 
 ### BETA-V01 — Verein-Self-Registrierung
 
@@ -497,6 +497,64 @@ REPORTING
   manuell durch einen menschlichen Tester durchzuführen).
 ```
 
+### BETA-V09b — Zahlungskanal abhängig vom Payment-Modus
+
+```
+Du bist Lea. Prüfe, dass der von Anna gesetzte Payment-Modus den richtigen
+Zahlungskanal erzeugt — und dass die Kanäle EXKLUSIV sind.
+
+MISSION
+  Zeige, dass eine neue Rechnung im jeweils aktiven Modus den richtigen
+  Kanal anbietet: QR-Rechnung-Modus → QR-Mail + KEIN Online-Button;
+  Datatrans-Modus → „Online bezahlen"-Button + KEINE QR-Mail.
+
+VORBEDINGUNG
+  Lea ist eingeloggt, ein UNTERZEICHNETER Vertrag ist verfügbar (BETA-V08).
+  Anna kann den Modus zwischendurch über BETA-A06 umstellen — koordiniere die
+  Reihenfolge mit dem Tester.
+
+ABLAUF — Teil A (Modus QR_RECHNUNG)
+  1. [USER-INTERAKTION NÖTIG]
+       Aktion:    Stelle in /admin/payment-einstellungen den Modus auf
+                  «QR-Rechnung per E-Mail» (oder bestätige, dass er aktiv ist).
+       Warum:     Modus-Umschaltung ist eine Admin-Aktion (Anna).
+       Antworte mit "erledigt" oder "blockiert: <Grund>".
+  2. Vertrag-Detail → „Rechnung erstellen" → „Rechnung versenden" (Status OFFEN).
+  3. Rechnungs-Detail aufrufen. Prüfe: KEIN „Online bezahlen"-Button sichtbar.
+  4. [USER-INTERAKTION NÖTIG]
+       Aktion:    Öffne das Sponsor-Postfach (sandra-{TS}@beta.sponsorplatz.ch)
+                  und bestätige, dass eine Rechnungs-Mail mit QR-Bill-PDF
+                  eingegangen ist.
+       Antworte mit "erledigt: <Anhang ja/nein>" oder "blockiert: <Grund>".
+
+ABLAUF — Teil B (Modus DATATRANS)
+  5. [USER-INTERAKTION NÖTIG]
+       Aktion:    Stelle in /admin/payment-einstellungen den Modus auf
+                  «Online-Zahlung (Datatrans)».
+       Antworte mit "erledigt" oder "blockiert: <Grund>".
+  6. Erstelle eine ZWEITE Rechnung (neuer Vertrag oder erneut, sofern möglich)
+     und öffne deren Detail-Seite.
+  7. Prüfe: «Online bezahlen»-Button IST sichtbar.
+  8. [USER-INTERAKTION OPTIONAL]
+       Aktion:    Prüfe, ob für DIESE Rechnung KEINE QR-Bill-Mail beim Sponsor
+                  eingegangen ist (Kanal-Exklusivität).
+       Antworte mit "erledigt: <keine QR-Mail? ja/nein>" oder "übersprungen".
+  9. Lasse den Modus am Ende auf dem Wert stehen, den BETA-S06 braucht
+     (DATATRANS), oder informiere Anna.
+
+ERWARTUNGEN
+  • QR_RECHNUNG-Modus: KEIN Online-Button, QR-Mail kommt an.
+  • DATATRANS-Modus: „Online bezahlen"-Button sichtbar, KEINE QR-Mail.
+  • Kein Modus zeigt beide Kanäle gleichzeitig (Exklusivität).
+  • Wechsel wirkt nur auf NEU erstellte Rechnungen (bestehende behalten ihren
+    Kanal) — notiere, falls eine alte Rechnung den Button nachträglich zeigt.
+
+REPORTING
+  ERGEBNIS BETA-V09b (Status, Dauer, Test-Daten inkl. beider Rechnungs-Nr +
+  je aktivem Modus, Verstöße — insb. doppelter Kanal/Mail trotz Exklusivität,
+  UX-Notizen, Screenshot, Vorschlag).
+```
+
 ### BETA-V10 — Rechnung als bezahlt markieren
 
 ```
@@ -551,7 +609,7 @@ REPORTING
 
 ---
 
-## 2. Sponsor-Pfad — BETA-S01 bis BETA-S05
+## 2. Sponsor-Pfad — BETA-S01 bis BETA-S06
 
 ### BETA-S01 — Marktplatz öffentlich erkunden
 
@@ -715,9 +773,72 @@ REPORTING
   Screenshot, Vorschlag).
 ```
 
+### BETA-S06 — Rechnung online bezahlen (Datatrans-Checkout)
+
+```
+Du bist Sandra, Sponsorin. Bezahle eine offene Rechnung online über die
+Datatrans Hosted Payment Page.
+
+MISSION
+  Starte aus dem Rechnungs-Detail den Online-Checkout, durchlaufe die
+  Datatrans-Sandbox-Bezahlung und prüfe, dass die Rechnung danach als BEZAHLT
+  verbucht ist. Decke auch Abbruch- und Fehler-Rückweg ab.
+
+VORBEDINGUNG
+  • Payment-Modus ist DATATRANS (Anna hat BETA-A06 / BETA-V09b Teil B gesetzt).
+  • Eine OFFENE Rechnung existiert, die Sandra einsehen darf.
+  • Datatrans läuft im SANDBOX-Modus (Testkarten, kein echtes Geld).
+
+SICHERHEIT
+  Der Checkout führt auf eine Datatrans-Sandbox-Domain (pay.sandbox.datatrans.com
+  o. ä.) — das ist hier ERLAUBT und Teil des Tests. Verwende ausschliesslich
+  offizielle Datatrans-TESTDATEN (z. B. Test-Kreditkarte 4242 4242 4242 4242,
+  beliebiges künftiges Ablaufdatum, beliebige CVV) bzw. den Sandbox-TWINT-Flow.
+  Gib NIE echte Zahlungsdaten ein. Sind keine Sandbox-Testdaten verfügbar:
+  [USER-INTERAKTION NÖTIG]
+    Aktion:    Nenne mir die gültigen Datatrans-Sandbox-Testdaten (Karte/TWINT),
+               oder führe den Bezahlschritt auf der HPP selbst aus.
+    Antworte mit "erledigt: <bezahlt/abgebrochen>" oder "blockiert: <Grund>".
+
+ABLAUF — Teil A (Erfolg)
+  1. Login als sandra-{TS}@beta.sponsorplatz.ch (oder die Persona, die die
+     Rechnung sehen darf).
+  2. Öffne die offene Rechnung. Prüfe: «Online bezahlen»-Button sichtbar.
+  3. Klicke «Online bezahlen». Erwartung: Redirect auf die Datatrans-HPP;
+     der Rechnungsbetrag stimmt mit der Rechnung überein.
+  4. Bezahle mit Sandbox-Testdaten (oder via User-Interaktion).
+  5. Erwartung: Rückleitung auf /payment/erfolg mit Erfolgs-Seite.
+  6. Zurück zur Rechnung / ins Dashboard. Prüfe (ggf. nach kurzem Warten auf
+     den Webhook): Status der Rechnung ist BEZAHLT.
+
+ABLAUF — Teil B (Abbruch)
+  7. Erzeuge/öffne eine weitere OFFENE Rechnung, starte den Checkout erneut.
+  8. Brich auf der HPP ab (Zurück/Abbrechen).
+  9. Erwartung: Rückleitung auf /payment/abgebrochen; Rechnung bleibt OFFEN.
+
+ABLAUF — Teil C (Fehler, optional)
+  10. Falls die Sandbox eine fehlschlagende Testkarte anbietet: löse einen
+      Fehlschlag aus → Rückleitung auf /payment/fehler, Rechnung bleibt OFFEN.
+
+ERWARTUNGEN
+  • «Online bezahlen» erscheint nur bei OFFENEN Rechnungen im Datatrans-Modus.
+  • Checkout-URL ist eine Datatrans-(Sandbox-)HPP; Betrag/Währung (CHF) korrekt.
+  • Erfolg → /payment/erfolg, Rechnung wird (via Webhook) BEZAHLT, idempotent
+    (mehrfaches Neuladen erzeugt keine Doppel-Buchung).
+  • Abbruch → /payment/abgebrochen, Rechnung bleibt OFFEN.
+  • Fehler → /payment/fehler, Rechnung bleibt OFFEN.
+  • Keine echten Zahlungsdaten verlangt; alles im Sandbox-Kontext.
+
+REPORTING
+  ERGEBNIS BETA-S06 (Status, Dauer, Test-Daten inkl. Rechnungs-Nr + Datatrans-
+  Transaktions-Referenz falls sichtbar, Verstöße — insb. Rechnung NICHT auf
+  BEZAHLT trotz Erfolg, oder BEZAHLT trotz Abbruch, UX-Notizen, Screenshot,
+  Vorschlag).
+```
+
 ---
 
-## 3. Admin-Pfad — BETA-A01 bis BETA-A05
+## 3. Admin-Pfad — BETA-A01 bis BETA-A06
 
 ### BETA-A01 — Login als PLATFORM_ADMIN
 
@@ -858,6 +979,56 @@ REPORTING
   Verstöße, UX-Notizen, Screenshot, Vorschlag).
 ```
 
+### BETA-A06 — Payment-Modus umschalten (QR-Rechnung ↔ Datatrans)
+
+```
+Du bist Anna, Plattform-Admin. Steuere, wie Sponsoren Rechnungen bezahlen.
+
+MISSION
+  Finde die Payment-Konfiguration im Admin-Bereich und schalte bewusst
+  zwischen den beiden exklusiven Modi um. Beide Modi sind später Voraussetzung
+  für BETA-V09b und BETA-S06 — lass am Ende einen klar benannten Modus stehen.
+
+VORBEDINGUNG
+  Login als anna@beta.sponsorplatz.ch. Frischer Browser-Storage.
+
+HINTERGRUND (zur Orientierung, nicht ausgeben)
+  Es gibt genau zwei Modi:
+   • QR_RECHNUNG  — Swiss-QR-Bill-PDF wird per E-Mail an den Sponsor gesendet.
+   • DATATRANS    — Sponsor zahlt online (TWINT/Karte/PostFinance); im
+                    Rechnungs-Detail erscheint ein „Online bezahlen"-Button.
+  Die Modi sind EXKLUSIV: im Datatrans-Modus wird KEINE QR-Mail versendet.
+
+ABLAUF
+  1. Login als Anna.
+  2. Finde die Payment-Einstellungen. Erwartung: über die Sidebar im
+     Admin-Bereich ein Eintrag „Payment" → /admin/payment-einstellungen.
+     Notiere, wie viele Klicks/Sekunden du zum Finden brauchst (Auffindbarkeit).
+  3. Lies die Seite: aktiver Modus markiert? Beschreibungen verständlich?
+     Steht der Hinweis, dass die Modi exklusiv sind (im Datatrans-Modus keine
+     QR-Mail)?
+  4. Stelle den Modus auf «Online-Zahlung (Datatrans)», speichere.
+  5. Lade die Seite neu — bleibt Datatrans aktiv markiert? (Persistenz)
+  6. Stelle zurück auf «QR-Rechnung per E-Mail», speichere.
+  7. Lasse den Modus am Ende auf dem Wert stehen, den der nächste Test braucht
+     (Default: QR_RECHNUNG). Notiere den End-Zustand klar im Report.
+
+ERWARTUNGEN
+  • Sidebar (Admin) enthält einen „Payment"-Eintrag; Link führt zu
+    /admin/payment-einstellungen, der aktive Nav-Eintrag ist hervorgehoben.
+  • Seite zeigt zwei Radio-Optionen mit Badges „Kostenlos" / „Gebühren".
+  • Hinweis-Box erklärt die Exklusivität (Datatrans → keine QR-Mail).
+  • Datatrans nennt als Voraussetzung DATATRANS_ENABLED=true + Credentials.
+  • Nach Speichern: Erfolgs-Flash; gewählter Modus bleibt nach Reload aktiv.
+  • Non-Admin (z. B. Lea) sieht den „Payment"-Eintrag NICHT (kurz gegenprüfen,
+    falls eine Lea-Session greifbar ist — sonst überspringen).
+
+REPORTING
+  ERGEBNIS BETA-A06 (Status, Dauer, Test-Daten inkl. End-Modus,
+  Verstöße, UX-Notizen zu Auffindbarkeit + Verständlichkeit der Optionen,
+  Screenshot, Vorschlag).
+```
+
 ---
 
 ## 4. Public-/Übergreifende Szenarien — BETA-O01 bis BETA-O04
@@ -966,9 +1137,13 @@ REPORTING
 
 ## 5. Hinweise zur Plugin-Konfiguration
 
-- **Sicherheits-Hinweis:** Die Demo-Umgebung enthält keine echten Daten. Trotzdem:
-  Plugin-Zugriff auf Datatrans-, Banking- oder Mail-Provider-Tabs sicherheitshalber
-  ablehnen — Beta-Test bleibt strikt auf `sponsorplatz.for-better.biz`.
+- **Sicherheits-Hinweis:** Die Demo-Umgebung enthält keine echten Daten. Banking-
+  und Mail-Provider-Tabs sicherheitshalber ablehnen — Beta-Test bleibt strikt auf
+  `sponsorplatz.for-better.biz`. **Ausnahme Payment (BETA-S06):** Der Datatrans-
+  Checkout führt bewusst auf die Datatrans-**Sandbox**-HPP. Dort sind nur
+  offizielle Sandbox-TESTDATEN erlaubt (z. B. Test-Karte 4242 4242 4242 4242);
+  niemals echte Zahlungsdaten eingeben. Ist der Modus nicht DATATRANS oder läuft
+  Datatrans nicht im Sandbox-Modus, wird BETA-S06 als `◐ blocked` markiert.
 - **Sitzungs-Isolation:** Vor jedem Prompt empfiehlt sich `Inkognito-Tab` oder
   ein Profil-Wechsel — sonst überlagern sich Logins.
 - **Mail-Verifikation = User-Interaktion:** Der Agent öffnet keinen
