@@ -5,9 +5,9 @@ package ch.sponsorplatz.shared.mail;
  *
  * <p>Die Domäne/Anwendungsdienste hängen ausschliesslich an diesem Interface,
  * nie an einer konkreten Transport-Technologie. Der einzige Adapter ist heute
- * {@link SmtpMailVersand} (SMTP via Spring/Jakarta-Mail); ein zweiter Adapter
- * (z.B. API-basierter Provider) liesse sich ohne Änderung an den Aufrufern
- * ergänzen.
+ * {@link ch.sponsorplatz.shared.mail.smtp.SmtpMailVersand} (SMTP via
+ * Spring/Jakarta-Mail); ein zweiter Adapter (z.B. API-basierter Provider)
+ * liesse sich ohne Änderung an den Aufrufern ergänzen.
  *
  * <p>Bewusst <strong>framework-frei</strong>: kein {@code MimeMessageHelper},
  * kein {@code JavaMailSender} in der Signatur. Anhänge laufen über das

@@ -1,7 +1,9 @@
-package ch.sponsorplatz.shared.mail;
+package ch.sponsorplatz.shared.mail.smtp;
 import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungenService;
 
 import ch.sponsorplatz.shared.einstellungen.PlattformEinstellungen;
+import ch.sponsorplatz.shared.mail.MailAnhang;
+import ch.sponsorplatz.shared.mail.MailVersand;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.util.ByteArrayDataSource;

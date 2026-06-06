@@ -254,19 +254,21 @@ class ArchitekturRegelnTest {
             .because("ARCH-12: @Controller-Klassen müssen den Suffix 'Controller' tragen");
 
     // =========================================================================
-    // ARCH-20 — Mail-Port: SMTP-/Jakarta-Mail-Details bleiben im Adapter
+    // ARCH-20 — Mail-Port: SMTP-/Jakarta-Mail-Details bleiben im Adapter-Package
     //
-    // Nur der SMTP-Adapter in shared.mail darf JavaMailSender/MimeMessageHelper
-    // kennen. Alle anderen hängen am MailVersand-Port (Ports-&-Adapter), damit
-    // der Mail-Transport austauschbar bleibt und Framework-Typen nicht lecken.
+    // Nur das Adapter-Package shared.mail.smtp darf JavaMailSender/MimeMessage-
+    // Helper kennen. Selbst das Port-Package shared.mail (MailVersand/MailAnhang)
+    // bleibt framework-frei — die Aufrufer hängen am Port (Ports-&-Adapter),
+    // damit der Mail-Transport austauschbar bleibt und Framework-Typen nicht lecken.
     // =========================================================================
     @ArchTest
     static final ArchRule ARCH_20_mail_framework_nur_im_adapter = noClasses()
-            .that().resideOutsideOfPackage("ch.sponsorplatz.shared.mail..")
+            .that().resideOutsideOfPackage("ch.sponsorplatz.shared.mail.smtp..")
             .should().dependOnClassesThat().resideInAnyPackage(
                     "org.springframework.mail.javamail..")
             .because("ARCH-20: Mail-Transport-Details (JavaMailSender/MimeMessageHelper) "
-                    + "gehören in den SMTP-Adapter; Aufrufer nutzen den MailVersand-Port");
+                    + "gehören in den SMTP-Adapter (shared.mail.smtp); Port + Aufrufer "
+                    + "nutzen ausschliesslich den MailVersand-Port");
 
     // =========================================================================
     // ARCH-13 — Test-Klassen spiegeln ein Produktions-Feature-Paket
