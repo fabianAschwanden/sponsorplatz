@@ -1,4 +1,11 @@
-package ch.sponsorplatz.benutzer;
+package ch.sponsorplatz.benutzer.oidc;
+
+import ch.sponsorplatz.benutzer.AppUser;
+import ch.sponsorplatz.benutzer.AppUserRepository;
+import ch.sponsorplatz.benutzer.FederierteIdentitaet;
+import ch.sponsorplatz.benutzer.FederierteIdentitaetRepository;
+import ch.sponsorplatz.benutzer.IdentityProvider;
+import ch.sponsorplatz.benutzer.PlatformRolle;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

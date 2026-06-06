@@ -1,5 +1,6 @@
 package ch.sponsorplatz.benutzer;
 
+import ch.sponsorplatz.benutzer.oidc.SponsorplatzOidcUserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

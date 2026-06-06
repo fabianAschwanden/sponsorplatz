@@ -1,5 +1,6 @@
 package ch.sponsorplatz.benutzer;
 
+import ch.sponsorplatz.benutzer.oidc.SponsorplatzOidcUserService;
 
 import java.time.Instant;
 import java.util.List;

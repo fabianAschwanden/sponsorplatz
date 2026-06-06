@@ -1,4 +1,4 @@
-package ch.sponsorplatz.benutzer;
+package ch.sponsorplatz.benutzer.oidc;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;

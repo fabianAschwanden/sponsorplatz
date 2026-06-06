@@ -1,4 +1,6 @@
-package ch.sponsorplatz.benutzer;
+package ch.sponsorplatz.benutzer.oidc;
+
+import ch.sponsorplatz.benutzer.PlatformRolle;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

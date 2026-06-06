@@ -80,7 +80,17 @@ Port-Package bleibt sauber.
 | Payment | `PaymentProvider` | `anfrage.payment.datatrans` / `…​.stub` | ARCH-21 | ✅ umgesetzt |
 | Storage | `StorageService` | `shared.storage.lokal` / `.oci` / `.azure` | ARCH-22 | ✅ umgesetzt |
 | Backup-Cloud | `BackupCloudUploader` | `backup.cloud.oci` / `.azure` | (siehe Hinweis) | ✅ umgesetzt |
-| OIDC/IdP | — | `benutzer` | — geplant | offen (tief in Spring Security) |
+| OIDC/IdP | (Spring-`OAuth2UserService`) | `benutzer.oidc` | — | ✅ pragmatisch (Package-Bündelung) |
+
+> **Hinweis OIDC — pragmatisch statt voll-hexagonal:** Der OIDC-Adapter
+> (`SponsorplatzOidcUserService`, `OidcConfig`, `OidcAnbieterAdvice`) liegt
+> gebündelt in `benutzer.oidc`. Bewusst **kein** eigenes Port-Interface: der
+> „Port" ist hier der Spring-Security-Kontrakt `OAuth2UserService<OidcUserRequest,
+> OidcUser>` — `SecurityConfig` injiziert via diesem Interface (`ObjectProvider`),
+> nicht über die konkrete Klasse. Ein eigenes Domain-Port-Interface über einen
+> Framework-Callback zu zwingen brächte keinen Nutzen bei realem Auth-Risiko.
+> Die föderierte-Identität-Domäne (`FederierteIdentitaet`, `IdentityProvider`,
+> Repository) bleibt in `benutzer` — sie ist Domänenmodell (ADR-0005), kein Adapter.
 
 > **Hinweis OCI-SDK / Backup-Cloud-Guard:** Für Azure ist der SDK-Guard präzise
 > (`com.azure` nur im Azure-Adapter, ARCH-22). Eine analoge OCI-Regel wäre falsch —

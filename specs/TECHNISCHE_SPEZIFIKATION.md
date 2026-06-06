@@ -99,7 +99,7 @@ Spring wählt den Adapter via Component-Scan bzw. `@Profile`/`@ConditionalOnProp
 | Payment | `PaymentProvider` | `anfrage.payment.datatrans` → `DatatransProvider`, `…​.stub` → `LokalerStubProvider` | **ARCH-21** |
 | Storage | `StorageService` | `shared.storage.lokal` / `.oci` / `.azure` | **ARCH-22** (nur Azure-SDK; OCI-SDK cross-genutzt) |
 | Backup-Cloud | `BackupCloudUploader` | `backup.cloud.oci` / `.azure` | kein eigener Guard (OCI cross-genutzt, Azure via Seam → ARCH-22) |
-| OIDC/IdP | (offen) | `benutzer` | (geplant) |
+| OIDC/IdP | Spring `OAuth2UserService` | `benutzer.oidc` → `SponsorplatzOidcUserService` + `OidcConfig` + `OidcAnbieterAdvice` | pragmatisch (Spring-Kontrakt als Port; föderierte Domäne bleibt in `benutzer`) |
 
 **Referenz-Umsetzung Mail:** Der Port `shared.mail.MailVersand` bietet
 `sendePlain` / `sendeHtml` / `sendeHtmlMitAnhang` (+ Konfig-Introspektion);
