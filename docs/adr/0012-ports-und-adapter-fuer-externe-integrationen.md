@@ -79,13 +79,17 @@ Port-Package bleibt sauber.
 | Mail | `MailVersand` | `shared.mail.smtp` | ARCH-20 | ✅ umgesetzt |
 | Payment | `PaymentProvider` | `anfrage.payment.datatrans` / `…​.stub` | ARCH-21 | ✅ umgesetzt |
 | Storage | `StorageService` | `shared.storage.lokal` / `.oci` / `.azure` | ARCH-22 | ✅ umgesetzt |
-| Backup-Cloud | `BackupCloudUploader` | `backup` (OCI/Azure) | — geplant | bereits Port+Adapter |
+| Backup-Cloud | `BackupCloudUploader` | `backup.cloud.oci` / `.azure` | (siehe Hinweis) | ✅ umgesetzt |
 | OIDC/IdP | — | `benutzer` | — geplant | offen (tief in Spring Security) |
 
-> **Hinweis OCI-SDK:** Für Azure ist der SDK-Guard präzise (`com.azure` nur im
-> Azure-Adapter). Eine analoge OCI-Regel wäre falsch — `com.oracle.bmc` wird
-> bewusst von drei getrennten Integrationen genutzt (Storage-Adapter,
-> Backup-Cloud-Upload, Ops-Bucket-Stats). Port-Disziplin ≠ blinde Symmetrie.
+> **Hinweis OCI-SDK / Backup-Cloud-Guard:** Für Azure ist der SDK-Guard präzise
+> (`com.azure` nur im Azure-Adapter, ARCH-22). Eine analoge OCI-Regel wäre falsch —
+> `com.oracle.bmc` wird bewusst von drei getrennten Integrationen genutzt
+> (Storage-Adapter, Backup-Cloud-Upload, Ops-Bucket-Stats). Darum hat Backup-Cloud
+> **keinen** eigenen SDK-Guard: der OCI-Uploader kann nicht eingesperrt werden,
+> der Azure-Uploader nutzt ohnehin nur das SDK-freie `AzureBlobOperations`-Seam
+> (also bereits durch ARCH-22 abgedeckt). Der Mehrwert der Backup-Cloud-Trennung
+> ist die Package-Topologie, nicht ein neuer Wächter. Port-Disziplin ≠ blinde Symmetrie.
 
 ## Konsequenzen
 

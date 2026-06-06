@@ -1,4 +1,5 @@
 package ch.sponsorplatz.backup;
+import ch.sponsorplatz.backup.cloud.BackupCloudUploader;
 import ch.sponsorplatz.audit.AuditService;
 
 import org.junit.jupiter.api.BeforeEach;

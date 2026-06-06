@@ -1,4 +1,6 @@
-package ch.sponsorplatz.backup;
+package ch.sponsorplatz.backup.cloud.oci;
+
+import ch.sponsorplatz.backup.cloud.BackupCloudUploader;
 
 import com.oracle.bmc.model.BmcException;
 import com.oracle.bmc.objectstorage.ObjectStorage;

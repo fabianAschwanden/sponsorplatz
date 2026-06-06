@@ -1,4 +1,6 @@
-package ch.sponsorplatz.backup;
+package ch.sponsorplatz.backup.cloud.azure;
+
+import ch.sponsorplatz.backup.cloud.BackupCloudUploader;
 
 import ch.sponsorplatz.shared.storage.AzureBlobOperationException;
 import ch.sponsorplatz.shared.storage.AzureBlobOperations;

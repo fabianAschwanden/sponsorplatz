@@ -1,5 +1,6 @@
 package ch.sponsorplatz.backup;
 import ch.sponsorplatz.audit.AuditService;
+import ch.sponsorplatz.backup.cloud.BackupCloudUploader;
 
 import ch.sponsorplatz.audit.AuditAktion;
 import org.slf4j.Logger;
