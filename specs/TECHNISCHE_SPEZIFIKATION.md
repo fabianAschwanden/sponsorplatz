@@ -7,6 +7,7 @@
 - **Exception-Mapping zentral** in `GlobalExceptionHandler` → gerendertes `error.html` mit korrektem HTTP-Status (`NotFoundException`→404, `IllegalArgumentException`→400, `IllegalStateException`→409, `AccessDeniedException`→403).
 - **Mass-Assignment-Defense**: Update-Pfade identifizieren Ressourcen über URL-Path-Variable, niemals über Body-`id` (siehe Org-Update-Pattern: `POST /organisationen/{slug}` mit AccessControl-Check, `OrganisationFormDto` ohne `id`-Feld).
 - **AccessControl** ist die einzige Stelle für Org-Rollen-Checks. Controller rufen `accessControl.kannOrg…NachSlug(slug, auth)` programmatisch auf, werfen `AccessDeniedException` bei `false`.
+- **Ports-&-Adapter für externe Integrationen** (ADR-0012): jede Anbindung an ein externes System (Mail, Payment, Storage, Backup-Cloud, OIDC) liegt hinter einem framework-freien **Port**-Interface; die technologie-spezifische Implementierung (**Adapter**) liegt in einem eigenen Sub-Package und ist der einzige Ort, der die Framework-/SDK-Typen kennen darf. Aufrufer hängen ausschliesslich am Port. Durchgesetzt via ArchUnit — siehe Abschnitt [Ports-&-Adapter](#ports--adapter-für-externe-integrationen).
 
 ## Stack
 
@@ -73,6 +74,39 @@ Beim Terraform-Pfad bootstrappt `cloud-init.yaml.tftpl` Docker, schreibt `docker
 - **Azure:** User-Assigned Managed Identity — `AcrPull`-Rolle auf den Container Registry + `Storage Blob Data Contributor`-Rolle auf den Storage Account. Cron `/usr/local/bin/sponsorplatz-acr-refresh` auf der VM frischt das ACR-Token alle 2h via MSI auf.
 
 Keine API-Keys auf den VMs.
+
+## Ports-&-Adapter für externe Integrationen
+
+Jede Anbindung an ein externes System folgt dem Hexagonal-Muster (ADR-0012):
+ein **Port** (framework-freies Interface + Value-Objects) beschreibt die
+fachliche Fähigkeit; ein **Adapter** (eigenes Sub-Package) implementiert sie
+gegen die konkrete Technologie und ist der **einzige** Ort, der die
+Framework-/SDK-Typen importieren darf. Aufrufer hängen ausschliesslich am Port;
+Spring wählt den Adapter via Component-Scan bzw. `@Profile`/`@ConditionalOnProperty`.
+
+**Package-Konvention:**
+
+```
+<context>/<faehigkeit>/          ← Port (framework-frei): Interface + Value-Objects
+<context>/<faehigkeit>/<tech>/   ← Adapter: implements Port, kennt Framework/SDK
+```
+
+**Stand der Integrationen:**
+
+| Integration | Port | Adapter(-Package) | ArchUnit |
+|---|---|---|---|
+| Mail | `MailVersand` (+ `MailAnhang`) | `shared.mail.smtp` → `SmtpMailVersand` | **ARCH-20** |
+| Storage | `StorageService` | `shared.storage` → Lokal/OCI/Azure | (geplant) |
+| Backup-Cloud | `BackupCloudUploader` | `backup` → OCI/Azure | (geplant) |
+| Payment | `PaymentProvider` | `anfrage` → Datatrans/Stub | (geplant) |
+| OIDC/IdP | (offen) | `benutzer` | (geplant) |
+
+**Referenz-Umsetzung Mail:** Der Port `shared.mail.MailVersand` bietet
+`sendePlain` / `sendeHtml` / `sendeHtmlMitAnhang` (+ Konfig-Introspektion);
+Anhänge laufen über das framework-freie `MailAnhang`-Record statt über einen
+`MimeMessageHelper`. Der Adapter `shared.mail.smtp.SmtpMailVersand` kapselt
+`JavaMailSender`/`MimeMessageHelper`. **ARCH-20** verbietet jedem Package
+ausserhalb `shared.mail.smtp` den Zugriff auf `org.springframework.mail.javamail..`.
 
 ## Storage
 

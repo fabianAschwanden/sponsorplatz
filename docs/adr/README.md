@@ -58,3 +58,4 @@ sind ein **Audit-Trail**.
 | [0009](0009-multi-cloud-azure-als-dr-zone.md) | Multi-Cloud — Azure als zweite Zone (Warm-DR) | Akzeptiert |
 | [0010](0010-umgebung-marker-im-audit-log.md) | Umgebungs-Marker in Audit-Log + Sentry-Events | Akzeptiert |
 | [0011](0011-hybrid-private-sponsor-layer.md) | Hybrid — kollaborative Stammdaten + private Sponsor-CRM-Layer | Akzeptiert |
+| [0012](0012-ports-und-adapter-fuer-externe-integrationen.md) | Ports-&-Adapter für externe Integrationen | Akzeptiert |
