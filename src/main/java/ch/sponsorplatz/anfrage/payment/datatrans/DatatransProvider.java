@@ -1,6 +1,6 @@
 package ch.sponsorplatz.anfrage.payment.datatrans;
 
-import ch.sponsorplatz.anfrage.PaymentProvider;
+import ch.sponsorplatz.anfrage.payment.PaymentProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

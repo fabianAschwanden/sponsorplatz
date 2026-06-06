@@ -1,6 +1,6 @@
 package ch.sponsorplatz.anfrage.payment.datatrans;
 
-import ch.sponsorplatz.anfrage.PaymentProvider;
+import ch.sponsorplatz.anfrage.payment.PaymentProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

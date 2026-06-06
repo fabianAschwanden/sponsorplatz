@@ -1,4 +1,4 @@
-package ch.sponsorplatz.anfrage;
+package ch.sponsorplatz.anfrage.payment;
 
 /**
  * Status einer Payment-Transaktion beim Provider.

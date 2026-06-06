@@ -1,4 +1,4 @@
-package ch.sponsorplatz.anfrage;
+package ch.sponsorplatz.anfrage.payment;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

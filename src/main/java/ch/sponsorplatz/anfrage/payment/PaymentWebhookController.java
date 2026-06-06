@@ -1,4 +1,6 @@
-package ch.sponsorplatz.anfrage;
+package ch.sponsorplatz.anfrage.payment;
+
+import ch.sponsorplatz.anfrage.RechnungService;
 
 import ch.sponsorplatz.shared.exception.NotFoundException;
 import com.fasterxml.jackson.core.type.TypeReference;

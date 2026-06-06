@@ -1,4 +1,4 @@
-package ch.sponsorplatz.anfrage;
+package ch.sponsorplatz.anfrage.payment;
 
 import java.math.BigDecimal;
 import java.util.Map;

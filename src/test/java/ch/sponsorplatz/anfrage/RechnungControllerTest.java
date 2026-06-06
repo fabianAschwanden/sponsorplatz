@@ -1,4 +1,5 @@
 package ch.sponsorplatz.anfrage;
+import ch.sponsorplatz.anfrage.payment.PaymentService;
 
 import ch.sponsorplatz.benutzer.SponsorplatzUserDetailsService;
 import ch.sponsorplatz.organisation.AccessControl;

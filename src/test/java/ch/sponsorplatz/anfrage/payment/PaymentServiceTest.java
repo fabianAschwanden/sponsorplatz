@@ -1,4 +1,5 @@
-package ch.sponsorplatz.anfrage;
+package ch.sponsorplatz.anfrage.payment;
+import ch.sponsorplatz.anfrage.RechnungRepository;
 
 import ch.sponsorplatz.anfrage.payment.stub.LokalerStubProvider;
 import org.junit.jupiter.api.DisplayName;

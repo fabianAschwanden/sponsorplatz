@@ -1,4 +1,5 @@
-package ch.sponsorplatz.anfrage;
+package ch.sponsorplatz.anfrage.payment;
+import ch.sponsorplatz.anfrage.RechnungService;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;

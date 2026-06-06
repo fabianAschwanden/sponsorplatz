@@ -77,7 +77,7 @@ Port-Package bleibt sauber.
 | Integration | Port | Adapter-Package | ArchUnit | Status |
 |---|---|---|---|---|
 | Mail | `MailVersand` | `shared.mail.smtp` | ARCH-20 | ✅ umgesetzt |
-| Payment | `PaymentProvider` | `anfrage.payment.datatrans` / `…​.stub` | ARCH-21 | ✅ umgesetzt |
+| Payment | `anfrage.payment` (`PaymentProvider`) | `anfrage.payment.datatrans` / `…​.stub` | ARCH-21 | ✅ umgesetzt |
 | Storage | `StorageService` | `shared.storage.lokal` / `.oci` / `.azure` | ARCH-22 | ✅ umgesetzt |
 | Backup-Cloud | `BackupCloudUploader` | `backup.cloud.oci` / `.azure` | (siehe Hinweis) | ✅ umgesetzt |
 | OIDC/IdP | (Spring-`OAuth2UserService`) | `benutzer.oidc` | — | ✅ pragmatisch (Package-Bündelung) |

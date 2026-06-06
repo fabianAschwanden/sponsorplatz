@@ -1,4 +1,4 @@
-package ch.sponsorplatz.anfrage;
+package ch.sponsorplatz.anfrage.payment;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

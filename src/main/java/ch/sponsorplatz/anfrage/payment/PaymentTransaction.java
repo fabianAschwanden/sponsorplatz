@@ -1,4 +1,6 @@
-package ch.sponsorplatz.anfrage;
+package ch.sponsorplatz.anfrage.payment;
+
+import ch.sponsorplatz.anfrage.Rechnung;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
