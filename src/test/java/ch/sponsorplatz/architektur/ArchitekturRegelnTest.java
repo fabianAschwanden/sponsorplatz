@@ -271,6 +271,25 @@ class ArchitekturRegelnTest {
                     + "nutzen ausschliesslich den MailVersand-Port");
 
     // =========================================================================
+    // ARCH-21 — Payment-Port: Provider-spezifische HTTP-/Krypto-Details bleiben
+    //           im jeweiligen Adapter-Package
+    //
+    // Der PaymentProvider-Port (anfrage) ist framework-frei; die Anbieter-
+    // Anbindung (RestClient-HTTP-Calls, HMAC-Signaturprüfung) lebt ausschliesslich
+    // im Datatrans-Adapter anfrage.payment.datatrans. RestClient + javax.crypto
+    // werden heute NUR dort genutzt — die Regel sperrt sie dort ein.
+    // =========================================================================
+    @ArchTest
+    static final ArchRule ARCH_21_payment_provider_details_im_adapter = noClasses()
+            .that().resideOutsideOfPackage("ch.sponsorplatz.anfrage.payment.datatrans..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "org.springframework.web.client..",
+                    "javax.crypto..")
+            .because("ARCH-21: Datatrans-Transport-/Krypto-Details (RestClient, HMAC) "
+                    + "gehören in den Datatrans-Adapter (anfrage.payment.datatrans); "
+                    + "Aufrufer nutzen den PaymentProvider-Port");
+
+    // =========================================================================
     // ARCH-13 — Test-Klassen spiegeln ein Produktions-Feature-Paket
     //
     // Jede Test-Klasse muss in einem Paket liegen, das auch Produktionscode

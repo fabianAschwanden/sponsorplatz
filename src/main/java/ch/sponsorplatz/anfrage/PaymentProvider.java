@@ -6,7 +6,10 @@ import java.util.UUID;
 
 /**
  * Abstraktes Interface fuer Zahlungs-Provider.
- * Implementierungen: LokalerStubProvider (dev/test), DatatransProvider (prod).
+ * Port (Ports-&-Adapter, ADR-0012). Framework-freie Schnittstelle; die
+ * Adapter liegen in eigenen Sub-Packages:
+ * {@code anfrage.payment.stub.LokalerStubProvider} (dev/test) und
+ * {@code anfrage.payment.datatrans.DatatransProvider} (prod).
  */
 public interface PaymentProvider {
 

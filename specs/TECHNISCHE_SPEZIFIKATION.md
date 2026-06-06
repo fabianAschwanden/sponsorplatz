@@ -96,9 +96,9 @@ Spring wählt den Adapter via Component-Scan bzw. `@Profile`/`@ConditionalOnProp
 | Integration | Port | Adapter(-Package) | ArchUnit |
 |---|---|---|---|
 | Mail | `MailVersand` (+ `MailAnhang`) | `shared.mail.smtp` → `SmtpMailVersand` | **ARCH-20** |
+| Payment | `PaymentProvider` | `anfrage.payment.datatrans` → `DatatransProvider`, `…​.stub` → `LokalerStubProvider` | **ARCH-21** |
 | Storage | `StorageService` | `shared.storage` → Lokal/OCI/Azure | (geplant) |
 | Backup-Cloud | `BackupCloudUploader` | `backup` → OCI/Azure | (geplant) |
-| Payment | `PaymentProvider` | `anfrage` → Datatrans/Stub | (geplant) |
 | OIDC/IdP | (offen) | `benutzer` | (geplant) |
 
 **Referenz-Umsetzung Mail:** Der Port `shared.mail.MailVersand` bietet

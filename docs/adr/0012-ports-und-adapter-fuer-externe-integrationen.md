@@ -77,9 +77,9 @@ Port-Package bleibt sauber.
 | Integration | Port | Adapter-Package | ArchUnit | Status |
 |---|---|---|---|---|
 | Mail | `MailVersand` | `shared.mail.smtp` | ARCH-20 | ✅ umgesetzt |
+| Payment | `PaymentProvider` | `anfrage.payment.datatrans` / `…​.stub` | ARCH-21 | ✅ umgesetzt |
 | Storage | `StorageService` | `shared.storage` (Lokal/OCI/Azure) | — geplant | bereits Port+Adapter |
 | Backup-Cloud | `BackupCloudUploader` | `backup` (OCI/Azure) | — geplant | bereits Port+Adapter |
-| Payment | `PaymentProvider` | `anfrage` (Datatrans/Stub) | — geplant | Port vorhanden, Package-Trennung offen |
 | OIDC/IdP | — | `benutzer` | — geplant | offen (tief in Spring Security) |
 
 ## Konsequenzen
@@ -112,7 +112,7 @@ Port-Package bleibt sauber.
 
 ## Referenzen
 
-- [`specs/TESTSTRATEGIE.md`](../../specs/TESTSTRATEGIE.md) §Architektur-Verifikation (ARCH-20)
+- [`specs/TESTSTRATEGIE.md`](../../specs/TESTSTRATEGIE.md) §Architektur-Verifikation (ARCH-20, ARCH-21)
 - [`specs/TECHNISCHE_SPEZIFIKATION.md`](../../specs/TECHNISCHE_SPEZIFIKATION.md) §Ports-&-Adapter für externe Integrationen
 - `src/main/java/ch/sponsorplatz/shared/mail/` (Port) + `…/smtp/` (Adapter)
 - `src/test/java/ch/sponsorplatz/architektur/ArchitekturRegelnTest.java` (ARCH-20)
