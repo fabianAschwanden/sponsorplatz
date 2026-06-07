@@ -23,7 +23,7 @@
             <a th:href="@{/organisationen/neu}" class="app-btn" th:text="#{orgListe.neuBtn}">+ Neue Organisation</a>
         </header>
 
-        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${erfolgsMeldung != null}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
         <!-- Filter-Leiste (GET-Form, bookmarkable URLs) -->
         <form method="get" th:action="@{/organisationen}" class="app-filter liste-toolbar">

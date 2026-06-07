@@ -48,7 +48,7 @@
             </div>
         </header>
 
-        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${erfolgsMeldung != null}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
         <section class="app-card">
             <dl class="app-datenliste">

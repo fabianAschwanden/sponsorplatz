@@ -28,8 +28,8 @@
                th:text="#{mitglieder.zurueckOrg}">← Organisation</a>
         </header>
 
-        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
-        <div th:if="${fehlermeldung}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
+        <div th:if="${erfolgsMeldung != null}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${fehlermeldung != null}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
 
         <div th:if="${!mitglieder.isEmpty()}" style="display:flex; justify-content:flex-end; margin-bottom:0.5rem;">
             <span class="liste-anzahl" th:text="#{mitglieder.anzahl(${#lists.size(mitglieder)})}">3 Mitglieder</span>

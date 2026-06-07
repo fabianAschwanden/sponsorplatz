@@ -14,7 +14,7 @@
     <main class="dash-main">
     <h1 th:text="#{anfragenListe.titel}">Eingehende Anfragen</h1>
 
-    <div th:if="${erfolgsMeldung}" class="alert success" th:text="${erfolgsMeldung}"></div>
+    <div th:if="${erfolgsMeldung != null}" class="alert success" th:text="${erfolgsMeldung}"></div>
 
     <div th:if="${anfragen.isEmpty()}" class="empty-state">
         <p th:text="#{anfragenListe.empty}">Noch keine Anfragen erhalten.</p>

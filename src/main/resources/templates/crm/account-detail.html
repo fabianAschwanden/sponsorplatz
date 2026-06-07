@@ -24,7 +24,7 @@
                th:text="#{crm.account.zumVerein}">Öffentliches Profil</a>
         </header>
 
-        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${erfolgsMeldung != null}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
         <!-- Überblick: aktuelle Werte des Accounts auf einen Blick -->
         <div class="crm-overview">

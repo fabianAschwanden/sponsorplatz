@@ -22,8 +22,8 @@
             </h1>
         </header>
 
-        <div th:if="${erfolgsMeldung}" class="alert success" th:text="${erfolgsMeldung}" style="margin-top:1rem;"></div>
-        <div th:if="${fehlermeldung}" class="alert error" th:text="${fehlermeldung}"
+        <div th:if="${erfolgsMeldung != null}" class="alert success" th:text="${erfolgsMeldung}" style="margin-top:1rem;"></div>
+        <div th:if="${fehlermeldung != null}" class="alert error" th:text="${fehlermeldung}"
              style="margin-top:1rem; padding:0.75rem 1rem; background:#fef2f2; border:1px solid #fecaca; border-radius:0.5rem; color:#991b1b;"></div>
 
         <div style="background:var(--dash-surface, #fff); border:1px solid var(--dash-border, #e5e7eb); border-radius:0.75rem; padding:1.5rem; margin-top:1rem;">

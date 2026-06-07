@@ -35,8 +35,8 @@
             <a th:href="@{/admin/backlog}" class="app-btn app-btn-ghost">Backlog</a>
         </nav>
 
-        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
-        <div th:if="${fehlermeldung}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
+        <div th:if="${erfolgsMeldung != null}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${fehlermeldung != null}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
 
         <div class="app-card" style="padding:1.5rem; margin-bottom:1.5rem;">
             <h3 style="margin:0 0 0.5rem;">Wie es funktioniert</h3>

@@ -29,7 +29,7 @@
         <h1 th:text="#{sponsorRegister.title}">Als Sponsor registrieren</h1>
         <p class="hint" style="margin-bottom: 1.5rem;" th:text="#{sponsorRegister.intro}">…</p>
 
-        <div th:if="${fehlermeldung}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
+        <div th:if="${fehlermeldung != null}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
 
         <form th:action="@{/sponsor/registrieren}" th:object="${sponsorForm}" method="post" class="app-form">
 

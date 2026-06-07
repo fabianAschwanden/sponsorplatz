@@ -23,8 +23,8 @@
             mit den Domain-Services. Anzeige-Text und Aktiv-Flag bleiben aber editierbar.
         </p>
 
-        <div th:if="${erfolgsMeldung}" class="app-flash app-flash-success" th:text="${erfolgsMeldung}">OK</div>
-        <div th:if="${fehlermeldung}" class="app-flash app-flash-error" th:text="${fehlermeldung}">Fehler</div>
+        <div th:if="${erfolgsMeldung != null}" class="app-flash app-flash-success" th:text="${erfolgsMeldung}">OK</div>
+        <div th:if="${fehlermeldung != null}" class="app-flash app-flash-error" th:text="${fehlermeldung}">Fehler</div>
 
         <div style="display:flex; justify-content:flex-end; margin-bottom:0.5rem;">
             <span class="liste-anzahl" th:text="#{aufgabenDefinitionen.anzahl(${#lists.size(definitionen)})}">7 Definitionen</span>

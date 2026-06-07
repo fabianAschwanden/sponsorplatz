@@ -21,15 +21,15 @@
   bewusst erwünscht (assertive + Focus).
 -->
 <div th:fragment="flash-meldungen">
-    <div th:if="${erfolgsMeldung}" class="app-flash app-flash-success"
+    <div th:if="${erfolgsMeldung != null}" class="app-flash app-flash-success"
          role="status" aria-live="polite" aria-atomic="true"
          id="flash-erfolg"
          th:text="${erfolgsMeldung}">Erfolg</div>
-    <div th:if="${fehlermeldung}" class="app-flash app-flash-error"
+    <div th:if="${fehlermeldung != null}" class="app-flash app-flash-error"
          role="alert" aria-live="assertive" aria-atomic="true"
          tabindex="-1" id="flash-fehler"
          th:text="${fehlermeldung}">Fehler</div>
-    <script th:if="${fehlermeldung}">
+    <script th:if="${fehlermeldung != null}">
         (function() {
             var el = document.getElementById('flash-fehler');
             if (el) el.focus();

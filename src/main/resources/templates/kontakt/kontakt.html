@@ -30,14 +30,14 @@
 
         <!-- Nach erfolgreichem Submit Form ausblenden, damit niemand
              versehentlich doppelt sendet. Flash-Erfolg + Back-Link reichen. -->
-        <div th:if="${erfolgsMeldung}">
+        <div th:if="${erfolgsMeldung != null}">
             <div class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
             <p class="public-auth-foot" style="margin-top:1.5rem;">
                 <a th:href="@{/}" th:text="#{kontakt.zurueck}">Zurück zur Startseite</a>
             </p>
         </div>
 
-        <div th:unless="${erfolgsMeldung}">
+        <div th:unless="${erfolgsMeldung != null}">
             <p style="margin-bottom:1.5rem; color:var(--dash-muted, #6b7280);"
                th:text="#{kontakt.intro}">Erzähle uns kurz, worum es geht — wir melden uns innert ein bis zwei Werktagen.</p>
 

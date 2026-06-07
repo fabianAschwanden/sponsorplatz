@@ -22,7 +22,7 @@
             </div>
         </header>
 
-        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${erfolgsMeldung != null}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
         <div th:if="${#lists.isEmpty(pendingOrgs)}" class="app-empty">
             <strong>Keine ausstehenden Verifizierungen.</strong>

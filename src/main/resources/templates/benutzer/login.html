@@ -43,7 +43,7 @@
         <div th:if="${param.registriert}" class="app-meldung info" role="status" th:text="#{login.infoRegistriert}">
             Registrierung erfolgreich! Bitte E-Mail besttigen und dann anmelden.
         </div>
-        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" role="status" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${erfolgsMeldung != null}" class="app-meldung erfolg" role="status" th:text="${erfolgsMeldung}"></div>
 
         <form th:action="@{/login}" method="post" class="app-form">
             <div class="app-form-group">

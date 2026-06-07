@@ -28,7 +28,7 @@
                class="app-btn">+ Sponsor anfragen</a>
         </header>
 
-        <div th:if="${erfolgsMeldung}" class="alert success" th:text="${erfolgsMeldung}"
+        <div th:if="${erfolgsMeldung != null}" class="alert success" th:text="${erfolgsMeldung}"
              style="margin-top:1rem;"></div>
 
         <!-- ===================== EINGEHENDE ===================== -->

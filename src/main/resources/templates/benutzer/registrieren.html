@@ -34,7 +34,7 @@
             können Sie die Einladung im Dashboard annehmen.
         </div>
 
-        <div th:if="${fehlermeldung}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
+        <div th:if="${fehlermeldung != null}" class="app-meldung fehler" th:text="${fehlermeldung}"></div>
 
         <form th:action="@{/registrieren}" th:object="${userForm}" method="post" class="app-form">
             <div class="app-form-group">

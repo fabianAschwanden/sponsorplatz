@@ -32,9 +32,9 @@
             <a th:href="@{/admin/backlog}" class="app-btn app-btn-ghost">Backlog</a>
         </nav>
 
-        <div th:if="${erfolgsMeldung}" class="app-card" style="border-left: 4px solid #16a34a;"
+        <div th:if="${erfolgsMeldung != null}" class="app-card" style="border-left: 4px solid #16a34a;"
              th:text="${erfolgsMeldung}"></div>
-        <div th:if="${fehlermeldung}" class="app-card" style="border-left: 4px solid #dc2626;"
+        <div th:if="${fehlermeldung != null}" class="app-card" style="border-left: 4px solid #dc2626;"
              th:text="${fehlermeldung}"></div>
 
         <!-- ── Live-Mode-Banner ─────────────────────────────────────── -->

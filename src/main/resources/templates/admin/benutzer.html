@@ -28,7 +28,7 @@
             <a th:href="@{/admin/verifizierungen}" class="app-btn app-btn-ghost" th:text="#{admin.nav.verifizierungen}">Verifizierungen</a>
         </nav>
 
-        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${erfolgsMeldung != null}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
         <p class="app-muted" th:text="#{admin.benutzer.zaehlung(${#lists.size(benutzer)})}"></p>
 

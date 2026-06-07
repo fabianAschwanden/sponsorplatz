@@ -22,8 +22,8 @@
         </header>
 
         <!-- Flash-Messages -->
-        <div th:if="${erfolgsMeldung}" class="app-alert app-alert-success" th:text="${erfolgsMeldung}"></div>
-        <div th:if="${fehlermeldung}" class="app-alert app-alert-error" th:text="${fehlermeldung}"></div>
+        <div th:if="${erfolgsMeldung != null}" class="app-alert app-alert-success" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${fehlermeldung != null}" class="app-alert app-alert-error" th:text="${fehlermeldung}"></div>
 
         <section class="app-card" style="max-width:600px;">
             <h2>Aktiver Zahlungsmodus</h2>

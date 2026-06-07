@@ -20,8 +20,8 @@
             </div>
         </header>
 
-        <div th:if="${erfolgsMeldung}" class="app-flash app-flash-success" th:text="${erfolgsMeldung}">OK</div>
-        <div th:if="${fehlermeldung}" class="app-flash app-flash-error" th:text="${fehlermeldung}">Fehler</div>
+        <div th:if="${erfolgsMeldung != null}" class="app-flash app-flash-success" th:text="${erfolgsMeldung}">OK</div>
+        <div th:if="${fehlermeldung != null}" class="app-flash app-flash-error" th:text="${fehlermeldung}">Fehler</div>
 
         <section class="app-card" style="max-width:560px;">
             <h2 style="font-family:var(--dash-font-head); font-size:1.1rem; margin:0 0 1rem;"

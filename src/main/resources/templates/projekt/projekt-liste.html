@@ -28,7 +28,7 @@
                th:text="#{projektListe.neu}">+ Neues Projekt</a>
         </header>
 
-        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${erfolgsMeldung != null}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
 
         <!-- Komplett leer (kein Filter) -->
         <div th:if="${anzahlGesamt == 0 and !filterAktiv}" class="app-empty">

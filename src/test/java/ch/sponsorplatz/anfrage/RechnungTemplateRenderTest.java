@@ -27,12 +27,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Voll-Kontext-Render-Tests der Rechnungs-Routen (echtes Thymeleaf/PDF-Rendering,
  * nicht nur View-Name wie im WebMvc-Slice).
  *
- * <p>Regression für Beta-Bug BETA-V09: {@code th:if="${rechnung.sponsorEmail}"}
- * nutzte einen String als Boolean-Bedingung → SpringEL „Invalid boolean value:
- * finance@…" → 500 (Detail) bzw. 400/500 (PDF). Diese Tests rendern die echten
- * Templates mit gesetzter Sponsor-E-Mail + QR-Referenz.
+ * <p>Regression für Beta-Bug BETA-V09: bare-Variable-Bedingungen wie
+ * {@code th:if="${rechnung.sponsorEmail}"} oder die Flash-Meldung
+ * {@code th:if="${erfolgsMeldung}"} nutzten einen String als Boolean-Bedingung
+ * → SpringEL „Invalid boolean value: …" → 500 (Detail) bzw. 400/500 (PDF) auf
+ * strikten Thymeleaf-Builds (Staging). Diese Tests rendern die echten Templates
+ * mit gesetzter Sponsor-E-Mail, QR-Referenz und Flash-Erfolgsmeldung.
  *
- * Test-IDs: RTPL-01..02.
+ * Test-IDs: RTPL-01..03.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -73,6 +75,22 @@ class RechnungTemplateRenderTest {
     void detailRendertMitStringFeldern() throws Exception {
         stubs();
         mockMvc.perform(get("/organisationen/{slug}/rechnungen/{id}", SLUG, RECHNUNG_ID))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * RTPL-03: Detail-Route MIT Flash-Erfolgsmeldung (Redirect nach „Rechnung
+     * erstellen") rendert → 200. Reproduziert das Beta-V09-Fehlerbild:
+     * {@code th:if="${erfolgsMeldung}"} mit einem nicht-boolean-koerzierbaren
+     * String („Rechnung R-… erstellt") → 500 auf strikten Thymeleaf-Builds.
+     */
+    @Test
+    @WithUserDetails("dev@sponsorplatz.ch")
+    void detailMitFlashMeldungRendert() throws Exception {
+        stubs();
+        mockMvc.perform(get("/organisationen/{slug}/rechnungen/{id}", SLUG, RECHNUNG_ID)
+                        .flashAttr("erfolgsMeldung",
+                                "Rechnung R-2026-00001 erstellt — fällig am 15.07.2026."))
                 .andExpect(status().isOk());
     }
 

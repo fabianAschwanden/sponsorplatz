@@ -24,7 +24,7 @@
         <p class="public-hero-rubrik" style="text-align:center;" th:text="#{error.titel}">Fehler</p>
         <h1 style="text-align:center;" th:text="${status} ?: #{error.titel}">Etwas ist schiefgelaufen</h1>
         <p class="app-muted" style="text-align:center;" th:text="${error}"></p>
-        <p class="app-muted" style="text-align:center;" th:if="${message}" th:text="${message}"></p>
+        <p class="app-muted" style="text-align:center;" th:if="${message != null}" th:text="${message}"></p>
         <div class="app-form-actions" style="margin-top: 1.5rem;">
             <a th:href="@{/}" class="app-btn" style="width: 100%; justify-content: center;"
                th:text="#{error.zurueckLink}">Zur Startseite</a>

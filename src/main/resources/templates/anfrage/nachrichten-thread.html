@@ -24,8 +24,8 @@
         <span th:text="${anfrage.kontaktName ?: #messages.msg('meineAnfragen.unbekannt')}">Name</span>
     </p>
 
-    <div th:if="${erfolgsMeldung}" class="alert success" th:text="${erfolgsMeldung}"></div>
-    <div th:if="${fehlermeldung}" class="alert error" th:text="${fehlermeldung}"></div>
+    <div th:if="${erfolgsMeldung != null}" class="alert success" th:text="${erfolgsMeldung}"></div>
+    <div th:if="${fehlermeldung != null}" class="alert error" th:text="${fehlermeldung}"></div>
 
     <!-- Initiale Anfrage-Nachricht — wird immer als eingehend dargestellt,
          da sie aus der Anfragender-Org stammt und konzeptionell „die andere

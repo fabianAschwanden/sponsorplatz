@@ -30,8 +30,8 @@
             </div>
         </header>
 
-        <div th:if="${erfolgsMeldung}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
-        <div th:if="${fehlerMeldung}" class="app-meldung fehler" th:text="${fehlerMeldung}"></div>
+        <div th:if="${erfolgsMeldung != null}" class="app-meldung erfolg" th:text="${erfolgsMeldung}"></div>
+        <div th:if="${fehlerMeldung != null}" class="app-meldung fehler" th:text="${fehlerMeldung}"></div>
 
         <p class="app-muted" style="margin-bottom:1rem;"
            th:text="#{crm.portfolio.hinweis}">Privates CRM — nur für dein Sponsor-Team sichtbar.</p>
