@@ -88,7 +88,7 @@
                 <dt th:text="#{rechnungDetail.feld.schuldner}">Schuldner (Sponsor)</dt>
                 <dd>
                     <span th:text="${rechnung.sponsorName}">—</span>
-                    <span th:if="${rechnung.sponsorEmail}"
+                    <span th:if="${rechnung.sponsorEmail != null}"
                           class="app-muted" th:text="' · ' + ${rechnung.sponsorEmail}"></span>
                 </dd>
                 <dt th:text="#{rechnungDetail.feld.betrag}">Betrag</dt>
@@ -100,8 +100,8 @@
                 </dd>
                 <dt th:text="#{rechnungDetail.feld.iban}">IBAN</dt>
                 <dd><code th:text="${rechnung.iban}">CH...</code></dd>
-                <dt th:if="${rechnung.qrReferenz}" th:text="#{rechnungDetail.feld.qrReferenz}">QR-Referenz</dt>
-                <dd th:if="${rechnung.qrReferenz}"><code th:text="${rechnung.qrReferenz}">—</code></dd>
+                <dt th:if="${rechnung.qrReferenz != null}" th:text="#{rechnungDetail.feld.qrReferenz}">QR-Referenz</dt>
+                <dd th:if="${rechnung.qrReferenz != null}"><code th:text="${rechnung.qrReferenz}">—</code></dd>
                 <dt th:text="#{rechnungDetail.feld.zahlungszweck}">Zahlungszweck</dt>
                 <dd th:text="${rechnung.zahlungszweck}">—</dd>
                 <dt th:text="#{rechnungDetail.feld.faelligAm}">Fällig am</dt>

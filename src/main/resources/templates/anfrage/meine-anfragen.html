@@ -55,7 +55,7 @@
                     <div class="anf-item-head">
                         <div>
                             <strong th:text="${a.kontaktName ?: #messages.msg('meineAnfragen.unbekannt')}">Name</strong>
-                            <span th:if="${a.anfragenderOrgName}" class="anf-item-sub">
+                            <span th:if="${a.anfragenderOrgName != null}" class="anf-item-sub">
                                 · <span th:text="${a.anfragenderOrgName}">Org</span>
                             </span>
                         </div>
@@ -65,7 +65,7 @@
                     </div>
 
                     <p class="anf-item-meta">
-                        <span th:if="${a.empfaengerOrgName}">
+                        <span th:if="${a.empfaengerOrgName != null}">
                             <span th:text="#{meineAnfragen.anLabel}">An:</span>
                             <a th:href="@{'/organisationen/' + ${a.empfaengerOrgSlug} + '/anfragen'}"
                                th:text="${a.empfaengerOrgName}" class="anf-link">Org</a> ·
@@ -77,7 +77,7 @@
                         <span th:unless="${a.istPaketAnfrage()}" style="font-style:italic;">
                             Kontakt-Anfrage: <strong th:text="${a.betreff ?: '–'}">Betreff</strong>
                         </span>
-                        <span th:if="${a.kontaktEmail}"> · <span th:text="${a.kontaktEmail}">email</span></span>
+                        <span th:if="${a.kontaktEmail != null}"> · <span th:text="${a.kontaktEmail}">email</span></span>
                         <span th:if="${a.istPaketAnfrage() and a.paketPreisChf != null}"> ·
                             <strong th:text="'CHF ' + ${#numbers.formatDecimal(a.paketPreisChf, 0, 'POINT', 2, 'POINT')}">CHF 5'000.00</strong>
                         </span>
@@ -89,7 +89,7 @@
 
                     <p th:text="${a.nachricht}" class="anf-item-nachricht">Nachricht</p>
 
-                    <div th:if="${a.antwort}" class="anf-antwort">
+                    <div th:if="${a.antwort != null}" class="anf-antwort">
                         <strong th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
                         <span th:text="${a.antwort}">Antwort</span>
                     </div>
@@ -150,7 +150,7 @@
                         <div class="anf-item-sub">
                             <span class="anf-label" th:text="#{meineAnfragen.anLabel}">An:</span>
                             <strong th:text="${a.empfaengerOrgName}">Sponsor</strong>
-                            <span th:if="${a.anfragenderOrgName}" class="anf-item-sub">
+                            <span th:if="${a.anfragenderOrgName != null}" class="anf-item-sub">
                                 · <span th:text="#{meineAnfragen.vonOrgLabel}">von</span>
                                 <span th:text="${a.anfragenderOrgName}">Verein</span>
                             </span>
@@ -167,7 +167,7 @@
                         </span>
                     </div>
                     <p th:text="${a.nachricht}" class="anf-item-nachricht anf-item-nachricht-kompakt">Nachricht</p>
-                    <div th:if="${a.antwort}" class="anf-antwort anf-antwort-kompakt">
+                    <div th:if="${a.antwort != null}" class="anf-antwort anf-antwort-kompakt">
                         <strong th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
                         <span th:text="${a.antwort}">Antwort</span>
                     </div>
@@ -206,11 +206,11 @@
                         <div class="anf-item-sub">
                             <span class="anf-label" th:text="#{meineAnfragen.anLabel}">An:</span>
                             <strong th:text="${a.empfaengerOrgName}">Sponsor</strong>
-                            <span th:if="${a.anfragenderOrgName}" class="anf-item-sub">
+                            <span th:if="${a.anfragenderOrgName != null}" class="anf-item-sub">
                                 · <span th:text="#{meineAnfragen.vonOrgLabel}">von</span>
                                 <span th:text="${a.anfragenderOrgName}">Verein</span>
                             </span>
-                            <span th:if="${a.kontaktName}" class="anf-item-sub">
+                            <span th:if="${a.kontaktName != null}" class="anf-item-sub">
                                 · <span th:text="#{meineAnfragen.gestelltVon}">gestellt von</span>
                                 <span th:text="${a.kontaktName}">Kollege</span>
                             </span>
@@ -227,7 +227,7 @@
                         </span>
                     </div>
                     <p th:text="${a.nachricht}" class="anf-item-nachricht anf-item-nachricht-kompakt">Nachricht</p>
-                    <div th:if="${a.antwort}" class="anf-antwort anf-antwort-kompakt">
+                    <div th:if="${a.antwort != null}" class="anf-antwort anf-antwort-kompakt">
                         <strong th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
                         <span th:text="${a.antwort}">Antwort</span>
                     </div>

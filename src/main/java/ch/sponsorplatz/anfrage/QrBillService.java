@@ -13,6 +13,7 @@ import net.codecrete.qrbill.generator.GraphicsFormat;
 import net.codecrete.qrbill.generator.OutputSize;
 import net.codecrete.qrbill.generator.Payments;
 import net.codecrete.qrbill.generator.QRBill;
+import net.codecrete.qrbill.generator.QRBillValidationError;
 
 /**
  * Generiert den Swiss-QR-Bill als PNG-Bild für die Einbettung ins
@@ -115,6 +116,13 @@ public class QrBillService {
         try (PNGCanvas canvas = new PNGCanvas(210, 105, 200, "Helvetica")) {
             QRBill.draw(bill, canvas);
             return canvas.toByteArray();
+        } catch (QRBillValidationError e) {
+            // Ungültige Rechnungsdaten (z.B. fehlerhafte IBAN, unvollständige
+            // Empfänger-Adresse) → 400 statt unbehandeltem 500. Sonst crasht die
+            // Rechnungs-Detail- bzw. PDF-Route an fehlerhaften Stammdaten.
+            throw new IllegalArgumentException(
+                    "QR-Bill kann nicht erzeugt werden — Rechnungsdaten ungültig: "
+                            + e.getMessage(), e);
         } catch (IOException e) {
             throw new RuntimeException("QR-Bill-Generierung fehlgeschlagen: " + e.getMessage(), e);
         }

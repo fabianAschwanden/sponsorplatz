@@ -60,10 +60,10 @@
             <strong>Sponsor</strong>
             <p style="margin:2pt 0;" th:text="${vertrag.sponsorOrgName ?: vertrag.sponsorName ?: '—'}">Sponsor</p>
             <p style="margin:0; font-size:9pt; color:#6b7280;"
-               th:if="${vertrag.sponsorName and vertrag.sponsorOrgName}"
+               th:if="${vertrag.sponsorName != null and vertrag.sponsorOrgName != null}"
                th:text="${'Kontakt: ' + vertrag.sponsorName}">Kontakt</p>
             <p style="margin:0; font-size:9pt; color:#6b7280;"
-               th:if="${vertrag.sponsorEmail}" th:text="${vertrag.sponsorEmail}">email</p>
+               th:if="${vertrag.sponsorEmail != null}" th:text="${vertrag.sponsorEmail}">email</p>
         </div>
     </div>
 </div>
@@ -81,11 +81,11 @@
     <tr>
         <th>Laufzeit</th>
         <td>
-            <span th:if="${vertrag.laufzeitVon}"
+            <span th:if="${vertrag.laufzeitVon != null}"
                   th:text="${#temporals.format(vertrag.laufzeitVon, 'dd.MM.yyyy')}">—</span>
-            <span th:if="${vertrag.laufzeitBis}"
+            <span th:if="${vertrag.laufzeitBis != null}"
                   th:text="' — ' + ${#temporals.format(vertrag.laufzeitBis, 'dd.MM.yyyy')}"></span>
-            <span th:unless="${vertrag.laufzeitVon or vertrag.laufzeitBis}">noch nicht festgelegt</span>
+            <span th:unless="${vertrag.laufzeitVon != null or vertrag.laufzeitBis != null}">noch nicht festgelegt</span>
         </td>
     </tr>
 </table>
@@ -131,6 +131,5 @@
     Vermittelt über Sponsorplatz · sponsorplatz.for-better.biz
 </div>
 
-<th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
 </body>
 </html>

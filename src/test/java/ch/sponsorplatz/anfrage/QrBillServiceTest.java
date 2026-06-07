@@ -57,6 +57,19 @@ class QrBillServiceTest {
                 .hasMessageContaining("IBAN");
     }
 
+    @Test
+    @DisplayName("QRB-04: ungültige IBAN → IllegalArgumentException (400), kein 500 (QRBillValidationError gefangen)")
+    void unguueltigeIbanGibt400StattCrash() {
+        // Syntaktisch IBAN-artig, aber keine gültige Schweizer/Liechtensteiner IBAN
+        // → die qrbill-Library wirft QRBillValidationError; der Service mappt das
+        // auf IllegalArgumentException (→ 400), statt einen rohen 500 durchzulassen.
+        Rechnung r = neueRechnung("CH00 0000 0000 0000 0000 0", null);
+
+        assertThatThrownBy(() -> service.erzeuge(r))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("ungültig");
+    }
+
     private static Rechnung neueRechnung(String iban, String qrRef) {
         Organisation org = new Organisation();
         org.setId(UUID.randomUUID());

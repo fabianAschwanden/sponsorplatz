@@ -77,9 +77,9 @@
                 <dt th:text="#{vertragDetail.partner.sponsor}">Sponsor</dt>
                 <dd>
                     <span th:text="${vertrag.sponsorName ?: '—'}">—</span>
-                    <span th:if="${vertrag.sponsorEmail}"
+                    <span th:if="${vertrag.sponsorEmail != null}"
                           class="app-muted" th:text="' · ' + ${vertrag.sponsorEmail}"></span>
-                    <span th:if="${vertrag.sponsorOrgName}"
+                    <span th:if="${vertrag.sponsorOrgName != null}"
                           class="app-muted" th:text="' · ' + ${vertrag.sponsorOrgName}"></span>
                 </dd>
                 <dt th:text="#{vertragDetail.partner.paket}">Paket</dt>

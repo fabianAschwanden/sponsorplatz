@@ -29,11 +29,11 @@
         <p class="anfrage-meta">
             <span th:text="#{meineAnfragen.paketLabel}">Paket:</span>
             <span th:text="${a.paketName}">Gold</span> ·
-            <span th:if="${a.kontaktEmail}" th:text="${a.kontaktEmail}">email</span>
+            <span th:if="${a.kontaktEmail != null}" th:text="${a.kontaktEmail}">email</span>
         </p>
         <p th:text="${a.nachricht}">Nachricht</p>
 
-        <div th:if="${a.antwort}" class="anfrage-antwort">
+        <div th:if="${a.antwort != null}" class="anfrage-antwort">
             <strong th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
             <span th:text="${a.antwort}">Antwort</span>
         </div>
