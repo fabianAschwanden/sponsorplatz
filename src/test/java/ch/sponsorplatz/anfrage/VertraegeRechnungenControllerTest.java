@@ -59,7 +59,26 @@ class VertraegeRechnungenControllerTest {
         mockMvc.perform(get("/vertraege-rechnungen"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("anfrage/vertraege-rechnungen"))
-                .andExpect(model().attributeExists("vertraege", "rechnungen"));
+                .andExpect(model().attributeExists("vertraege", "rechnungen", "vListe", "rListe"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("VRUEB-04: Suche + Sortierung werden auf die Verträge-Liste angewandt")
+    void filterUndSortierung() throws Exception {
+        when(appUserService.findeIdNachEmail(any())).thenReturn(USER_ID);
+        when(mitgliedschaftService.findeOrgIdsVonUserMitRollen(any(), any()))
+                .thenReturn(List.of(UUID.randomUUID()));
+        when(vertragService.findeViewsNachOrgs(anyCollection()))
+                .thenReturn(List.of(vertragView("Alpha AG"), vertragView("Beta AG")));
+        when(rechnungService.findeViewsNachOrgs(anyCollection())).thenReturn(List.of());
+
+        mockMvc.perform(get("/vertraege-rechnungen")
+                        .param("vSuche", "alpha").param("vSort", "partner").param("vDir", "asc"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("vAnzahlGezeigt", 1))
+                .andExpect(model().attribute("vAnzahlGesamt", 2))
+                .andExpect(model().attribute("vFilterAktiv", true));
     }
 
     @Test
@@ -84,9 +103,13 @@ class VertraegeRechnungenControllerTest {
     }
 
     private VertragView vertragView() {
+        return vertragView("Sponsor");
+    }
+
+    private VertragView vertragView(String sponsorName) {
         return new VertragView(
                 UUID.randomUUID(), UUID.randomUUID(), VertragsStatus.UNTERZEICHNET,
-                "FC Test", "fc-test", "Sponsor", "s@t.ch", "Sponsor AG",
+                "FC Test", "fc-test", sponsorName, "s@t.ch", "Sponsor AG",
                 "Gold", "Beschreibung", BigDecimal.valueOf(5000),
                 LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31),
                 "Logo", "5000 CHF", Instant.now(), "admin@t.ch", Instant.now(), "owner@t.ch",

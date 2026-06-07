@@ -16,32 +16,55 @@
 
     <main class="app-main" id="inhalt">
         <div class="app-page-head">
-            <div>
-                <h1 th:text="#{vertraegeRechnungen.titel}">Verträge &amp; Rechnungen</h1>
-            </div>
+            <h1 th:text="#{vertraegeRechnungen.titel}">Verträge &amp; Rechnungen</h1>
         </div>
 
-        <div th:if="${erfolgsMeldung != null}" class="app-card" style="border-left:4px solid #16a34a;"
-             th:text="${erfolgsMeldung}"></div>
-        <div th:if="${fehlermeldung != null}" class="app-card" style="border-left:4px solid #dc2626;"
-             th:text="${fehlermeldung}"></div>
+        <div th:replace="~{fragments/a11y :: flash-meldungen}"></div>
 
-        <!-- ── Verträge ─────────────────────────────────────────────── -->
-        <section class="app-card" style="padding:0; margin-bottom:1.5rem;">
-            <h2 style="padding:1rem 1rem 0;" th:text="#{vertraegeRechnungen.vertraege.titel}">Verträge</h2>
+        <!-- ════════════════ Verträge ════════════════ -->
+        <h2 style="margin-top:1.5rem;" th:text="#{vertraegeRechnungen.vertraege.titel}">Verträge</h2>
 
-            <p class="app-empty" style="padding:1rem;" th:if="${vertraege.isEmpty()}"
-               th:text="#{vertraegeRechnungen.vertraege.leer}">Noch keine Verträge.</p>
+        <div th:if="${vAnzahlGesamt == 0}" class="app-empty"
+             style="text-align:center; padding:2rem 1rem; background:#f9fafb; border-radius:0.5rem;">
+            <strong th:text="#{vertraegeRechnungen.vertraege.leer}">Noch keine Verträge.</strong>
+        </div>
 
-            <table th:unless="${vertraege.isEmpty()}" class="app-table"
-                   style="width:100%; border-collapse:collapse;">
+        <th:block th:if="${vAnzahlGesamt > 0}">
+        <form method="get" th:action="@{/vertraege-rechnungen}" class="app-filter liste-toolbar">
+            <input type="hidden" name="vSort" th:value="${vListe.sort}">
+            <input type="hidden" name="vDir" th:value="${vListe.absteigend} ? 'desc' : 'asc'">
+            <input type="hidden" name="rSuche" th:value="${rFilterSuche}">
+            <div class="app-filter-felder">
+                <label class="liste-suche">
+                    <span th:text="#{crm.filter.suche}">Suche</span>
+                    <input type="search" name="vSuche" th:value="${vFilterSuche}"
+                           th:placeholder="#{vertraegeRechnungen.vertraege.suchePlaceholder}" placeholder="Partner, Verein, Paket">
+                </label>
+            </div>
+            <div class="app-filter-aktionen">
+                <button type="submit" class="app-btn app-btn-sm" th:text="#{crm.filter.anwenden}">Anwenden</button>
+                <a th:if="${vFilterAktiv}" th:href="@{/vertraege-rechnungen}" class="liste-reset"
+                   th:text="#{crm.filter.zuruecksetzen}">Zurücksetzen</a>
+                <span class="liste-anzahl"
+                      th:text="${vFilterAktiv}
+                               ? #{vertraegeRechnungen.vertraege.anzahlGefiltert(${vAnzahlGezeigt}, ${vAnzahlGesamt})}
+                               : #{vertraegeRechnungen.vertraege.anzahl(${vAnzahlGesamt})}">5 Verträge</span>
+            </div>
+        </form>
+
+        <div th:if="${vAnzahlGezeigt == 0}" class="app-empty" style="text-align:center; padding:2rem 1rem;">
+            <strong th:text="#{vertraegeRechnungen.vertraege.filterLeer}">Keine Verträge passen zur Suche.</strong>
+        </div>
+
+        <div th:if="${vAnzahlGezeigt > 0}" class="app-card" style="padding:0;">
+            <table class="app-table" style="width:100%; border-collapse:collapse;">
                 <thead>
-                    <tr>
-                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.partner}">Partner</th>
-                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.paket}">Paket</th>
-                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.status}">Status</th>
-                        <th style="text-align:right; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.betrag}">Betrag</th>
-                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.erstellt}">Erstellt</th>
+                    <tr style="background:#f3f4f6;">
+                        <th th:replace="~{anfrage/vertraege-rechnungen :: vSortKopf('partner', #{vertraegeRechnungen.spalte.partner})}">Partner</th>
+                        <th th:replace="~{anfrage/vertraege-rechnungen :: vSortKopf('paket', #{vertraegeRechnungen.spalte.paket})}">Paket</th>
+                        <th th:replace="~{anfrage/vertraege-rechnungen :: vSortKopf('status', #{vertraegeRechnungen.spalte.status})}">Status</th>
+                        <th th:replace="~{anfrage/vertraege-rechnungen :: vSortKopfRechts('betrag', #{vertraegeRechnungen.spalte.betrag})}">Betrag</th>
+                        <th th:replace="~{anfrage/vertraege-rechnungen :: vSortKopf('erstellt', #{vertraegeRechnungen.spalte.erstellt})}">Erstellt</th>
                         <th style="text-align:right; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.aktionen}">Aktionen</th>
                     </tr>
                 </thead>
@@ -63,7 +86,7 @@
                         </td>
                         <td style="padding:0.75rem 1rem; text-align:right;"
                             th:text="'CHF ' + ${#numbers.formatDecimal(v.preisChf, 1, 'POINT', 2, 'POINT')}">CHF —</td>
-                        <td style="padding:0.75rem 1rem;"
+                        <td style="padding:0.75rem 1rem;" class="app-muted"
                             th:text="${#temporals.format(v.erstelltAm, 'dd.MM.yyyy')}">01.01.2026</td>
                         <td style="padding:0.75rem 1rem; text-align:right; white-space:nowrap;">
                             <a th:href="@{'/organisationen/' + ${v.orgSlug} + '/vertraege/' + ${v.id}}"
@@ -75,24 +98,82 @@
                     </tr>
                 </tbody>
             </table>
-        </section>
+        </div>
 
-        <!-- ── Rechnungen ───────────────────────────────────────────── -->
-        <section class="app-card" style="padding:0;">
-            <h2 style="padding:1rem 1rem 0;" th:text="#{vertraegeRechnungen.rechnungen.titel}">Rechnungen</h2>
+        <nav class="liste-pager" th:if="${vListe.hatMehrereSeiten() or vListe.gesamt > 25}"
+             th:aria-label="#{vertraegeRechnungen.vertraege.pagerAria}" aria-label="Seitennavigation Verträge">
+            <form method="get" th:action="@{/vertraege-rechnungen}" class="liste-pager-groesse">
+                <input type="hidden" name="vSuche" th:value="${vFilterSuche}">
+                <input type="hidden" name="vSort" th:value="${vListe.sort}">
+                <input type="hidden" name="vDir" th:value="${vListe.absteigend} ? 'desc' : 'asc'">
+                <input type="hidden" name="rSuche" th:value="${rFilterSuche}">
+                <label>
+                    <select name="vGroesse" onchange="this.form.submit()" th:aria-label="#{crm.pager.proSeite}">
+                        <option th:each="g : ${seitenGroessen}" th:value="${g}"
+                                th:selected="${vListe.seitenGroesse == g}" th:text="${g}">25</option>
+                    </select>
+                    <span th:text="#{crm.pager.proSeite}">pro Seite</span>
+                </label>
+            </form>
+            <span class="liste-pager-info"
+                  th:text="#{crm.pager.seiteVon(${vListe.seite}, ${vListe.anzahlSeiten})}">Seite 1 von 5</span>
+            <span class="liste-pager-nav">
+                <a th:if="${vListe.seite > 1}"
+                   th:href="@{/vertraege-rechnungen(vSuche=${vFilterSuche}, vSort=${vListe.sort},
+                             vDir=${vListe.absteigend} ? 'desc' : 'asc', vGroesse=${vListe.seitenGroesse},
+                             vSeite=${vListe.seite - 1})}" th:text="'‹ ' + #{crm.pager.zurueck}">‹ Zurück</a>
+                <a th:if="${vListe.seite < vListe.anzahlSeiten}"
+                   th:href="@{/vertraege-rechnungen(vSuche=${vFilterSuche}, vSort=${vListe.sort},
+                             vDir=${vListe.absteigend} ? 'desc' : 'asc', vGroesse=${vListe.seitenGroesse},
+                             vSeite=${vListe.seite + 1})}" th:text="#{crm.pager.weiter} + ' ›'">Weiter ›</a>
+            </span>
+        </nav>
+        </th:block>
 
-            <p class="app-empty" style="padding:1rem;" th:if="${rechnungen.isEmpty()}"
-               th:text="#{vertraegeRechnungen.rechnungen.leer}">Noch keine Rechnungen.</p>
+        <!-- ════════════════ Rechnungen ════════════════ -->
+        <h2 style="margin-top:2rem;" th:text="#{vertraegeRechnungen.rechnungen.titel}">Rechnungen</h2>
 
-            <table th:unless="${rechnungen.isEmpty()}" class="app-table"
-                   style="width:100%; border-collapse:collapse;">
+        <div th:if="${rAnzahlGesamt == 0}" class="app-empty"
+             style="text-align:center; padding:2rem 1rem; background:#f9fafb; border-radius:0.5rem;">
+            <strong th:text="#{vertraegeRechnungen.rechnungen.leer}">Noch keine Rechnungen.</strong>
+        </div>
+
+        <th:block th:if="${rAnzahlGesamt > 0}">
+        <form method="get" th:action="@{/vertraege-rechnungen}" class="app-filter liste-toolbar">
+            <input type="hidden" name="rSort" th:value="${rListe.sort}">
+            <input type="hidden" name="rDir" th:value="${rListe.absteigend} ? 'desc' : 'asc'">
+            <input type="hidden" name="vSuche" th:value="${vFilterSuche}">
+            <div class="app-filter-felder">
+                <label class="liste-suche">
+                    <span th:text="#{crm.filter.suche}">Suche</span>
+                    <input type="search" name="rSuche" th:value="${rFilterSuche}"
+                           th:placeholder="#{vertraegeRechnungen.rechnungen.suchePlaceholder}" placeholder="Nummer, Schuldner, Verein">
+                </label>
+            </div>
+            <div class="app-filter-aktionen">
+                <button type="submit" class="app-btn app-btn-sm" th:text="#{crm.filter.anwenden}">Anwenden</button>
+                <a th:if="${rFilterAktiv}" th:href="@{/vertraege-rechnungen}" class="liste-reset"
+                   th:text="#{crm.filter.zuruecksetzen}">Zurücksetzen</a>
+                <span class="liste-anzahl"
+                      th:text="${rFilterAktiv}
+                               ? #{vertraegeRechnungen.rechnungen.anzahlGefiltert(${rAnzahlGezeigt}, ${rAnzahlGesamt})}
+                               : #{vertraegeRechnungen.rechnungen.anzahl(${rAnzahlGesamt})}">5 Rechnungen</span>
+            </div>
+        </form>
+
+        <div th:if="${rAnzahlGezeigt == 0}" class="app-empty" style="text-align:center; padding:2rem 1rem;">
+            <strong th:text="#{vertraegeRechnungen.rechnungen.filterLeer}">Keine Rechnungen passen zur Suche.</strong>
+        </div>
+
+        <div th:if="${rAnzahlGezeigt > 0}" class="app-card" style="padding:0;">
+            <table class="app-table" style="width:100%; border-collapse:collapse;">
                 <thead>
-                    <tr>
-                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.nummer}">Nummer</th>
-                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.schuldner}">Schuldner</th>
-                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.status}">Status</th>
-                        <th style="text-align:right; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.betrag}">Betrag</th>
-                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.faellig}">Fällig</th>
+                    <tr style="background:#f3f4f6;">
+                        <th th:replace="~{anfrage/vertraege-rechnungen :: rSortKopf('nummer', #{vertraegeRechnungen.spalte.nummer})}">Nummer</th>
+                        <th th:replace="~{anfrage/vertraege-rechnungen :: rSortKopf('schuldner', #{vertraegeRechnungen.spalte.schuldner})}">Schuldner</th>
+                        <th th:replace="~{anfrage/vertraege-rechnungen :: rSortKopf('status', #{vertraegeRechnungen.spalte.status})}">Status</th>
+                        <th th:replace="~{anfrage/vertraege-rechnungen :: rSortKopfRechts('betrag', #{vertraegeRechnungen.spalte.betrag})}">Betrag</th>
+                        <th th:replace="~{anfrage/vertraege-rechnungen :: rSortKopf('faellig', #{vertraegeRechnungen.spalte.faellig})}">Fällig</th>
                         <th style="text-align:right; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.aktionen}">Aktionen</th>
                     </tr>
                 </thead>
@@ -111,7 +192,7 @@
                         </td>
                         <td style="padding:0.75rem 1rem; text-align:right;"
                             th:text="'CHF ' + ${#numbers.formatDecimal(r.betragChf, 1, 'POINT', 2, 'POINT')}">CHF —</td>
-                        <td style="padding:0.75rem 1rem;"
+                        <td style="padding:0.75rem 1rem;" class="app-muted"
                             th:text="${r.faelligAm != null} ? ${#temporals.format(r.faelligAm, 'dd.MM.yyyy')} : '—'">01.01.2026</td>
                         <td style="padding:0.75rem 1rem; text-align:right; white-space:nowrap;">
                             <a th:href="@{'/organisationen/' + ${r.orgSlug} + '/rechnungen/' + ${r.id}}"
@@ -122,9 +203,69 @@
                     </tr>
                 </tbody>
             </table>
-        </section>
+        </div>
+
+        <nav class="liste-pager" th:if="${rListe.hatMehrereSeiten() or rListe.gesamt > 25}"
+             th:aria-label="#{vertraegeRechnungen.rechnungen.pagerAria}" aria-label="Seitennavigation Rechnungen">
+            <form method="get" th:action="@{/vertraege-rechnungen}" class="liste-pager-groesse">
+                <input type="hidden" name="rSuche" th:value="${rFilterSuche}">
+                <input type="hidden" name="rSort" th:value="${rListe.sort}">
+                <input type="hidden" name="rDir" th:value="${rListe.absteigend} ? 'desc' : 'asc'">
+                <input type="hidden" name="vSuche" th:value="${vFilterSuche}">
+                <label>
+                    <select name="rGroesse" onchange="this.form.submit()" th:aria-label="#{crm.pager.proSeite}">
+                        <option th:each="g : ${seitenGroessen}" th:value="${g}"
+                                th:selected="${rListe.seitenGroesse == g}" th:text="${g}">25</option>
+                    </select>
+                    <span th:text="#{crm.pager.proSeite}">pro Seite</span>
+                </label>
+            </form>
+            <span class="liste-pager-info"
+                  th:text="#{crm.pager.seiteVon(${rListe.seite}, ${rListe.anzahlSeiten})}">Seite 1 von 5</span>
+            <span class="liste-pager-nav">
+                <a th:if="${rListe.seite > 1}"
+                   th:href="@{/vertraege-rechnungen(rSuche=${rFilterSuche}, rSort=${rListe.sort},
+                             rDir=${rListe.absteigend} ? 'desc' : 'asc', rGroesse=${rListe.seitenGroesse},
+                             rSeite=${rListe.seite - 1})}" th:text="'‹ ' + #{crm.pager.zurueck}">‹ Zurück</a>
+                <a th:if="${rListe.seite < rListe.anzahlSeiten}"
+                   th:href="@{/vertraege-rechnungen(rSuche=${rFilterSuche}, rSort=${rListe.sort},
+                             rDir=${rListe.absteigend} ? 'desc' : 'asc', rGroesse=${rListe.seitenGroesse},
+                             rSeite=${rListe.seite + 1})}" th:text="#{crm.pager.weiter} + ' ›'">Weiter ›</a>
+            </span>
+        </nav>
+        </th:block>
     </main>
 </div>
+
+<!-- ── Sortier-Spaltenköpfe (echo Such-Zustand der jeweils anderen Liste mit) ── -->
+<th th:fragment="vSortKopf(spalte, label)" class="liste-sort" style="text-align:left; padding:0.75rem 1rem;">
+    <a th:href="@{/vertraege-rechnungen(vSuche=${vFilterSuche}, rSuche=${rFilterSuche},
+                 vSort=${spalte}, vDir=${vListe.sort == spalte and !vListe.absteigend ? 'desc' : 'asc'})}">
+        <span th:text="${label}">Spalte</span>
+        <span class="liste-sort-ind" th:text="${vListe.sort != spalte ? '⇅' : (vListe.absteigend ? '▼' : '▲')}">⇅</span>
+    </a>
+</th>
+<th th:fragment="vSortKopfRechts(spalte, label)" class="liste-sort" style="text-align:right; padding:0.75rem 1rem;">
+    <a th:href="@{/vertraege-rechnungen(vSuche=${vFilterSuche}, rSuche=${rFilterSuche},
+                 vSort=${spalte}, vDir=${vListe.sort == spalte and !vListe.absteigend ? 'desc' : 'asc'})}">
+        <span th:text="${label}">Spalte</span>
+        <span class="liste-sort-ind" th:text="${vListe.sort != spalte ? '⇅' : (vListe.absteigend ? '▼' : '▲')}">⇅</span>
+    </a>
+</th>
+<th th:fragment="rSortKopf(spalte, label)" class="liste-sort" style="text-align:left; padding:0.75rem 1rem;">
+    <a th:href="@{/vertraege-rechnungen(rSuche=${rFilterSuche}, vSuche=${vFilterSuche},
+                 rSort=${spalte}, rDir=${rListe.sort == spalte and !rListe.absteigend ? 'desc' : 'asc'})}">
+        <span th:text="${label}">Spalte</span>
+        <span class="liste-sort-ind" th:text="${rListe.sort != spalte ? '⇅' : (rListe.absteigend ? '▼' : '▲')}">⇅</span>
+    </a>
+</th>
+<th th:fragment="rSortKopfRechts(spalte, label)" class="liste-sort" style="text-align:right; padding:0.75rem 1rem;">
+    <a th:href="@{/vertraege-rechnungen(rSuche=${rFilterSuche}, vSuche=${vFilterSuche},
+                 rSort=${spalte}, rDir=${rListe.sort == spalte and !rListe.absteigend ? 'desc' : 'asc'})}">
+        <span th:text="${label}">Spalte</span>
+        <span class="liste-sort-ind" th:text="${rListe.sort != spalte ? '⇅' : (rListe.absteigend ? '▼' : '▲')}">⇅</span>
+    </a>
+</th>
 
 <th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
 </body>
