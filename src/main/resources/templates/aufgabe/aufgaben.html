@@ -68,8 +68,10 @@
                 <tbody>
                     <tr th:each="a : ${aufgaben}" style="border-top:1px solid #e5e7eb;">
                         <td style="padding:0.75rem 1rem;">
+                            <!-- color: app-violet #6d28d9 (Kontrast 7.1:1 auf Weiss, WCAG-AA).
+                                 var(--dash-violet) #B8B5FF war nur 1.89:1 → A11Y-Verstoss. -->
                             <a th:if="${a.link() != null}" th:href="${a.link()}" th:text="${a.titel()}"
-                               style="font-weight:600; color:var(--dash-violet); text-decoration:none;">Titel</a>
+                               style="font-weight:600; color:#6d28d9; text-decoration:none;">Titel</a>
                             <span th:unless="${a.link() != null}" th:text="${a.titel()}"
                                   style="font-weight:600;">Titel</span>
                         </td>
