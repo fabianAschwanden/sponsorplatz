@@ -48,7 +48,16 @@ public class QrBillService {
     /**
      * Controller-freundlicher Eingang: lädt die Rechnung selbst und baut den
      * Data-URL, damit der Aufrufer keine Entity halten muss (ARCH-02).
+     *
+     * <p><strong>{@code @Transactional(readOnly = true)} ist zwingend:</strong>
+     * {@link #erzeuge(Rechnung)} greift auf die LAZY-Relation {@code Rechnung.org}
+     * zu (Name + Adresse für die QR-Bill). Mit {@code spring.jpa.open-in-view=false}
+     * (prod-Härtung) ist die Session nach dem Repository-Call sonst geschlossen →
+     * {@code LazyInitializationException} → 500 auf Rechnungs-Detail UND -PDF
+     * (Beta-Bug BETA-V09). Die offene Transaktion hält die Session bis zur
+     * Org-Auflösung offen.
      */
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public String erzeugeAlsDataUrlFuerId(java.util.UUID rechnungId) {
         Rechnung r = rechnungRepository.findById(rechnungId)
                 .orElseThrow(() -> new ch.sponsorplatz.shared.exception.NotFoundException(

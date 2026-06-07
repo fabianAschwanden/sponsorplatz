@@ -197,6 +197,7 @@ JPA-Entities verlassen den Service-Layer nicht mehr — Controller mappen vor `m
 | **EXC-05** | `GlobalExceptionHandlerTest` | Error-View enthält Model-Attribute `status`, `error`, `message` |
 | **EXC-06** | `GlobalExceptionHandlerTest` | Unerwarteter `Throwable`/`Error` (z.B. AWT/Font-Subsystem) → 500 + gerenderte error-View (Auffangnetz, kein nackter JSON-500); Spring-MVC-Exceptions werden durchgereicht |
 | **QRB-SELF-01/02** | `QrBillSelbsttestTest` | Startup-Selbsttest der QR-Bill-Generierung wirft nie — weder bei Erfolg noch bei Render-Fehler (nur Log), bricht den Boot nicht ab |
+| **QRB-LAZY-01** | `QrBillServiceLazyIT` | `erzeugeAlsDataUrlFuerId` löst die LAZY-Relation `Rechnung.org` auf, ohne `LazyInitializationException` (echte Ursache BETA-V09: Methode ist `@Transactional(readOnly=true)`, sonst 500 bei `open-in-view=false`) |
 | **ORG-16** | `OrganisationControllerTest` | GET `/organisationen/{slug}` mit unbekanntem Slug → 404 (nicht 400) |
 
 ### Dashboard (DASH)
