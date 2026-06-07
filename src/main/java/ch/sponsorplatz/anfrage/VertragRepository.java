@@ -29,6 +29,9 @@ public interface VertragRepository extends JpaRepository<Vertrag, UUID> {
 
     List<Vertrag> findByOrgIdOrderByErstelltAmDesc(UUID orgId);
 
+    /** Alle Verträge über mehrere Orgs (Übersicht „Verträge & Rechnungen"), neueste zuerst. */
+    List<Vertrag> findByOrgIdInOrderByErstelltAmDesc(Collection<UUID> orgIds);
+
     List<Vertrag> findByOrgIdAndStatusOrderByErstelltAmDesc(UUID orgId, VertragsStatus status);
 
     // -------- Sponsor-zentrische Aggregat-Queries (Phase 5.C — Statistiken) --------

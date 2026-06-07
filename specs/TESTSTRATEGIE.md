@@ -629,6 +629,10 @@ Registrierungs-Services; der Versand selbst ist im
 | **VTR-23** | `VertragServiceTest` | `entferneDokument` löscht Storage-Objekt + leert Metadaten |
 | **VTR-24** | `VertragServiceTest` | `entferneDokument` ohne hinterlegtes Dokument → `IllegalStateException` (409) |
 | **VTR-25** | `VertragServiceTest` | `findeDokumentSnapshot` ohne Dokument → `NotFoundException` (404) |
+| **VTR-26/27** | `VertragServiceTest` | `findeViewsNachOrgs` mappt Verträge zu Views (neueste zuerst); leere Org-Menge → leere Liste ohne DB-Roundtrip |
+| **RECH-19/20** | `RechnungServiceTest` | `findeViewsNachOrgs` mappt Rechnungen zu Views; leere Org-Menge → leere Liste |
+| **VRUEB-01..03** | `VertraegeRechnungenControllerTest` | `/vertraege-rechnungen` rendert Übersicht (beide Listen) / leere Listen ohne Org / unauth → Login-Redirect |
+| **A11Y-11** | `A11ySmokeIT` | `/vertraege-rechnungen` (auth) ohne kritische WCAG-2.1-AA-Verstösse |
 | **ANF-08** | `SponsoringAnfrageServiceTest` | `erstelleKontaktAnfrage` mit negativem Wunsch-Betrag wirft `IllegalArgumentException` (Defense-in-Depth zum DB-CHECK in V33) |
 
 ### Phase Operational — DSG-Pflichtseiten (INFO)

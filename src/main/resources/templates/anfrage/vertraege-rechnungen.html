@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{vertraegeRechnungen.titel} + ' — Sponsorplatz'">Verträge &amp; Rechnungen</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <th:block th:replace="~{fragments/styles :: styles}"></th:block>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body class="app-body">
+
+<a th:replace="~{fragments/a11y :: skip-link}"></a>
+
+<div class="app-layout">
+    <aside th:replace="~{fragments/sidebar :: app-sidebar('vertraege-rechnungen', null)}"></aside>
+
+    <main class="app-main" id="inhalt">
+        <div class="app-page-head">
+            <div>
+                <h1 th:text="#{vertraegeRechnungen.titel}">Verträge &amp; Rechnungen</h1>
+            </div>
+        </div>
+
+        <div th:if="${erfolgsMeldung != null}" class="app-card" style="border-left:4px solid #16a34a;"
+             th:text="${erfolgsMeldung}"></div>
+        <div th:if="${fehlermeldung != null}" class="app-card" style="border-left:4px solid #dc2626;"
+             th:text="${fehlermeldung}"></div>
+
+        <!-- ── Verträge ─────────────────────────────────────────────── -->
+        <section class="app-card" style="padding:0; margin-bottom:1.5rem;">
+            <h2 style="padding:1rem 1rem 0;" th:text="#{vertraegeRechnungen.vertraege.titel}">Verträge</h2>
+
+            <p class="app-empty" style="padding:1rem;" th:if="${vertraege.isEmpty()}"
+               th:text="#{vertraegeRechnungen.vertraege.leer}">Noch keine Verträge.</p>
+
+            <table th:unless="${vertraege.isEmpty()}" class="app-table"
+                   style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.partner}">Partner</th>
+                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.paket}">Paket</th>
+                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.status}">Status</th>
+                        <th style="text-align:right; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.betrag}">Betrag</th>
+                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.erstellt}">Erstellt</th>
+                        <th style="text-align:right; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.aktionen}">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="v : ${vertraege}" style="border-top:1px solid #e5e7eb;">
+                        <td style="padding:0.75rem 1rem;">
+                            <a th:href="@{'/organisationen/' + ${v.orgSlug} + '/vertraege/' + ${v.id}}"
+                               th:text="${v.sponsorName ?: v.sponsorOrgName ?: '—'}"
+                               style="font-weight:600; color:#6d28d9; text-decoration:none;">Sponsor</a>
+                            <div class="app-muted" style="font-size:0.8rem;" th:text="${v.orgName}">Verein</div>
+                        </td>
+                        <td style="padding:0.75rem 1rem;" th:text="${v.paketName}">Paket</td>
+                        <td style="padding:0.75rem 1rem;">
+                            <span class="app-badge"
+                                  th:text="#{'status.vertrag.' + ${v.status.name()}}">Status</span>
+                            <span th:if="${v.hatHochgeladenesDokument}" class="app-badge"
+                                  style="background:#ede9fe; color:#5b21b6; margin-left:0.25rem;"
+                                  th:text="#{vertraegeRechnungen.dokumentBadge}">eigenes Dokument</span>
+                        </td>
+                        <td style="padding:0.75rem 1rem; text-align:right;"
+                            th:text="'CHF ' + ${#numbers.formatDecimal(v.preisChf, 1, 'POINT', 2, 'POINT')}">CHF —</td>
+                        <td style="padding:0.75rem 1rem;"
+                            th:text="${#temporals.format(v.erstelltAm, 'dd.MM.yyyy')}">01.01.2026</td>
+                        <td style="padding:0.75rem 1rem; text-align:right; white-space:nowrap;">
+                            <a th:href="@{'/organisationen/' + ${v.orgSlug} + '/vertraege/' + ${v.id}}"
+                               class="app-btn app-btn-sm app-btn-ghost" th:text="#{vertraegeRechnungen.detail}">Öffnen</a>
+                            <a th:href="@{'/organisationen/' + ${v.orgSlug} + '/vertraege/' + ${v.id} + '/pdf'}"
+                               class="app-btn app-btn-sm"
+                               th:text="${v.hatHochgeladenesDokument} ? #{vertraegeRechnungen.dokument} : #{vertraegeRechnungen.pdf}">PDF</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ── Rechnungen ───────────────────────────────────────────── -->
+        <section class="app-card" style="padding:0;">
+            <h2 style="padding:1rem 1rem 0;" th:text="#{vertraegeRechnungen.rechnungen.titel}">Rechnungen</h2>
+
+            <p class="app-empty" style="padding:1rem;" th:if="${rechnungen.isEmpty()}"
+               th:text="#{vertraegeRechnungen.rechnungen.leer}">Noch keine Rechnungen.</p>
+
+            <table th:unless="${rechnungen.isEmpty()}" class="app-table"
+                   style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.nummer}">Nummer</th>
+                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.schuldner}">Schuldner</th>
+                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.status}">Status</th>
+                        <th style="text-align:right; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.betrag}">Betrag</th>
+                        <th style="text-align:left; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.faellig}">Fällig</th>
+                        <th style="text-align:right; padding:0.75rem 1rem;" th:text="#{vertraegeRechnungen.spalte.aktionen}">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="r : ${rechnungen}" style="border-top:1px solid #e5e7eb;">
+                        <td style="padding:0.75rem 1rem;">
+                            <a th:href="@{'/organisationen/' + ${r.orgSlug} + '/rechnungen/' + ${r.id}}"
+                               th:text="${r.rechnungsnummer}"
+                               style="font-weight:600; color:#6d28d9; text-decoration:none;">R-2026-00001</a>
+                            <div class="app-muted" style="font-size:0.8rem;" th:text="${r.orgName}">Verein</div>
+                        </td>
+                        <td style="padding:0.75rem 1rem;" th:text="${r.sponsorName ?: '—'}">Schuldner</td>
+                        <td style="padding:0.75rem 1rem;">
+                            <span class="app-badge"
+                                  th:text="#{'status.rechnung.' + ${r.status.name()}}">Status</span>
+                        </td>
+                        <td style="padding:0.75rem 1rem; text-align:right;"
+                            th:text="'CHF ' + ${#numbers.formatDecimal(r.betragChf, 1, 'POINT', 2, 'POINT')}">CHF —</td>
+                        <td style="padding:0.75rem 1rem;"
+                            th:text="${r.faelligAm != null} ? ${#temporals.format(r.faelligAm, 'dd.MM.yyyy')} : '—'">01.01.2026</td>
+                        <td style="padding:0.75rem 1rem; text-align:right; white-space:nowrap;">
+                            <a th:href="@{'/organisationen/' + ${r.orgSlug} + '/rechnungen/' + ${r.id}}"
+                               class="app-btn app-btn-sm app-btn-ghost" th:text="#{vertraegeRechnungen.detail}">Öffnen</a>
+                            <a th:href="@{'/organisationen/' + ${r.orgSlug} + '/rechnungen/' + ${r.id} + '/pdf'}"
+                               class="app-btn app-btn-sm" th:text="#{vertraegeRechnungen.pdf}">PDF</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/sentry-browser :: sentry-script}"></th:block>
+</body>
+</html>

@@ -18,6 +18,9 @@ public interface RechnungRepository extends JpaRepository<Rechnung, UUID> {
 
     List<Rechnung> findByOrgIdOrderByErstelltAmDesc(UUID orgId);
 
+    /** Alle Rechnungen über mehrere Orgs (Übersicht „Verträge & Rechnungen"), neueste zuerst. */
+    List<Rechnung> findByOrgIdInOrderByErstelltAmDesc(Collection<UUID> orgIds);
+
     long countByOrgId(UUID orgId);
 
     /**

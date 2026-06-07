@@ -151,6 +151,21 @@ public class VertragService {
         return VertragView.von(findeNachId(id));
     }
 
+    /**
+     * Alle Verträge der angegebenen Organisationen als Views, neueste zuerst —
+     * für die Übersichtsseite „Verträge &amp; Rechnungen" (alle Orgs des Users
+     * mit Edit-Recht). Leere Org-Menge → leere Liste (kein DB-Roundtrip).
+     */
+    @Transactional(readOnly = true)
+    public java.util.List<VertragView> findeViewsNachOrgs(java.util.Collection<UUID> orgIds) {
+        if (orgIds == null || orgIds.isEmpty()) {
+            return java.util.List.of();
+        }
+        return repository.findByOrgIdInOrderByErstelltAmDesc(orgIds).stream()
+                .map(VertragView::von)
+                .toList();
+    }
+
     /** Form-DTO für den Edit-Pfad — kein Entity-Touch im Controller. */
     @Transactional(readOnly = true)
     public VertragFormDto findeFormularNachId(UUID id) {

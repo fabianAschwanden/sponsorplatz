@@ -202,6 +202,12 @@ class A11ySmokeIT {
         pruefeAuthSeite("/einstellungen");
     }
 
+    @Test
+    @DisplayName("A11Y-11: /vertraege-rechnungen (auth) hat keine kritischen WCAG-Verstösse")
+    void vertraegeRechnungen() {
+        pruefeAuthSeite("/vertraege-rechnungen");
+    }
+
     private void pruefeSeite(String pfad) {
         pruefeMitContext(pfad, context);
     }

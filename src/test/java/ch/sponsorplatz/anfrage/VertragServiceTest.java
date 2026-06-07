@@ -397,6 +397,37 @@ class VertragServiceTest {
                 .isInstanceOf(ch.sponsorplatz.shared.exception.NotFoundException.class);
     }
 
+    @Test
+    @DisplayName("VTR-26: findeViewsNachOrgs mappt Verträge zu Views, neueste zuerst")
+    void findeViewsNachOrgs() {
+        UUID orgId = UUID.randomUUID();
+        Organisation org = neueOrg("FC Liste", OrgTyp.VEREIN);
+        org.setId(orgId);
+        Vertrag v = new Vertrag();
+        v.setId(UUID.randomUUID());
+        v.setOrg(org);
+        v.setOrgName("FC Liste");
+        v.setStatus(VertragsStatus.UNTERZEICHNET);
+        v.setPaketName("Gold");
+        v.setPreisChf(new BigDecimal("5000.00"));
+        when(repository.findByOrgIdInOrderByErstelltAmDesc(java.util.List.of(orgId)))
+                .thenReturn(java.util.List.of(v));
+
+        var views = service.findeViewsNachOrgs(java.util.List.of(orgId));
+
+        assertThat(views).hasSize(1);
+        assertThat(views.get(0).paketName()).isEqualTo("Gold");
+        assertThat(views.get(0).orgSlug()).isEqualTo("fc-liste");
+    }
+
+    @Test
+    @DisplayName("VTR-27: findeViewsNachOrgs mit leerer Org-Menge → leere Liste ohne DB-Roundtrip")
+    void findeViewsNachOrgsLeer() {
+        assertThat(service.findeViewsNachOrgs(java.util.List.of())).isEmpty();
+        org.mockito.Mockito.verify(repository, org.mockito.Mockito.never())
+                .findByOrgIdInOrderByErstelltAmDesc(org.mockito.ArgumentMatchers.anyCollection());
+    }
+
     private static Organisation neueOrg(String name, OrgTyp typ) {
         Organisation o = new Organisation();
         o.setId(UUID.randomUUID());

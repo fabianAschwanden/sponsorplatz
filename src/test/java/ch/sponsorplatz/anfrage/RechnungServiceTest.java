@@ -211,6 +211,35 @@ class RechnungServiceTest {
         assertThat(r.getStatus()).isEqualTo(RechnungsStatus.STORNIERT);
     }
 
+    @Test
+    @DisplayName("RECH-19: findeViewsNachOrgs mappt Rechnungen zu Views")
+    void findeViewsNachOrgs() {
+        UUID orgId = UUID.randomUUID();
+        Organisation org = neueOrg("FC Liste", "fc-liste", "CH4431999123000889012");
+        org.setId(orgId);
+        Rechnung r = new Rechnung();
+        r.setId(UUID.randomUUID());
+        r.setOrg(org);
+        r.setRechnungsnummer("R-2026-00007");
+        r.setStatus(RechnungsStatus.OFFEN);
+        r.setBetragChf(new BigDecimal("2500.00"));
+        r.setIban("CH4431999123000889012");
+        when(repository.findByOrgIdInOrderByErstelltAmDesc(java.util.List.of(orgId)))
+                .thenReturn(java.util.List.of(r));
+
+        var views = service.findeViewsNachOrgs(java.util.List.of(orgId));
+
+        assertThat(views).hasSize(1);
+        assertThat(views.get(0).rechnungsnummer()).isEqualTo("R-2026-00007");
+        assertThat(views.get(0).orgSlug()).isEqualTo("fc-liste");
+    }
+
+    @Test
+    @DisplayName("RECH-20: findeViewsNachOrgs mit leerer Org-Menge → leere Liste")
+    void findeViewsNachOrgsLeer() {
+        assertThat(service.findeViewsNachOrgs(java.util.List.of())).isEmpty();
+    }
+
     private static Organisation neueOrg(String name, String slug, String iban) {
         Organisation o = new Organisation();
         o.setId(UUID.randomUUID());

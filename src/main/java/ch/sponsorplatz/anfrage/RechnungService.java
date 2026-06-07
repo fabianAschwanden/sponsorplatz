@@ -154,6 +154,21 @@ public class RechnungService {
     }
 
     /**
+     * Alle Rechnungen der angegebenen Organisationen als Views, neueste zuerst —
+     * für die Übersichtsseite „Verträge &amp; Rechnungen" (alle Orgs des Users
+     * mit Edit-Recht). Leere Org-Menge → leere Liste (kein DB-Roundtrip).
+     */
+    @Transactional(readOnly = true)
+    public java.util.List<RechnungView> findeViewsNachOrgs(java.util.Collection<UUID> orgIds) {
+        if (orgIds == null || orgIds.isEmpty()) {
+            return java.util.List.of();
+        }
+        return repository.findByOrgIdInOrderByErstelltAmDesc(orgIds).stream()
+                .map(RechnungView::von)
+                .toList();
+    }
+
+    /**
      * View-Variante von {@link #erstelle(UUID, String)} — Controller bekommt
      * sofort das DTO für Flash-Message und Redirect.
      */
