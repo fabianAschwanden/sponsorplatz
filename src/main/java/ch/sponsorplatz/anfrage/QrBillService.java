@@ -123,8 +123,24 @@ public class QrBillService {
             throw new IllegalArgumentException(
                     "QR-Bill kann nicht erzeugt werden — Rechnungsdaten ungültig: "
                             + e.getMessage(), e);
-        } catch (IOException e) {
-            throw new RuntimeException("QR-Bill-Generierung fehlgeschlagen: " + e.getMessage(), e);
+        } catch (IOException | RuntimeException e) {
+            // Umgebungs-/Rendering-Fehler (z.B. fehlende Fonts/fontconfig im
+            // Runtime-Container → Java2D-Text-Rendering wirft InternalError o.ä.,
+            // verpackt als RuntimeException). Wir lassen das NICHT als rohen 500
+            // durch, sondern als IllegalStateException (→ 409) mit klarer Meldung,
+            // damit die Rechnungs-Detail-/PDF-Route nicht generisch crasht.
+            throw new IllegalStateException(
+                    "QR-Bill-Generierung fehlgeschlagen (Rendering-/Umgebungsfehler): "
+                            + e.getMessage(), e);
+        } catch (LinkageError | InternalError e) {
+            // AWT/Java2D-Fonts können bei fehlendem fontconfig einen Error werfen
+            // (InternalError „Can't connect to X11 window server" bzw.
+            // NoClassDefFoundError/UnsatisfiedLinkError aus dem Font-Subsystem).
+            // Diese fangen wir gezielt ab — VirtualMachineError (OOM/StackOverflow)
+            // bleibt bewusst ungefangen und propagiert.
+            throw new IllegalStateException(
+                    "QR-Bill-Generierung fehlgeschlagen (Grafik-/Font-Subsystem nicht verfügbar): "
+                            + e, e);
         }
     }
 

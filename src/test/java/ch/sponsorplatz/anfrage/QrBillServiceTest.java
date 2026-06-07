@@ -70,6 +70,21 @@ class QrBillServiceTest {
                 .hasMessageContaining("ungültig");
     }
 
+    @Test
+    @DisplayName("QRB-05: QR-IBAN ohne (gültige) QR-Referenz → IllegalArgumentException (400), kein roher 500")
+    void qrIbanOhneReferenzGibt400StattCrash() {
+        // QR-IBAN (Institut-ID 30000–31999), aber KEINE QR-Referenz gesetzt.
+        // Die Library verlangt für QR-IBANs zwingend eine Referenz
+        // (qr_ref_missing) und wirft QRBillValidationError. Der Service mappt das
+        // sauber auf 400 — sonst crasht die Rechnungs-Detail-/PDF-Route mit 500,
+        // wenn Erstellungs- und Render-Pfad bei der QR-IBAN-Erkennung divergieren.
+        Rechnung r = neueRechnung("CH4431999123000889012", null);
+
+        assertThatThrownBy(() -> service.erzeuge(r))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("ungültig");
+    }
+
     private static Rechnung neueRechnung(String iban, String qrRef) {
         Organisation org = new Organisation();
         org.setId(UUID.randomUUID());

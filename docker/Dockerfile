@@ -16,10 +16,15 @@ RUN mvn -B -q clean package -DskipTests
 # ------------------ Runtime Stage ------------------
 FROM eclipse-temurin:21-jre-jammy AS runtime
 
-# postgresql-client-17 für BackupService (pg_dump). Wir nutzen das offizielle
-# PostgreSQL-APT-Repository, weil Ubuntu Jammy nur Postgres 14 als Default hat
-# und der Server in cloud-free Postgres 17 ist (matched version vermeidet
-# pg_dump-Warnungen über Catalog-Diffs).
+# Runtime-Pakete:
+#  - postgresql-client-17 für BackupService (pg_dump). Offizielles PostgreSQL-
+#    APT-Repo, weil Ubuntu Jammy nur Postgres 14 als Default hat und der Server
+#    in cloud-free Postgres 17 ist (matched version vermeidet pg_dump-Warnungen).
+#  - fontconfig + fonts-dejavu-core: das jre-jammy-Image bringt KEINE Fonts mit.
+#    Die Swiss-QR-Bill (net.codecrete.qrbill, PNGCanvas) rendert Text über
+#    Java2D/AWT und wirft ohne fontconfig einen InternalError → bisher rohe 500
+#    auf jeder QR-Route (Rechnungs-Detail + Rechnungs-PDF). Vertrags-PDF (ohne
+#    QR-Bill) war nicht betroffen — exakt das Beta-Fehlerbild BETA-V09.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends curl ca-certificates gnupg lsb-release \
  && install -d /usr/share/postgresql-common/pgdg \
@@ -28,7 +33,7 @@ RUN apt-get update \
  && echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
         > /etc/apt/sources.list.d/pgdg.list \
  && apt-get update \
- && apt-get install -y --no-install-recommends postgresql-client-17 \
+ && apt-get install -y --no-install-recommends postgresql-client-17 fontconfig fonts-dejavu-core \
  && apt-get purge -y curl gnupg lsb-release \
  && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/*

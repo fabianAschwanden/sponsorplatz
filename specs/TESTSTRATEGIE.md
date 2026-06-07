@@ -547,7 +547,8 @@ Registrierungs-Services; der Versand selbst ist im
 | **QRB-02** | `QrBillServiceTest` | `erzeugeAlsDataUrl` gibt `data:image/png;base64,…` zurück |
 | **QRB-03** | `QrBillServiceTest` | Ohne IBAN wirft `IllegalArgumentException` |
 | **QRB-04** | `QrBillServiceTest` | Ungültige IBAN → `IllegalArgumentException` (400), kein roher 500 (`QRBillValidationError` gefangen) |
-| **RTPL-01/02** | `RechnungTemplateRenderTest` | Rechnungs-Detail + PDF rendern voll (echtes Thymeleaf/PDF) mit gesetzten String-Feldern — PDF ohne `@environment`-Crash (Sentry-Fragment aus PDF entfernt) |
+| **QRB-05** | `QrBillServiceTest` | QR-IBAN ohne QR-Referenz (`qr_ref_missing`) → `IllegalArgumentException` (400), kein roher 500 |
+| **RTPL-01..03** | `RechnungTemplateRenderTest` | Rechnungs-Detail + PDF rendern voll (echtes Thymeleaf/PDF) mit gesetzten String-Feldern + Flash-Erfolgsmeldung — PDF ohne `@environment`-Crash (Sentry-Fragment aus PDF entfernt) |
 
 **Aus SPONSORING_ZAHLUNGSFLUSS.md (TBD):**
 
