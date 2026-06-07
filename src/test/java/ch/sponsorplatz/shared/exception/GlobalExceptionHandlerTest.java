@@ -83,6 +83,20 @@ class GlobalExceptionHandlerTest {
     }
 
     /**
+     * EXC-06: Unerwarteter Throwable (hier ein {@link Error}, wie ihn das AWT/
+     * Font-Subsystem werfen kann) → 500 + gerenderte error-View statt nacktem
+     * JSON-500. Auffangnetz-Handler (BETA-V09).
+     */
+    @Test
+    @WithMockUser
+    void unerwarteterFehlerIst500() throws Exception {
+        mockMvc.perform(get("/test/internal-error"))
+            .andExpect(status().isInternalServerError())
+            .andExpect(view().name("error"))
+            .andExpect(model().attribute("status", 500));
+    }
+
+    /**
      * Test-Controller, der gezielt Exceptions wirft, damit der GlobalExceptionHandler
      * sie behandelt. Wird nur über den Slice-Test instanziiert.
      */
@@ -107,6 +121,13 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/test/access-denied")
         public String accessDenied() {
             throw new AccessDeniedException("Verboten");
+        }
+
+        @GetMapping("/test/internal-error")
+        public String internalError() {
+            // Simuliert einen AWT/Font-Subsystem-Fehler (Error, nicht Exception),
+            // der bisher als roher 500 ohne error-View durchschlug.
+            throw new InternalError("Simuliertes Grafik-Subsystem-Problem");
         }
     }
 }

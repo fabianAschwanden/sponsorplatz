@@ -3,6 +3,8 @@ package ch.sponsorplatz.anfrage;
 import java.io.IOException;
 import java.util.Base64;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import net.codecrete.qrbill.canvas.PNGCanvas;
@@ -34,6 +36,8 @@ import net.codecrete.qrbill.generator.QRBillValidationError;
  */
 @Service
 public class QrBillService {
+
+    private static final Logger log = LoggerFactory.getLogger(QrBillService.class);
 
     private final RechnungRepository rechnungRepository;
 
@@ -129,15 +133,24 @@ public class QrBillService {
             // verpackt als RuntimeException). Wir lassen das NICHT als rohen 500
             // durch, sondern als IllegalStateException (→ 409) mit klarer Meldung,
             // damit die Rechnungs-Detail-/PDF-Route nicht generisch crasht.
+            log.error("QR-Bill-Generierung fehlgeschlagen (Rendering/Umgebung) — "
+                    + "Throwable={}, msg={}, iban={}, qrRef={}",
+                    e.getClass().getName(), e.getMessage(),
+                    rechnung.getIban(), rechnung.getQrReferenz(), e);
             throw new IllegalStateException(
                     "QR-Bill-Generierung fehlgeschlagen (Rendering-/Umgebungsfehler): "
                             + e.getMessage(), e);
-        } catch (LinkageError | InternalError e) {
-            // AWT/Java2D-Fonts können bei fehlendem fontconfig einen Error werfen
-            // (InternalError „Can't connect to X11 window server" bzw.
-            // NoClassDefFoundError/UnsatisfiedLinkError aus dem Font-Subsystem).
-            // Diese fangen wir gezielt ab — VirtualMachineError (OOM/StackOverflow)
-            // bleibt bewusst ungefangen und propagiert.
+        } catch (Error e) {
+            // VirtualMachineError (OOM/StackOverflow) NICHT verschlucken — das
+            // muss die JVM/den Request hart beenden. Alles andere (InternalError,
+            // NoClassDefFoundError, UnsatisfiedLinkError aus dem AWT/Font-Subsystem
+            // bei fehlendem fontconfig) fangen wir ab, loggen den vollen Stacktrace
+            // und mappen auf 409 statt eines nackten 500.
+            if (e instanceof VirtualMachineError) {
+                throw e;
+            }
+            log.error("QR-Bill-Generierung fehlgeschlagen (Grafik-/Font-Subsystem) — "
+                    + "Error={}, msg={}", e.getClass().getName(), e.getMessage(), e);
             throw new IllegalStateException(
                     "QR-Bill-Generierung fehlgeschlagen (Grafik-/Font-Subsystem nicht verfügbar): "
                             + e, e);
