@@ -53,6 +53,9 @@
 | V48 | `kontakt_person` (CRM Contact unter Account, MS-Dynamics-Pattern) | CRM-2 ✓ |
 | V49 | `aktivitaet` (CRM Activity-Timeline, regarding Account + Contact) | CRM-2 ✓ |
 | V50 | `sponsor_account.pipeline_stage` + `forecast_betrag_chf` (Vertriebs-Pipeline) | CRM-3 ✓ |
+| V51 | `payment_transaction` (Datatrans-Checkout-Sessions, Confused-Deputy-Schutz) | 15.1 ✓ |
+| V52 | `plattform_einstellungen` Payment-Modus-Spalten (QR_RECHNUNG ↔ DATATRANS) | 15.1 ✓ |
+| V53 | `vertrag.dokument_*` (hochgeladenes Vertrags-PDF; Vorrang vor generiertem PDF) | Vertrag-Upload ✓ |
 
 > **Hinweis:** V22 wurde reserviert für die Postgres-`tsvector`-Migration (Phase 5+). Die Datei ist für H2 nicht relevant und liegt nur als Postgres-spezifische Variante vor (siehe TECHNISCHE_SPEZIFIKATION.md → Volltextsuche).
 

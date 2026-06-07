@@ -51,6 +51,9 @@ class VertragControllerTest {
     private AccessControl accessControl;
 
     @MockitoBean
+    private ch.sponsorplatz.shared.storage.StorageService storageService;
+
+    @MockitoBean
     private SponsorplatzUserDetailsService userDetailsService;
 
     private static final String SLUG = "fc-test";
@@ -58,12 +61,18 @@ class VertragControllerTest {
     private static final UUID ANFRAGE_ID = UUID.randomUUID();
 
     private VertragView testView() {
+        return testView(false, null);
+    }
+
+    private VertragView testView(boolean mitDokument, String dokumentName) {
         return new VertragView(
                 VERTRAG_ID, ANFRAGE_ID, VertragsStatus.ENTWURF,
                 "FC Test", SLUG, "Sponsor", "s@t.ch", "Sponsor AG",
                 "Gold", "Beschreibung", BigDecimal.valueOf(5000),
                 LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31),
-                "Logo", "5000 CHF", Instant.now(), "admin@t.ch", null, null
+                "Logo", "5000 CHF", Instant.now(), "admin@t.ch", null, null,
+                mitDokument, dokumentName, mitDokument ? 1234L : null,
+                mitDokument ? Instant.now() : null, mitDokument ? "admin@t.ch" : null
         );
     }
 
@@ -172,6 +181,75 @@ class VertragControllerTest {
                         .param("preisChf", "5000")
                         .with(csrf()))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "admin@t.ch")
+    @DisplayName("VCTRL-09: POST dokument lädt PDF hoch → Redirect + Service-Aufruf")
+    void dokumentHochladen() throws Exception {
+        when(accessControl.kannOrgEditierenNachSlug(eq(SLUG), any())).thenReturn(true);
+        when(vertragService.findeViewNachId(VERTRAG_ID)).thenReturn(testView());
+        var pdf = new org.springframework.mock.web.MockMultipartFile(
+                "dokument", "vertrag.pdf", "application/pdf", "PDF".getBytes());
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .multipart("/organisationen/{slug}/vertraege/{id}/dokument", SLUG, VERTRAG_ID)
+                        .file(pdf).with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attributeExists("erfolgsMeldung"));
+
+        verify(vertragService).speichereDokument(eq(VERTRAG_ID), any(), eq("admin@t.ch"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("VCTRL-10: POST dokument ohne Edit-Recht → 403")
+    void dokumentHochladenOhneRecht() throws Exception {
+        when(accessControl.kannOrgEditierenNachSlug(eq(SLUG), any())).thenReturn(false);
+        var pdf = new org.springframework.mock.web.MockMultipartFile(
+                "dokument", "vertrag.pdf", "application/pdf", "PDF".getBytes());
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .multipart("/organisationen/{slug}/vertraege/{id}/dokument", SLUG, VERTRAG_ID)
+                        .file(pdf).with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("VCTRL-11: GET pdf liefert hochgeladenes Dokument (Vorrang vor generiertem)")
+    void pdfLiefertHochgeladenesDokument() throws Exception {
+        when(accessControl.kannOrgEditierenNachSlug(eq(SLUG), any())).thenReturn(true);
+        when(vertragService.findeViewNachId(VERTRAG_ID)).thenReturn(testView(true, "extern-unterschrieben.pdf"));
+        when(vertragService.findeDokumentSnapshot(VERTRAG_ID)).thenReturn(
+                new VertragService.DokumentSnapshot("vertraege/x/dokument.pdf",
+                        "application/pdf", "extern-unterschrieben.pdf"));
+        when(storageService.ladeAlsResource("vertraege/x/dokument.pdf"))
+                .thenReturn(new org.springframework.core.io.ByteArrayResource("HOCHGELADEN".getBytes()));
+
+        mockMvc.perform(get("/organisationen/{slug}/vertraege/{id}/pdf", SLUG, VERTRAG_ID))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/pdf"))
+                .andExpect(header().string("Content-Disposition",
+                        org.hamcrest.Matchers.containsString("extern-unterschrieben.pdf")));
+
+        // generiertes PDF darf NICHT erzeugt werden, wenn ein Dokument vorliegt
+        verify(pdfGenerator, org.mockito.Mockito.never()).erzeuge(any(), any(), any());
+    }
+
+    @Test
+    @WithMockUser(username = "admin@t.ch")
+    @DisplayName("VCTRL-12: POST dokument/entfernen → Redirect + Service-Aufruf")
+    void dokumentEntfernen() throws Exception {
+        when(accessControl.kannOrgEditierenNachSlug(eq(SLUG), any())).thenReturn(true);
+        when(vertragService.findeViewNachId(VERTRAG_ID)).thenReturn(testView(true, "vertrag.pdf"));
+
+        mockMvc.perform(post("/organisationen/{slug}/vertraege/{id}/dokument/entfernen", SLUG, VERTRAG_ID)
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attributeExists("erfolgsMeldung"));
+
+        verify(vertragService).entferneDokument(VERTRAG_ID, "admin@t.ch");
     }
 }
 

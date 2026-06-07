@@ -29,7 +29,12 @@ public record VertragView(
         Instant erstelltAm,
         String erstelltVon,
         Instant unterzeichnetAm,
-        String unterzeichnetVon
+        String unterzeichnetVon,
+        boolean hatHochgeladenesDokument,
+        String dokumentDateiname,
+        Long dokumentGroesseBytes,
+        Instant dokumentHochgeladenAm,
+        String dokumentHochgeladenVon
 ) {
     public static VertragView von(Vertrag v) {
         return new VertragView(
@@ -51,7 +56,12 @@ public record VertragView(
                 v.getErstelltAm(),
                 v.getErstelltVon(),
                 v.getUnterzeichnetAm(),
-                v.getUnterzeichnetVon()
+                v.getUnterzeichnetVon(),
+                v.hatHochgeladenesDokument(),
+                v.getDokumentDateiname(),
+                v.getDokumentGroesseBytes(),
+                v.getDokumentHochgeladenAm(),
+                v.getDokumentHochgeladenVon()
         );
     }
 }

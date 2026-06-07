@@ -40,6 +40,7 @@ class VertragServiceTest {
     @Mock private AuditService auditService;
     @Mock private RechnungService rechnungService;
     @Mock private AufgabenEngine aufgabenEngine;
+    @Mock private ch.sponsorplatz.shared.storage.StorageService storageService;
 
     private VertragService service;
 
@@ -49,7 +50,7 @@ class VertragServiceTest {
     @BeforeEach
     void setUp() {
         service = new VertragService(repository, anfrageRepository, auditService,
-                rechnungService, aufgabenEngine);
+                rechnungService, aufgabenEngine, storageService);
 
         Organisation verein = neueOrg("FC Beispiel", OrgTyp.VEREIN);
         Organisation sponsor = neueOrg("Acme AG", OrgTyp.UNTERNEHMEN);
@@ -304,6 +305,96 @@ class VertragServiceTest {
         assertThatThrownBy(() -> service.kuendige(v.getId(), "egal"))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("unterzeichnete");
+    }
+
+    @Test
+    @DisplayName("VTR-20: speichereDokument legt PDF im Storage ab + setzt Metadaten")
+    void speichereDokumentSetztMetadaten() {
+        Vertrag v = new Vertrag();
+        v.setId(UUID.randomUUID());
+        v.setStatus(VertragsStatus.UNTERZEICHNET); // Upload in jedem Status erlaubt
+        when(repository.findById(v.getId())).thenReturn(Optional.of(v));
+        when(storageService.speichere(any(), any())).thenReturn("vertraege/x/dokument.pdf");
+        var pdf = new org.springframework.mock.web.MockMultipartFile(
+                "dokument", "extern.pdf", "application/pdf", "PDF-BYTES".getBytes());
+
+        Vertrag result = service.speichereDokument(v.getId(), pdf, "owner@verein.ch");
+
+        assertThat(result.hatHochgeladenesDokument()).isTrue();
+        assertThat(result.getDokumentStoragePfad()).isEqualTo("vertraege/x/dokument.pdf");
+        assertThat(result.getDokumentDateiname()).isEqualTo("extern.pdf");
+        assertThat(result.getDokumentContentType()).isEqualTo("application/pdf");
+        assertThat(result.getDokumentGroesseBytes()).isEqualTo(pdf.getSize());
+        assertThat(result.getDokumentHochgeladenVon()).isEqualTo("owner@verein.ch");
+    }
+
+    @Test
+    @DisplayName("VTR-21: speichereDokument lehnt Nicht-PDF ab (IllegalArgumentException → 400)")
+    void speichereDokumentNurPdf() {
+        Vertrag v = new Vertrag();
+        v.setId(UUID.randomUUID());
+        when(repository.findById(v.getId())).thenReturn(Optional.of(v));
+        var bild = new org.springframework.mock.web.MockMultipartFile(
+                "dokument", "logo.png", "image/png", "PNG".getBytes());
+
+        assertThatThrownBy(() -> service.speichereDokument(v.getId(), bild, "u"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("PDF");
+    }
+
+    @Test
+    @DisplayName("VTR-22: speichereDokument ersetzt vorhandenes Dokument (altes Storage-Objekt gelöscht)")
+    void speichereDokumentErsetztVorhandenes() {
+        Vertrag v = new Vertrag();
+        v.setId(UUID.randomUUID());
+        v.setDokumentStoragePfad("vertraege/x/alt.pdf");
+        when(repository.findById(v.getId())).thenReturn(Optional.of(v));
+        when(storageService.speichere(any(), any())).thenReturn("vertraege/x/dokument.pdf");
+        var pdf = new org.springframework.mock.web.MockMultipartFile(
+                "dokument", "neu.pdf", "application/pdf", "NEU".getBytes());
+
+        service.speichereDokument(v.getId(), pdf, "u");
+
+        verify(storageService).loesche("vertraege/x/alt.pdf");
+    }
+
+    @Test
+    @DisplayName("VTR-23: entferneDokument löscht Storage-Objekt + leert Metadaten")
+    void entferneDokument() {
+        Vertrag v = new Vertrag();
+        v.setId(UUID.randomUUID());
+        v.setDokumentStoragePfad("vertraege/x/dokument.pdf");
+        v.setDokumentDateiname("extern.pdf");
+        when(repository.findById(v.getId())).thenReturn(Optional.of(v));
+
+        Vertrag result = service.entferneDokument(v.getId(), "u");
+
+        verify(storageService).loesche("vertraege/x/dokument.pdf");
+        assertThat(result.hatHochgeladenesDokument()).isFalse();
+        assertThat(result.getDokumentDateiname()).isNull();
+    }
+
+    @Test
+    @DisplayName("VTR-24: entferneDokument ohne hinterlegtes Dokument wirft IllegalStateException")
+    void entferneDokumentOhneDokument() {
+        Vertrag v = new Vertrag();
+        v.setId(UUID.randomUUID());
+        when(repository.findById(v.getId())).thenReturn(Optional.of(v));
+
+        assertThatThrownBy(() -> service.entferneDokument(v.getId(), "u"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("kein Dokument");
+    }
+
+    @Test
+    @DisplayName("VTR-25: findeDokumentSnapshot ohne Dokument wirft NotFoundException")
+    void findeDokumentSnapshotOhneDokument() {
+        Vertrag v = new Vertrag();
+        v.setId(UUID.randomUUID());
+        when(repository.findById(v.getId())).thenReturn(Optional.of(v));
+
+        assertThatThrownBy(() -> service.findeDokumentSnapshot(v.getId()))
+                .isInstanceOf(ch.sponsorplatz.shared.exception.NotFoundException.class);
     }
 
     private static Organisation neueOrg(String name, OrgTyp typ) {

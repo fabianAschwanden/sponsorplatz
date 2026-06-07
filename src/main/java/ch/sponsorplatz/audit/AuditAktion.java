@@ -37,6 +37,8 @@ public final class AuditAktion {
     public static final String VERTRAG_ERSTELLT = "VERTRAG_ERSTELLT";
     public static final String VERTRAG_UNTERZEICHNET = "VERTRAG_UNTERZEICHNET";
     public static final String VERTRAG_GEKUENDIGT = "VERTRAG_GEKUENDIGT";
+    public static final String VERTRAG_DOKUMENT_HOCHGELADEN = "VERTRAG_DOKUMENT_HOCHGELADEN";
+    public static final String VERTRAG_DOKUMENT_ENTFERNT = "VERTRAG_DOKUMENT_ENTFERNT";
     public static final String RECHNUNG_ERSTELLT = "RECHNUNG_ERSTELLT";
     public static final String RECHNUNG_BEZAHLT = "RECHNUNG_BEZAHLT";
     public static final String RECHNUNG_STORNIERT = "RECHNUNG_STORNIERT";

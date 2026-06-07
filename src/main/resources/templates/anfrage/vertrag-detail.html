@@ -31,7 +31,8 @@
             </div>
             <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                 <a th:href="@{'/organisationen/' + ${vertrag.orgSlug} + '/vertraege/' + ${vertrag.id} + '/pdf'}"
-                   class="app-btn app-btn-ghost" th:text="#{vertragDetail.pdfDownload}">PDF herunterladen</a>
+                   class="app-btn app-btn-ghost"
+                   th:text="${vertrag.hatHochgeladenesDokument} ? #{vertragDetail.pdfDownloadDokument} : #{vertragDetail.pdfDownload}">PDF herunterladen</a>
                 <form th:if="${vertrag.status.name() == 'ENTWURF'}"
                       th:action="@{'/organisationen/' + ${vertrag.orgSlug} + '/vertraege/' + ${vertrag.id} + '/unterzeichnen'}"
                       method="post"
@@ -134,6 +135,48 @@
                                 th:text="#{allgemein.speichern}">Speichern</button>
                     </div>
                 </fieldset>
+            </form>
+        </section>
+
+        <!-- ── Eigenes Vertragsdokument (Upload) ─────────────────────── -->
+        <section class="app-card">
+            <h2 th:text="#{vertragDetail.dokument.titel}">Eigenes Vertragsdokument</h2>
+            <p class="app-muted" th:text="#{vertragDetail.dokument.hinweis}">Statt des generierten PDFs…</p>
+
+            <div th:if="${vertrag.hatHochgeladenesDokument}" class="app-card"
+                 style="border-left:4px solid #6d28d9; margin:0.75rem 0;">
+                <strong th:text="#{vertragDetail.dokument.vorhanden}">Hochgeladenes Dokument</strong>
+                <p style="margin:0.25rem 0 0;">
+                    <a th:href="@{'/organisationen/' + ${vertrag.orgSlug} + '/vertraege/' + ${vertrag.id} + '/pdf'}"
+                       th:text="${vertrag.dokumentDateiname}">dokument.pdf</a>
+                    <span class="app-muted"
+                          th:if="${vertrag.dokumentHochgeladenAm != null}">
+                        · <span th:text="#{vertragDetail.dokument.hochgeladenAm}">Hochgeladen am</span>
+                        <span th:text="${#temporals.format(vertrag.dokumentHochgeladenAm, 'dd.MM.yyyy HH:mm')}">—</span>
+                        <span th:if="${vertrag.dokumentHochgeladenVon != null}"
+                              th:text="' · ' + ${vertrag.dokumentHochgeladenVon}"></span>
+                    </span>
+                </p>
+            </div>
+
+            <form th:action="@{'/organisationen/' + ${vertrag.orgSlug} + '/vertraege/' + ${vertrag.id} + '/dokument'}"
+                  method="post" enctype="multipart/form-data"
+                  style="display:flex; gap:0.5rem; align-items:flex-end; flex-wrap:wrap; margin-top:0.5rem;">
+                <label style="flex:1; min-width:240px;">
+                    <span th:text="#{vertragDetail.dokument.feld}">PDF-Datei (max. 20 MB)</span>
+                    <input type="file" name="dokument" accept="application/pdf" required>
+                </label>
+                <button type="submit" class="app-btn"
+                        th:text="${vertrag.hatHochgeladenesDokument} ? #{vertragDetail.dokument.ersetzen} : #{vertragDetail.dokument.hochladen}">Dokument hochladen</button>
+            </form>
+
+            <form th:if="${vertrag.hatHochgeladenesDokument}"
+                  th:action="@{'/organisationen/' + ${vertrag.orgSlug} + '/vertraege/' + ${vertrag.id} + '/dokument/entfernen'}"
+                  method="post" style="margin-top:0.5rem;"
+                  onsubmit="return confirm(this.querySelector('.confirm-msg').textContent);">
+                <span class="confirm-msg" hidden th:text="#{vertragDetail.dokument.entfernen.bestaetigung}"></span>
+                <button type="submit" class="app-btn app-btn-ghost" style="color:#dc2626;"
+                        th:text="#{vertragDetail.dokument.entfernen}">Dokument entfernen</button>
             </form>
         </section>
 

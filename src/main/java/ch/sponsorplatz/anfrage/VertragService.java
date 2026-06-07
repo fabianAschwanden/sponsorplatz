@@ -6,9 +6,11 @@ import ch.sponsorplatz.aufgabe.AufgabenEngine;
 import ch.sponsorplatz.organisation.OrgTyp;
 import ch.sponsorplatz.organisation.Organisation;
 import ch.sponsorplatz.shared.exception.NotFoundException;
+import ch.sponsorplatz.shared.storage.StorageService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -43,17 +45,25 @@ public class VertragService {
      */
     private final RechnungService rechnungService;
     private final AufgabenEngine aufgabenEngine;
+    private final StorageService storageService;
+
+    /** Erlaubter Content-Type fürs hochgeladene Vertragsdokument — nur PDF. */
+    private static final String ERLAUBTER_DOKUMENT_TYP = "application/pdf";
+    /** Max. 20 MB, konsistent mit MedienAssetService.MAX_DOKUMENT_BYTES. */
+    private static final long MAX_DOKUMENT_BYTES = 20L * 1024 * 1024;
 
     public VertragService(VertragRepository repository,
                           SponsoringAnfrageRepository anfrageRepository,
                           AuditService auditService,
                           @Lazy RechnungService rechnungService,
-                          AufgabenEngine aufgabenEngine) {
+                          AufgabenEngine aufgabenEngine,
+                          StorageService storageService) {
         this.repository = repository;
         this.anfrageRepository = anfrageRepository;
         this.auditService = auditService;
         this.rechnungService = rechnungService;
         this.aufgabenEngine = aufgabenEngine;
+        this.storageService = storageService;
     }
 
     /**
@@ -233,6 +243,121 @@ public class VertragService {
 
         aufgabenEngine.onStatusWechsel(ch.sponsorplatz.aufgabe.TriggerEntityTyp.VERTRAG, gespeichert.getId(), gespeichert.getStatus().name(), ch.sponsorplatz.aufgabe.AssigneeKontext.ausVertragOrgs(gespeichert.getOrg(), gespeichert.getSponsorOrg()));
         return gespeichert;
+    }
+
+    /**
+     * Hinterlegt ein hochgeladenes Vertragsdokument (extern aufgesetztes/
+     * unterschriebenes PDF) am Vertrag. Ist bereits ein Dokument vorhanden, wird
+     * es im Storage ersetzt (altes Objekt gelöscht). Upload ist in jedem
+     * Vertrags-Status erlaubt — das Dokument ist eine reine Beleg-Beilage und
+     * verändert die Konditionen-Snapshot-Felder nicht.
+     *
+     * <p>Ist ein Dokument hinterlegt, hat es in der PDF-Route Vorrang vor dem
+     * generierten PDF.
+     *
+     * @throws IllegalArgumentException bei leerer Datei, falschem Content-Type
+     *                                  (nur PDF) oder Überschreitung der Maximalgrösse
+     */
+    public Vertrag speichereDokument(UUID id, MultipartFile datei, String hochgeladenVon) {
+        Vertrag v = findeNachId(id);
+        validiereDokument(datei);
+
+        // Vorhandenes Dokument zuerst aus dem Storage entfernen (Replace-Semantik),
+        // damit kein verwaistes Objekt zurückbleibt.
+        if (v.hatHochgeladenesDokument()) {
+            storageService.loesche(v.getDokumentStoragePfad());
+        }
+
+        String zielpfad = "vertraege/" + v.getId() + "/dokument.pdf";
+        String storagePfad = storageService.speichere(datei, zielpfad);
+
+        v.setDokumentStoragePfad(storagePfad);
+        v.setDokumentDateiname(dateinameOderDefault(datei));
+        v.setDokumentContentType(ERLAUBTER_DOKUMENT_TYP);
+        v.setDokumentGroesseBytes(datei.getSize());
+        v.setDokumentHochgeladenAm(Instant.now());
+        v.setDokumentHochgeladenVon(hochgeladenVon);
+        Vertrag gespeichert = repository.save(v);
+
+        auditService.protokolliere(AuditAktion.VERTRAG_DOKUMENT_HOCHGELADEN, "VERTRAG",
+                gespeichert.getId(), "Vertrag",
+                "dateiname=" + gespeichert.getDokumentDateiname()
+                        + ", groesse_bytes=" + gespeichert.getDokumentGroesseBytes()
+                        + ", hochgeladen_von=" + hochgeladenVon);
+
+        return gespeichert;
+    }
+
+    /**
+     * Entfernt ein hochgeladenes Vertragsdokument wieder (Storage + Metadaten).
+     * Danach liefert die PDF-Route wieder das generierte PDF aus.
+     *
+     * @throws IllegalStateException wenn kein Dokument hinterlegt ist
+     */
+    public Vertrag entferneDokument(UUID id, String entferntVon) {
+        Vertrag v = findeNachId(id);
+        if (!v.hatHochgeladenesDokument()) {
+            throw new IllegalStateException("Für diesen Vertrag ist kein Dokument hinterlegt.");
+        }
+        String alterPfad = v.getDokumentStoragePfad();
+        String alterName = v.getDokumentDateiname();
+        storageService.loesche(alterPfad);
+
+        v.setDokumentStoragePfad(null);
+        v.setDokumentDateiname(null);
+        v.setDokumentContentType(null);
+        v.setDokumentGroesseBytes(null);
+        v.setDokumentHochgeladenAm(null);
+        v.setDokumentHochgeladenVon(null);
+        Vertrag gespeichert = repository.save(v);
+
+        auditService.protokolliere(AuditAktion.VERTRAG_DOKUMENT_ENTFERNT, "VERTRAG",
+                gespeichert.getId(), "Vertrag",
+                "dateiname=" + alterName + ", entfernt_von=" + entferntVon);
+
+        return gespeichert;
+    }
+
+    /**
+     * Auslieferungs-Snapshot des hochgeladenen Dokuments für den Controller —
+     * keine Entity verlässt den Service (ARCH-02).
+     *
+     * @throws NotFoundException wenn der Vertrag kein Dokument hat
+     */
+    @Transactional(readOnly = true)
+    public DokumentSnapshot findeDokumentSnapshot(UUID id) {
+        Vertrag v = findeNachId(id);
+        if (!v.hatHochgeladenesDokument()) {
+            throw new NotFoundException("Kein hochgeladenes Dokument am Vertrag: " + id);
+        }
+        return new DokumentSnapshot(
+                v.getDokumentStoragePfad(),
+                v.getDokumentContentType(),
+                v.getDokumentDateiname());
+    }
+
+    /** Minimaler Snapshot zur Datei-Auslieferung (ARCH-02). */
+    public record DokumentSnapshot(String storagePfad, String contentType, String dateiname) {}
+
+    private void validiereDokument(MultipartFile datei) {
+        if (datei == null || datei.isEmpty()) {
+            throw new IllegalArgumentException("Keine Datei hochgeladen.");
+        }
+        if (!ERLAUBTER_DOKUMENT_TYP.equals(datei.getContentType())) {
+            throw new IllegalArgumentException(
+                    "Nur PDF-Dateien sind als Vertragsdokument erlaubt (erhalten: "
+                            + datei.getContentType() + ").");
+        }
+        if (datei.getSize() > MAX_DOKUMENT_BYTES) {
+            throw new IllegalArgumentException(
+                    "Vertragsdokument ist zu gross (max. " + (MAX_DOKUMENT_BYTES / (1024 * 1024))
+                            + " MB).");
+        }
+    }
+
+    private static String dateinameOderDefault(MultipartFile datei) {
+        String name = datei.getOriginalFilename();
+        return (name != null && !name.isBlank()) ? name : "vertrag.pdf";
     }
 
     /**

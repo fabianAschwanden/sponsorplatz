@@ -48,6 +48,11 @@ class VertragViewTest {
         v.setErstelltVon("admin@test.ch");
         v.setUnterzeichnetAm(Instant.now());
         v.setUnterzeichnetVon("owner@test.ch");
+        v.setDokumentStoragePfad("vertraege/x/dokument.pdf");
+        v.setDokumentDateiname("extern-unterschrieben.pdf");
+        v.setDokumentGroesseBytes(2048L);
+        v.setDokumentHochgeladenAm(Instant.now());
+        v.setDokumentHochgeladenVon("owner@test.ch");
 
         VertragView view = VertragView.von(v);
 
@@ -70,6 +75,11 @@ class VertragViewTest {
         assertThat(view.erstelltVon()).isEqualTo("admin@test.ch");
         assertThat(view.unterzeichnetAm()).isNotNull();
         assertThat(view.unterzeichnetVon()).isEqualTo("owner@test.ch");
+        assertThat(view.hatHochgeladenesDokument()).isTrue();
+        assertThat(view.dokumentDateiname()).isEqualTo("extern-unterschrieben.pdf");
+        assertThat(view.dokumentGroesseBytes()).isEqualTo(2048L);
+        assertThat(view.dokumentHochgeladenVon()).isEqualTo("owner@test.ch");
+        // Defense in depth: storagePfad gehört NICHT ins View
     }
 
     @Test
@@ -87,6 +97,8 @@ class VertragViewTest {
         assertThat(view.anfrageId()).isNull();
         assertThat(view.orgSlug()).isNull();
         assertThat(view.sponsorOrgName()).isNull();
+        assertThat(view.hatHochgeladenesDokument()).isFalse();
+        assertThat(view.dokumentDateiname()).isNull();
     }
 }
 

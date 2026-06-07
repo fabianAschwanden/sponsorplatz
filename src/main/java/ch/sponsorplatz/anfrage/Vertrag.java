@@ -102,6 +102,30 @@ public class Vertrag {
     @Column(name = "kuendigungs_grund", length = 500)
     private String kuendigungsGrund;
 
+    /**
+     * Hochgeladenes Vertragsdokument (V53) — extern aufgesetztes/unterschriebenes
+     * PDF. Ist {@link #dokumentStoragePfad} gesetzt, hat dieses Dokument in der
+     * PDF-Route Vorrang vor dem generierten PDF. Alle Felder null, solange kein
+     * Upload erfolgte → der Vertrag liefert dann das generierte PDF aus.
+     */
+    @Column(name = "dokument_storage_pfad", length = 500)
+    private String dokumentStoragePfad;
+
+    @Column(name = "dokument_dateiname")
+    private String dokumentDateiname;
+
+    @Column(name = "dokument_content_type", length = 100)
+    private String dokumentContentType;
+
+    @Column(name = "dokument_groesse_bytes")
+    private Long dokumentGroesseBytes;
+
+    @Column(name = "dokument_hochgeladen_am")
+    private Instant dokumentHochgeladenAm;
+
+    @Column(name = "dokument_hochgeladen_von")
+    private String dokumentHochgeladenVon;
+
     @PrePersist
     void initId() {
         if (this.id == null) this.id = UUID.randomUUID();
@@ -170,4 +194,27 @@ public class Vertrag {
 
     public String getKuendigungsGrund() { return kuendigungsGrund; }
     public void setKuendigungsGrund(String kuendigungsGrund) { this.kuendigungsGrund = kuendigungsGrund; }
+
+    public String getDokumentStoragePfad() { return dokumentStoragePfad; }
+    public void setDokumentStoragePfad(String dokumentStoragePfad) { this.dokumentStoragePfad = dokumentStoragePfad; }
+
+    public String getDokumentDateiname() { return dokumentDateiname; }
+    public void setDokumentDateiname(String dokumentDateiname) { this.dokumentDateiname = dokumentDateiname; }
+
+    public String getDokumentContentType() { return dokumentContentType; }
+    public void setDokumentContentType(String dokumentContentType) { this.dokumentContentType = dokumentContentType; }
+
+    public Long getDokumentGroesseBytes() { return dokumentGroesseBytes; }
+    public void setDokumentGroesseBytes(Long dokumentGroesseBytes) { this.dokumentGroesseBytes = dokumentGroesseBytes; }
+
+    public Instant getDokumentHochgeladenAm() { return dokumentHochgeladenAm; }
+    public void setDokumentHochgeladenAm(Instant dokumentHochgeladenAm) { this.dokumentHochgeladenAm = dokumentHochgeladenAm; }
+
+    public String getDokumentHochgeladenVon() { return dokumentHochgeladenVon; }
+    public void setDokumentHochgeladenVon(String dokumentHochgeladenVon) { this.dokumentHochgeladenVon = dokumentHochgeladenVon; }
+
+    /** Ob ein eigenes Vertragsdokument hochgeladen wurde (PDF-Route-Vorrang). */
+    public boolean hatHochgeladenesDokument() {
+        return dokumentStoragePfad != null && !dokumentStoragePfad.isBlank();
+    }
 }

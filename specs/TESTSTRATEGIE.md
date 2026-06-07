@@ -620,6 +620,12 @@ Registrierungs-Services; der Versand selbst ist im
 | **VTR-09** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage (paket=null): Verein-Org wird via `OrgTyp.VEREIN`-Check als `v.org` gemappt, Sponsor als `v.sponsorOrg` — unabhängig von Anfrage-Richtung. Siehe [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md) |
 | **VTR-10** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage ohne Wunsch-Betrag: `betreff` wird zu `paketName`, `nachricht` zu `paketBeschreibung`, `preisChf = 0` |
 | **VTR-10b** | `VertragServiceTest` | `erstelle` bei Kontakt-Anfrage mit `wunschBetragChf=5000`: Vertrag startet mit `preisChf=5000` (Initial-Preis aus Anfrage-Wunsch). Siehe V33 + [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md) |
+| **VTR-20** | `VertragServiceTest` | `speichereDokument` legt PDF im Storage ab + setzt Metadaten (Dateiname, Content-Type, Grösse, Uploader); Upload in jedem Status erlaubt (V53) |
+| **VTR-21** | `VertragServiceTest` | `speichereDokument` lehnt Nicht-PDF ab → `IllegalArgumentException` (400) |
+| **VTR-22** | `VertragServiceTest` | `speichereDokument` ersetzt vorhandenes Dokument — altes Storage-Objekt wird gelöscht (kein Orphan) |
+| **VTR-23** | `VertragServiceTest` | `entferneDokument` löscht Storage-Objekt + leert Metadaten |
+| **VTR-24** | `VertragServiceTest` | `entferneDokument` ohne hinterlegtes Dokument → `IllegalStateException` (409) |
+| **VTR-25** | `VertragServiceTest` | `findeDokumentSnapshot` ohne Dokument → `NotFoundException` (404) |
 | **ANF-08** | `SponsoringAnfrageServiceTest` | `erstelleKontaktAnfrage` mit negativem Wunsch-Betrag wirft `IllegalArgumentException` (Defense-in-Depth zum DB-CHECK in V33) |
 
 ### Phase Operational — DSG-Pflichtseiten (INFO)
@@ -1245,6 +1251,10 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **VCTRL-06** | GET pdf liefert `application/pdf` |
 | **VCTRL-07** | POST erstellen ohne Edit-Recht → 403 |
 | **VCTRL-08** | POST speichern ohne Edit-Recht → 403 |
+| **VCTRL-09** | POST dokument lädt PDF hoch → Redirect + `speichereDokument(id, …, username)` (V53) |
+| **VCTRL-10** | POST dokument ohne Edit-Recht → 403 |
+| **VCTRL-11** | GET pdf liefert hochgeladenes Dokument (Vorrang vor generiertem); generiertes PDF wird NICHT erzeugt |
+| **VCTRL-12** | POST dokument/entfernen → Redirect + `entferneDokument` |
 | **RCTRL-01** | POST erstellen → Redirect auf Rechnung-Detail |
 | **RCTRL-02** | POST erstellen bei `IllegalStateException` → Fehler-Flash |
 | **RCTRL-03** | GET detail rendert Rechnung + QR-Bild-DataUrl |
