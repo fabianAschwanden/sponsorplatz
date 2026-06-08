@@ -92,14 +92,14 @@
                     <!-- Aktionen bei NEU -->
                     <div th:if="${a.status.name() == 'NEU'}" class="anf-aktionen">
                         <form th:action="@{'/anfragen/' + ${a.id} + '/annehmen'}" method="post" class="anf-aktions-form">
-                            <input type="text" name="antwort" th:placeholder="#{meineAnfragen.antwortPlaceholder}"
-                                   placeholder="Antwort (optional)" class="anf-aktions-input">
+                            <textarea name="antwort" rows="3" th:placeholder="#{meineAnfragen.antwortPlaceholder}"
+                                      placeholder="Antwort (optional)" class="anf-aktions-input"></textarea>
                             <button type="submit" class="btn btn-success anf-action-btn"
                                     th:text="#{meineAnfragen.annehmen}">Annehmen</button>
                         </form>
                         <form th:action="@{'/anfragen/' + ${a.id} + '/ablehnen'}" method="post" class="anf-aktions-form">
-                            <input type="text" name="antwort" th:placeholder="#{meineAnfragen.begruendungPlaceholder}"
-                                   placeholder="Begründung (optional)" class="anf-aktions-input">
+                            <textarea name="antwort" rows="3" th:placeholder="#{meineAnfragen.begruendungPlaceholder}"
+                                      placeholder="Begründung (optional)" class="anf-aktions-input"></textarea>
                             <button type="submit" class="btn btn-danger anf-action-btn"
                                     th:text="#{meineAnfragen.ablehnen}">Ablehnen</button>
                         </form>
@@ -454,15 +454,24 @@
     }
     .anf-aktions-form {
         display: flex;
-        gap: 0.3rem;
-        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+        flex: 1 1 260px;
+        min-width: 240px;
     }
     .anf-aktions-input {
         font-size: 0.85rem;
-        padding: 0.4rem 0.6rem;
+        padding: 0.5rem 0.7rem;
         border: 1px solid var(--dash-border);
         border-radius: var(--dash-radius-sm);
         background: var(--dash-card);
+        width: 100%;
+        min-height: 4.5rem;
+        resize: vertical;
+        font-family: inherit;
+        line-height: 1.5;
+        box-sizing: border-box;
     }
     .anf-action-btn { font-size: 0.85rem; padding: 0.45rem 0.85rem; }
 </style>

@@ -47,13 +47,20 @@
             </form>
         </div>
 
-        <div th:if="${a.status.name() == 'NEU'}" class="anfrage-actions">
-            <form th:action="@{'/organisationen/' + ${org.slug} + '/anfragen/' + ${a.id} + '/annehmen'}" method="post" style="display:inline">
-                <input type="text" name="antwort" th:placeholder="#{meineAnfragen.antwortPlaceholder}" placeholder="Antwort (optional)">
+        <div th:if="${a.status.name() == 'NEU'}" class="anfrage-actions"
+             style="display:flex; gap:1rem; flex-wrap:wrap;">
+            <form th:action="@{'/organisationen/' + ${org.slug} + '/anfragen/' + ${a.id} + '/annehmen'}" method="post"
+                  style="display:flex; flex-direction:column; align-items:flex-start; gap:0.4rem; flex:1 1 260px; min-width:240px;">
+                <textarea name="antwort" rows="3" th:placeholder="#{meineAnfragen.antwortPlaceholder}"
+                          placeholder="Antwort (optional)"
+                          style="width:100%; min-height:4.5rem; resize:vertical; font-family:inherit; line-height:1.5; box-sizing:border-box;"></textarea>
                 <button type="submit" class="btn btn-success" th:text="#{meineAnfragen.annehmen}">Annehmen</button>
             </form>
-            <form th:action="@{'/organisationen/' + ${org.slug} + '/anfragen/' + ${a.id} + '/ablehnen'}" method="post" style="display:inline">
-                <input type="text" name="antwort" th:placeholder="#{meineAnfragen.begruendungPlaceholder}" placeholder="Begründung (optional)">
+            <form th:action="@{'/organisationen/' + ${org.slug} + '/anfragen/' + ${a.id} + '/ablehnen'}" method="post"
+                  style="display:flex; flex-direction:column; align-items:flex-start; gap:0.4rem; flex:1 1 260px; min-width:240px;">
+                <textarea name="antwort" rows="3" th:placeholder="#{meineAnfragen.begruendungPlaceholder}"
+                          placeholder="Begründung (optional)"
+                          style="width:100%; min-height:4.5rem; resize:vertical; font-family:inherit; line-height:1.5; box-sizing:border-box;"></textarea>
                 <button type="submit" class="btn btn-danger" th:text="#{meineAnfragen.ablehnen}">Ablehnen</button>
             </form>
         </div>
