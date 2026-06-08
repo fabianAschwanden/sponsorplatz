@@ -124,7 +124,14 @@ public class VertraegeRechnungenController {
     }
 
     private static List<VertragView> sortiereVertraege(List<VertragView> liste, String sort, boolean absteigend) {
-        if (sort == null) return liste;
+        // Default (kein Spalten-Sort): aktive Verträge zuerst, innerhalb der
+        // Gruppe die neuesten oben (DB liefert bereits erstelltAm DESC → stable
+        // sort erhält die Datumsordnung).
+        if (sort == null) {
+            return liste.stream()
+                    .sorted(Comparator.comparing((VertragView v) -> v.status().istAktiv()).reversed())
+                    .toList();
+        }
         Comparator<VertragView> c = switch (sort) {
             case "partner" -> Comparator.comparing(v -> partnerName(v), nullsLastCi());
             case "paket" -> Comparator.comparing(VertragView::paketName, nullsLastCi());
@@ -138,7 +145,13 @@ public class VertraegeRechnungenController {
     }
 
     private static List<RechnungView> sortiereRechnungen(List<RechnungView> liste, String sort, boolean absteigend) {
-        if (sort == null) return liste;
+        // Default (kein Spalten-Sort): offene Rechnungen zuerst, innerhalb der
+        // Gruppe die neuesten oben (DB liefert bereits erstelltAm DESC).
+        if (sort == null) {
+            return liste.stream()
+                    .sorted(Comparator.comparing((RechnungView r) -> r.status().istAktiv()).reversed())
+                    .toList();
+        }
         Comparator<RechnungView> c = switch (sort) {
             case "nummer" -> Comparator.comparing(RechnungView::rechnungsnummer, nullsLastCi());
             case "schuldner" -> Comparator.comparing(RechnungView::sponsorName, nullsLastCi());

@@ -83,6 +83,33 @@ class VertraegeRechnungenControllerTest {
 
     @Test
     @WithMockUser
+    @DisplayName("VRUEB-05: Default-Sortierung — aktive Verträge (ENTWURF/UNTERZEICHNET) vor GEKÜNDIGT")
+    void defaultSortierungAktiveZuerst() throws Exception {
+        when(appUserService.findeIdNachEmail(any())).thenReturn(USER_ID);
+        when(mitgliedschaftService.findeOrgIdsVonUserMitRollen(any(), any()))
+                .thenReturn(List.of(UUID.randomUUID()));
+        // Reihenfolge wie aus der DB (erstelltAm DESC): gekündigt zuerst, dann aktiv.
+        when(vertragService.findeViewsNachOrgs(anyCollection())).thenReturn(List.of(
+                vertragView("Gekündigt AG", VertragsStatus.GEKUENDIGT),
+                vertragView("Aktiv AG", VertragsStatus.UNTERZEICHNET)));
+        when(rechnungService.findeViewsNachOrgs(anyCollection())).thenReturn(List.of());
+
+        var ergebnis = mockMvc.perform(get("/vertraege-rechnungen"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        @SuppressWarnings("unchecked")
+        var liste = (ch.sponsorplatz.shared.util.ListenSeite<VertragView>)
+                ergebnis.getModelAndView().getModel().get("vListe");
+        // Default-Sort hebt den aktiven Vertrag trotz älteren Datums nach oben.
+        org.assertj.core.api.Assertions.assertThat(liste.inhalt().get(0).status())
+                .isEqualTo(VertragsStatus.UNTERZEICHNET);
+        org.assertj.core.api.Assertions.assertThat(liste.inhalt().get(1).status())
+                .isEqualTo(VertragsStatus.GEKUENDIGT);
+    }
+
+    @Test
+    @WithMockUser
     @DisplayName("VRUEB-02: ohne Edit-Org-Mitgliedschaft → leere Listen, kein Fehler")
     void leereListenOhneOrgs() throws Exception {
         when(appUserService.findeIdNachEmail(any())).thenReturn(USER_ID);
@@ -107,8 +134,12 @@ class VertraegeRechnungenControllerTest {
     }
 
     private VertragView vertragView(String sponsorName) {
+        return vertragView(sponsorName, VertragsStatus.UNTERZEICHNET);
+    }
+
+    private VertragView vertragView(String sponsorName, VertragsStatus status) {
         return new VertragView(
-                UUID.randomUUID(), UUID.randomUUID(), VertragsStatus.UNTERZEICHNET,
+                UUID.randomUUID(), UUID.randomUUID(), status,
                 "FC Test", "fc-test", sponsorName, "s@t.ch", "Sponsor AG",
                 "Gold", "Beschreibung", BigDecimal.valueOf(5000),
                 LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31),

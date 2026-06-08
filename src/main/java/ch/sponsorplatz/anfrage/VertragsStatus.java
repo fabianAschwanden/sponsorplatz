@@ -14,5 +14,13 @@ package ch.sponsorplatz.anfrage;
 public enum VertragsStatus {
     ENTWURF,
     UNTERZEICHNET,
-    GEKUENDIGT
+    GEKUENDIGT;
+
+    /**
+     * Aktiver (laufender) Vertrag — wird in Listen vor beendeten einsortiert.
+     * GEKUENDIGT gilt als abgeschlossen.
+     */
+    public boolean istAktiv() {
+        return this == ENTWURF || this == UNTERZEICHNET;
+    }
 }

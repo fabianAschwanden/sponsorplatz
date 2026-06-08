@@ -119,6 +119,19 @@ class AnfrageViewTest {
         return AnfrageView.von(a);
     }
 
+    /** VIEW-17: OFFEN_DANN_NEUSTE hebt NEU vor erledigte, erhält sonst die Eingangsordnung. */
+    @org.junit.jupiter.api.Test
+    void offenDannNeusteSortierung() {
+        AnfrageView erledigt = mitStatus(AnfrageStatus.ANGENOMMEN);
+        AnfrageView neu = mitStatus(AnfrageStatus.NEU);
+
+        var sortiert = java.util.stream.Stream.of(erledigt, neu)
+                .sorted(AnfrageView.OFFEN_DANN_NEUSTE).toList();
+
+        assertThat(sortiert.get(0).istNeu()).isTrue();
+        assertThat(sortiert.get(1).istErledigt()).isTrue();
+    }
+
     private static Organisation neueOrg(String name, String slug, OrgTyp typ) {
         Organisation o = new Organisation();
         o.setId(UUID.randomUUID());

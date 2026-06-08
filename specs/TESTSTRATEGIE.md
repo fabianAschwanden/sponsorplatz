@@ -633,6 +633,7 @@ Registrierungs-Services; der Versand selbst ist im
 | **RECH-19/20** | `RechnungServiceTest` | `findeViewsNachOrgs` mappt Rechnungen zu Views; leere Org-Menge → leere Liste |
 | **VRUEB-01..03** | `VertraegeRechnungenControllerTest` | `/vertraege-rechnungen` rendert Übersicht (beide Listen via `vListe`/`rListe`) / leere Listen ohne Org / unauth → Login-Redirect |
 | **VRUEB-04** | `VertraegeRechnungenControllerTest` | Suche (`vSuche`) + Sortierung (`vSort`/`vDir`) filtern/sortieren die Verträge-Liste (bewährtes Filter-Listen-UI mit `ListenSeite`) |
+| **VRUEB-05** | `VertraegeRechnungenControllerTest` | Default-Sortierung (kein Spalten-Sort): aktive Verträge (ENTWURF/UNTERZEICHNET) vor GEKÜNDIGT bzw. offene Rechnungen (OFFEN) vor BEZAHLT/STORNIERT, innerhalb der Gruppe neueste zuerst (`VertragsStatus/RechnungsStatus.istAktiv()`) |
 | **A11Y-11** | `A11ySmokeIT` | `/vertraege-rechnungen` (auth) ohne kritische WCAG-2.1-AA-Verstösse |
 | **ANF-08** | `SponsoringAnfrageServiceTest` | `erstelleKontaktAnfrage` mit negativem Wunsch-Betrag wirft `IllegalArgumentException` (Defense-in-Depth zum DB-CHECK in V33) |
 
@@ -1140,6 +1141,7 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **VIEW-12b** | `MedienAssetViewTest` | `endung()` extrahiert Datei-Endung lowercase, leer wenn kein Punkt im Namen |
 | **VIEW-13** | `AnfrageViewTest` | `vereinSlug()` liefert Anfragender-Slug bei Kontakt-Anfrage (Verein → Sponsor), Empfänger-Slug bei Paket-Anfrage. Siehe [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md) |
 | **VIEW-16** | `AnfrageViewTest` | `istNeu()` (Status NEU) / `istErledigt()` (ANGENOMMEN/ABGELEHNT) partitionieren die Anfrage-Listen in neu vs. erledigt |
+| **VIEW-17** | `AnfrageViewTest` | `OFFEN_DANN_NEUSTE`-Comparator hebt offene (NEU) Anfragen vor erledigte; erhält sonst die Eingangsordnung (DB createdAt DESC) |
 
 #### MedienController-Auslieferung (MA)
 

@@ -42,7 +42,10 @@ public class AnfragenController {
 
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "anfragen");
         model.addAttribute("org", org);
-        model.addAttribute("anfragen", anfrageService.findeEingehendeViews(org.id()));
+        // Offene (NEU) zuerst, innerhalb der Gruppe die neuesten oben.
+        model.addAttribute("anfragen", anfrageService.findeEingehendeViews(org.id()).stream()
+                .sorted(AnfrageView.OFFEN_DANN_NEUSTE)
+                .toList());
         return "anfrage/anfragen-liste";
     }
 

@@ -5,6 +5,7 @@ import ch.sponsorplatz.organisation.OrgTyp;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -82,6 +83,15 @@ public record AnfrageView(
     public boolean istNeu() {
         return status == AnfrageStatus.NEU;
     }
+
+    /**
+     * Listen-Reihenfolge: offene (NEU) zuerst, innerhalb der Gruppe die
+     * neuesten oben. Setzt voraus, dass die Eingangsliste bereits nach
+     * {@code createdAt} absteigend kommt (DB-Order) — der stabile Sort erhält
+     * diese Datumsordnung pro Gruppe.
+     */
+    public static final Comparator<AnfrageView> OFFEN_DANN_NEUSTE =
+            Comparator.comparing(AnfrageView::istNeu).reversed();
 
     /** Bearbeitete Anfrage (angenommen oder abgelehnt) — gehört in die erledigte Liste. */
     public boolean istErledigt() {

@@ -12,5 +12,13 @@ package ch.sponsorplatz.anfrage;
 public enum RechnungsStatus {
     OFFEN,
     BEZAHLT,
-    STORNIERT
+    STORNIERT;
+
+    /**
+     * Offene (noch nicht abgeschlossene) Rechnung — wird in Listen vor
+     * bezahlten/stornierten einsortiert.
+     */
+    public boolean istAktiv() {
+        return this == OFFEN;
+    }
 }
