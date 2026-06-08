@@ -63,7 +63,7 @@ Ernährung, Wellness, Selbsthilfe, Patientenorganisationen — siehe `Branche`-E
 - 15.4 **Datei-Backup + Restore** (Sponsoring-Files-Roundtrip): ✅ ZIP-basiert, provider-agnostisch, `/admin/datei-backups`
 - Cross-Cloud-Sync-Schutz: ✅ `audit_log.umgebung` (V41) + Backfill (V42) + Sentry-Tag `sponsorplatz.umgebung`
 
-Architektur-Disziplin ist statisch durchgesetzt: **13 ArchUnit-Regeln** (`ArchitekturRegelnTest`, ARCH-01..13), **647+ Tests** grün, **Feature-Folder-Topologie** ohne Cycles (Java + Templates parallel strukturiert).
+Architektur-Disziplin ist statisch durchgesetzt: **14 ArchUnit-Regeln** (`ArchitekturRegelnTest`, ARCH-01..13 + ARCH-17 + ARCH-20/21/22 für Ports-&-Adapter), **890+ Tests** grün, **Feature-Folder-Topologie** ohne Cycles (Java + Templates parallel strukturiert).
 
 Vollständige Roadmap in [`specs/ROADMAP.md`](specs/ROADMAP.md), detaillierte Phase-Pläne in `docs/` (siehe unten).
 
@@ -184,7 +184,7 @@ model.addAttribute("anfragen", AnfrageView.von(anfragen));
 
 ### Architektur-Verifikation (Schicht 1)
 
-Die in CLAUDE.md und `.instructions.md` formulierten Regeln werden **automatisch** durch `ArchitekturRegelnTest` (ArchUnit) durchgesetzt — bricht eine PR die Disziplin, ist der Build rot. Test-IDs `ARCH-01..13` in `specs/TESTSTRATEGIE.md`.
+Die in CLAUDE.md und `.instructions.md` formulierten Regeln werden **automatisch** durch `ArchitekturRegelnTest` (ArchUnit) durchgesetzt — bricht eine PR die Disziplin, ist der Build rot. Test-IDs `ARCH-01..13` + `ARCH-17` (kein generisches `catch (Exception|Throwable)`) + `ARCH-20/21/22` (Ports-&-Adapter) in `specs/TESTSTRATEGIE.md`.
 
 **Vor jedem Refactoring:** `mvn test -Dtest=ArchitekturRegelnTest` lokal laufen lassen. Wenn eine Regel bewusst gelockert werden soll, neue Test-ID pflegen und Ausnahme dokumentieren — niemals stillschweigend ändern.
 

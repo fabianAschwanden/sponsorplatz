@@ -52,10 +52,11 @@ sind ein **Audit-Trail**.
 | [0003](0003-kollaborative-plattform-statt-multi-tenant.md) | Kollaborative Plattform statt Multi-Tenant | Akzeptiert |
 | [0004](0004-branche-enum-health-fokus.md) | Branche-Enum strikt auf Health-Fokus | Akzeptiert |
 | [0005](0005-foederierte-identitaeten-eigene-tabelle.md) | Föderierte Identitäten in eigener Tabelle | Akzeptiert |
-| [0006](0006-swiss-qr-bill-stack.md) | Swiss-QR-Bill mit OpenHTMLtoPDF + ZXing | Akzeptiert |
+| [0006](0006-swiss-qr-bill-stack.md) | Swiss-QR-Bill mit OpenHTMLtoPDF + ZXing | QR-Teil ersetzt durch ADR-0013 |
 | [0007](0007-archunit-fuer-statische-verifikation.md) | ArchUnit für statische Architektur-Verifikation | Akzeptiert |
 | [0008](0008-structurizr-fuer-c4-diagramme.md) | Structurizr-DSL für C4-Architektur-Diagramme | Akzeptiert |
 | [0009](0009-multi-cloud-azure-als-dr-zone.md) | Multi-Cloud — Azure als zweite Zone (Warm-DR) | Akzeptiert |
 | [0010](0010-umgebung-marker-im-audit-log.md) | Umgebungs-Marker in Audit-Log + Sentry-Events | Akzeptiert |
 | [0011](0011-hybrid-private-sponsor-layer.md) | Hybrid — kollaborative Stammdaten + private Sponsor-CRM-Layer | Akzeptiert |
 | [0012](0012-ports-und-adapter-fuer-externe-integrationen.md) | Ports-&-Adapter für externe Integrationen | Akzeptiert |
+| [0013](0013-qr-bill-mit-codecrete-statt-zxing.md) | Swiss-QR-Bill mit net.codecrete.qrbill statt ZXing-Eigenbau | Akzeptiert |

@@ -1,7 +1,9 @@
 # ADR-0006: Swiss-QR-Bill mit OpenHTMLtoPDF + ZXing
 
 ## Status
-Akzeptiert
+Akzeptiert — QR-Generator-Teil ersetzt durch [ADR-0013](0013-qr-bill-mit-codecrete-statt-zxing.md)
+(ZXing-Eigenbau → `net.codecrete.qrbill`); der **OpenHTMLtoPDF-PDF-Render-Pfad
+bleibt gültig**.
 
 ## Datum
 2026-05-08
