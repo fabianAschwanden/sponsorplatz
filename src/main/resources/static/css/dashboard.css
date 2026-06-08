@@ -1198,6 +1198,23 @@ body.app-body {
 }
 .app-btn-danger:hover { background: #c2654c; }
 
+/* Ghost-Button: heller Grund, dunkler Text, dezenter Rahmen — für sekundäre
+   Aktionen (z.B. „Öffnen" neben einem gefüllten „PDF"-Button). War bisher
+   nirgends definiert und fiel auf .app-btn zurück (dunkler Grund). */
+.app-btn-ghost {
+    background: var(--dash-card);
+    color: var(--dash-text);
+    border: 1px solid var(--dash-border);
+}
+.app-btn-ghost:hover {
+    background: var(--dash-violet-light);
+    border-color: var(--dash-violet-light);
+    color: var(--dash-text);
+}
+
+/* Kompakte Button-Grösse — bisher pro Template lokal definiert. */
+.app-btn-sm { font-size: 0.8rem; padding: 0.35rem 0.8rem; }
+
 /* Cards / Container */
 .app-card {
     background: var(--dash-card);
@@ -1285,6 +1302,15 @@ body.app-body {
 
 .app-table a { color: var(--dash-text); font-weight: 600; text-decoration: none; }
 .app-table a:hover { color: var(--dash-violet-dark); }
+
+/* Buttons in Tabellenzellen: die generische `.app-table a`-Regel (dunkle
+   Textfarbe für Datenlinks) würde sonst die weisse Button-Schrift auf dem
+   dunklen .app-btn-Grund überschreiben → unlesbar. Höhere Spezifität stellt
+   die jeweilige Button-Textfarbe wieder her. */
+.app-table a.app-btn { color: #fff; }
+.app-table a.app-btn:hover { color: #fff; }
+.app-table a.app-btn-ghost,
+.app-table a.app-btn-secondary { color: var(--dash-text); }
 
 .app-muted { color: var(--dash-muted); font-size: 0.85rem; }
 
