@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de-CH" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  Wiederverwendbares Item für eine erledigte ausgehende Anfrage (meine + Org).
+  Parameter:
+    a         — AnfrageView
+    randClass — CSS-Klasse für den linken Rand (anf-item-ausgehend / anf-item-org)
+-->
+<article th:fragment="erledigt-ausgehend(a, randClass)" class="anf-item" th:classappend="${randClass}">
+    <div class="anf-item-head">
+        <div class="anf-item-sub">
+            <span class="anf-label" th:text="#{meineAnfragen.anLabel}">An:</span>
+            <strong th:text="${a.empfaengerOrgName}">Sponsor</strong>
+            <span th:if="${a.anfragenderOrgName != null}">
+                · <span th:text="#{meineAnfragen.vonOrgLabel}">von</span>
+                <span th:text="${a.anfragenderOrgName}">Verein</span>
+            </span>
+            <span th:if="${a.kontaktName != null}">
+                · <span th:text="#{meineAnfragen.gestelltVon}">gestellt von</span>
+                <span th:text="${a.kontaktName}">Kollege</span>
+            </span>
+        </div>
+        <span class="badge"
+              th:classappend="'badge-' + ${a.status.name().toLowerCase()}"
+              th:text="#{'status.anfrage.' + ${a.status.name()}}">ANGENOMMEN</span>
+    </div>
+    <div class="anf-item-titel">
+        <strong th:text="${a.anzeigeTitel()}">Betreff</strong>
+    </div>
+    <div th:if="${a.antwort != null}" class="anf-antwort anf-antwort-kompakt">
+        <strong th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
+        <span th:text="${a.antwort}">Antwort</span>
+    </div>
+    <!-- Angenommene Kontakt-Anfrage: Vertrag-Folgeschritt weiterhin möglich -->
+    <div th:if="${a.status.name() == 'ANGENOMMEN' and !a.istPaketAnfrage()}" class="anf-aktionen">
+        <form th:action="@{'/organisationen/' + ${a.vereinSlug()} + '/anfragen/' + ${a.id} + '/vertrag/erstellen'}"
+              method="post" style="display:inline;">
+            <button type="submit" class="btn anf-action-btn"
+                    th:text="#{meineAnfragen.vertragErstellen}">Vertrag erstellen</button>
+        </form>
+    </div>
+</article>
+
+</body>
+</html>

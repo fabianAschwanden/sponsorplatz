@@ -38,7 +38,7 @@
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
                     </svg>
-                    <span th:text="#{meineAnfragen.titel}">Eingehende Anfragen</span>
+                    <span th:text="#{meineAnfragen.neu.titel}">Neue Anfragen</span>
                 </h2>
                 <span class="anf-section-count" th:text="${anfragen.size()}">0</span>
             </header>
@@ -89,23 +89,6 @@
 
                     <p th:text="${a.nachricht}" class="anf-item-nachricht">Nachricht</p>
 
-                    <div th:if="${a.antwort != null}" class="anf-antwort">
-                        <strong th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
-                        <span th:text="${a.antwort}">Antwort</span>
-                    </div>
-
-                    <!-- Aktionen bei ANGENOMMEN (nur Paket-Anfragen → Vertrag) -->
-                    <div th:if="${a.status.name() == 'ANGENOMMEN' and a.istPaketAnfrage()}" class="anf-aktionen">
-                        <a th:href="@{'/organisationen/' + ${a.empfaengerOrgSlug} + '/anfragen/' + ${a.id} + '/nachrichten'}"
-                           class="btn btn-primary anf-action-btn"
-                           th:text="#{meineAnfragen.konversation}">Konversation öffnen</a>
-                        <form th:action="@{'/organisationen/' + ${a.empfaengerOrgSlug} + '/anfragen/' + ${a.id} + '/vertrag/erstellen'}"
-                              method="post" style="display:inline;">
-                            <button type="submit" class="btn anf-action-btn"
-                                    th:text="#{meineAnfragen.vertragErstellen}">Vertrag erstellen</button>
-                        </form>
-                    </div>
-
                     <!-- Aktionen bei NEU -->
                     <div th:if="${a.status.name() == 'NEU'}" class="anf-aktionen">
                         <form th:action="@{'/anfragen/' + ${a.id} + '/annehmen'}" method="post" class="anf-aktions-form">
@@ -119,6 +102,57 @@
                                    placeholder="Begründung (optional)" class="anf-aktions-input">
                             <button type="submit" class="btn btn-danger anf-action-btn"
                                     th:text="#{meineAnfragen.ablehnen}">Ablehnen</button>
+                        </form>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- ===================== ERLEDIGTE EINGEHENDE ===================== -->
+        <section th:if="${!erledigteAnfragen.isEmpty()}" class="anf-section">
+            <header class="anf-section-head">
+                <h2 class="anf-section-title">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    <span th:text="#{meineAnfragen.erledigt.titel}">Erledigte Anfragen</span>
+                </h2>
+                <span class="anf-section-count" th:text="${erledigteAnfragen.size()}">0</span>
+            </header>
+
+            <div class="anf-liste anf-liste-kompakt">
+                <article th:each="a : ${erledigteAnfragen}" class="anf-item anf-item-erledigt">
+                    <div class="anf-item-head">
+                        <div class="anf-item-sub">
+                            <strong th:text="${a.kontaktName ?: #messages.msg('meineAnfragen.unbekannt')}">Name</strong>
+                            <span th:if="${a.anfragenderOrgName != null}">
+                                · <span th:text="${a.anfragenderOrgName}">Org</span>
+                            </span>
+                            <span th:if="${a.empfaengerOrgName != null}">
+                                · <span th:text="#{meineAnfragen.anLabel}">An:</span>
+                                <span th:text="${a.empfaengerOrgName}">Org</span>
+                            </span>
+                        </div>
+                        <span class="badge"
+                              th:classappend="'badge-' + ${a.status.name().toLowerCase()}"
+                              th:text="#{'status.anfrage.' + ${a.status.name()}}">ANGENOMMEN</span>
+                    </div>
+                    <div class="anf-item-titel">
+                        <strong th:text="${a.anzeigeTitel()}">Betreff</strong>
+                    </div>
+                    <div th:if="${a.antwort != null}" class="anf-antwort anf-antwort-kompakt">
+                        <strong th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
+                        <span th:text="${a.antwort}">Antwort</span>
+                    </div>
+                    <!-- Angenommene Paket-Anfrage: Folgeschritt Vertrag weiterhin möglich -->
+                    <div th:if="${a.status.name() == 'ANGENOMMEN' and a.istPaketAnfrage()}" class="anf-aktionen">
+                        <a th:href="@{'/organisationen/' + ${a.empfaengerOrgSlug} + '/anfragen/' + ${a.id} + '/nachrichten'}"
+                           class="btn btn-primary anf-action-btn"
+                           th:text="#{meineAnfragen.konversation}">Konversation öffnen</a>
+                        <form th:action="@{'/organisationen/' + ${a.empfaengerOrgSlug} + '/anfragen/' + ${a.id} + '/vertrag/erstellen'}"
+                              method="post" style="display:inline;">
+                            <button type="submit" class="btn anf-action-btn"
+                                    th:text="#{meineAnfragen.vertragErstellen}">Vertrag erstellen</button>
                         </form>
                     </div>
                 </article>
@@ -167,17 +201,6 @@
                         </span>
                     </div>
                     <p th:text="${a.nachricht}" class="anf-item-nachricht anf-item-nachricht-kompakt">Nachricht</p>
-                    <div th:if="${a.antwort != null}" class="anf-antwort anf-antwort-kompakt">
-                        <strong th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
-                        <span th:text="${a.antwort}">Antwort</span>
-                    </div>
-                    <div th:if="${a.status.name() == 'ANGENOMMEN' and !a.istPaketAnfrage()}" class="anf-aktionen">
-                        <form th:action="@{'/organisationen/' + ${a.vereinSlug()} + '/anfragen/' + ${a.id} + '/vertrag/erstellen'}"
-                              method="post" style="display:inline;">
-                            <button type="submit" class="btn anf-action-btn"
-                                    th:text="#{meineAnfragen.vertragErstellen}">Vertrag erstellen</button>
-                        </form>
-                    </div>
                 </article>
             </div>
         </section>
@@ -227,18 +250,29 @@
                         </span>
                     </div>
                     <p th:text="${a.nachricht}" class="anf-item-nachricht anf-item-nachricht-kompakt">Nachricht</p>
-                    <div th:if="${a.antwort != null}" class="anf-antwort anf-antwort-kompakt">
-                        <strong th:text="#{meineAnfragen.antwortLabel}">Antwort:</strong>
-                        <span th:text="${a.antwort}">Antwort</span>
-                    </div>
-                    <div th:if="${a.status.name() == 'ANGENOMMEN' and !a.istPaketAnfrage()}" class="anf-aktionen">
-                        <form th:action="@{'/organisationen/' + ${a.vereinSlug()} + '/anfragen/' + ${a.id} + '/vertrag/erstellen'}"
-                              method="post" style="display:inline;">
-                            <button type="submit" class="btn anf-action-btn"
-                                    th:text="#{meineAnfragen.vertragErstellen}">Vertrag erstellen</button>
-                        </form>
-                    </div>
                 </article>
+            </div>
+        </section>
+
+        <!-- ===================== ERLEDIGTE AUSGEHENDE (meine + Org) ===================== -->
+        <section th:if="${kannKontaktanfrageStellen and (!meineAusgehendeErledigt.isEmpty() or !orgAusgehendeErledigt.isEmpty())}"
+                 class="anf-section">
+            <header class="anf-section-head">
+                <h2 class="anf-section-title">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    <span th:text="#{meineAnfragen.erledigtAusgehend.titel}">Erledigte ausgehende Anfragen</span>
+                </h2>
+                <span class="anf-section-count"
+                      th:text="${meineAusgehendeErledigt.size() + orgAusgehendeErledigt.size()}">0</span>
+            </header>
+
+            <div class="anf-liste anf-liste-kompakt">
+                <th:block th:each="a : ${meineAusgehendeErledigt}"
+                          th:replace="~{fragments/anfrage-item :: erledigt-ausgehend(${a}, 'anf-item-ausgehend')}"></th:block>
+                <th:block th:each="a : ${orgAusgehendeErledigt}"
+                          th:replace="~{fragments/anfrage-item :: erledigt-ausgehend(${a}, 'anf-item-org')}"></th:block>
             </div>
         </section>
     </main>
@@ -355,6 +389,9 @@
     }
     .anf-item-org {
         border-left: 3px solid #94a3b8;
+    }
+    .anf-item-erledigt {
+        border-left: 3px solid var(--dash-border);
     }
 
     .anf-item-head {

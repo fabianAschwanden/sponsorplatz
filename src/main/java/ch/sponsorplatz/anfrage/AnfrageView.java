@@ -78,6 +78,16 @@ public record AnfrageView(
         return paketName != null;
     }
 
+    /** Offene Anfrage, die noch eine Entscheidung (annehmen/ablehnen) braucht. */
+    public boolean istNeu() {
+        return status == AnfrageStatus.NEU;
+    }
+
+    /** Bearbeitete Anfrage (angenommen oder abgelehnt) — gehört in die erledigte Liste. */
+    public boolean istErledigt() {
+        return status == AnfrageStatus.ANGENOMMEN || status == AnfrageStatus.ABGELEHNT;
+    }
+
     /** Anzeige-Titel: Paket-Name oder Betreff. */
     public String anzeigeTitel() {
         return paketName != null ? paketName : (betreff != null ? betreff : "—");

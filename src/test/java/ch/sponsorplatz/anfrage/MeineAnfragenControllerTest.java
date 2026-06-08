@@ -218,6 +218,34 @@ class MeineAnfragenControllerTest {
     }
 
     @Test
+    @WithMockUser("editor@verein.ch")
+    @DisplayName("MANF-09: /anfragen teilt eingehende in neu (NEU) und erledigt (ANGENOMMEN/ABGELEHNT)")
+    void teiltEingehendeInNeuUndErledigt() throws Exception {
+        UUID userId = UUID.randomUUID();
+        UUID orgId = UUID.randomUUID();
+        when(appUserService.findeIdNachEmail("editor@verein.ch")).thenReturn(userId);
+        when(mitgliedschaftService.findeAnfragenSeitenDaten(userId))
+                .thenReturn(new MitgliedschaftService.AnfragenSeitenDaten(
+                        List.of(orgId), List.of(), List.of()));
+        when(anfrageService.findeAlleEingehendenViews(any())).thenReturn(List.of(
+                anfrageMitStatus(ch.sponsorplatz.anfrage.AnfrageStatus.NEU),
+                anfrageMitStatus(ch.sponsorplatz.anfrage.AnfrageStatus.ANGENOMMEN),
+                anfrageMitStatus(ch.sponsorplatz.anfrage.AnfrageStatus.ABGELEHNT)));
+
+        mockMvc.perform(get("/anfragen"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("anfragen", org.hamcrest.Matchers.hasSize(1)))
+                .andExpect(model().attribute("erledigteAnfragen", org.hamcrest.Matchers.hasSize(2)));
+    }
+
+    private static AnfrageView anfrageMitStatus(ch.sponsorplatz.anfrage.AnfrageStatus status) {
+        SponsoringAnfrage a = new SponsoringAnfrage();
+        a.setId(UUID.randomUUID());
+        a.setStatus(status);
+        return AnfrageView.von(a);
+    }
+
+    @Test
     @WithMockUser("angreifer@sp.ch")
     @DisplayName("MANF-07: POST /anfragen/{id}/annehmen ohne Edit-Recht auf Empfänger-Org → 403 (IDOR-Schutz)")
     void idorSchutzBeimAnnehmen() throws Exception {

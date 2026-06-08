@@ -99,6 +99,26 @@ class AnfrageViewTest {
                 .isEqualTo("fc-beispiel");
     }
 
+    /** VIEW-16: istNeu()/istErledigt() partitionieren nach Status (neu vs. erledigt-Liste). */
+    @org.junit.jupiter.api.Test
+    void istNeuUndIstErledigt() {
+        assertThat(mitStatus(AnfrageStatus.NEU).istNeu()).isTrue();
+        assertThat(mitStatus(AnfrageStatus.NEU).istErledigt()).isFalse();
+
+        assertThat(mitStatus(AnfrageStatus.ANGENOMMEN).istErledigt()).isTrue();
+        assertThat(mitStatus(AnfrageStatus.ANGENOMMEN).istNeu()).isFalse();
+
+        assertThat(mitStatus(AnfrageStatus.ABGELEHNT).istErledigt()).isTrue();
+        assertThat(mitStatus(AnfrageStatus.ABGELEHNT).istNeu()).isFalse();
+    }
+
+    private static AnfrageView mitStatus(AnfrageStatus status) {
+        SponsoringAnfrage a = new SponsoringAnfrage();
+        a.setId(UUID.randomUUID());
+        a.setStatus(status);
+        return AnfrageView.von(a);
+    }
+
     private static Organisation neueOrg(String name, String slug, OrgTyp typ) {
         Organisation o = new Organisation();
         o.setId(UUID.randomUUID());

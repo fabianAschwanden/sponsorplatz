@@ -1101,6 +1101,8 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **MANF-05** | `MeineAnfragenControllerTest` | `POST /anfragen/erstellen` Happy Path → ruft `service.erstelle` mit Empfänger (vom Paket abgeleitet, kein Client-Trust) und redirected auf `/anfragen` |
 | **MANF-06** | `MeineAnfragenControllerTest` | `POST /anfragen/erstellen` mit `anfragenderOrgId == empfaengerOrg.id` → Form mit Binding-Error, kein Service-Call (Self-Anfrage-Schutz) |
 | **MANF-07** | `MeineAnfragenControllerTest` | `POST /anfragen/{id}/annehmen` ohne Edit-Recht auf Empfänger-Org → 403 (IDOR-Schutz; analoge Deckung für `/ablehnen`) |
+| **MANF-08** | `MeineAnfragenControllerTest` | `/anfragen` splittet ausgehende Anfragen in meine (selbst gestellt) vs. Org-ohne-mich |
+| **MANF-09** | `MeineAnfragenControllerTest` | `/anfragen` teilt eingehende Anfragen in `anfragen` (NEU) und `erledigteAnfragen` (ANGENOMMEN/ABGELEHNT) — erledigte erscheinen nur noch als kompakte Liste |
 
 ### Onboarding-Wizard (ONB) — Phase 11.1
 
@@ -1137,6 +1139,7 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **VIEW-12** | `MedienAssetViewTest` | `groesseFormatiert()` zeigt B/KB/MB korrekt |
 | **VIEW-12b** | `MedienAssetViewTest` | `endung()` extrahiert Datei-Endung lowercase, leer wenn kein Punkt im Namen |
 | **VIEW-13** | `AnfrageViewTest` | `vereinSlug()` liefert Anfragender-Slug bei Kontakt-Anfrage (Verein → Sponsor), Empfänger-Slug bei Paket-Anfrage. Siehe [`KONTAKT_ANFRAGE_VERTRAG.md`](KONTAKT_ANFRAGE_VERTRAG.md) |
+| **VIEW-16** | `AnfrageViewTest` | `istNeu()` (Status NEU) / `istErledigt()` (ANGENOMMEN/ABGELEHNT) partitionieren die Anfrage-Listen in neu vs. erledigt |
 
 #### MedienController-Auslieferung (MA)
 

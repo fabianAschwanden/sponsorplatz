@@ -87,13 +87,26 @@ public class MeineAnfragenController {
                 : List.of();
 
         model.addAttribute(ModelAttributeNames.AKTIVE_SEITE, "anfragen");
-        model.addAttribute("anfragen", eingehend);
-        model.addAttribute("meineAusgehendeAnfragen", meineAusgehend);
-        model.addAttribute("orgAusgehendeAnfragen", orgAusgehend);
+        // Jede Liste in offen (NEU) + erledigt (ANGENOMMEN/ABGELEHNT) aufteilen.
+        // Erledigte werden im Template nur noch kompakt gelistet.
+        model.addAttribute("anfragen", nurNeue(eingehend));
+        model.addAttribute("erledigteAnfragen", nurErledigte(eingehend));
+        model.addAttribute("meineAusgehendeAnfragen", nurNeue(meineAusgehend));
+        model.addAttribute("meineAusgehendeErledigt", nurErledigte(meineAusgehend));
+        model.addAttribute("orgAusgehendeAnfragen", nurNeue(orgAusgehend));
+        model.addAttribute("orgAusgehendeErledigt", nurErledigte(orgAusgehend));
         model.addAttribute("meineOrgNamen", daten.vereinsOrgNamen());
         model.addAttribute("anzahlOffene", offene);
         model.addAttribute("kannKontaktanfrageStellen", istVereinsMitglied);
         return "anfrage/meine-anfragen";
+    }
+
+    private static List<AnfrageView> nurNeue(List<AnfrageView> alle) {
+        return alle.stream().filter(AnfrageView::istNeu).toList();
+    }
+
+    private static List<AnfrageView> nurErledigte(List<AnfrageView> alle) {
+        return alle.stream().filter(AnfrageView::istErledigt).toList();
     }
 
     /**
