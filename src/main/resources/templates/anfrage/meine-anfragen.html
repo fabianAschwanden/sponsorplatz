@@ -269,10 +269,14 @@
             </header>
 
             <div class="anf-liste anf-liste-kompakt">
-                <th:block th:each="a : ${meineAusgehendeErledigt}"
-                          th:replace="~{fragments/anfrage-item :: erledigt-ausgehend(${a}, 'anf-item-ausgehend')}"></th:block>
-                <th:block th:each="a : ${orgAusgehendeErledigt}"
-                          th:replace="~{fragments/anfrage-item :: erledigt-ausgehend(${a}, 'anf-item-org')}"></th:block>
+                <!-- th:each + th:replace NICHT auf demselben Element: th:replace hat
+                     höhere Präzedenz und würde sonst mit a=null aufgelöst (Parse-Crash). -->
+                <th:block th:each="a : ${meineAusgehendeErledigt}">
+                    <th:block th:replace="~{fragments/anfrage-item :: erledigt-ausgehend(${a}, 'anf-item-ausgehend')}"></th:block>
+                </th:block>
+                <th:block th:each="a : ${orgAusgehendeErledigt}">
+                    <th:block th:replace="~{fragments/anfrage-item :: erledigt-ausgehend(${a}, 'anf-item-org')}"></th:block>
+                </th:block>
             </div>
         </section>
     </main>

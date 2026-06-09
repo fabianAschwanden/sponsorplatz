@@ -1104,6 +1104,7 @@ fehl bei neuen `serious`/`critical`-Befunden — bekannte Baseline-Findings in
 | **MANF-07** | `MeineAnfragenControllerTest` | `POST /anfragen/{id}/annehmen` ohne Edit-Recht auf Empfänger-Org → 403 (IDOR-Schutz; analoge Deckung für `/ablehnen`) |
 | **MANF-08** | `MeineAnfragenControllerTest` | `/anfragen` splittet ausgehende Anfragen in meine (selbst gestellt) vs. Org-ohne-mich |
 | **MANF-09** | `MeineAnfragenControllerTest` | `/anfragen` teilt eingehende Anfragen in `anfragen` (NEU) und `erledigteAnfragen` (ANGENOMMEN/ABGELEHNT) — erledigte erscheinen nur noch als kompakte Liste |
+| **MANF-R01..R03** | `MeineAnfragenRenderTest` | `/anfragen` rendert (echtes Thymeleaf) für Nicht-Vereinsmitglied, mit erledigten ausgehenden Anfragen (Fragment-Pfad) und leer → 200. Regression: `th:each` + `th:replace` auf demselben Element löste das Fragment mit `a=null` auf (Parse-Crash für alle Benutzer mit erledigten ausgehenden Anfragen) |
 
 ### Onboarding-Wizard (ONB) — Phase 11.1
 
