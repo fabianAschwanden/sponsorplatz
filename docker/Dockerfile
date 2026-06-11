@@ -3,7 +3,7 @@
 # =============================================================================
 
 # ------------------ Build Stage ------------------
-FROM maven:3.9-eclipse-temurin-21 AS build
+FROM maven:3.9-eclipse-temurin-25 AS build
 WORKDIR /workspace
 
 # Cache-friendly: zuerst pom für Dependency-Resolve, dann Source
@@ -14,7 +14,7 @@ COPY src ./src
 RUN mvn -B -q clean package -DskipTests
 
 # ------------------ Runtime Stage ------------------
-FROM eclipse-temurin:21-jre-jammy AS runtime
+FROM eclipse-temurin:25-jre-jammy AS runtime
 
 # Runtime-Pakete:
 #  - postgresql-client-17 für BackupService (pg_dump). Offizielles PostgreSQL-

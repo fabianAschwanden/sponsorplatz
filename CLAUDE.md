@@ -19,7 +19,7 @@ Ernährung, Wellness, Selbsthilfe, Patientenorganisationen — siehe `Branche`-E
 
 | Schicht | Wahl |
 |---|---|
-| Sprache | Java 21 LTS |
+| Sprache | Java 25 LTS |
 | Framework | Spring Boot 3.5.x |
 | Frontend | Thymeleaf + light CSS (kein SPA) |
 | DB dev | H2 (file: `./data/sponsorplatz`) |
@@ -73,7 +73,7 @@ Vollständige Roadmap in [`specs/ROADMAP.md`](specs/ROADMAP.md), detaillierte Ph
 - **Datei-Backup + Restore als ZIP** — `/admin/datei-backups`, walkt MedienAsset, schreibt provider-agnostisch via `StorageService.speichereBytes(...)`
 - **`umgebung`-Marker** — jeder Audit-Eintrag + jedes Sentry-Event trägt die Quell-Cloud, damit nach DB-Sync klar ist wo das Ereignis entstand
 - **`StorageObjectNotFoundException`** — typed Exception, `MedienController.ausliefern` liefert 404 statt 500-Stacktrace bei orphaned Asset
-- **Tomcat 10.1.55 + Netty 4.1.133** — CVE-Patches (CRITICAL + HIGH) auf Build aktualisiert
+- **Java 25 LTS + Spring Boot 3.5.15** — Plattform-Upgrade (Java 21→25, ArchUnit 1.4.2 für JDK-25-Bytecode, OCI-SDK 3.89.1); die früheren manuellen CVE-Overrides (Tomcat/Netty/Spring/Thymeleaf/Postgres) durch die neuere BOM abgelöst (spring-framework 6.2.19, spring-security 6.5.11, netty 4.1.135)
 - **Templates strukturiert nach Bounded-Context** — 47 Templates aus dem flachen Top-Level in Feature-Unterordner verschoben
 - **`/kontakt`-Seite** als einziger anonymer Anfrage-Funnel
 - **Sentry-Hardening** — Browser-SDK, SRI-Hash, SentryAppender für `log.error(...)`

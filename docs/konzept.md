@@ -87,7 +87,7 @@ Sponsorplatz ist eine produktive Greenfield-Plattform für Schweizer **Sport- un
 **Kern-Entitäten:** `Organisation`, `Mitgliedschaft`, `AppUser`, `FederierteIdentitaet`, `Projekt`, `SponsoringPaket`, `SponsoringAnfrage`, `Nachricht`, `Vertrag`, `Rechnung`, `MedienAsset`, `Watchlist`, `Einladung`, `Benachrichtigung`, `AuditLog`, `Backup`, `Aufgabe`, `PlattformEinstellungen`.
 
 **Stack:**
-- **Backend:** Spring Boot 3.5.x, Java 21 LTS, Spring Security 6 (Form-Login + OAuth2-Client), Spring Data JPA, Postgres 17 (prod) / H2 (dev), Flyway V1–V46
+- **Backend:** Spring Boot 3.5.x, Java 25 LTS, Spring Security 6 (Form-Login + OAuth2-Client), Spring Data JPA, Postgres 17 (prod) / H2 (dev), Flyway V1–V46
 - **Frontend:** Thymeleaf (kein SPA), eigenes CSS (Dashboard-Stil), kein Bootstrap (intern bewusste Entscheidung — light footprint)
 - **Auth-Providers:** OIDC für Entra ID / Google / SwissID / Switch edu-ID + 2FA-TOTP (`dev.samstevens.totp`)
 - **Cloud-Storage:** Local-Volume (dev) / OCI Object Storage (prod) / Azure Blob Storage (DR)
@@ -660,7 +660,7 @@ Komplett umgesetzt. Sponsorplatz hat den Funktionsumfang den der ursprüngliche 
 
 ### Annahmen
 
-- Spring Boot bleibt 3.5.x; Java 21 LTS ist gesetzt.
+- Spring Boot bleibt 3.5.x; Java 25 LTS ist gesetzt.
 - OCI Always-Free + Azure als Warm-DR — kostenlos im Pilot.
 - TDD + ArchUnit-Pflicht bleiben — keine Architektur-Entscheidung ohne Test.
 - **Vereine akzeptieren das offene Modell** — wird im Pilot validiert (Phase 14.3).

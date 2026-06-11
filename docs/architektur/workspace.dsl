@@ -39,7 +39,7 @@ workspace "Sponsorplatz" "Schweizer Sponsoring-Plattform für Sport und Gesundhe
         // -------------------------------------------------------------------
         sponsorplatz = softwareSystem "Sponsorplatz" "Kuratierte Health-Sponsoring-Plattform — strikt fokussiert, breit gefasst" {
 
-            web = container "Web-Anwendung (cloud-free / OCI)" "Spring Boot 3.5 + Thymeleaf, server-rendered HTML — primary Zone" "Java 21" {
+            web = container "Web-Anwendung (cloud-free / OCI)" "Spring Boot 3.5 + Thymeleaf, server-rendered HTML — primary Zone" "Java 25" {
 
                 // Feature-Folder als Komponenten — direkte Spiegelung der Paket-Struktur
                 organisation     = component "organisation"      "Vereine, Mitgliedschaften, AccessControl, Branche-Enum"
@@ -65,7 +65,7 @@ workspace "Sponsorplatz" "Schweizer Sponsoring-Plattform für Sport und Gesundhe
             // ---------------------------------------------------------------
             // Phase 15.3 Multi-Cloud — Azure-Zone als Warm-DR
             // ---------------------------------------------------------------
-            webAzure = container "Web-Anwendung (cloud-azure / DR)" "Identisches Image, eigene VM in Azure Sweden Central — Warm-DR-Zone" "Java 21"
+            webAzure = container "Web-Anwendung (cloud-azure / DR)" "Identisches Image, eigene VM in Azure Sweden Central — Warm-DR-Zone" "Java 25"
             dbAzure  = container "PostgreSQL 17 (Azure Flex)" "Azure Database for PostgreSQL Flexible Server, VNet-privat — DR-Zone" "Database" "Database"
         }
 
