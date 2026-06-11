@@ -39,6 +39,12 @@ RUN apt-get update \
  && apt-get update \
  && apt-get install -y --no-install-recommends postgresql-client-17 \
         fontconfig fonts-liberation fonts-dejavu-core \
+ # OpenSSL gezielt auf den gepatchten Jammy-Stand heben: das frische
+ # 25-jre-jammy-Base-Image bringt libssl3/openssl 3.0.2-0ubuntu1.23 mit, das
+ # noch CVE-2026-45447 (HIGH, PKCS#7/S-MIME) offen hat. Fix in ...ubuntu1.25 →
+ # `apt-get install --only-upgrade` zieht ihn, sonst bricht der Trivy-Gate
+ # (severity CRITICAL,HIGH, exit-code 1) den Deploy ab.
+ && apt-get install -y --only-upgrade libssl3 openssl \
  && fc-cache -f \
  && apt-get purge -y curl gnupg lsb-release \
  && apt-get autoremove -y \
