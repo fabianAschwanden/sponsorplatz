@@ -103,9 +103,9 @@ rectangle "==Azure Blob Storage\n<size:10>[Software System]</size>\n\nBackup-Zie
 rectangle "==Sentry / GlitchTip\n<size:10>[Software System]</size>\n\nError-Tracking mit Umgebungs-Tag (DSG-konform)" <<SentryGlitchTip>> as SentryGlitchTip
 
 rectangle "Sponsorplatz\n<size:10>[Software System]</size>" <<Sponsorplatz>> {
-  rectangle "==Web-Anwendung (cloud-free / OCI)\n<size:10>[Container: Java 21]</size>\n\nSpring Boot 3.5 + Thymeleaf, server-rendered HTML — primary Zone" <<Sponsorplatz.WebAnwendungcloudfreeOCI>> as Sponsorplatz.WebAnwendungcloudfreeOCI
+  rectangle "==Web-Anwendung (cloud-free / OCI)\n<size:10>[Container: Java 25]</size>\n\nSpring Boot 3.5 + Thymeleaf, server-rendered HTML — primary Zone" <<Sponsorplatz.WebAnwendungcloudfreeOCI>> as Sponsorplatz.WebAnwendungcloudfreeOCI
   database "==PostgreSQL 17 (Docker, OCI-VM)\n<size:10>[Container: Database]</size>\n\nPersistenz aller Sponsorplatz-Daten — primary Zone" <<Sponsorplatz.PostgreSQL17DockerOCIVM>> as Sponsorplatz.PostgreSQL17DockerOCIVM
-  rectangle "==Web-Anwendung (cloud-azure / DR)\n<size:10>[Container: Java 21]</size>\n\nIdentisches Image, eigene VM in Azure Sweden Central — Warm-DR-Zone" <<Sponsorplatz.WebAnwendungcloudazureDR>> as Sponsorplatz.WebAnwendungcloudazureDR
+  rectangle "==Web-Anwendung (cloud-azure / DR)\n<size:10>[Container: Java 25]</size>\n\nIdentisches Image, eigene VM in Azure Sweden Central — Warm-DR-Zone" <<Sponsorplatz.WebAnwendungcloudazureDR>> as Sponsorplatz.WebAnwendungcloudazureDR
   database "==PostgreSQL 17 (Azure Flex)\n<size:10>[Container: Database]</size>\n\nAzure Database for PostgreSQL Flexible Server, VNet-privat — DR-Zone" <<Sponsorplatz.PostgreSQL17AzureFlex>> as Sponsorplatz.PostgreSQL17AzureFlex
 }
 

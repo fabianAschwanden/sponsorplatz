@@ -131,7 +131,7 @@ skinparam rectangle<<Sponsorplatz.WebAnwendungcloudfreeOCI>> {
   shadowing false
 }
 
-rectangle "Web-Anwendung (cloud-free / OCI)\n<size:10>[Container: Java 21]</size>" <<Sponsorplatz.WebAnwendungcloudfreeOCI>> {
+rectangle "Web-Anwendung (cloud-free / OCI)\n<size:10>[Container: Java 25]</size>" <<Sponsorplatz.WebAnwendungcloudfreeOCI>> {
   rectangle "==organisation\n<size:10>[Component]</size>\n\nVereine, Mitgliedschaften, AccessControl, Branche-Enum" <<Sponsorplatz.WebAnwendungcloudfreeOCI.organisation>> as Sponsorplatz.WebAnwendungcloudfreeOCI.organisation
   rectangle "==projekt\n<size:10>[Component]</size>\n\nProjekte, Pakete, Marktplatz, Volltextsuche" <<Sponsorplatz.WebAnwendungcloudfreeOCI.projekt>> as Sponsorplatz.WebAnwendungcloudfreeOCI.projekt
   rectangle "==anfrage\n<size:10>[Component]</size>\n\nAnfrage → Vertrag → Rechnung → Payment-Provider" <<Sponsorplatz.WebAnwendungcloudfreeOCI.anfrage>> as Sponsorplatz.WebAnwendungcloudfreeOCI.anfrage

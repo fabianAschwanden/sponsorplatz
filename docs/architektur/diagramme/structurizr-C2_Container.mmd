@@ -22,11 +22,11 @@ graph LR
     subgraph 14 ["Sponsorplatz"]
       style 14 fill:#ffffff,stroke:#0b4884,color:#0b4884
 
-      15("<div style='font-weight: bold'>Web-Anwendung (cloud-free / OCI)</div><div style='font-size: 70%; margin-top: 0px'>[Container: Java 21]</div><div style='font-size: 80%; margin-top:10px'>Spring Boot 3.5 + Thymeleaf,<br />server-rendered HTML —<br />primary Zone</div>")
+      15("<div style='font-weight: bold'>Web-Anwendung (cloud-free / OCI)</div><div style='font-size: 70%; margin-top: 0px'>[Container: Java 25]</div><div style='font-size: 80%; margin-top:10px'>Spring Boot 3.5 + Thymeleaf,<br />server-rendered HTML —<br />primary Zone</div>")
       style 15 fill:#438dd5,stroke:#2e6295,color:#ffffff
       32[("<div style='font-weight: bold'>PostgreSQL 17 (Docker, OCI-VM)</div><div style='font-size: 70%; margin-top: 0px'>[Container: Database]</div><div style='font-size: 80%; margin-top:10px'>Persistenz aller<br />Sponsorplatz-Daten — primary<br />Zone</div>")]
       style 32 fill:#2b3674,stroke:#1e2551,color:#ffffff
-      33("<div style='font-weight: bold'>Web-Anwendung (cloud-azure / DR)</div><div style='font-size: 70%; margin-top: 0px'>[Container: Java 21]</div><div style='font-size: 80%; margin-top:10px'>Identisches Image, eigene VM<br />in Azure Sweden Central —<br />Warm-DR-Zone</div>")
+      33("<div style='font-weight: bold'>Web-Anwendung (cloud-azure / DR)</div><div style='font-size: 70%; margin-top: 0px'>[Container: Java 25]</div><div style='font-size: 80%; margin-top:10px'>Identisches Image, eigene VM<br />in Azure Sweden Central —<br />Warm-DR-Zone</div>")
       style 33 fill:#438dd5,stroke:#2e6295,color:#ffffff
       34[("<div style='font-weight: bold'>PostgreSQL 17 (Azure Flex)</div><div style='font-size: 70%; margin-top: 0px'>[Container: Database]</div><div style='font-size: 80%; margin-top:10px'>Azure Database for PostgreSQL<br />Flexible Server, VNet-privat<br />— DR-Zone</div>")]
       style 34 fill:#2b3674,stroke:#1e2551,color:#ffffff
