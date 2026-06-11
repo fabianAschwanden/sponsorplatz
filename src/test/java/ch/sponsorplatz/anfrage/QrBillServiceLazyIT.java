@@ -47,6 +47,16 @@ class QrBillServiceLazyIT {
     @Autowired private VertragRepository vertragRepository;
     @Autowired private TransactionTemplate txTemplate;
 
+    // IDs der persistierten Kette — für Cleanup. Der Test committet bewusst ohne
+    // Rollback (Lazy-Detach erzwingen) und läuft im dev-Profil gegen die echte
+    // H2-File-DB; ohne Aufräumen lecken die Zeilen in andere Tests (z.B.
+    // OrganisationRepositoryTest.findAllByOrderByNameAsc → containsExactly).
+    private UUID rechnungId;
+    private UUID vertragId;
+    private UUID anfrageId;
+    private UUID vereinId;
+    private UUID sponsorId;
+
     @Test
     @DisplayName("QRB-LAZY-01: erzeugeAlsDataUrlFuerId löst die LAZY-org auf (kein LazyInitializationException)")
     void erzeugtDataUrlMitLazyOrg() {
@@ -69,11 +79,13 @@ class QrBillServiceLazyIT {
         verein.setOrt("Zürich");
         verein.setIban("CH4431999123000889012");
         organisationRepository.save(verein);
+        vereinId = verein.getId();
 
         // OrgTyp.ANDERE umgeht die XOR-Branche-Pflicht (V25 chk_branche_pro_typ) —
         // der Sponsor erfüllt hier nur die NOT-NULL-FK der Anfrage.
         Organisation sponsor = neueOrg("Lazy Sponsor AG", OrgTyp.ANDERE);
         organisationRepository.save(sponsor);
+        sponsorId = sponsor.getId();
 
         SponsoringAnfrage anfrage = new SponsoringAnfrage();
         anfrage.setAnfragenderOrg(sponsor);
@@ -84,6 +96,7 @@ class QrBillServiceLazyIT {
         anfrage.setKontaktName("Max Lazy");
         anfrage.setKontaktEmail("max@lazy.ch");
         anfrageRepository.save(anfrage);
+        anfrageId = anfrage.getId();
 
         Vertrag vertrag = new Vertrag();
         vertrag.setAnfrage(anfrage);
@@ -95,6 +108,7 @@ class QrBillServiceLazyIT {
         vertrag.setPreisChf(new BigDecimal("1500.00"));
         vertrag.setErstelltAm(Instant.now());
         vertragRepository.save(vertrag);
+        vertragId = vertrag.getId();
 
         Rechnung r = new Rechnung();
         r.setVertrag(vertrag);
@@ -108,8 +122,25 @@ class QrBillServiceLazyIT {
         r.setZahlungszweck("Sponsoring · R-2026-09999");
         r.setFaelligAm(LocalDate.now().plusDays(30));
         rechnungRepository.save(r);
+        rechnungId = r.getId();
 
         return r.getId();
+    }
+
+    /**
+     * Räumt die committet Kette wieder ab (FK-Reihenfolge: Rechnung → Vertrag →
+     * Anfrage → Orgs). Verhindert, dass „FC Lazy"/„Lazy Sponsor AG" in andere
+     * Tests lecken (dev-Profil = echte H2-File-DB, kein @Transactional-Rollback).
+     */
+    @org.junit.jupiter.api.AfterEach
+    void raeumeAuf() {
+        txTemplate.executeWithoutResult(s -> {
+            if (rechnungId != null) rechnungRepository.deleteById(rechnungId);
+            if (vertragId != null) vertragRepository.deleteById(vertragId);
+            if (anfrageId != null) anfrageRepository.deleteById(anfrageId);
+            if (sponsorId != null) organisationRepository.deleteById(sponsorId);
+            if (vereinId != null) organisationRepository.deleteById(vereinId);
+        });
     }
 
     private static Organisation neueOrg(String name, OrgTyp typ) {
